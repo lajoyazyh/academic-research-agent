@@ -680,9 +680,14 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
         # 保存论文列表到 Session
         if result.get("papers"):
             session_mgr.save_papers_list(session_id, result["papers"])
-        # 保存笔记
+        # 保存笔记（从 result 中获取，run_search_only 已正确读取）
         if result.get("notes"):
             session_mgr.save_notes(session_id, result["notes"])
+        # 也从 work_dir 的 research_notes.md 二次确认
+        work_dir = SESSIONS_DIR / session_id
+        notes_file = work_dir / "research_notes.md"
+        if notes_file.exists() and not result.get("notes"):
+            session_mgr.save_notes(session_id, notes_file.read_text(encoding="utf-8"))
         # 保存轨迹
         if result.get("traces"):
             session_mgr.save_traces(session_id, result["traces"])

@@ -456,9 +456,12 @@ def run_search_only(
     if session_papers_dir:
         papers_dir = session_papers_dir
         os.makedirs(papers_dir, exist_ok=True)
-        # notes 路径
-        note_path = session_notes_path or os.path.join(os.path.dirname(papers_dir), "notes", "draft_notes.md")
+        # work_dir 是 sessions/{id}/，工具（clear_note/append_note）写入 research_notes.md
         work_dir = os.path.dirname(os.path.dirname(papers_dir))  # sessions/{id}/
+        note_path = os.path.join(work_dir, 'research_notes.md')
+        # 同时创建一个 notes/draft_notes.md 软链接或副本
+        notes_dir = os.path.join(work_dir, 'notes')
+        os.makedirs(notes_dir, exist_ok=True)
     else:
         import re as m_re
         safe_topic = m_re.sub(r'[/\:*?"<>|]', '_', user_topic)
@@ -523,6 +526,14 @@ def run_search_only(
     if os.path.exists(note_path):
         with open(note_path, 'r', encoding='utf-8') as f:
             notes_content = f.read()
+    
+    # 同步到 sessions/{id}/notes/draft_notes.md（SessionManager 从这里读取）
+    if session_papers_dir:
+        notes_draft_path = os.path.join(work_dir, 'notes', 'draft_notes.md')
+        if notes_content:
+            os.makedirs(os.path.dirname(notes_draft_path), exist_ok=True)
+            with open(notes_draft_path, 'w', encoding='utf-8') as f:
+                f.write(notes_content)
 
     # 收集论文列表
     papers_list = []
