@@ -1,108 +1,127 @@
-# 迭代二：模块化 Agent 架构与全栈评测平台
+# 迭代三：连续对话与交互式调研平台
 
-迭代二已经从“脚本化验证”推进到“可运行、可评测、可追踪、可持续迭代”的工程阶段。当前仓库的核心可以概括为两条主线：
-
-1. `agent/` 负责学术检索、阅读、笔记和综述生成。
-2. `eval_platform/` 负责数据集、任务、评测、结果和前端展示。
+迭代三在迭代二 Agent 的基础上，从“一次性黑盒执行”升级为**会话驱动的交互式调研平台**——用户可在关键决策点参与、编辑、反馈，与 Agent 协作完成高质量文献综述。
 
 ## 演示视频
-
-- 南京大学智能软件与工程学院软工三小组作业-迭代二-学术综述agent与相应评估评测平台：
-	https://www.bilibili.com/video/BV1Fq5A61EMV
+- 迭代二：https://www.bilibili.com/video/BV1Fq5A61EMV
 
 ## 核心模块
 
-- `agent/`：Agent 主实现，包含 `core/`、`tools/`、`llms/` 和 `documents/`。
-- `eval_platform/`：评估平台，包含后端 API、数据库、评估器、前端与测试。
-- `tests/`：Agent 工具和平台联动的自动化测试。
-- `scripts/`：辅助验证脚本。
+agent/
+├── web_app.py              # FastAPI Web 服务入口
+├── main.py                 # Agent 管线（Plan / Search / Write 断点执行）
+├── backend/
+│   ├── session_manager.py  # Session 会话状态管理（8 阶段状态机）
+│   └── api.py              # 独立 API（备用）
+├── core/                   # Agent 核心（ReAct 循环、工具调度）
+├── tools/                  # 学术检索工具
+├── llms/                   # LLM 客户端（智谱 API）
+├── frontend/               # Web UI
+│   ├── index.html
+│   ├── app.js
+│   └── styles.css
+├── sessions/               # Session 数据存储
+│   └── {session_id}/
+│       ├── metadata.json
+│       ├── plan/           # 规划与关键词
+│       ├── papers/         # 论文 PDF + 元数据
+│       ├── notes/          # 笔记草稿 + 编辑历史
+│       └── draft/          # 综述草稿多版本
+├── documents/              # 迭代二兼容：历史综述产物
+├── tests/                  # 自动化测试
+└── prompts/                # Prompt 模板
 
-## 当前实现现状
+## 迭代三核心创新
 
-- Agent 已形成 Researcher + Writer 双阶段流水线，能够持续产出 `research_notes.md` 与 `final_review.md`。
-- 评估平台后端已打通数据集创建、任务创建、任务触发、状态轮询和结果查询。
-- 后端在执行 Agent 时会切换到 `agent/` 目录，并显式加载仓库根 `.env`，避免 `find_dotenv()` 受启动目录影响。
-- 评估器当前采用双路径策略：`ragas` 可用时走高级评测，不可用时回退到字符串相似度评估，保证平台可用性。
-- GitHub Actions 已覆盖 `agent` 与 `eval_platform` 的测试，适合提交前做回归验证。
+### 1. Session 会话模型
+每个学术调研任务是一个持久化的 Session，中间可暂停/修改/继续。
+
+```
+planning -> plan_confirmed -> searching -> search_complete
+-> reviewing_notes -> writing -> reviewing_draft -> complete
+```
+
+### 2. 左侧面板双模块
+
+| 模块 | 本质 | 存储位置 | 用途 |
+|------|------|---------|------|
+| ⭐ **收藏夹** | 用户主动收藏的满意综述 | `agent/favorites.json` | 手动收藏/取消收藏；只展示用户认可的结果；可折叠/展开 |
+| 🔄 **会话管理** | 进行中的交互式调研 | `agent/sessions/` | 新建/恢复/删除会话；编辑关键词；审核笔记 |
+
+> 两模块关系：**会话管理是"做研究的地方"，收藏夹是"满意的研究成果档案室"**。浏览综述时点击 ⭐ 即可加入收藏夹。
+
+### 3. 关键步骤可见化
+- **关键词审核**（✅ 已实现）：Plan 阶段后展示关键词方案，用户可编辑/删除/新增；可随时通过会话旁的 ✏️ 编辑按钮重新修改
+- **论文管理**（第二波规划）：混合 Agent 搜索 + 用户上传，支持审查模式
+- **笔记编辑**（第三波规划）：在线 Markdown 分屏编辑器，修改后可重新撰写
+- **综述反馈**（第三波规划）：提交修改意见，最多 2 次反馈重写
+
+## 当前实现进度
+
+| 波次 | 状态 | 已实现 |
+|------|:----:|------|
+| 第一波：Session 管理 + 关键词确认 | 完成 | SessionManager、状态机、关键词确认 UI、折叠/删除 |
+| 第二波：论文管理 + 混合来源 | 待开发 | -- |
+| 第三波：笔记编辑 + 综述重写 | 待开发 | -- |
 
 ## 环境安装
 
-建议使用仓库根目录的虚拟环境，然后安装依赖：
-
 ```powershell
-cd 迭代二
+cd 迭代三
 python -m pip install -r requirements.txt
-python -m pip install -r requirements-eval.txt
 ```
 
-如果只需要验证评估平台，也可以单独安装 `requirements-eval.txt` 里的依赖。
-
 ## 配置方式
-
-当前平台对外主要依赖智谱配置：`ZHIPU_API_KEY`、`ZHIPU_BASE_URL`、`ZHIPU_MODEL`。
-
-平台内部会兼容底层库对 `OPENAI_API_KEY` 和 `OPENAI_BASE_URL` 的读取需求，因此通常不需要手工补充额外变量。
-
-推荐把 `.env` 放在仓库根目录，并由平台自动读取。
+依赖智谱 API：在 agent/.env 中配置 ZHIPU_API_KEY、ZHIPU_BASE_URL、ZHIPU_MODEL。
 
 ## 运行方式
 
-启动后端：
-
 ```powershell
-cd 迭代二/eval_platform/backend
-python main.py
+cd 迭代三/agent
+python web_app.py
 ```
 
-启动 Agent：
+浏览器打开 `http://127.0.0.1:8000/`
 
-```powershell
-cd 迭代二/agent
-python main.py
+## Session 管理 API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | /api/sessions/create | 创建新会话 |
+| GET | /api/sessions/list | 列出所有会话 |
+| GET | /api/sessions/{id} | 获取会话完整状态 |
+| DELETE | /api/sessions/{id} | 删除会话 |
+| PUT | /api/sessions/{id}/state | 状态转移（带校验） |
+| PUT | /api/sessions/{id}/keywords | 保存确认后的关键词 |
+| POST | /api/sessions/{id}/run/plan | 执行规划阶段 |
+| POST | /api/sessions/{id}/run/search | 执行搜索阶段 |
+| POST | /api/sessions/{id}/run/write | 执行撰写阶段 |
+| GET | /api/sessions/{id}/papers | 获取论文列表 |
+| GET | /api/sessions/state-machine | 获取状态机定义 |
+
+## 收藏夹 API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `GET` | `/api/favorites` | 获取收藏列表 |
+| `POST` | `/api/favorites` | 加入收藏 `{filename, topic}` |
+| `DELETE` | `/api/favorites/{filename}` | 取消收藏 |
+
+## Agent 断点执行
+
+`main.py` 新增三个独立阶段函数：
+
+```python
+run_plan_only(topic)                           # 阶段 1：仅规划
+run_search_only(topic, plan, keywords)         # 阶段 2：搜索并记录笔记
+run_write_from_notes(topic, notes, feedback)   # 阶段 3：撰写/反馈重写
 ```
 
-前端是静态页面，可通过本地 HTTP 服务打开 `frontend/index.html`。
+## GitLab CI
 
-## 评估平台当前能力
+CI 配置在仓库根目录 `.gitlab-ci.yml`，每次 push 自动安装依赖并运行 `pytest tests/`。
 
-- 数据集管理：创建、查询、删除评估数据集。
-- 任务管理：创建、触发、查询、删除评估任务。
-- 自动执行：后端异步调用 Agent 并收集 trace。
-- 结果落库：评估结果以统一 JSON 结构写入数据库。
-- 结果查看：支持通过 API 或前端页面查看状态和评分结果。
-
-## 如何确认评估已完成
-
-1. 创建数据集。
-2. 创建评测任务。
-3. 调用 `/tasks/evaluate/{task_id}`。
-4. 轮询 `/tasks/status/{task_id}`，直到状态变为 `completed`。
-5. 再访问 `/tasks/results/{task_id}`，确认返回中包含 `backend`、`method`、`scores`、`sample_count` 和 `traces`。
-
-如果状态变为 `failed`，优先查看 `error_message`，其次检查 `.env`、依赖版本和模型配置。
-
-## 进一步优化和完善方案
-
-### 1. 评估能力增强
-
-- 给 fallback 评估器补充更多可解释指标，例如答案覆盖率、关键词重合度和上下文命中率。
-- 给 `ragas` 路径增加版本锁定和兼容性校验，避免依赖升级后行为漂移。
-- 把评估结果拆成“总分 + 分项指标 + 原始记录”，便于前端做图表和回放。
-
-### 2. 任务执行增强
-
-- 为任务增加更细的状态机，例如 `queued`、`running`、`completed`、`failed`、`cancelled`。
-- 增加超时控制、重试策略和失败原因归类，减少排障成本。
-- 引入任务队列或后台 worker，避免 `asyncio.create_task` 在进程重启时丢失任务。
-
-### 3. 数据与可视化增强
-
-- 增加任务历史对比视图，支持同一主题不同版本 Agent 的横向比较。
-- 把 `traces` 结构标准化，支持前端时间轴、折线图和节点回放。
-- 为数据集增加标签、来源和版本字段，方便后续做可重复评测。
-
-### 4. 工程化增强
-
-- 补充 `.env.example`、更完整的测试数据和更细粒度的单测。
-- 进一步收紧 GitHub Actions，增加后端 API 测试和评估器测试。
-- 给平台补充更明确的接口示例，减少新成员上手成本。
+## 进一步规划
+- 第二波：论文混合来源（标题/DOI/PDF 上传）+ 智能审查模式
+- 第三波：在线笔记编辑器 + 综述反馈重写
+- 迭代四：多用户协作、自动化评测集成、模板预设

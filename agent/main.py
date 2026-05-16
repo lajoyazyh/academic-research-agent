@@ -303,33 +303,35 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def _extract_keywords_from_plan(plan_text: str) -> list[dict]:
-    """从规划文本中提取关键词三元组（中文→英文→同义词）"""
-    keywords = []
-    lines = plan_text.split("\n")
-    for line in lines:
-        line = line.strip()
-        # 匹配模式：中文关键词 / 英文关键词 / 同义词
-        # 简单策略：提取所有关键词行
-        if line.startswith("- ") or line.startswith("* "):
-            line = line[2:].strip()
-        if "关键词" in line or "keyword" in line.lower():
-            # 尝试拆分
-            parts = re.split(r'[,;，；/]', line)
-            for part in parts:
-                part = part.strip()
-                # 过滤掉描述性文本
-                if len(part) > 2 and not part.startswith("关键词") and not part.startswith("keyword"):
-                    keywords.append({
-                        "original": part,
-                        "english": "",
-                        "synonyms": "",
-                    })
-    # 如果没解析出关键词，用整行作为兜底
-    if not keywords:
-        # 尝试提取所有看起来像关键词的词组
-        fallback_words = re.findall(r'[\u4e00-\u9fff\w][\u4e00-\u9fff\w\s-]{2,30}', plan_text)
-        keywords = [{"original": w.strip(), "english": "", "synonyms": ""} for w in fallback_words[:6]]
-    return keywords
+    """用 LLM 从规划文本中智能提取关键词三元组（中文→英文→同义词）"""
+    llm = LLMClient()
+    extract_prompt = f"""从以下研究规划中，提取真正用于学术搜索的关键词。
+
+规则：
+1. 只提取搜索关键词本身（如"Table Data Extraction"），不要提取步骤描述、数据源名、策略说明
+2. 每个关键词拆分为：original（中文原词）、english（英文学术关键词）、synonyms（替换同义词）
+3. 提取 2~5 组最核心的关键词即可
+
+【研究规划】
+{plan_text}
+
+请直接输出 JSON 数组（不要 markdown 标记）：
+[{{"original": "中文", "english": "English term", "synonyms": "syn1, syn2"}}, ...]
+"""
+    try:
+        response = llm.chat("你是关键词提取专家。只输出 JSON。", extract_prompt, [])
+        # 提取 JSON 数组
+        match = re.search(r'\[[\s\S]*\]', response)
+        if match:
+            import json as _json
+            keywords = _json.loads(match.group())
+            if isinstance(keywords, list) and len(keywords) > 0:
+                return keywords
+    except Exception:
+        pass
+
+    # 兜底：返回空数组，让用户手动输入
+    return []
 
 
 def run_plan_only(user_topic: str) -> dict:
@@ -346,7 +348,13 @@ def run_plan_only(user_topic: str) -> dict:
         "phase": "plan",
         "initial_plan": initial_plan,
         "keywords": keywords,
-        "traces": [],
+        "traces": [{
+            "thought": f"[规划阶段] 为主题「{user_topic}」生成初始关键词方案",
+            "action": "PLAN",
+            "input": {"topic": user_topic},
+            "observation": f"已生成 {len(keywords)} 个关键词候选项",
+            "error_type": "",
+        }],
     }
 
 

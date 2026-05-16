@@ -1,5 +1,7 @@
 import threading
 import uuid
+import json
+import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -20,6 +22,22 @@ SESSIONS_DIR = BASE_DIR / "sessions"
 
 # 初始化全局 SessionManager
 session_mgr = SessionManager(str(SESSIONS_DIR))
+
+# ━━━ 收藏夹存储 ━━━
+FAVORITES_FILE = BASE_DIR / "favorites.json"
+
+
+def _load_favorites() -> list[dict]:
+    if FAVORITES_FILE.exists():
+        try:
+            return json.loads(FAVORITES_FILE.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, Exception):
+            return []
+    return []
+
+
+def _save_favorites(favs: list[dict]) -> None:
+    FAVORITES_FILE.write_text(json.dumps(favs, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 class RunRequest(BaseModel):
@@ -169,7 +187,72 @@ def delete_history(filename: str) -> dict:
         raise HTTPException(status_code=404, detail="记录不存在")
     import shutil
     shutil.rmtree(run_dir)
+    # 同时清理收藏夹中的记录
+    favs = _load_favorites()
+    favs = [f for f in favs if f.get("filename") != filename]
+    _save_favorites(favs)
     return {"status": "deleted", "filename": filename}
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  迭代三：收藏夹 API（替代原来的历史综述自动列表）
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@app.get("/api/favorites")
+def get_favorites() -> list[dict]:
+    """获取收藏夹列表"""
+    favs = _load_favorites()
+    # 补充文件大小信息
+    enriched = []
+    for fav in favs:
+        filename = fav.get("filename", "")
+        run_dir = DOCS_DIR / filename
+        size = 0
+        if run_dir.exists():
+            review_file = run_dir / "final_review.md"
+            if review_file.exists():
+                size = review_file.stat().st_size
+            else:
+                note_file = run_dir / "research_notes.md"
+                if note_file.exists():
+                    size = note_file.stat().st_size
+        enriched.append({
+            "filename": filename,
+            "topic": fav.get("topic", filename),
+            "size": size,
+            "added_at": fav.get("added_at", ""),
+        })
+    return enriched
+
+
+@app.post("/api/favorites")
+def add_favorite(payload: dict) -> dict:
+    """加入收藏夹"""
+    filename = payload.get("filename", "").strip()
+    if not filename:
+        raise HTTPException(status_code=400, detail="filename 不能为空")
+    topic = payload.get("topic", filename).strip()
+    
+    favs = _load_favorites()
+    # 去重
+    if not any(f.get("filename") == filename for f in favs):
+        favs.append({
+            "filename": filename,
+            "topic": topic,
+            "added_at": datetime.datetime.now().isoformat(),
+        })
+        _save_favorites(favs)
+    
+    return {"status": "favorited", "count": len(favs)}
+
+
+@app.delete("/api/favorites/{filename}")
+def remove_favorite(filename: str) -> dict:
+    """取消收藏"""
+    favs = _load_favorites()
+    favs = [f for f in favs if f.get("filename") != filename]
+    _save_favorites(favs)
+    return {"status": "unfavorited", "count": len(favs)}
 
 
 @app.get("/api/agent/document/{filename}/papers/{pdf_name}")
@@ -400,6 +483,23 @@ def update_session_state(session_id: str, payload: UpdateStateRequest) -> dict:
         raise HTTPException(status_code=500, detail=f"状态更新失败: {str(e)}")
 
 
+@app.put("/api/sessions/{session_id}")
+def update_session(session_id: str, payload: dict) -> dict:
+    """更新会话基本信息（主题等）"""
+    session_dir = SESSIONS_DIR / session_id
+    if not session_dir.exists():
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    metadata_path = session_dir / "metadata.json"
+    import json as _json
+    if metadata_path.exists():
+        meta = _json.loads(metadata_path.read_text(encoding="utf-8"))
+        if "topic" in payload:
+            meta["topic"] = payload["topic"]
+        meta["updated_at"] = datetime.datetime.now().isoformat()
+        metadata_path.write_text(_json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    return session_mgr.load_session(session_id)
+
+
 @app.put("/api/sessions/{session_id}/keywords")
 def save_keywords(session_id: str, payload: UpdateKeywordsRequest) -> dict:
     """保存确认后的关键词"""
@@ -515,6 +615,9 @@ def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         # 保存关键词候选项
         if result.get("keywords"):
             session_mgr.save_keywords(session_id, result["keywords"])
+        # 保存 Plan 阶段的 traces
+        if result.get("traces"):
+            session_mgr.save_traces(session_id, result["traces"])
         # 保持 planning 状态（Session 创建时已为此状态，无需再次转移）
 
         return result
@@ -525,14 +628,43 @@ def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
 
 
 def _run_search_in_background(session_id: str, topic: str, keywords: list[dict], max_loops: int) -> None:
-    """后台执行搜索阶段"""
+    """后台执行搜索阶段，周期性保存 traces 供前端实时轮询"""
+    import time as _time
+    _stop_flag = False
+    
+    def _periodic_trace_saver():
+        """每 3 秒将运行中的 traces 保存到 Session"""
+        while not _stop_flag:
+            _time.sleep(3)
+            try:
+                agent = _agent_holder.get("agent")
+                traces = list(agent.traces) if agent else []
+                if not traces:
+                    with RUN_LOCK:
+                        traces = list(RUNS.get(f"session_{session_id}", {}).get("traces", []))
+                if traces:
+                    session_mgr.save_traces(session_id, traces)
+            except Exception:
+                pass
+    
+    _saver_thread = threading.Thread(target=_periodic_trace_saver, daemon=True)
+    _agent_holder = {}  # 用于捕获运行中 Agent 的引用
+    
     try:
+        # 更新 Session 状态为 searching（端点可能已更新，忽略重复异常）
+        try:
+            session_mgr.update_session_state(session_id, "searching")
+        except ValueError:
+            pass
+        
         with RUN_LOCK:
             RUNS[f"session_{session_id}"] = {
                 "status": "running",
                 "phase": "searching",
                 "traces": [],
             }
+        
+        _saver_thread.start()
 
         result = run_agent_pipeline_session(
             session_id=session_id,
@@ -540,7 +672,10 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
             start_phase="search",
             user_keywords=keywords,
             max_loops=max_loops,
+            agent_callback=lambda agent, wd: _agent_holder.update({"agent": agent}),
         )
+        
+        _stop_flag = True
 
         # 保存论文列表到 Session
         if result.get("papers"):
@@ -563,6 +698,7 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
             }
 
     except Exception as exc:
+        _stop_flag = True
         with RUN_LOCK:
             RUNS[f"session_{session_id}"] = {
                 "status": "error",

@@ -894,13 +894,9 @@
         <!-- 左侧控制面板 -->
         <div class="panel control-panel">
             <h2><i class="fas fa-sliders-h"></i> 控制台</h2>
-            <div class="input-group">
-                <label for="topic">研究主题</label>
-                <input type="text" id="topic" value="LLM Agent Memory（内存框架/机制）" placeholder="输入你想研究的学术主题">
-            </div>
 
-            <button id="startBtn" onclick="app.startAgent()">
-                <i class="fas fa-play"></i> 开始研究
+            <button id="startBtn" class="smart-action-btn" onclick="app.smartAction()">
+                <i class="fas fa-plus-circle"></i> 新建会话开始调研
             </button>
 
             <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
@@ -911,16 +907,15 @@
                 <div id="failureSummary" style="font-size: 0.85rem; color: var(--text-secondary);"></div>
             </div>
 
-            <!-- 历史记录面板 -->
+            <!-- 收藏夹面板 -->
             <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
                     <span style="font-weight: 600; color: var(--text-secondary); cursor:pointer;" onclick="app.toggleHistoryPanel()">
-                        <i id="historyToggleIcon" class="fas fa-chevron-up" style="font-size:0.75rem;margin-right:4px;"></i>历史综述
+                        <i id="historyToggleIcon" class="fas fa-chevron-up" style="font-size:0.75rem;margin-right:4px;"></i>
+                        <i class="fas fa-star" style="color:var(--warning-color);"></i> 收藏夹
+                        <span style="font-size:0.7rem;color:var(--text-secondary);margin-left:4px;">满意综述</span>
                     </span>
-                    <div style="display:flex;gap:0.4rem;">
-                        <i class="fas fa-trash" style="cursor:pointer; color: var(--error-color); font-size:0.85rem;" onclick="app.deleteAllHistory()" title="清空历史记录"></i>
-                        <i class="fas fa-sync" style="cursor:pointer; color: var(--accent-color);" onclick="app.loadHistory()" title="刷新历史记录"></i>
-                    </div>
+                    <i class="fas fa-sync" style="cursor:pointer; color: var(--accent-color);" onclick="app.loadFavorites()" title="刷新收藏夹"></i>
                 </div>
                 <div id="historyListWrapper">
                     <div id="historyList" class="history-list">
@@ -1040,13 +1035,26 @@
         <div class="modal-panel" style="max-width:450px;">
             <h2><i class="fas fa-plus-circle"></i> 新建研究会话</h2>
             <p style="color: var(--text-secondary); font-size:0.85rem; margin-bottom:1rem;">
-                输入研究主题，系统将自动生成关键词方案供您确认。
+                输入研究主题，选择调研模式。
             </p>
             <input type="text" id="newSessionTopic" placeholder="输入你想研究的学术主题"
-                style="width:100%;padding:0.8rem;background:var(--surface-light);border:1px solid var(--border-color);border-radius:8px;color:var(--text-color);">
+                style="width:100%;padding:0.8rem;background:var(--surface-light);border:1px solid var(--border-color);border-radius:8px;color:var(--text-color);margin-bottom:0.8rem;">
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.8rem;">
+                <label id="modeInteractiveLabel" style="flex:1;display:flex;align-items:center;gap:0.4rem;padding:0.6rem;background:rgba(99,102,241,0.1);border:1px solid var(--primary-color);border-radius:8px;cursor:pointer;font-size:0.8rem;">
+                    <input type="radio" name="sessionMode" value="interactive" checked onchange="app.onModeChange('interactive')">
+                    <span><strong>🤝 交互模式</strong><br><span style="font-size:0.7rem;color:var(--text-secondary);">每步确认关键词/笔记</span></span>
+                </label>
+                <label id="modeQuickLabel" style="flex:1;display:flex;align-items:center;gap:0.4rem;padding:0.6rem;background:var(--surface-light);border:1px solid var(--border-color);border-radius:8px;cursor:pointer;font-size:0.8rem;">
+                    <input type="radio" name="sessionMode" value="quick" onchange="app.onModeChange('quick')">
+                    <span><strong>⚡ 快速模式</strong><br><span style="font-size:0.7rem;color:var(--text-secondary);">一键完成全部调研</span></span>
+                </label>
+            </div>
+            <div id="quickModeHint" style="display:none;font-size:0.75rem;color:var(--warning-color);margin-bottom:0.8rem;">
+                ⚠️ 快速模式下 Agent 将自主完成搜索+笔记+综述，完成后自动加入收藏夹
+            </div>
             <div class="modal-actions">
                 <button class="btn-secondary" onclick="app.closeNewSessionDialog()">取消</button>
-                <button class="btn-primary" onclick="app.createNewSession()">
+                <button class="btn-primary" id="createSessionBtn" onclick="app.createNewSession()">
                     <i class="fas fa-check"></i> 创建并开始规划
                 </button>
             </div>

@@ -3,7 +3,6 @@ const app = {
     chatMessages: [],
     
     init() {
-        this.topicInput = document.getElementById("topic");
         this.startBtn = document.getElementById("startBtn");
         this.statusBadge = document.getElementById("statusBadge");
         this.historyList = document.getElementById("historyList");
@@ -22,8 +21,19 @@ const app = {
         // 恢复主题偏好
         this.loadTheme();
         
-        this.loadHistory();
+        this.loadFavorites();
         this.loadSessions();  // 迭代三：加载 Session 列表
+    },
+
+    // ━━━ 智能动作按钮：根据上下文自动切换行为 ━━━
+    smartAction() {
+        if (this.currentSessionId) {
+            // 有活跃会话 → 触发 onClick（renderSessionGuide 已设置好）
+            this.startBtn.click();
+        } else {
+            // 无活跃会话 → 新建会话
+            this.showNewSessionDialog();
+        }
     },
     
     // 主题切换
@@ -120,10 +130,10 @@ const app = {
     },
 
     async startAgent() {
-        const topic = this.topicInput.value.trim();
+        const topic = this.currentTopic || "";
 
         if (!topic) {
-            alert("请输入研究主题");
+            this.showNewSessionDialog();
             return;
         }
 
@@ -194,7 +204,10 @@ const app = {
                     this.setStatus("done", "执行完成");
                     this.resetBtn();
                     this.switchTab('writer');
-                    this.loadHistory();
+                    this.loadFavorites();
+                    if (statusData.output_file) {
+                        this.showFavoriteBtn(statusData.output_file);
+                    }
                 } else {
                     throw new Error(statusData.error || "任务执行失败");
                 }
@@ -238,14 +251,14 @@ const app = {
         this.failureSummaryDiv.innerHTML = `<div style="margin-top:6px;"><span style="color:#777; margin-right:4px;">错误统计:</span>${items}</div>`;
     },
 
-    async loadHistory() {
+    async loadFavorites() {
         this.historyList.innerHTML = '<div style="color:#999; font-size:0.85rem;">加载中...</div>';
         try {
-            const res = await fetch("/api/agent/history");
+            const res = await fetch("/api/favorites");
             const data = await res.json();
             
             if (!data || data.length === 0) {
-                this.historyList.innerHTML = '<div style="color:#999; font-size:0.85rem;">暂无历史记录</div>';
+                this.historyList.innerHTML = '<div style="color:#999; font-size:0.85rem;">收藏夹为空 — 浏览综述时点击 ⭐ 即可收藏</div>';
                 return;
             }
             
@@ -260,23 +273,25 @@ const app = {
                 const infoDiv = document.createElement("div");
                 infoDiv.style.flex = "1";
                 infoDiv.style.cursor = "pointer";
+                infoDiv.style.minWidth = "0";
                 infoDiv.onclick = () => this.loadHistoryDetail(item.filename);
+                const topicDisplay = item.topic || item.filename;
                 infoDiv.innerHTML = `
-                    <strong>${item.filename}</strong><br>
-                    <span style="color:#666; font-size:0.85rem;">${(item.size / 1024).toFixed(1)} KB</span>
+                    <strong><i class="fas fa-star" style="color:var(--warning-color);font-size:0.7rem;"></i> ${this.escapeHtml(topicDisplay)}</strong><br>
+                    <span style="color:#666; font-size:0.8rem;">${item.filename} · ${(item.size / 1024).toFixed(1)} KB</span>
                 `;
                 
-                const delBtn = document.createElement("i");
-                delBtn.className = "fas fa-trash";
-                delBtn.style.cssText = "color:var(--error-color);cursor:pointer;padding:4px;font-size:0.8rem;flex-shrink:0;";
-                delBtn.title = "删除此记录";
-                delBtn.onclick = (e) => {
+                const unstarBtn = document.createElement("i");
+                unstarBtn.className = "fas fa-star";
+                unstarBtn.style.cssText = "color:var(--warning-color);cursor:pointer;padding:4px;font-size:0.8rem;flex-shrink:0;";
+                unstarBtn.title = "取消收藏";
+                unstarBtn.onclick = (e) => {
                     e.stopPropagation();
-                    this.deleteHistory(item.filename);
+                    this.unfavorite(item.filename);
                 };
                 
                 div.appendChild(infoDiv);
-                div.appendChild(delBtn);
+                div.appendChild(unstarBtn);
                 this.historyList.appendChild(div);
             });
             
@@ -286,33 +301,59 @@ const app = {
     },
 
     async deleteHistory(filename) {
-        if (!confirm(`确定要删除历史记录 "${filename}" 吗？此操作不可撤销。`)) return;
+        if (!confirm(`确定要删除 \"${filename}\" 吗？也会从收藏夹中移除。`)) return;
         try {
-            const res = await fetch(`/api/agent/history/${filename}`, { method: "DELETE" });
-            if (!res.ok) throw new Error((await res.json()).detail || "删除失败");
-            this.loadHistory();
-            this.setStatus("done", `已删除: ${filename}`);
+            await fetch(`/api/agent/history/${filename}`, { method: "DELETE" });
+            this.loadFavorites();
+            this.setStatus("done", `已删除`);
         } catch (e) {
             this.setStatus("error", `删除失败: ${e.message}`);
         }
     },
 
+    async unfavorite(filename) {
+        if (!confirm(`确定取消收藏吗？`)) return;
+        try {
+            await fetch(`/api/favorites/${encodeURIComponent(filename)}`, { method: "DELETE" });
+            this.loadFavorites();
+            this.setStatus("done", "已取消收藏");
+        } catch (e) {
+            this.setStatus("error", `操作失败: ${e.message}`);
+        }
+    },
+
+    async addFavorite(filename, topic) {
+        try {
+            const res = await fetch("/api/favorites", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ filename, topic }),
+            });
+            if (!res.ok) throw new Error((await res.json()).detail || "收藏失败");
+            this.loadFavorites();
+            this.setStatus("done", "⭐ 已加入收藏夹");
+        } catch (e) {
+            this.setStatus("error", `收藏失败: ${e.message}`);
+        }
+    },
+
     async deleteAllHistory() {
+        // 收藏夹模式下不再需要"一键清空"——改为逐个取消收藏
         const items = this.historyList.querySelectorAll(".history-item");
         if (items.length === 0) return;
-        if (!confirm(`确定要清空全部 ${items.length} 条历史记录吗？此操作不可撤销。`)) return;
+        if (!confirm(`确定要清空全部 ${items.length} 条收藏吗？`)) return;
         let count = 0;
         for (const item of items) {
             const strong = item.querySelector("strong");
             if (!strong) continue;
-            const filename = strong.textContent.trim();
+            const filename = strong.textContent.replace(/^[★⭐]\s*/, "").trim();
             try {
-                await fetch(`/api/agent/history/${filename}`, { method: "DELETE" });
+                await fetch(`/api/favorites/${encodeURIComponent(filename)}`, { method: "DELETE" });
                 count++;
             } catch (e) { /* skip */ }
         }
-        this.loadHistory();
-        this.setStatus("done", `已清空 ${count} 条历史记录`);
+        this.loadFavorites();
+        this.setStatus("done", `已清空 ${count} 条收藏`);
     },
 
     toggleHistoryPanel() {
@@ -348,8 +389,11 @@ const app = {
             
             this.renderPapers(filename, data.papers || []);
             this.outputPath.textContent = filename;
+            
+            // 显示收藏按钮
+            this.showFavoriteBtn(filename);
 
-            this.setStatus("done", "成功加载历史综述");
+            this.setStatus("done", "成功加载综述");
             this.switchTab('writer');
         } catch(e) {
             this.setStatus("error", `加载详情失败: ${e.message}`);
@@ -455,6 +499,31 @@ const app = {
     currentKeywords: [],
     currentPlan: "",
     currentTopic: "",
+    sessionMode: "interactive",  // "interactive" | "quick"
+
+    onModeChange(mode) {
+        this.sessionMode = mode;
+        const interactiveLabel = document.getElementById("modeInteractiveLabel");
+        const quickLabel = document.getElementById("modeQuickLabel");
+        const quickHint = document.getElementById("quickModeHint");
+        const createBtn = document.getElementById("createSessionBtn");
+        
+        if (mode === "quick") {
+            interactiveLabel.style.background = "var(--surface-light)";
+            interactiveLabel.style.border = "1px solid var(--border-color)";
+            quickLabel.style.background = "rgba(245,158,11,0.1)";
+            quickLabel.style.border = "1px solid var(--warning-color)";
+            quickHint.style.display = "block";
+            createBtn.innerHTML = '<i class="fas fa-bolt"></i> 一键快速调研';
+        } else {
+            interactiveLabel.style.background = "rgba(99,102,241,0.1)";
+            interactiveLabel.style.border = "1px solid var(--primary-color)";
+            quickLabel.style.background = "var(--surface-light)";
+            quickLabel.style.border = "1px solid var(--border-color)";
+            quickHint.style.display = "none";
+            createBtn.innerHTML = '<i class="fas fa-check"></i> 创建并开始规划';
+        }
+    },
 
     async loadSessions() {
         const listDiv = document.getElementById("sessionList");
@@ -483,9 +552,20 @@ const app = {
                 `;
                 infoSpan.onclick = () => this.selectSession(s.session_id);
                 
+                const editBtn = document.createElement("i");
+                editBtn.className = "fas fa-edit";
+                editBtn.style.cssText = "color:var(--accent-color);cursor:pointer;padding:2px 4px;font-size:0.75rem;flex-shrink:0;margin-left:4px;opacity:0.6;";
+                editBtn.title = "编辑会话（关键词/主题）";
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    this.editSession(s.session_id, s.topic);
+                };
+                editBtn.onmouseenter = () => { editBtn.style.opacity = "1"; };
+                editBtn.onmouseleave = () => { editBtn.style.opacity = "0.6"; };
+                
                 const delBtn = document.createElement("i");
                 delBtn.className = "fas fa-trash";
-                delBtn.style.cssText = "color:var(--error-color);cursor:pointer;padding:2px 4px;font-size:0.75rem;flex-shrink:0;margin-left:6px;opacity:0.6;";
+                delBtn.style.cssText = "color:var(--error-color);cursor:pointer;padding:2px 4px;font-size:0.75rem;flex-shrink:0;margin-left:4px;opacity:0.6;";
                 delBtn.title = "删除会话";
                 delBtn.onclick = (e) => {
                     e.stopPropagation();
@@ -495,6 +575,7 @@ const app = {
                 delBtn.onmouseleave = () => { delBtn.style.opacity = "0.6"; };
                 
                 div.appendChild(infoSpan);
+                div.appendChild(editBtn);
                 div.appendChild(delBtn);
                 listDiv.appendChild(div);
             });
@@ -521,10 +602,9 @@ const app = {
                 document.getElementById("currentSessionId").textContent = session.topic || sessionId;
             }
 
-            // 更新主题输入框
-            const topicInput = document.getElementById("topic");
-            if (topicInput && session.topic) {
-                topicInput.value = session.topic;
+            // 更新当前主题
+            if (session.topic) {
+                this.currentTopic = session.topic;
             }
 
             // 根据状态恢复界面
@@ -543,7 +623,18 @@ const app = {
             // 加载草稿
             if (session.draft) {
                 this.writerResult.innerHTML = marked.parse(session.draft);
+                this.showFavoriteBtn(sessionId);
             }
+
+            // 加载运行轨迹
+            if (session.traces && session.traces.length > 0) {
+                this.renderTraces(session.traces);
+            } else if (session.notes) {
+                this.tracesContainer.innerHTML = '<div style="color: var(--text-secondary); text-align: center; margin-top: 2rem;">已完成搜索阶段（轨迹存储在会话中）</div>';
+            }
+
+            // 根据会话状态引导按钮
+            this.renderSessionGuide(session);
 
             // 刷新列表高亮
             this.loadSessions();
@@ -553,6 +644,20 @@ const app = {
                 this.showKeywordModal(session.topic, session.keywords);
             }
 
+        } catch (e) {
+            this.setStatus("error", `加载会话失败: ${e.message}`);
+        }
+    },
+
+    async editSession(sessionId, topic) {
+        // 加载会话的关键词并打开编辑弹窗
+        try {
+            const res = await fetch(`/api/sessions/${sessionId}`);
+            const session = await res.json();
+            this.currentSessionId = sessionId;
+            this.currentTopic = session.topic || topic;
+            this.currentKeywords = session.keywords || [];
+            this.showKeywordModal(this.currentTopic, this.currentKeywords);
         } catch (e) {
             this.setStatus("error", `加载会话失败: ${e.message}`);
         }
@@ -586,7 +691,7 @@ const app = {
     },
 
     showNewSessionDialog() {
-        document.getElementById("newSessionTopic").value = this.topicInput?.value || "";
+        document.getElementById("newSessionTopic").value = this.currentTopic || "";
         document.getElementById("newSessionModal").classList.add("active");
     },
 
@@ -601,7 +706,158 @@ const app = {
             return;
         }
         document.getElementById("newSessionModal").classList.remove("active");
-        await this.createSession(topic);
+        
+        if (this.sessionMode === "quick") {
+            await this.runQuickMode(topic);
+        } else {
+            await this.createSession(topic);
+        }
+    },
+
+    // ━━━ 快速模式：立即创建 Session → 后台执行 → 结果填入 Session → 清理临时文件 ━━━
+    async runQuickMode(topic) {
+        // 1. 立即创建 Session，在会话列表中立即可见（按钮灰掉）
+        let sessionId, outputFile;
+        try {
+            const sRes = await fetch("/api/sessions/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ topic }),
+            });
+            const sData = await sRes.json();
+            if (!sRes.ok) throw new Error(sData.detail || "创建会话失败");
+            sessionId = sData.session_id;
+            this.currentSessionId = sessionId;
+            this.currentTopic = topic;
+            // 标记为快速模式执行中
+            await fetch(`/api/sessions/${sessionId}/state`, {
+                method: "PUT", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ state: "plan_confirmed" }),
+            }).catch(() => {});
+            await fetch(`/api/sessions/${sessionId}/state`, {
+                method: "PUT", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ state: "searching" }),
+            }).catch(() => {});
+            this.loadSessions(); // 列表中立即出现
+        } catch (e) {
+            this.setStatus("error", `创建会话失败: ${e.message}`);
+            return;
+        }
+
+        // 2. 按钮显示执行状态
+        this.startBtn.disabled = true;
+        this.startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 快速执行中...';
+        this.setStatus("running", "快速模式：全自动调研中...");
+        this.switchTab('traces');
+        this.tracesContainer.innerHTML = '<div style="color:#666;text-align:center;margin-top:2rem;">正在初始化快速调研（全自动模式）...</div>';
+        this.researchResult.innerHTML = '<div style="color:#666;text-align:center;">执行中...</div>';
+        this.writerResult.innerHTML = '<div style="color:#666;text-align:center;">执行中...</div>';
+
+        try {
+            const startResp = await fetch("/api/run/start", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ topic, max_loops: 20 }),
+            });
+            const startData = await startResp.json();
+            if (!startResp.ok) throw new Error(startData.detail || "启动失败");
+            const runId = startData.run_id;
+
+            if (this.pollTimer) clearInterval(this.pollTimer);
+
+            const poll = async () => {
+                const statusResp = await fetch(`/api/run/${runId}`);
+                if (!statusResp.ok) throw new Error("查询状态失败");
+                const sd = await statusResp.json();
+
+                this.renderTraces(sd.traces || []);
+                this.renderFailureSummary(sd.failure_summary || {});
+                if (sd.researcher_result) this.researchResult.innerHTML = marked.parse(sd.researcher_result);
+                if (sd.writer_result) this.writerResult.innerHTML = marked.parse(sd.writer_result);
+                if (sd.papers !== undefined) this.renderPapers(sd.output_file, sd.papers || []);
+                if (sd.output_file) {
+                    this.outputPath.textContent = sd.output_file;
+                    outputFile = sd.output_file;
+                }
+                if (sd.status === "running") {
+                    this.setStatus("running", `快速模式执行中...（${sd.phase}，${sd.traces?.length || 0} 步）`);
+                    return;
+                }
+                clearInterval(this.pollTimer); this.pollTimer = null;
+
+                if (sd.status === "done") {
+                    // 3. 把结果填入 Session
+                    try {
+                        if (sd.researcher_result) {
+                            await fetch(`/api/sessions/${sessionId}/notes`, {
+                                method: "PUT", headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ content: sd.researcher_result, version_note: "快速模式自动调研" }),
+                            });
+                        }
+                        if (sd.traces) {
+                            await fetch(`/api/sessions/${sessionId}/run/plan`, {
+                                method: "POST", headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ topic, start_phase: "plan" }),
+                            }).catch(() => {});
+                        }
+                        // 复制 PDF 到 session papers 目录
+                        if (outputFile && sd.papers?.length > 0) {
+                            for (const pdf of sd.papers) {
+                                try {
+                                    const pdfResp = await fetch(`/api/agent/document/${outputFile}/papers/${pdf}`);
+                                    if (pdfResp.ok) {
+                                        const blob = await pdfResp.blob();
+                                        // 通过 formData 上传到 session
+                                        const formData = new FormData();
+                                        formData.append("file", blob, pdf);
+                                        await fetch(`/api/sessions/${sessionId}/upload-pdf`, {
+                                            method: "POST", body: formData,
+                                        }).catch(() => {});
+                                    }
+                                } catch (e) { /* skip */ }
+                            }
+                        }
+                        await fetch(`/api/sessions/${sessionId}/state`, {
+                            method: "PUT", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ state: "search_complete" }),
+                        }).catch(() => {});
+                        // 4. 清理 documents 中的临时文件
+                        if (outputFile) {
+                            await fetch(`/api/agent/history/${outputFile}`, {
+                                method: "DELETE",
+                            }).catch(() => {});
+                        }
+                    } catch (e) {
+                        console.warn("Session 保存失败:", e);
+                    }
+
+                    this.setStatus("done", "快速调研完成！");
+                    this.resetBtn();
+                    this.switchTab('writer');
+                    this.loadSessions();
+                    this.loadFavorites();
+                    if (sessionId) {
+                        this.showFavoriteBtn(sessionId);
+                        this.addFavorite(sessionId, topic);
+                    }
+                } else {
+                    throw new Error(sd.error || "执行失败");
+                }
+            };
+
+            await poll();
+            this.pollTimer = setInterval(async () => {
+                try { await poll(); } catch (err) {
+                    clearInterval(this.pollTimer); this.pollTimer = null;
+                    this.setStatus("error", `失败: ${err.message}`);
+                    this.resetBtn();
+                }
+            }, 1000);
+        } catch (err) {
+            if (this.pollTimer) { clearInterval(this.pollTimer); this.pollTimer = null; }
+            this.setStatus("error", `快速模式失败: ${err.message}`);
+            this.resetBtn();
+        }
     },
 
     async createSession(topic) {
@@ -775,16 +1031,151 @@ const app = {
             alert("请先创建或选择一个会话");
             return;
         }
-
-        const topic = this.topicInput.value.trim();
+        const topic = this.currentTopic;
         if (!topic) {
-            alert("请输入研究主题");
+            alert("请先选择或创建一个会话");
             return;
         }
 
-        // 恢复原有的启动逻辑
-        this.startBtn.onclick = () => this.startAgent();
-        this.startAgent();
+        this.startBtn.disabled = true;
+        this.startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 搜索中...';
+        this.setStatus("running", "正在启动搜索阶段...");
+        this.switchTab('traces');
+
+        try {
+            const res = await fetch(`/api/sessions/${this.currentSessionId}/run/search`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ topic, start_phase: "search", keywords: this.currentKeywords || [], max_loops: 20 }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "搜索启动失败");
+
+            this.setStatus("running", "搜索进行中，请在会话列表中查看状态...");
+            this.resetBtn();
+            this.startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 搜索中...';
+            this.startBtn.disabled = true;
+
+            // 轮询会话状态（实时显示 traces）
+            let pollCount = 0;
+            const pollSearch = async () => {
+                pollCount++;
+                const sRes = await fetch(`/api/sessions/${this.currentSessionId}`);
+                const session = await sRes.json();
+
+                // 实时更新 traces
+                if (session.traces && session.traces.length > 0) {
+                    this.renderTraces(session.traces);
+                }
+
+                if (session.state === "search_complete") {
+                    if (session.notes) this.researchResult.innerHTML = marked.parse(session.notes);
+                    if (session.papers) this.renderSessionPapers(this.currentSessionId, session.papers);
+                    if (session.traces && session.traces.length > 0) {
+                        this.renderTraces(session.traces);
+                    }
+                    this.setStatus("done", "搜索完成！请审核笔记");
+                    this.showFavoriteBtn(this.currentSessionId);
+                    this.loadSessions();
+                    this.renderSessionGuide(session);
+                    clearInterval(this.pollTimer);
+                    this.pollTimer = null;
+                } else if (session.state === "searching") {
+                    this.setStatus("running", `搜索中... (${pollCount * 3}s) — 轨迹实时更新中`);
+                } else {
+                    this.loadSessions();
+                }
+            };
+
+            await pollSearch();
+            this.pollTimer = setInterval(pollSearch, 3000);
+
+        } catch (e) {
+            this.setStatus("error", `搜索失败: ${e.message}`);
+            this.resetBtn();
+        }
+    },
+
+    // 会话状态引导：根据当前状态显示合适的按钮
+    renderSessionGuide(session) {
+        const state = session.state;
+        this.startBtn.disabled = false;
+
+        if (state === "planning") {
+            this.startBtn.innerHTML = '<i class="fas fa-key"></i> 编辑关键词';
+            this.startBtn.onclick = () => this.showKeywordModal(session.topic, session.keywords || []);
+        } else if (state === "plan_confirmed") {
+            this.startBtn.innerHTML = '<i class="fas fa-search"></i> 开始搜索';
+            this.startBtn.onclick = () => this.startSearchPhase();
+        } else if (state === "searching") {
+            this.startBtn.disabled = true;
+            this.startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 搜索中...';
+        } else if (state === "search_complete") {
+            this.startBtn.innerHTML = '<i class="fas fa-pen"></i> 审核笔记';
+            this.startBtn.onclick = () => { this.switchTab('research'); };
+            // 同时显示撰写按钮
+            this.showWriteBtnAfterSearch();
+        } else if (state === "reviewing_notes") {
+            this.startBtn.innerHTML = '<i class="fas fa-file-alt"></i> 开始撰写';
+            this.startBtn.onclick = () => this.runWritePhase();
+        } else if (state === "writing") {
+            this.startBtn.disabled = true;
+            this.startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 撰写中...';
+        } else if (state === "reviewing_draft") {
+            this.startBtn.innerHTML = '<i class="fas fa-sync"></i> 提交反馈';
+            this.startBtn.onclick = () => { this.switchTab('writer'); };
+        } else if (state === "complete") {
+            this.startBtn.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success-color);"></i> 已完成';
+            this.startBtn.disabled = true;
+        } else {
+            this.startBtn.innerHTML = '<i class="fas fa-play"></i> 开始研究';
+            this.startBtn.onclick = () => this.startAgent();
+        }
+    },
+
+    async runWritePhase() {
+        if (!this.currentSessionId) return;
+        const topic = this.currentTopic;
+        this.startBtn.disabled = true;
+        this.startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 撰写中...';
+        this.setStatus("running", "正在撰写综述...");
+        try {
+            const res = await fetch(`/api/sessions/${this.currentSessionId}/run/write`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ topic, start_phase: "write" }),
+            });
+            const data = await res.json();
+            if (data.draft) {
+                this.writerResult.innerHTML = marked.parse(data.draft);
+                this.showFavoriteBtn(this.currentSessionId);
+            }
+            this.setStatus("done", "撰写完成！请查看草稿");
+            this.switchTab('writer');
+            this.loadSessions();
+            this.resetBtn();
+            this.renderSessionGuide({ state: "reviewing_draft" });
+        } catch (e) {
+            this.setStatus("error", `撰写失败: ${e.message}`);
+            this.resetBtn();
+        }
+    },
+
+    showWriteBtnAfterSearch() {
+        // 在笔记区域底部添加「开始撰写」按钮
+        const existing = document.getElementById("writeAfterSearchBtn");
+        if (existing) existing.remove();
+        
+        const btn = document.createElement("button");
+        btn.id = "writeAfterSearchBtn";
+        btn.style.cssText = "margin-top:1rem;padding:0.6rem 1.5rem;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;background:linear-gradient(135deg, var(--primary-color), var(--secondary-color));color:white;border:none;box-shadow:0 4px 12px rgba(99,102,241,0.3);";
+        btn.innerHTML = '<i class="fas fa-file-alt"></i> 开始撰写综述';
+        btn.onclick = () => this.runWritePhase();
+        
+        const researchResult = document.getElementById("researchResult");
+        if (researchResult) {
+            researchResult.appendChild(btn);
+        }
     },
 
     renderSessionPapers(sessionId, papers) {
@@ -808,6 +1199,44 @@ const app = {
                 </a>
             </div>
         `).join('');
+    },
+
+    async showFavoriteBtn(filename) {
+        const existing = document.getElementById("favToggleBtn");
+        if (existing) existing.remove();
+        
+        // 检查是否已收藏
+        let isFavorited = false;
+        try {
+            const favRes = await fetch("/api/favorites");
+            const favs = await favRes.json();
+            isFavorited = favs.some(f => f.filename === filename);
+        } catch (e) { /* ignore */ }
+        
+        const btn = document.createElement("button");
+        btn.id = "favToggleBtn";
+        btn.style.cssText = "margin-top:0.5rem;padding:0.4rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;background:var(--surface-light);border:1px solid var(--border-color);color:var(--text-secondary);";
+        
+        if (isFavorited) {
+            btn.innerHTML = '<i class="fas fa-star" style="color:var(--warning-color);"></i> 取消收藏';
+            btn.onclick = () => {
+                this.unfavorite(filename);
+                btn.innerHTML = '<i class="far fa-star" style="color:var(--warning-color);"></i> 加入收藏夹';
+                btn.onclick = () => { this.addFavorite(filename, filename); btn.innerHTML = '<i class="fas fa-star" style="color:var(--warning-color);"></i> 已收藏'; btn.disabled = true; };
+            };
+        } else {
+            btn.innerHTML = '<i class="far fa-star" style="color:var(--warning-color);"></i> 加入收藏夹';
+            btn.onclick = () => {
+                this.addFavorite(filename, filename);
+                btn.innerHTML = '<i class="fas fa-star" style="color:var(--warning-color);"></i> 取消收藏';
+                btn.onclick = () => { this.unfavorite(filename); btn.innerHTML = '<i class="far fa-star" style="color:var(--warning-color);"></i> 加入收藏夹'; };
+            };
+        }
+        
+        const pathEl = document.getElementById("outputPath");
+        if (pathEl && pathEl.parentElement) {
+            pathEl.parentElement.appendChild(btn);
+        }
     },
 
     escapeHtml(str) {
