@@ -1,5 +1,7 @@
 # Runtime outputs
 documents/
+sessions/
+favorites.json
 
 # Local environment files
 .env

@@ -276,8 +276,10 @@ const app = {
                 infoDiv.style.minWidth = "0";
                 infoDiv.onclick = () => this.loadHistoryDetail(item.filename);
                 const topicDisplay = item.topic || item.filename;
+                const isSessionId = /^sess_/.test(item.filename);
+                const displayName = (isSessionId && item.topic) ? item.topic : topicDisplay;
                 infoDiv.innerHTML = `
-                    <strong><i class="fas fa-star" style="color:var(--warning-color);font-size:0.7rem;"></i> ${this.escapeHtml(topicDisplay)}</strong><br>
+                    <strong><i class="fas fa-star" style="color:var(--warning-color);font-size:0.7rem;"></i> ${this.escapeHtml(displayName)}</strong><br>
                     <span style="color:#666; font-size:0.8rem;">${item.filename} · ${(item.size / 1024).toFixed(1)} KB</span>
                 `;
                 
@@ -1222,12 +1224,12 @@ const app = {
             btn.onclick = () => {
                 this.unfavorite(filename);
                 btn.innerHTML = '<i class="far fa-star" style="color:var(--warning-color);"></i> 加入收藏夹';
-                btn.onclick = () => { this.addFavorite(filename, filename); btn.innerHTML = '<i class="fas fa-star" style="color:var(--warning-color);"></i> 已收藏'; btn.disabled = true; };
+                btn.onclick = () => { this.addFavorite(filename, this.currentTopic || filename); btn.innerHTML = '<i class="fas fa-star" style="color:var(--warning-color);"></i> 已收藏'; btn.disabled = true; };
             };
         } else {
             btn.innerHTML = '<i class="far fa-star" style="color:var(--warning-color);"></i> 加入收藏夹';
             btn.onclick = () => {
-                this.addFavorite(filename, filename);
+                this.addFavorite(filename, this.currentTopic || filename);
                 btn.innerHTML = '<i class="fas fa-star" style="color:var(--warning-color);"></i> 取消收藏';
                 btn.onclick = () => { this.unfavorite(filename); btn.innerHTML = '<i class="far fa-star" style="color:var(--warning-color);"></i> 加入收藏夹'; };
             };

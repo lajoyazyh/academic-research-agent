@@ -49,7 +49,20 @@ build/
 .DS_Store
 Thumbs.db
 
+# Agent 运行时产出
+agent/sessions/
+agent/favorites.json
+agent/documents/
+
+# Agent 运行时产出（不追踪）
+sessions/
+favorites.json
+documents/
+
 */documents/*
 */sessions/*
 */logs/*
 */test_sess/*
+
+
+*/favorites.json
