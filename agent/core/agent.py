@@ -14,6 +14,7 @@ class BaseAgent:
         self.traces = []
         self.error_history = []  # 记录连续同类错误，供给构化 Reflexion 使用
         self._critique_round = False  # Pre-FINISH 自主质检标记
+        self._paper_filter_round = False  # Pre-FINISH 论文筛选标记
 
     def _generate_plan(self, user_query: str) -> str:
         """Plan-and-Execute 规划阶段：在 ReAct 循环前，让 LLM 自主产出一个显式的研究计划。"""

@@ -183,9 +183,10 @@ def _run_pipeline_in_background(run_id: str, topic: str, max_loops: int) -> None
         with RUN_LOCK:
             RUNS[run_id]["phase"] = "done"
             RUNS[run_id]["status"] = "done"
-            RUNS[run_id]["researcher_result"] = res["researcher_result"]
-            RUNS[run_id]["writer_result"] = res["writer_result"]
-            RUNS[run_id]["output_file"] = res["output_file"]
+            RUNS[run_id]["researcher_result"] = res.get("researcher_result", "")
+            RUNS[run_id]["writer_result"] = res.get("writer_result", "")
+            RUNS[run_id]["output_file"] = res.get("output_file", "")
+            RUNS[run_id]["papers"] = res.get("papers", [])
 
     except Exception as exc:
         with RUN_LOCK:

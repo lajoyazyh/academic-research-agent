@@ -224,6 +224,41 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
 
     final_answer = researcher_agent.run(research_query)
 
+    # ━━━ 自动兜底下载：扫描所有轨迹中的 arXiv ID，批量下载 PDF ━━━
+    print(f"\n📥 [PDF 自动下载] 扫描轨迹中发现的论文 ID 并下载...")
+    scanned_ids = set()
+    download_results = []
+    for step in researcher_agent.traces:
+        if not isinstance(step, dict):
+            continue
+        obs = str(step.get("observation", ""))
+        inp = str(step.get("input", ""))
+        action_input = step.get("action_input", {})
+        content = f"{obs} {inp} {json.dumps(action_input, ensure_ascii=False)}"
+        # 匹配 arXiv ID 模式
+        found_ids = re.findall(r'\b(\d{4}\.\d{4,5})(?:v\d+)?\b', content)
+        scanned_ids.update(found_ids)
+        # 也匹配 Semantic Scholar PaperID
+        ss_ids = re.findall(r'(?:PaperID|paperId)[:\s]*([a-zA-Z0-9]{8,})', content)
+        scanned_ids.update(ss_ids)
+    
+    download_tool = ArxivDownloadPdfTool(papers_dir=papers_dir)
+    for pid in sorted(scanned_ids):
+        if pid in [r.get("id") for r in download_results]:
+            continue
+        result = download_tool.execute(paper_id=pid)
+        download_results.append({"id": pid, "result": result})
+        print(f"  {'✅' if '成功' in result else '❌'} {pid}: {result[:80]}")
+    
+    # 将下载结果保存到元数据文件，供前端参考
+    dl_meta_path = os.path.join(papers_dir, "_download_log.json")
+    try:
+        with open(dl_meta_path, "w", encoding="utf-8") as f:
+            json.dump(download_results, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+    print(f"📥 [PDF 自动下载] 完成，扫描到 {len(scanned_ids)} 个 ID，成功下载 {sum(1 for r in download_results if '成功' in r['result'])} 个 PDF 至 {papers_dir}")
+
     note_path = os.path.join(work_dir, 'research_notes.md')
     if not os.path.exists(note_path):
         fallback_notes = _build_fallback_notes_from_traces(user_topic, list(researcher_agent.traces))
@@ -247,11 +282,19 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
         f.write(f"<!-- outline -->\n{outline}\n\n")
         f.write(final_review)
 
+    # 收集已下载的论文列表
+    downloaded_papers = []
+    if os.path.exists(papers_dir):
+        for fname in sorted(os.listdir(papers_dir)):
+            if fname.endswith(".pdf"):
+                downloaded_papers.append(fname)
+    
     return {
         "researcher_result": notes_content,
         "writer_result": final_review,
         "traces": researcher_agent.traces,
-        "output_file": folder_name
+        "output_file": folder_name,
+        "papers": downloaded_papers
     }
 
 
