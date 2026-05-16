@@ -274,26 +274,32 @@ const app = {
                 infoDiv.style.flex = "1";
                 infoDiv.style.cursor = "pointer";
                 infoDiv.style.minWidth = "0";
-                infoDiv.onclick = () => this.loadHistoryDetail(item.filename);
-                const topicDisplay = item.topic || item.filename;
                 const isSessionId = /^sess_/.test(item.filename);
+                // session 点开 → selectSession；旧 documents 记录 → loadHistoryDetail
+                infoDiv.onclick = isSessionId
+                    ? () => this.selectSession(item.filename)
+                    : () => this.loadHistoryDetail(item.filename);
+                const topicDisplay = item.topic || item.filename;
                 const displayName = (isSessionId && item.topic) ? item.topic : topicDisplay;
+                const sourceTag = isSessionId ? '<span style="font-size:0.65rem;color:var(--accent-color);margin-left:4px;">🔗 会话</span>' : '<span style="font-size:0.65rem;color:var(--text-secondary);margin-left:4px;">📄 综述</span>';
                 infoDiv.innerHTML = `
-                    <strong><i class="fas fa-star" style="color:var(--warning-color);font-size:0.7rem;"></i> ${this.escapeHtml(displayName)}</strong><br>
+                    <strong><i class="fas fa-star" style="color:var(--warning-color);font-size:0.7rem;"></i> ${this.escapeHtml(displayName)}${sourceTag}</strong><br>
                     <span style="color:#666; font-size:0.8rem;">${item.filename} · ${(item.size / 1024).toFixed(1)} KB</span>
                 `;
                 
-                const unstarBtn = document.createElement("i");
-                unstarBtn.className = "fas fa-star";
-                unstarBtn.style.cssText = "color:var(--warning-color);cursor:pointer;padding:4px;font-size:0.8rem;flex-shrink:0;";
-                unstarBtn.title = "取消收藏";
-                unstarBtn.onclick = (e) => {
+                const delBtn = document.createElement("i");
+                delBtn.className = "fas fa-trash";
+                delBtn.style.cssText = "color:var(--error-color);cursor:pointer;padding:4px;font-size:0.8rem;flex-shrink:0;opacity:0.6;";
+                delBtn.title = "从收藏夹移除";
+                delBtn.onmouseenter = () => { delBtn.style.opacity = "1"; };
+                delBtn.onmouseleave = () => { delBtn.style.opacity = "0.6"; };
+                delBtn.onclick = (e) => {
                     e.stopPropagation();
                     this.unfavorite(item.filename);
                 };
                 
                 div.appendChild(infoDiv);
-                div.appendChild(unstarBtn);
+                div.appendChild(delBtn);
                 this.historyList.appendChild(div);
             });
             
