@@ -1,0 +1,109 @@
+import urllib.request
+import os
+from typing import Any
+from core.tools import BaseTool
+
+class ArxivPdfReaderTool(BaseTool):
+    name = "arxiv_pdf_reader"
+    description = "用于根据 arXiv 论文 ID 下载并解析 PDF 全文"
+    parameters = {
+        "paper_id": "论文的 arXiv ID。必填",
+        "read_full": "是否尽量多读，默认 false"
+    }
+
+    def __init__(self, papers_dir: str = None):
+        self.papers_dir = papers_dir
+
+    def execute(self, **kwargs) -> Any:
+        try:
+            import fitz
+        except ImportError:
+            return "缺少依赖 PyMuPDF"
+
+        paper_id = kwargs.get("paper_id")
+        if not paper_id:
+            raise ValueError("缺少纸张ID")
+
+        pdf_url = f"https://arxiv.org/pdf/{paper_id}.pdf"
+        read_full = kwargs.get("read_full", False)
+
+        try:
+            req = urllib.request.Request(pdf_url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req) as response:
+                pdf_bytes = response.read()
+
+            msg = ""
+            if self.papers_dir:
+                os.makedirs(self.papers_dir, exist_ok=True)
+                pdf_path = os.path.join(self.papers_dir, f"{paper_id}.pdf")
+                with open(pdf_path, "wb") as f:
+                    f.write(pdf_bytes)
+                msg += f"✅ 原文已下载并保存至 papers/ 目录\n"
+
+            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+            total_pages = len(doc)
+            if total_pages == 0:
+                return f"论文 {paper_id} 解析失败，PDF 为空。"
+
+            text_blocks = []
+            pages_to_read = list(range(min(5 if read_full else 2, total_pages)))
+            if total_pages - 1 not in pages_to_read:
+                pages_to_read.append(total_pages - 1)
+
+            for p_num in pages_to_read:
+                t = doc.load_page(p_num).get_text("text").strip()
+                if t: text_blocks.append(f"--- 第 {p_num + 1} 页全文 ---\n{t}")
+
+            return msg + f"成功提取部分正文：\n\n" + "\n\n".join(text_blocks)
+        except Exception as e:
+            return f"读取论文 PDF 时发生错误：{str(e)}。"
+
+
+class ArxivDownloadPdfTool(BaseTool):
+    """纯下载工具：只下载 PDF 到 papers/ 目录，不解析正文。轻量、快速、无依赖。"""
+    name = "arxiv_download_pdf"
+    description = "根据论文 ID (或直接给 url) 下载 PDF 原文到 papers/ 目录（只下载不解析，轻量快速）。每篇论文都应该调一次此工具保存 PDF。"
+    parameters = {
+        "paper_id": "论文的 arXiv ID（如 2308.11432），或以 http 开头的直接 PDF 下载链接。"
+    }
+
+    def __init__(self, papers_dir: str = None):
+        self.papers_dir = papers_dir
+
+    def execute(self, **kwargs) -> Any:
+        paper_id = kwargs.get("paper_id")
+        if not paper_id:
+            return "❌ 缺少 paper_id 参数。请传入 arXiv ID（如 2308.11432）或 URL链接。"
+
+        paper_id = paper_id.strip()
+        
+        # 判断是 arXiv ID 还是直接的 URL
+        if paper_id.startswith("http://") or paper_id.startswith("https://"):
+            pdf_url = paper_id
+            # 生成一个简易的文件名
+            import hashlib
+            clean_id = "paper_" + hashlib.md5(pdf_url.encode('utf-8')).hexdigest()[:8]
+        else:
+            # 去版本后缀
+            clean_id = paper_id.split("v")[0] if "v" in paper_id else paper_id
+            pdf_url = f"https://arxiv.org/pdf/{clean_id}.pdf"
+
+        try:
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
+            req = urllib.request.Request(pdf_url, headers=headers)
+            with urllib.request.urlopen(req) as response:
+                pdf_bytes = response.read()
+
+            save_msg = ""
+            if self.papers_dir:
+                os.makedirs(self.papers_dir, exist_ok=True)
+                pdf_path = os.path.join(self.papers_dir, f"{clean_id}.pdf")
+                with open(pdf_path, "wb") as f:
+                    f.write(pdf_bytes)
+                save_msg = f"，已保存至 papers/{clean_id}.pdf"
+
+            return f"✅ PDF 下载成功（{len(pdf_bytes) / 1024:.0f} KB）{save_msg}"
+        except urllib.error.HTTPError as e:
+            return f"❌ 下载失败：HTTP {e.code}。该论文可能没有开放 PDF，或下载链接/arXiv ID 有误。"
+        except Exception as e:
+            return f"❌ 下载失败：{str(e)}"

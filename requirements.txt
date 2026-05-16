@@ -1,0 +1,8 @@
+# Agent 框架的第三方依赖包
+openai>=1.14.0
+python-dotenv==1.0.1
+pytest==8.1.1
+fastapi==0.116.1
+uvicorn==0.35.0
+PyMuPDF==1.26.3
+pydantic>=2.9.2

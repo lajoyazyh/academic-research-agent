@@ -1,0 +1,26 @@
+# Runtime outputs
+documents/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Python cache and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Logs
+*.log
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+*.out
+*.tex
+*.toc
+*.aux
