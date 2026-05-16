@@ -253,18 +253,75 @@ const app = {
             data.forEach(item => {
                 const div = document.createElement("div");
                 div.className = "history-item";
-                div.onclick = () => this.loadHistoryDetail(item.filename);
+                div.style.display = "flex";
+                div.style.justifyContent = "space-between";
+                div.style.alignItems = "center";
                 
-                div.innerHTML = `
+                const infoDiv = document.createElement("div");
+                infoDiv.style.flex = "1";
+                infoDiv.style.cursor = "pointer";
+                infoDiv.onclick = () => this.loadHistoryDetail(item.filename);
+                infoDiv.innerHTML = `
                     <strong>${item.filename}</strong><br>
                     <span style="color:#666; font-size:0.85rem;">${(item.size / 1024).toFixed(1)} KB</span>
                 `;
+                
+                const delBtn = document.createElement("i");
+                delBtn.className = "fas fa-trash";
+                delBtn.style.cssText = "color:var(--error-color);cursor:pointer;padding:4px;font-size:0.8rem;flex-shrink:0;";
+                delBtn.title = "删除此记录";
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    this.deleteHistory(item.filename);
+                };
+                
+                div.appendChild(infoDiv);
+                div.appendChild(delBtn);
                 this.historyList.appendChild(div);
             });
             
         } catch(e) {
             this.historyList.innerHTML = `<div style="color:red; font-size:0.85rem;">加载失败: ${e.message}</div>`;
         }
+    },
+
+    async deleteHistory(filename) {
+        if (!confirm(`确定要删除历史记录 "${filename}" 吗？此操作不可撤销。`)) return;
+        try {
+            const res = await fetch(`/api/agent/history/${filename}`, { method: "DELETE" });
+            if (!res.ok) throw new Error((await res.json()).detail || "删除失败");
+            this.loadHistory();
+            this.setStatus("done", `已删除: ${filename}`);
+        } catch (e) {
+            this.setStatus("error", `删除失败: ${e.message}`);
+        }
+    },
+
+    async deleteAllHistory() {
+        const items = this.historyList.querySelectorAll(".history-item");
+        if (items.length === 0) return;
+        if (!confirm(`确定要清空全部 ${items.length} 条历史记录吗？此操作不可撤销。`)) return;
+        let count = 0;
+        for (const item of items) {
+            const strong = item.querySelector("strong");
+            if (!strong) continue;
+            const filename = strong.textContent.trim();
+            try {
+                await fetch(`/api/agent/history/${filename}`, { method: "DELETE" });
+                count++;
+            } catch (e) { /* skip */ }
+        }
+        this.loadHistory();
+        this.setStatus("done", `已清空 ${count} 条历史记录`);
+    },
+
+    toggleHistoryPanel() {
+        const wrapper = document.getElementById("historyListWrapper");
+        const icon = document.getElementById("historyToggleIcon");
+        if (!wrapper || !icon) return;
+        const collapsed = wrapper.style.display === "none";
+        wrapper.style.display = collapsed ? "block" : "none";
+        icon.className = collapsed ? "fas fa-chevron-up" : "fas fa-chevron-down";
     },
 
     async loadHistoryDetail(filename) {
@@ -417,11 +474,28 @@ const app = {
                 if (s.session_id === this.currentSessionId) {
                     div.classList.add("active-session");
                 }
-                div.innerHTML = `
-                    <span class="session-topic" title="${this.escapeHtml(s.topic)}">${this.escapeHtml(s.topic)}</span>
-                    <span class="session-state state-${s.state}">${s.state_label || s.state}</span>
+                
+                const infoSpan = document.createElement("span");
+                infoSpan.style.cssText = "flex:1;display:flex;justify-content:space-between;align-items:center;cursor:pointer;min-width:0;";
+                infoSpan.innerHTML = `
+                    <span class="session-topic" title="${this.escapeHtml(s.topic)}" style="flex:1;min-width:0;">${this.escapeHtml(s.topic)}</span>
+                    <span class="session-state state-${s.state}" style="flex-shrink:0;">${s.state_label || s.state}</span>
                 `;
-                div.onclick = () => this.selectSession(s.session_id);
+                infoSpan.onclick = () => this.selectSession(s.session_id);
+                
+                const delBtn = document.createElement("i");
+                delBtn.className = "fas fa-trash";
+                delBtn.style.cssText = "color:var(--error-color);cursor:pointer;padding:2px 4px;font-size:0.75rem;flex-shrink:0;margin-left:6px;opacity:0.6;";
+                delBtn.title = "删除会话";
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    this.deleteSession(s.session_id);
+                };
+                delBtn.onmouseenter = () => { delBtn.style.opacity = "1"; };
+                delBtn.onmouseleave = () => { delBtn.style.opacity = "0.6"; };
+                
+                div.appendChild(infoSpan);
+                div.appendChild(delBtn);
                 listDiv.appendChild(div);
             });
         } catch (e) {
@@ -482,6 +556,33 @@ const app = {
         } catch (e) {
             this.setStatus("error", `加载会话失败: ${e.message}`);
         }
+    },
+
+    async deleteSession(sessionId) {
+        if (!confirm(`确定要删除会话 "${sessionId}" 吗？此操作不可撤销。`)) return;
+        try {
+            const res = await fetch(`/api/sessions/${sessionId}`, { method: "DELETE" });
+            if (!res.ok) throw new Error((await res.json()).detail || "删除失败");
+            if (this.currentSessionId === sessionId) {
+                this.currentSessionId = null;
+                this.currentKeywords = [];
+                const infoDiv = document.getElementById("currentSessionInfo");
+                if (infoDiv) infoDiv.style.display = "none";
+            }
+            this.loadSessions();
+            this.setStatus("done", `已删除会话`);
+        } catch (e) {
+            this.setStatus("error", `删除失败: ${e.message}`);
+        }
+    },
+
+    toggleSessionPanel() {
+        const content = document.getElementById("sessionPanelContent");
+        const icon = document.getElementById("sessionToggleIcon");
+        if (!content || !icon) return;
+        const collapsed = content.style.display === "none";
+        content.style.display = collapsed ? "block" : "none";
+        icon.className = collapsed ? "fas fa-chevron-up" : "fas fa-chevron-down";
     },
 
     showNewSessionDialog() {

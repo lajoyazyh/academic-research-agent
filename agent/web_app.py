@@ -159,6 +159,19 @@ def get_history_detail(filename: str) -> Dict[str, Any]:
     }
 
 
+@app.delete("/api/agent/history/{filename}")
+def delete_history(filename: str) -> dict:
+    """删除历史综述记录"""
+    if "/" in filename or "\\" in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    run_dir = DOCS_DIR / filename
+    if not run_dir.exists():
+        raise HTTPException(status_code=404, detail="记录不存在")
+    import shutil
+    shutil.rmtree(run_dir)
+    return {"status": "deleted", "filename": filename}
+
+
 @app.get("/api/agent/document/{filename}/papers/{pdf_name}")
 def get_pdf(filename: str, pdf_name: str) -> FileResponse:
     if "/" in filename or "\\" in filename or "/" in pdf_name or "\\" in pdf_name:

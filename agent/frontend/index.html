@@ -914,29 +914,39 @@
             <!-- 历史记录面板 -->
             <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                    <span style="font-weight: 600; color: var(--text-secondary);">历史综述</span>
-                    <i class="fas fa-sync" style="cursor:pointer; color: var(--accent-color); transition: transform 0.3s;" onclick="app.loadHistory()" title="刷新历史记录"></i>
+                    <span style="font-weight: 600; color: var(--text-secondary); cursor:pointer;" onclick="app.toggleHistoryPanel()">
+                        <i id="historyToggleIcon" class="fas fa-chevron-up" style="font-size:0.75rem;margin-right:4px;"></i>历史综述
+                    </span>
+                    <div style="display:flex;gap:0.4rem;">
+                        <i class="fas fa-trash" style="cursor:pointer; color: var(--error-color); font-size:0.85rem;" onclick="app.deleteAllHistory()" title="清空历史记录"></i>
+                        <i class="fas fa-sync" style="cursor:pointer; color: var(--accent-color);" onclick="app.loadHistory()" title="刷新历史记录"></i>
+                    </div>
                 </div>
-                <div id="historyList" class="history-list">
-                    <!-- 历史文件列表 -->
-                    <div style="color: var(--text-secondary); font-size:0.85rem;">加载中...</div>
+                <div id="historyListWrapper">
+                    <div id="historyList" class="history-list">
+                        <div style="color: var(--text-secondary); font-size:0.85rem;">加载中...</div>
+                    </div>
                 </div>
             </div>
 
             <!-- ━━━ 迭代三：会话管理（Session 列表）━━━ -->
             <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                    <span style="font-weight: 600; color: var(--text-secondary);"><i class="fas fa-folder-tree"></i> 会话管理</span>
+                    <span style="font-weight: 600; color: var(--text-secondary); cursor:pointer;" onclick="app.toggleSessionPanel()">
+                        <i id="sessionToggleIcon" class="fas fa-chevron-up" style="font-size:0.75rem;margin-right:4px;"></i><i class="fas fa-folder-tree"></i> 会话管理
+                    </span>
                     <i class="fas fa-sync" style="cursor:pointer; color: var(--accent-color);" onclick="app.loadSessions()" title="刷新会话列表"></i>
                 </div>
-                <button class="new-session-btn" onclick="app.showNewSessionDialog()">
-                    <i class="fas fa-plus"></i> 新建会话
-                </button>
-                <div id="sessionList" class="session-list">
-                    <div style="color: var(--text-secondary); font-size:0.85rem;">加载中...</div>
-                </div>
-                <div id="currentSessionInfo" style="margin-top: 0.6rem; font-size: 0.8rem; color: var(--accent-color); display: none;">
-                    <i class="fas fa-circle" style="font-size:0.5rem;"></i> 当前会话: <span id="currentSessionId">-</span>
+                <div id="sessionPanelContent">
+                    <button class="new-session-btn" onclick="app.showNewSessionDialog()">
+                        <i class="fas fa-plus"></i> 新建会话
+                    </button>
+                    <div id="sessionList" class="session-list">
+                        <div style="color: var(--text-secondary); font-size:0.85rem;">加载中...</div>
+                    </div>
+                    <div id="currentSessionInfo" style="margin-top: 0.6rem; font-size: 0.8rem; color: var(--accent-color); display: none;">
+                        <i class="fas fa-circle" style="font-size:0.5rem;"></i> 当前会话: <span id="currentSessionId">-</span>
+                    </div>
                 </div>
             </div>
         </div>
