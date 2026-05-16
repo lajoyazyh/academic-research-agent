@@ -50,3 +50,6 @@ build/
 Thumbs.db
 
 */documents/*
+*/sessions/*
+*/logs/*
+*/test_sess/*
