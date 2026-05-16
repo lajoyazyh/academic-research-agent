@@ -330,7 +330,29 @@ def _extract_keywords_from_plan(plan_text: str) -> list[dict]:
     except Exception:
         pass
 
-    # 兜底：返回空数组，让用户手动输入
+    # 兜底：正则提取关键词区域
+    # 找到"关键词拆分"部分中的行
+    kw_section_start = re.search(r'(?:关键词拆分|关键词).*?(?:中英对照)?', plan_text)
+    if kw_section_start:
+        section = plan_text[kw_section_start.start():]
+        # 取后面约 500 字符
+        section = section[:500]
+        # 提取中英文关键词对：中文 / 英文 / 同义词
+        pairs = re.findall(
+            r'[\u4e00-\u9fff\w][\u4e00-\u9fff\w\s\-+]{2,40}\s*/\s*[\w\s\-+]{2,40}(?:\s*/\s*[\u4e00-\u9fff\w\s,\-+]+)?',
+            section
+        )
+        keywords = []
+        for p in pairs[:5]:
+            parts = re.split(r'\s*/\s*', p)
+            keywords.append({
+                "original": parts[0].strip() if len(parts) > 0 else p.strip(),
+                "english": parts[1].strip() if len(parts) > 1 else "",
+                "synonyms": parts[2].strip() if len(parts) > 2 else "",
+            })
+        if keywords:
+            return keywords
+
     return []
 
 
