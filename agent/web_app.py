@@ -1,20 +1,25 @@
 import threading
 import uuid
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from main import run_agent_pipeline
+from main import run_agent_pipeline, run_agent_pipeline_session
+from backend.session_manager import SessionManager, SessionState, STATE_LABELS, VALID_TRANSITIONS
 
 
 BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 DOCS_DIR = BASE_DIR / "documents"
+SESSIONS_DIR = BASE_DIR / "sessions"
+
+# 初始化全局 SessionManager
+session_mgr = SessionManager(str(SESSIONS_DIR))
 
 
 class RunRequest(BaseModel):
@@ -159,6 +164,12 @@ def get_pdf(filename: str, pdf_name: str) -> FileResponse:
     if "/" in filename or "\\" in filename or "/" in pdf_name or "\\" in pdf_name:
         raise HTTPException(status_code=400, detail="Invalid filename")
 
+    # 先检查 Session 目录（迭代三新路径）
+    pdf_path = SESSIONS_DIR / filename / "papers" / pdf_name
+    if pdf_path.exists():
+        return FileResponse(pdf_path, media_type="application/pdf")
+
+    # 再检查旧 Documents 目录（迭代二兼容路径）
     pdf_path = DOCS_DIR / filename / "papers" / pdf_name
     if not pdf_path.exists():
         raise HTTPException(status_code=404, detail="PDF not found")
@@ -281,6 +292,356 @@ def get_run_status(run_id: str) -> RunStatusResponse:
             failure_summary=failure_summary,
             papers=papers,
         )
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  迭代三新增：Session 管理 API
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class CreateSessionRequest(BaseModel):
+    topic: str
+
+class UpdateStateRequest(BaseModel):
+    state: str
+
+class UpdateKeywordsRequest(BaseModel):
+    keywords: list[dict]
+
+class SessionSummary(BaseModel):
+    session_id: str
+    topic: str
+    state: str
+    state_label: str
+    created_at: str
+    updated_at: str
+
+class PaperInfo(BaseModel):
+    paper_id: str
+    title: str = ""
+    authors: str = ""
+    source: str = "agent_search"
+    source_type: str = "arxiv"
+    status: str = "pending"
+    url: str = ""
+    added_at: str = ""
+
+class AddPaperRequest(BaseModel):
+    paper: PaperInfo
+
+
+@app.post("/api/sessions/create")
+def create_session(payload: CreateSessionRequest) -> dict:
+    """创建新 Session"""
+    if not payload.topic.strip():
+        raise HTTPException(status_code=400, detail="主题不能为空")
+    try:
+        return session_mgr.create_session(payload.topic.strip())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Session 创建失败: {str(e)}")
+
+
+@app.get("/api/sessions/list")
+def list_sessions() -> list[dict]:
+    """获取所有 Session 摘要列表"""
+    return session_mgr.list_sessions()
+
+
+@app.get("/api/sessions/state-machine")
+def get_state_machine() -> dict:
+    """获取状态机定义（供前端参考）—— 必须放在 {session_id} 路由之前"""
+    transitions = {}
+    for state, targets in VALID_TRANSITIONS.items():
+        transitions[state.value] = [t.value for t in targets]
+    return {
+        "states": [s.value for s in SessionState],
+        "state_labels": STATE_LABELS,
+        "valid_transitions": transitions,
+    }
+
+
+@app.get("/api/sessions/{session_id}")
+def get_session(session_id: str) -> dict:
+    """获取 Session 完整状态"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    return session
+
+
+@app.delete("/api/sessions/{session_id}")
+def delete_session(session_id: str) -> dict:
+    """删除 Session"""
+    if not session_mgr.delete_session(session_id):
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    return {"status": "deleted", "session_id": session_id}
+
+
+@app.put("/api/sessions/{session_id}/state")
+def update_session_state(session_id: str, payload: UpdateStateRequest) -> dict:
+    """更新 Session 状态（带状态机校验）"""
+    try:
+        return session_mgr.update_session_state(session_id, payload.state)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"状态更新失败: {str(e)}")
+
+
+@app.put("/api/sessions/{session_id}/keywords")
+def save_keywords(session_id: str, payload: UpdateKeywordsRequest) -> dict:
+    """保存确认后的关键词"""
+    try:
+        return session_mgr.save_keywords(session_id, payload.keywords)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ━━━━━ 论文管理（第一波基础接口，完整功能在第二波）━━━━━
+
+@app.get("/api/sessions/{session_id}/papers")
+def get_papers(session_id: str) -> list[dict]:
+    """获取论文列表"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    return session.get("papers", [])
+
+
+@app.delete("/api/sessions/{session_id}/papers/{paper_id}")
+def delete_paper(session_id: str, paper_id: str) -> dict:
+    """删除单篇论文"""
+    try:
+        return session_mgr.delete_paper(session_id, paper_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/sessions/{session_id}/papers/batch-delete")
+def batch_delete_papers(session_id: str, paper_ids: list[str]) -> dict:
+    """批量删除论文"""
+    try:
+        return session_mgr.batch_delete_papers(session_id, paper_ids)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.put("/api/sessions/{session_id}/papers/{paper_id}/status")
+def update_paper_status(session_id: str, paper_id: str, status: str = "pending") -> dict:
+    """更新论文审查状态"""
+    try:
+        return session_mgr.update_paper_status(session_id, paper_id, status)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ━━━━━ 笔记管理（第一波基础接口，完整功能在第三波）━━━━━
+
+@app.get("/api/sessions/{session_id}/notes")
+def get_notes(session_id: str) -> dict:
+    """获取笔记"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    return {"notes": session.get("notes", "")}
+
+
+@app.put("/api/sessions/{session_id}/notes")
+def save_notes(session_id: str, payload: dict) -> dict:
+    """保存笔记编辑"""
+    content = payload.get("content", "")
+    version_note = payload.get("version_note", "")
+    try:
+        return session_mgr.save_notes(session_id, content, version_note)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ━━━━━ 草稿管理（第一波基础接口，完整功能在第三波）━━━━━
+
+@app.get("/api/sessions/{session_id}/draft")
+def get_draft(session_id: str, version: int = None) -> dict:
+    """获取综述草稿"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    draft_content = session_mgr.get_draft(session_id, version)
+    return {
+        "draft": draft_content,
+        "draft_version": session.get("draft_version", 0),
+        "rewrite_count": session.get("rewrite_count", 0),
+    }
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  迭代三新增：Session 驱动的 Agent 执行端点
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class RunPhaseRequest(BaseModel):
+    topic: str
+    start_phase: str = "plan"  # plan / search / write
+    keywords: Optional[list[dict]] = None
+    max_loops: int = 20
+
+
+@app.post("/api/sessions/{session_id}/run/plan")
+def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
+    """【阶段1】执行规划，生成关键词候选项"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    try:
+        result = run_agent_pipeline_session(
+            session_id=session_id,
+            user_topic=payload.topic.strip(),
+            start_phase="plan",
+        )
+        # 保存初始规划到 Session
+        if result.get("initial_plan"):
+            session_mgr.save_initial_plan(session_id, result["initial_plan"])
+        # 保存关键词候选项
+        if result.get("keywords"):
+            session_mgr.save_keywords(session_id, result["keywords"])
+        # 保持 planning 状态（Session 创建时已为此状态，无需再次转移）
+
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"规划阶段执行失败: {str(e)}")
+
+
+def _run_search_in_background(session_id: str, topic: str, keywords: list[dict], max_loops: int) -> None:
+    """后台执行搜索阶段"""
+    try:
+        with RUN_LOCK:
+            RUNS[f"session_{session_id}"] = {
+                "status": "running",
+                "phase": "searching",
+                "traces": [],
+            }
+
+        result = run_agent_pipeline_session(
+            session_id=session_id,
+            user_topic=topic,
+            start_phase="search",
+            user_keywords=keywords,
+            max_loops=max_loops,
+        )
+
+        # 保存论文列表到 Session
+        if result.get("papers"):
+            session_mgr.save_papers_list(session_id, result["papers"])
+        # 保存笔记
+        if result.get("notes"):
+            session_mgr.save_notes(session_id, result["notes"])
+        # 保存轨迹
+        if result.get("traces"):
+            session_mgr.save_traces(session_id, result["traces"])
+        # 更新状态
+        session_mgr.update_session_state(session_id, "search_complete")
+
+        with RUN_LOCK:
+            RUNS[f"session_{session_id}"] = {
+                "status": "done",
+                "phase": "search_complete",
+                "traces": result.get("traces", []),
+                "result": result,
+            }
+
+    except Exception as exc:
+        with RUN_LOCK:
+            RUNS[f"session_{session_id}"] = {
+                "status": "error",
+                "phase": "failed",
+                "error": str(exc),
+            }
+
+
+@app.post("/api/sessions/{session_id}/run/search")
+def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
+    """【阶段2】执行搜索（后台运行，需轮询状态）"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    # 获取用户确认的关键词
+    keywords = payload.keywords or session.get("keywords", [])
+    if not keywords:
+        raise HTTPException(status_code=400, detail="关键词不能为空，请先确认关键词")
+
+    # 更新状态为 searching
+    try:
+        session_mgr.update_session_state(session_id, "searching")
+    except ValueError:
+        pass  # 状态可能已经是 searching
+
+    # 后台执行
+    worker = threading.Thread(
+        target=_run_search_in_background,
+        args=(session_id, payload.topic.strip(), keywords, payload.max_loops),
+        daemon=True,
+    )
+    worker.start()
+
+    return {
+        "session_id": session_id,
+        "status": "searching",
+        "message": "搜索已开始，请通过 GET /api/sessions/{session_id} 轮询状态",
+    }
+
+
+@app.get("/api/sessions/{session_id}/run/status")
+def get_session_run_status(session_id: str) -> dict:
+    """获取 Session Agent 运行状态"""
+    run_key = f"session_{session_id}"
+    with RUN_LOCK:
+        run = RUNS.get(run_key)
+    if not run:
+        return {"status": "unknown", "message": "无正在运行的任务"}
+    return run
+
+
+@app.post("/api/sessions/{session_id}/run/write")
+def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
+    """【阶段3】撰写综述（基于 Session 中的笔记）"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    notes = session.get("notes", "")
+    if not notes.strip():
+        raise HTTPException(status_code=400, detail="笔记为空，请先完成搜索阶段")
+
+    previous_draft = session.get("draft", "")
+    feedback = session_mgr.get_feedback(session_id)
+    rewrite_count = session.get("rewrite_count", 0)
+
+    try:
+        from main import run_write_from_notes
+        result = run_write_from_notes(
+            user_topic=payload.topic.strip(),
+            notes_content=notes,
+            previous_draft=previous_draft,
+            user_feedback=feedback,
+            rewrite_count=rewrite_count,
+        )
+
+        # 保存草稿
+        if result.get("draft"):
+            session_mgr.save_draft(session_id, result["draft"])
+
+        # 更新状态
+        new_state = "reviewing_draft" if result.get("can_rewrite", True) else "complete"
+        try:
+            session_mgr.update_session_state(session_id, new_state)
+        except ValueError:
+            pass
+
+        result["session_id"] = session_id
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"撰写阶段执行失败: {str(e)}")
 
 
 if __name__ == "__main__":

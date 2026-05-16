@@ -23,6 +23,7 @@ const app = {
         this.loadTheme();
         
         this.loadHistory();
+        this.loadSessions();  // 迭代三：加载 Session 列表
     },
     
     // 主题切换
@@ -387,6 +388,332 @@ const app = {
                 resolve(randomResponse);
             }, 500);
         });
+    },
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  迭代三新增：Session 管理
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    currentSessionId: null,
+    currentKeywords: [],
+    currentPlan: "",
+    currentTopic: "",
+
+    async loadSessions() {
+        const listDiv = document.getElementById("sessionList");
+        if (!listDiv) return;
+        listDiv.innerHTML = '<div style="color:var(--text-secondary); font-size:0.85rem;">加载中...</div>';
+        try {
+            const res = await fetch("/api/sessions/list");
+            const sessions = await res.json();
+            if (!sessions || sessions.length === 0) {
+                listDiv.innerHTML = '<div style="color:var(--text-secondary); font-size:0.85rem;">暂无会话</div>';
+                return;
+            }
+            listDiv.innerHTML = "";
+            sessions.forEach(s => {
+                const div = document.createElement("div");
+                div.className = "session-item";
+                if (s.session_id === this.currentSessionId) {
+                    div.classList.add("active-session");
+                }
+                div.innerHTML = `
+                    <span class="session-topic" title="${this.escapeHtml(s.topic)}">${this.escapeHtml(s.topic)}</span>
+                    <span class="session-state state-${s.state}">${s.state_label || s.state}</span>
+                `;
+                div.onclick = () => this.selectSession(s.session_id);
+                listDiv.appendChild(div);
+            });
+        } catch (e) {
+            listDiv.innerHTML = `<div style="color:var(--error-color); font-size:0.85rem;">加载失败: ${e.message}</div>`;
+        }
+    },
+
+    async selectSession(sessionId) {
+        try {
+            const res = await fetch(`/api/sessions/${sessionId}`);
+            const session = await res.json();
+            if (!res.ok) throw new Error(session.detail || "加载失败");
+
+            this.currentSessionId = sessionId;
+            this.currentKeywords = session.keywords || [];
+            this.currentPlan = session.initial_plan || "";
+            this.currentTopic = session.topic || "";
+
+            // 显示当前会话信息
+            const infoDiv = document.getElementById("currentSessionInfo");
+            if (infoDiv) {
+                infoDiv.style.display = "block";
+                document.getElementById("currentSessionId").textContent = session.topic || sessionId;
+            }
+
+            // 更新主题输入框
+            const topicInput = document.getElementById("topic");
+            if (topicInput && session.topic) {
+                topicInput.value = session.topic;
+            }
+
+            // 根据状态恢复界面
+            this.setStatus("done", `已加载会话: ${session.state}`);
+
+            // 加载论文列表
+            if (session.papers && session.papers.length > 0) {
+                this.renderSessionPapers(sessionId, session.papers);
+            }
+
+            // 加载笔记
+            if (session.notes) {
+                this.researchResult.innerHTML = marked.parse(session.notes);
+            }
+
+            // 加载草稿
+            if (session.draft) {
+                this.writerResult.innerHTML = marked.parse(session.draft);
+            }
+
+            // 刷新列表高亮
+            this.loadSessions();
+
+            // 如果是 planning 状态，显示关键词弹窗
+            if (session.state === "planning" && session.keywords && session.keywords.length > 0) {
+                this.showKeywordModal(session.topic, session.keywords);
+            }
+
+        } catch (e) {
+            this.setStatus("error", `加载会话失败: ${e.message}`);
+        }
+    },
+
+    showNewSessionDialog() {
+        document.getElementById("newSessionTopic").value = this.topicInput?.value || "";
+        document.getElementById("newSessionModal").classList.add("active");
+    },
+
+    closeNewSessionDialog() {
+        document.getElementById("newSessionModal").classList.remove("active");
+    },
+
+    async createNewSession() {
+        const topic = document.getElementById("newSessionTopic").value.trim();
+        if (!topic) {
+            alert("请输入研究主题");
+            return;
+        }
+        document.getElementById("newSessionModal").classList.remove("active");
+        await this.createSession(topic);
+    },
+
+    async createSession(topic) {
+        try {
+            const res = await fetch("/api/sessions/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ topic }),
+            });
+            const session = await res.json();
+            if (!res.ok) throw new Error(session.detail || "创建失败");
+
+            this.currentSessionId = session.session_id;
+            this.currentTopic = topic;
+
+            this.setStatus("done", "会话已创建，正在生成规划...");
+            this.loadSessions();
+
+            // 自动执行 Plan 阶段
+            await this.runPlanPhase(session.session_id, topic);
+
+        } catch (e) {
+            this.setStatus("error", `创建会话失败: ${e.message}`);
+        }
+    },
+
+    async runPlanPhase(sessionId, topic) {
+        this.setStatus("running", "正在生成关键词规划...");
+        this.startBtn.disabled = true;
+        this.startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 规划中...';
+
+        try {
+            const res = await fetch(`/api/sessions/${sessionId}/run/plan`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ topic, start_phase: "plan" }),
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.detail || "规划失败");
+
+            this.currentKeywords = result.keywords || [];
+            this.currentPlan = result.initial_plan || "";
+
+            // 显示关键词确认弹窗
+            this.showKeywordModal(topic, this.currentKeywords);
+            this.setStatus("running", "请确认关键词方案");
+            this.resetBtn();
+
+        } catch (e) {
+            this.setStatus("error", `规划失败: ${e.message}`);
+            this.resetBtn();
+        }
+    },
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  迭代三新增：关键词确认
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    showKeywordModal(topic, keywords) {
+        document.getElementById("kwTopic").textContent = topic;
+        const listDiv = document.getElementById("keywordList");
+        listDiv.innerHTML = "";
+
+        if (!keywords || keywords.length === 0) {
+            this.addKeywordRow();
+        } else {
+            keywords.forEach(kw => this.addKeywordRow(kw));
+        }
+
+        document.getElementById("keywordModal").classList.add("active");
+    },
+
+    addKeywordRow(kwData = null) {
+        const listDiv = document.getElementById("keywordList");
+        const row = document.createElement("div");
+        row.className = "keyword-row";
+
+        const idx = listDiv.children.length + 1;
+        row.innerHTML = `
+            <span style="font-size:0.8rem;color:var(--text-secondary);min-width:60px;">关键词${idx}</span>
+            <input type="text" class="kw-original" placeholder="中文原词" value="${this.escapeHtml(kwData?.original || '')}">
+            <input type="text" class="kw-english" placeholder="英文学术语" value="${this.escapeHtml(kwData?.english || '')}">
+            <input type="text" class="kw-synonyms" placeholder="同义词（逗号分隔）" value="${this.escapeHtml(kwData?.synonyms || '')}">
+            <button class="kw-del-btn" onclick="this.parentElement.remove()" title="删除">✕</button>
+        `;
+        listDiv.appendChild(row);
+    },
+
+    collectKeywords() {
+        const rows = document.querySelectorAll("#keywordList .keyword-row");
+        const keywords = [];
+        rows.forEach(row => {
+            const orig = row.querySelector(".kw-original")?.value?.trim() || "";
+            const eng = row.querySelector(".kw-english")?.value?.trim() || "";
+            const syns = row.querySelector(".kw-synonyms")?.value?.trim() || "";
+            if (orig || eng) {
+                keywords.push({ original: orig, english: eng, synonyms: syns });
+            }
+        });
+        return keywords;
+    },
+
+    async confirmKeywords() {
+        const keywords = this.collectKeywords();
+        if (keywords.length === 0) {
+            alert("请至少添加一个关键词");
+            return;
+        }
+
+        document.getElementById("keywordModal").classList.remove("active");
+
+        if (!this.currentSessionId) {
+            alert("没有活跃的会话");
+            return;
+        }
+
+        this.setStatus("running", "正在保存关键词...");
+
+        try {
+            // 先保存关键词
+            await fetch(`/api/sessions/${this.currentSessionId}/keywords`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ keywords }),
+            });
+
+            // 更新状态为 plan_confirmed
+            await fetch(`/api/sessions/${this.currentSessionId}/state`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ state: "plan_confirmed" }),
+            });
+
+            this.currentKeywords = keywords;
+            this.setStatus("done", "关键词已确认，请点击「开始搜索」继续");
+            this.startBtn.disabled = false;
+            this.startBtn.innerHTML = '<i class="fas fa-search"></i> 开始搜索';
+            this.startBtn.onclick = () => this.startSearchPhase();
+
+            this.loadSessions();
+
+        } catch (e) {
+            this.setStatus("error", `保存关键词失败: ${e.message}`);
+        }
+    },
+
+    async replanKeywords() {
+        if (!this.currentSessionId || !this.currentTopic) return;
+
+        document.getElementById("keywordModal").classList.remove("active");
+        this.setStatus("running", "正在重新规划...");
+
+        try {
+            await fetch(`/api/sessions/${this.currentSessionId}/state`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ state: "planning" }),
+            });
+            await this.runPlanPhase(this.currentSessionId, this.currentTopic);
+        } catch (e) {
+            this.setStatus("error", `重新规划失败: ${e.message}`);
+        }
+    },
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //  迭代三新增：搜索阶段（在关键词确认后触发）
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    async startSearchPhase() {
+        if (!this.currentSessionId) {
+            alert("请先创建或选择一个会话");
+            return;
+        }
+
+        const topic = this.topicInput.value.trim();
+        if (!topic) {
+            alert("请输入研究主题");
+            return;
+        }
+
+        // 恢复原有的启动逻辑
+        this.startBtn.onclick = () => this.startAgent();
+        this.startAgent();
+    },
+
+    renderSessionPapers(sessionId, papers) {
+        const listDiv = document.getElementById("papersList");
+        if (!listDiv) return;
+        if (!papers || papers.length === 0) {
+            listDiv.innerHTML = '<div style="color: var(--text-secondary); text-align: center; margin-top: 2rem;">暂无论文</div>';
+            return;
+        }
+        listDiv.innerHTML = papers.map(p => `
+            <div style="display: flex; justify-content: space-between; padding: 0.8rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--card-background); align-items: center;">
+                <div>
+                    <div style="font-weight:500;color:var(--text-color);">${this.escapeHtml(p.title || p.paper_id)}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary);">
+                        来源: ${p.source || 'agent_search'}
+                        <span style="margin-left:8px;padding:1px 6px;border-radius:4px;font-size:0.7rem;background:${p.status==='accepted'?'rgba(16,185,129,0.2)':p.status==='rejected'?'rgba(239,68,68,0.2)':'rgba(148,163,184,0.2)'};color:${p.status==='accepted'?'#6ee7b7':p.status==='rejected'?'#fca5a5':'#cbd5e1'}">${p.status || 'pending'}</span>
+                    </div>
+                </div>
+                <a href="/api/agent/document/${sessionId}/papers/${p.paper_id}.pdf" target="_blank" style="color:var(--primary-color);text-decoration:none;padding:0.3rem 0.6rem;border:1px solid var(--primary-color);border-radius:6px;font-size:0.8rem;">
+                    <i class="fas fa-external-link-alt"></i> PDF
+                </a>
+            </div>
+        `).join('');
+    },
+
+    escapeHtml(str) {
+        if (!str) return "";
+        const div = document.createElement("div");
+        div.textContent = str;
+        return div.innerHTML;
     }
 };
 
