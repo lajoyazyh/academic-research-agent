@@ -938,6 +938,10 @@ const app = {
         document.getElementById("keywordModal").classList.add("active");
     },
 
+    closeKeywordModal() {
+        document.getElementById("keywordModal").classList.remove("active");
+    },
+
     addKeywordRow(kwData = null) {
         const listDiv = document.getElementById("keywordList");
         const row = document.createElement("div");
