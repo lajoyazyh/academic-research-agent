@@ -565,7 +565,7 @@ def run_write_from_notes(
     previous_draft: str = "",
     user_feedback: str = "",
     rewrite_count: int = 0,
-    max_rewrites: int = 2,
+    max_rewrites: int = 100,
 ) -> dict:
     """
     【阶段 3：撰写综述】基于笔记内容生成/重写综述初稿。

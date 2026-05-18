@@ -533,6 +533,56 @@ const app = {
         }
     },
 
+    async addCustomPaper() {
+        const input = document.getElementById("customPaperInput");
+        const val = input.value.trim();
+        if (!val) {
+            alert("请输入 arXiv ID 或 PDF URL");
+            return;
+        }
+        if (!this.currentSessionId) {
+            alert("当前没有活跃的会话，请先创建会话！");
+            return;
+        }
+
+        const btn = document.getElementById("addCustomPaperBtn");
+        const originHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在下载解析...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`/api/sessions/${this.currentSessionId}/papers/custom`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ paper_id: val })
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                alert(`添加失败：${data.detail || '未知错误'}`);
+                return;
+            }
+
+            if (data.exists) {
+                alert("此论文已存在于列表中。");
+            } else {
+                alert("✅ 追加新论文成功并更新了笔记，您可以随时在研究笔记下方生成新的综述！");
+            }
+            
+            input.value = "";
+            this.switchTab("research"); // 切换到笔记而不是直接切到综述
+            
+            // 刷新当前会话 UI（包括笔记、论文列表和综述草稿）
+            await this.selectSession(this.currentSessionId);
+            
+        } catch (e) {
+            alert("网络错误：" + e.message);
+        } finally {
+            btn.innerHTML = originHTML;
+            btn.disabled = false;
+        }
+    },
+
     async loadSessions() {
         const listDiv = document.getElementById("sessionList");
         if (!listDiv) return;

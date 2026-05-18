@@ -28,8 +28,13 @@ class ArxivPdfReaderTool(BaseTool):
         read_full = kwargs.get("read_full", False)
 
         try:
+            import ssl
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+
             req = urllib.request.Request(pdf_url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req) as response:
+            with urllib.request.urlopen(req, context=ctx) as response:
                 pdf_bytes = response.read()
 
             msg = ""
@@ -89,9 +94,14 @@ class ArxivDownloadPdfTool(BaseTool):
             pdf_url = f"https://arxiv.org/pdf/{clean_id}.pdf"
 
         try:
+            import ssl
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+
             headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
             req = urllib.request.Request(pdf_url, headers=headers)
-            with urllib.request.urlopen(req) as response:
+            with urllib.request.urlopen(req, context=ctx) as response:
                 pdf_bytes = response.read()
 
             save_msg = ""
