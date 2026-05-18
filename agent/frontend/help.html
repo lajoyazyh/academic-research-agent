@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>帮助与指南 - 智能学术助手</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a, #1a1f35);
+            color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 2rem;
+        }
+        h1 {
+            text-align: center;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+        .card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148,163,184,0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>📖 帮助与指南</h1>
+        <div class="card">
+            <h2>系统架构</h2>
+            <p>本系统基于多 Agent 协作：<strong>研究者 Agent</strong> 负责自动搜索、下载和整理论文，生成研究笔记；<strong>撰写 Agent</strong> 基于笔记生成结构化学术综述。</p>
+        </div>
+        <div class="card">
+            <h2>使用方法</h2>
+            <ul>
+                <li>在<strong>研究控制台</strong>创建新会话，输入主题，选择交互式/快速模式。</li>
+                <li>交互模式下，系统会生成关键词方案供您确认，然后逐步搜索文献，最后生成综述。</li>
+                <li>快速模式一键完成全部过程，结果自动保存并加入收藏夹。</li>
+                <li>在<strong>历史记录</strong>页面查看以往综述和论文PDF，可加入收藏。</li>
+                <li>使用<strong>AI 对话助手</strong>与文献知识问答。</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h2>数据来源</h2>
+            <p>系统集成了 arXiv、Semantic Scholar、Crossref、OpenAlex 等多个学术数据库，根据领域自动选择最佳来源。</p>
+        </div>
+        <div class="card">
+            <h2>常见问题</h2>
+            <p><strong>Q: 为什么没有搜到论文？</strong><br>A: 尝试使用英文关键词，或调整研究主题的泛化程度。</p>
+        </div>
+    </div>
+</body>
+</html>

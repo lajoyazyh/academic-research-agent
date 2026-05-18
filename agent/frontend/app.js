@@ -25,6 +25,81 @@ const app = {
         this.loadSessions();  // 迭代三：加载 Session 列表
     },
 
+    initConsole (){
+        app.currentPage = 'console';
+        this.startBtn = document.getElementById("startBtn");
+        this.statusBadge = document.getElementById("statusBadge");
+        this.historyList = document.getElementById("historyList");
+
+        this.tracesContainer = document.getElementById("tracesContainer");
+        this.researchResult = document.getElementById("researchResult");
+        this.writerResult = document.getElementById("writerResult");
+        this.outputPath = document.getElementById("outputPath");
+        this.failureSummaryDiv = document.getElementById("failureSummary");
+
+        this.chatInput = document.getElementById("chatInput");
+        this.chatSendBtn = document.getElementById("chatSendBtn");
+        this.chatMessagesContainer = document.getElementById("chatMessages");
+
+        this.loadTheme();
+        this.loadFavorites();
+        this.loadSessions();
+
+        // 绑定智能按钮行为（根据当前是否有会话决定点击行为）
+        if (this.startBtn) {
+            this.startBtn.onclick = () => this.smartAction();
+        }
+        // 对话框发送事件
+        if (this.chatSendBtn) {
+            this.chatSendBtn.onclick = () => this.sendChatMessage();
+        }
+        if (this.chatInput) {
+            this.chatInput.onkeypress = (e) => {
+                if (e.key === 'Enter') this.sendChatMessage();
+            };
+        }
+        // 默认显示控制台的初始内容
+        this.setStatus("idle", "就绪");
+        this.switchTab('traces');
+
+        // 在 initConsole 末尾添加
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('sessionId');
+        const newTopic = urlParams.get('newTopic');
+        if (sessionId) {
+            // 自动加载指定会话
+            this.selectSession(sessionId);
+        } else if (newTopic) {
+            // 如果是新建会话请求，打开新建会话弹窗并预填主题
+            this.currentTopic = newTopic;
+            this.showNewSessionDialog();
+        }
+    },
+
+    initHistoryPage() {
+        app.currentPage = 'history';
+        // 加载收藏夹
+        this.loadFavorites();
+        // 加载会话列表
+        this.loadSessionsForHistory();
+    },
+
+    initChatPage() {
+        app.currentPage = 'chat';
+        this.chatInput = document.getElementById("chatInput");
+        this.chatSendBtn = document.getElementById("chatSendBtn");
+        this.chatMessagesContainer = document.getElementById("chatMessages");
+
+        if (this.chatSendBtn) {
+            this.chatSendBtn.onclick = () => this.sendChatMessage();
+        }
+        if (this.chatInput) {
+            this.chatInput.onkeypress = (e) => {
+                if (e.key === 'Enter') this.sendChatMessage();
+            };
+        }
+    },
+
     // ━━━ 智能动作按钮：根据上下文自动切换行为 ━━━
     smartAction() {
         if (this.currentSessionId) {
@@ -252,59 +327,138 @@ const app = {
     },
 
     async loadFavorites() {
-        this.historyList.innerHTML = '<div style="color:#999; font-size:0.85rem;">加载中...</div>';
-        try {
-            const res = await fetch("/api/favorites");
-            const data = await res.json();
-            
-            if (!data || data.length === 0) {
-                this.historyList.innerHTML = '<div style="color:#999; font-size:0.85rem;">收藏夹为空 — 浏览综述时点击 ⭐ 即可收藏</div>';
-                return;
-            }
-            
-            this.historyList.innerHTML = "";
-            data.forEach(item => {
-                const div = document.createElement("div");
-                div.className = "history-item";
-                div.style.display = "flex";
-                div.style.justifyContent = "space-between";
-                div.style.alignItems = "center";
-                
-                const infoDiv = document.createElement("div");
-                infoDiv.style.flex = "1";
-                infoDiv.style.cursor = "pointer";
-                infoDiv.style.minWidth = "0";
-                const isSessionId = /^sess_/.test(item.filename);
-                // session 点开 → selectSession；旧 documents 记录 → loadHistoryDetail
-                infoDiv.onclick = isSessionId
-                    ? () => this.selectSession(item.filename)
-                    : () => this.loadHistoryDetail(item.filename);
-                const topicDisplay = item.topic || item.filename;
-                const displayName = (isSessionId && item.topic) ? item.topic : topicDisplay;
-                const sourceTag = isSessionId ? '<span style="font-size:0.65rem;color:var(--accent-color);margin-left:4px;">🔗 会话</span>' : '<span style="font-size:0.65rem;color:var(--text-secondary);margin-left:4px;">📄 综述</span>';
-                infoDiv.innerHTML = `
-                    <strong><i class="fas fa-star" style="color:var(--warning-color);font-size:0.7rem;"></i> ${this.escapeHtml(displayName)}${sourceTag}</strong><br>
-                    <span style="color:#666; font-size:0.8rem;">${item.filename} · ${(item.size / 1024).toFixed(1)} KB</span>
-                `;
-                
-                const delBtn = document.createElement("i");
-                delBtn.className = "fas fa-trash";
-                delBtn.style.cssText = "color:var(--error-color);cursor:pointer;padding:4px;font-size:0.8rem;flex-shrink:0;opacity:0.6;";
-                delBtn.title = "从收藏夹移除";
-                delBtn.onmouseenter = () => { delBtn.style.opacity = "1"; };
-                delBtn.onmouseleave = () => { delBtn.style.opacity = "0.6"; };
-                delBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    this.unfavorite(item.filename);
-                };
-                
-                div.appendChild(infoDiv);
-                div.appendChild(delBtn);
-                this.historyList.appendChild(div);
+        const listDiv = document.getElementById("historyList");
+        if (!listDiv) return;
+        listDiv.innerHTML = '<div style="color:var(--text-secondary);font-size:0.85rem;">加载收藏夹...</div>';
+
+        fetch("/api/favorites/list")
+            .then(res => res.json())
+            .then(data => {
+                // 兼容后端可能返回对象或数组
+                const favorites = Array.isArray(data) ? data : (data.favorites || []);
+
+                if (favorites.length === 0) {
+                    listDiv.innerHTML = '<div style="color:var(--text-secondary);font-size:0.85rem;">暂无收藏</div>';
+                    return;
+                }
+
+                listDiv.innerHTML = "";
+                favorites.forEach(f => {
+                    const div = document.createElement("div");
+                    div.className = "history-item";
+                    const safeFilename = f.filename.replace(/'/g, "\\'");
+                    const fnName = app.currentPage === 'history'
+                        ? 'loadHistoryDetailHistory'
+                        : 'loadHistoryDetailConsole';
+                    div.innerHTML = `
+                        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                            ${app.escapeHtml(f.filename)}
+                        </span>
+                        <button class="btn-fav" data-filename="${safeFilename}" 
+                            onclick="event.stopPropagation(); app.removeFavorite('${safeFilename}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    `;
+                    div.title = "点击查看详情";
+                    div.addEventListener('click', () => {
+                        app[fnName](f.filename);
+                    });
+                    listDiv.appendChild(div);
+                });
+            })
+            .catch(e => {
+                listDiv.innerHTML = `<div style="color:var(--error-color);">加载失败: ${e.message}</div>`;
             });
-            
-        } catch(e) {
-            this.historyList.innerHTML = `<div style="color:red; font-size:0.85rem;">加载失败: ${e.message}</div>`;
+    },
+
+    async loadHistoryDetailConsole(filename) {
+        // 确保状态显示元素存在
+        const statusBadge = document.getElementById("statusBadge");
+        if (statusBadge) {
+            statusBadge.textContent = `加载中...`;
+            statusBadge.className = "badge running";
+        }
+
+        try {
+            const res = await fetch(`/api/agent/history/${filename}`);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail);
+
+            // 控制台专用：Traces 区域显示占位
+            const traces = document.getElementById("tracesContainer");
+            if (traces) {
+                traces.innerHTML = '<div style="color:#666;text-align:center;margin-top:2rem;">历史记录无 Trace</div>';
+            }
+
+            // 研究者结果
+            const researchDiv = document.getElementById("researchResult");
+            if (researchDiv) {
+                if (data.researcher_result) {
+                    researchDiv.innerHTML = marked.parse(data.researcher_result);
+                } else {
+                    researchDiv.innerHTML = '<div style="color:#666;text-align:center;margin-top:2rem;">无单独摘要</div>';
+                }
+            }
+
+            // 撰写结果
+            const writerDiv = document.getElementById("writerResult");
+            if (writerDiv) {
+                writerDiv.innerHTML = marked.parse(data.writer_result || data.content);
+            }
+
+            // 输出路径显示
+            const pathSpan = document.getElementById("outputPath");
+            if (pathSpan) pathSpan.textContent = filename;
+
+            // 论文 PDF 渲染
+            app.renderPapers(filename, data.papers || []);
+
+            // 显示收藏按钮
+            app.showFavoriteBtn(filename);
+
+            // 切换标签到撰写结果
+            if (typeof app.switchTab === 'function') {
+                app.switchTab('writer');
+            }
+
+            if (statusBadge) {
+                statusBadge.textContent = "加载完成";
+                statusBadge.className = "badge idle";
+            }
+        } catch (e) {
+            if (statusBadge) {
+                statusBadge.textContent = "加载失败";
+                statusBadge.className = "badge error";
+            }
+            alert("加载详情失败：" + e.message);
+        }
+    },
+
+    async loadHistoryDetailHistory(filename) {
+        const detailView = document.getElementById("detailView");
+        const detailTitle = document.getElementById("detailTitle");
+        const detailContent = document.getElementById("detailContent");
+
+        if (!detailView || !detailContent) return;
+
+        // 显示加载状态
+        detailView.style.display = "block";
+        detailContent.innerHTML = '<div style="color:var(--text-secondary);text-align:center;padding:2rem;">加载中...</div>';
+
+        try {
+            const res = await fetch(`/api/agent/history/${filename}`);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail);
+
+            if (detailTitle) detailTitle.textContent = `综述详情: ${filename}`;
+            detailContent.innerHTML = marked.parse(data.content);
+
+            // 论文 PDF 列表
+            app.renderPapers(filename, data.papers || []);
+
+            // 不需要显示收藏按钮（历史页暂时不提供按钮或可复用，可忽略）
+        } catch (e) {
+            detailContent.innerHTML = `<div style="color:var(--error-color);">加载失败: ${e.message}</div>`;
         }
     },
 
@@ -371,41 +525,6 @@ const app = {
         const collapsed = wrapper.style.display === "none";
         wrapper.style.display = collapsed ? "block" : "none";
         icon.className = collapsed ? "fas fa-chevron-up" : "fas fa-chevron-down";
-    },
-
-    async loadHistoryDetail(filename) {
-        this.setStatus("running", `正在加载 ${filename}...`);
-        try {
-            const res = await fetch(`/api/agent/history/${filename}`);
-            const data = await res.json();
-            
-            if (!res.ok) throw new Error(data.detail);
-            
-            this.tracesContainer.innerHTML = '<div style="color: #666; text-align: center; margin-top: 2rem;">旧记录，无 Trace</div>';
-            
-            if (data.researcher_result) {
-                this.researchResult.innerHTML = marked.parse(data.researcher_result);
-            } else {
-                this.researchResult.innerHTML = '<div style="color: #666; text-align: center; margin-top: 2rem;">旧记录，无单独摘要</div>';
-            }
-            
-            if (data.writer_result) {
-                this.writerResult.innerHTML = marked.parse(data.writer_result);
-            } else {
-                this.writerResult.innerHTML = marked.parse(data.content);
-            }
-            
-            this.renderPapers(filename, data.papers || []);
-            this.outputPath.textContent = filename;
-            
-            // 显示收藏按钮
-            this.showFavoriteBtn(filename);
-
-            this.setStatus("done", "成功加载综述");
-            this.switchTab('writer');
-        } catch(e) {
-            this.setStatus("error", `加载详情失败: ${e.message}`);
-        }
     },
 
     renderPapers(filename, papers) {
@@ -642,6 +761,42 @@ const app = {
         }
     },
 
+    // 专门为历史页面定制的会话列表加载（可点击跳转至控制台查看）
+    async loadSessionsForHistory() {
+        const listDiv = document.getElementById("sessionList");
+        if (!listDiv) return;
+        listDiv.innerHTML = '<div style="color:var(--text-secondary); font-size:0.85rem;">加载中...</div>';
+
+        fetch("/api/sessions/list")
+            .then(res => res.json())
+            .then(sessions => {
+                if (!sessions || sessions.length === 0) {
+                    listDiv.innerHTML = '<div style="color:var(--text-secondary); font-size:0.85rem;">暂无会话</div>';
+                    return;
+                }
+                listDiv.innerHTML = "";
+                sessions.forEach(s => {
+                    const div = document.createElement("div");
+                    div.className = "session-item";
+                    div.innerHTML = `
+                        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            ${this.escapeHtml(s.topic || s.session_id)}
+                        </span>
+                        <span class="session-state state-${s.state}">${s.state_label || s.state}</span>
+                    `;
+                    div.title = "点击跳转到控制台查看详情";
+                    div.onclick = () => {
+                        // 跳转到控制台并带上 sessionId
+                        window.location.href = `/app/console?sessionId=${s.session_id}`;
+                    };
+                    listDiv.appendChild(div);
+                });
+            })
+            .catch(e => {
+                listDiv.innerHTML = `<div style="color:var(--error-color); font-size:0.85rem;">加载失败: ${e.message}</div>`;
+            });
+    },
+
     async selectSession(sessionId) {
         try {
             const res = await fetch(`/api/sessions/${sessionId}`);
@@ -779,6 +934,13 @@ const app = {
         } else {
             await this.createSession(topic);
         }
+    },
+
+    // 新建会话并跳转到控制台（历史页专用）
+    createNewSessionAndGo() {
+        const topic = prompt("请输入研究主题：");
+        if (!topic) return;
+        window.location.href = "/app/console?newTopic=" + encodeURIComponent(topic);
     },
 
     // ━━━ 快速模式：立即创建 Session → 后台执行 → 结果填入 Session → 清理临时文件 ━━━
@@ -1318,6 +1480,21 @@ const app = {
     }
 };
 
+/*
 window.onload = () => {
     app.init();
 };
+ */
+
+// 移除原有的 window.onload 自动执行，改为按需初始化
+document.addEventListener('DOMContentLoaded', () => {
+    const page = document.body.getAttribute('data-page');
+    if (page === 'console') {
+        app.initConsole();
+    } else if (page === 'history') {
+        app.initHistoryPage();
+        app.loadFavorites();
+    } else if (page === 'chat') {
+        app.initChatPage();
+    }
+});

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>历史记录与收藏 - 智能学术助手</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">  <!-- 你的公共样式 -->
+    <style>
+        :root {
+            --background-color: #0f172a;
+            --text-color: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --card-background: rgba(30, 41, 59, 0.6);
+            --border-color: rgba(148, 163, 184, 0.2);
+            --primary-color: #6366f1;
+            --secondary-color: #ec4899;
+        }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f35 100%);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .history-page-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 {
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card {
+            background: var(--card-background);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+        .list-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .history-item, .session-item {
+            padding: 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 0.6rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-item:hover, .session-item:hover {
+            border-color: var(--primary-color);
+            background: rgba(99,102,241,0.1);
+        }
+        .session-state {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+        /* 状态样式与之前一致 */
+        .state-planning { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+        .state-plan_confirmed { background: rgba(6,182,212,0.2); color: #67e8f9; }
+        .state-searching { background: rgba(245,158,11,0.2); color: #fcd34d; }
+        .state-search_complete { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+        .state-reviewing_notes { background: rgba(236,72,153,0.2); color: #f9a8d4; }
+        .state-writing { background: rgba(245,158,11,0.2); color: #fcd34d; }
+        .state-reviewing_draft { background: rgba(139,92,246,0.2); color: #c4b5fd; }
+        .state-complete { background: rgba(16,185,129,0.25); color: #34d399; }
+        button {
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            border: none;
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        button:hover { transform: translateY(-1px); }
+        .detail-view {
+            display: none;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body data-page="history">
+    <div class="history-page-container">
+        <h1><i class="fas fa-history"></i> 历史记录与收藏夹</h1>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+            这里展示你收藏的综述报告和所有正在进行或已完成的研究会话。
+        </p>
+
+        <div class="two-col">
+            <!-- 收藏夹列 -->
+            <div class="card">
+                <h2><i class="fas fa-star" style="color:#f59e0b;"></i> 收藏的综述</h2>
+                <div id="historyList" class="list-container">
+                    <div style="color: var(--text-secondary); font-size:0.85rem;">加载中...</div>
+                </div>
+            </div>
+
+            <!-- 会话管理列 -->
+            <div class="card">
+                <h2><i class="fas fa-folder-tree"></i> 研究会话</h2>
+                <button onclick="app.createNewSessionAndGo()" style="margin-bottom:0.8rem; width:100%;">
+                    <i class="fas fa-plus"></i> 新建会话
+                </button>
+                <div id="sessionList" class="list-container">
+                    <div style="color: var(--text-secondary); font-size:0.85rem;">加载中...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 综述详情弹窗 -->
+        <div class="card detail-view" id="detailView">
+            <h2 id="detailTitle">综述详情</h2>
+            <div id="detailContent" style="max-height: 600px; overflow-y: auto; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface-light);"></div>
+            <div id="papersList" style="margin-top: 1rem;"></div>
+        </div>
+    </div>
+
+    <!-- 加载 markdown 解析库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 你的 app.js 文件路径 -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

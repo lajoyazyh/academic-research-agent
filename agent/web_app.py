@@ -87,14 +87,41 @@ app.add_middleware(
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
-
+# 原有路由调整（替换 / 和新增）
 @app.get("/")
-def index() -> HTMLResponse:
+def home():
+    home_file = FRONTEND_DIR / "home.html"
+    if not home_file.exists():
+        raise HTTPException(status_code=404, detail="Home page not found")
+    return HTMLResponse(home_file.read_text(encoding="utf-8"))
+
+@app.get("/app/console")
+def console():
     index_file = FRONTEND_DIR / "index.html"
     if not index_file.exists():
-        raise HTTPException(status_code=404, detail="frontend/index.html not found")
+        raise HTTPException(status_code=404, detail="Console page not found")
     return HTMLResponse(index_file.read_text(encoding="utf-8"))
 
+@app.get("/app/history")
+def history_page():
+    hist_file = FRONTEND_DIR / "history.html"
+    if not hist_file.exists():
+        raise HTTPException(status_code=404, detail="History page not found")
+    return HTMLResponse(hist_file.read_text(encoding="utf-8"))
+
+@app.get("/app/chat")
+def chat_page():
+    chat_file = FRONTEND_DIR / "chat.html"
+    if not chat_file.exists():
+        raise HTTPException(status_code=404, detail="Chat page not found")
+    return HTMLResponse(chat_file.read_text(encoding="utf-8"))
+
+@app.get("/app/help")
+def help_page():
+    help_file = FRONTEND_DIR / "help.html"
+    if not help_file.exists():
+        raise HTTPException(status_code=404, detail="Help page not found")
+    return HTMLResponse(help_file.read_text(encoding="utf-8"))
 
 @app.get("/api/health")
 def health() -> Dict[str, str]:
