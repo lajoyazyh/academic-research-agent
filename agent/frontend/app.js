@@ -678,7 +678,7 @@ const app = {
 
             const data = await res.json();
             if (!res.ok) {
-                alert(`添加失败：${data.detail || '未知错误'}`);
+                alert(`追加论文失败，请检查论文编号或链接是否正确`);
                 return;
             }
 
@@ -1317,6 +1317,8 @@ const app = {
                     this.setStatus("running", `搜索中... (${pollCount * 3}s) — 轨迹实时更新中`);
                 } else {
                     this.loadSessions();
+                    clearInterval(this.pollTimer);
+                    this.pollTimer = null;
                 }
             };
 

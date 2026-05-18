@@ -18,9 +18,9 @@ class ClearNoteTool(BaseTool):
 
 class AppendNoteTool(BaseTool):
     name = "append_note"
-    description = "用于在调研过程中记录单篇论文的深度阅读笔记。"
+    description = "用于在调研过程中记录单篇论文的深度阅读笔记。请务必将笔记写得非常详尽充实（300-500 字），严格使用'论文标题：'、'作者：'、'摘要：'、'关键发现：'、'方法：'、'结论：' 这样的结构化排版。"
     parameters = {
-        "content": "你要记录的详细笔记内容。必须要详细。"
+        "content": "严格结构化的Markdown格式笔记，必须包含 论文标题、作者、摘要、关键发现(列表)、方法、结论 几大部分，字数300-500左右。"
     }
 
     def __init__(self, work_dir: str):
