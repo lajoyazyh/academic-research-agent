@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 对话助手 - 智能学术助手</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --background-color: #0f172a;
+            --surface-light: rgba(51, 65, 85, 0.5);
+            --text-color: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border-color: rgba(148, 163, 184, 0.2);
+            --primary-color: #6366f1;
+            --secondary-color: #ec4899;
+        }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f35 100%);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .chat-header {
+            text-align: center;
+            padding: 1rem;
+        }
+        .chat-header h1 {
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2rem;
+        }
+        #chatMessages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+        }
+        .message {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .message-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+        .message-avatar.user {
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+        }
+        .message-avatar.agent {
+            background: linear-gradient(135deg, #06b6d4, #6366f1);
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .message.user .message-content {
+            background: rgba(99, 102, 241, 0.2);
+            margin-left: auto;
+        }
+        .message.agent .message-content {
+            background: rgba(30, 41, 59, 0.6);
+        }
+        .input-area {
+            display: flex;
+            gap: 0.8rem;
+        }
+        #chatInput {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--surface-light);
+            color: var(--text-color);
+        }
+        button {
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            border: none;
+            color: white;
+            padding: 0 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body data-page="chat">
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1><i class="fas fa-robot"></i> AI 学术助手</h1>
+            <p style="color: var(--text-secondary);">随时向我提问研究相关的问题</p>
+        </div>
+        <div id="chatMessages"></div>
+        <div class="input-area">
+            <input type="text" id="chatInput" placeholder="输入你的问题..." />
+            <button id="chatSendBtn"><i class="fas fa-paper-plane"></i> 发送</button>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
