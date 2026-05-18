@@ -456,12 +456,9 @@ def run_search_only(
     if session_papers_dir:
         papers_dir = session_papers_dir
         os.makedirs(papers_dir, exist_ok=True)
-        # work_dir 是 sessions/{id}/，工具（clear_note/append_note）写入 research_notes.md
-        work_dir = os.path.dirname(os.path.dirname(papers_dir))  # sessions/{id}/
+        # work_dir = sessions/{id}/，只取 papers 的父目录一次！！
+        work_dir = os.path.dirname(papers_dir)  # sessions/{id}/
         note_path = os.path.join(work_dir, 'research_notes.md')
-        # 同时创建一个 notes/draft_notes.md 软链接或副本
-        notes_dir = os.path.join(work_dir, 'notes')
-        os.makedirs(notes_dir, exist_ok=True)
     else:
         import re as m_re
         safe_topic = m_re.sub(r'[/\:*?"<>|]', '_', user_topic)

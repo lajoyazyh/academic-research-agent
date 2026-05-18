@@ -653,6 +653,15 @@ const app = {
             this.currentPlan = session.initial_plan || "";
             this.currentTopic = session.topic || "";
 
+            // ━━━ 先清空所有面板，避免旧会话数据残留 ━━━
+            this.tracesContainer.innerHTML = '<div style="color: var(--text-secondary); text-align: center; margin-top: 2rem;">等待运行...</div>';
+            this.researchResult.innerHTML = '<div style="color: var(--text-secondary); text-align: center; margin-top: 2rem;">研究完成后显示...</div>';
+            this.writerResult.innerHTML = '<div style="color: var(--text-secondary); text-align: center; margin-top: 2rem;">综述生成后显示...</div>';
+            document.getElementById("papersList").innerHTML = '<div style="color: var(--text-secondary); text-align: center; margin-top: 2rem;">加载记录后显示已下载的 PDF...</div>';
+            // 清理旧的收藏按钮
+            const oldFavBtn = document.getElementById("favToggleBtn");
+            if (oldFavBtn) oldFavBtn.remove();
+
             // 显示当前会话信息
             const infoDiv = document.getElementById("currentSessionInfo");
             if (infoDiv) {
