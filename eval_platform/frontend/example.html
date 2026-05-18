@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>LLM Agent 智能评估平台 (Mockup)</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    body { margin: 0; font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', Arial, sans-serif; background-color: #f0f2f5; }
+    .el-header { background-color: #fff; color: #333; line-height: 60px; box-shadow: 0 1px 4px rgba(0,21,41,.08); font-weight: bold; font-size: 18px; z-index: 10; display: flex; justify-content: space-between; align-items: center;}
+    .el-aside { background-color: #2b333e; color: #fff; height: 100vh; }
+    .el-menu { border-right: none; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold;}
+    .data-card { height: 100%; border-radius: 8px; margin-bottom: 20px; border: none; box-shadow: 0 2px 12px 0 rgba(0,0,0,.05); }
+    .metric-value { font-size: 28px; font-weight: bold; color: #409EFF; padding-top: 10px; }
+    .chart-container { width: 100%; height: 350px; }
+    .detail-container { padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px 0 rgba(0,0,0,.05); }
+    .timeline-thought { font-size: 13px; color: #606266; background: #f4f4f5; padding: 10px; border-radius: 4px; margin-bottom: 8px; border-left: 4px solid #909399; }
+    .timeline-action { display: inline-block; background: #ecf5ff; color: #409EFF; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-bottom: 8px; font-weight: bold;}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <el-container>
+      <!-- 左侧边栏导航 -->
+      <el-aside width="220px">
+        <div style="text-align: center; padding: 20px 0; color: #fff; font-size: 20px; font-weight: bold; letter-spacing: 1px;">Agent Eval</div>
+        <el-menu :default-active="activePage" background-color="#2b333e" text-color="#bfcbd9" active-text-color="#409EFF" @select="handleMenuSelect">
+          <el-menu-item index="dashboard">大盘概览 (Overview)</el-menu-item>
+          <el-menu-item index="history">任务记录 (Histories)</el-menu-item>
+          <el-menu-item index="compare">架构对比 (A/B Test)</el-menu-item>
+          <el-menu-item index="dataset">评测基准测试集</el-menu-item>
+        </el-menu>
+      </el-aside>
+      
+      <!-- 主体内容区 -->
+      <el-container>
+        <el-header>
+          <div>📚 LLM Agent 智能评估与监控中台</div>
+          <div style="font-size: 14px; font-weight: normal; color: #909399;">当前版本: Double Agent v1.0.4</div>
+        </el-header>
+        
+        <el-main style="padding: 24px;">
+          
+          <!-- 页面 1: 核心大盘 (Dashboard) -->
+          <div v-show="activePage === 'dashboard'">
+            <el-row :gutter="20">
+              <el-col :span="6"><el-card class="data-card"><div class="card-header">总评测任务数</div><div class="metric-value">24 <span style="font-size: 14px; color: #909399; font-weight: normal;">次</span></div></el-card></el-col>
+              <el-col :span="6"><el-card class="data-card"><div class="card-header">全局平均 忠实度</div><div class="metric-value">0.89 <span style="font-size: 14px; color: #67C23A; font-weight: normal;">↑ 0.12</span></div></el-card></el-col>
+              <el-col :span="6"><el-card class="data-card"><div class="card-header">全局平均 任务耗时</div><div class="metric-value">1m 45s</div></el-card></el-col>
+              <el-col :span="6"><el-card class="data-card"><div class="card-header">错误阻断率</div><div class="metric-value">4.2% <span style="font-size: 14px; color: #67C23A; font-weight: normal;">↓</span></div></el-card></el-col>
+            </el-row>
+
+            <el-row :gutter="20">
+              <el-col :span="16">
+                <el-card class="data-card">
+                  <template #header><div class="card-header">Ragas 评分历史趋势图 (最近10次任务)</div></template>
+                  <div id="trend-chart" class="chart-container"></div>
+                </el-card>
+              </el-col>
+              <el-col :span="8">
+                <el-card class="data-card">
+                  <template #header><div class="card-header">最新评测动态</div></template>
+                  <el-timeline>
+                    <el-timeline-item v-for="(activity, index) in activities" :key="index" :type="activity.type" :timestamp="activity.timestamp">
+                      {{ activity.content }}
+                    </el-timeline-item>
+                  </el-timeline>
+                </el-card>
+              </el-col>
+            </el-row>
+          </div>
+
+          <!-- 页面 2: 任务明细列表 -->
+          <div v-show="activePage === 'history'">
+            <el-card class="data-card">
+              <template #header>
+                <div class="card-header">
+                  <span>评测任务历史库 (Task Histories)</span>
+                  <el-button type="primary">+ 发起新评测任务</el-button>
+                </div>
+              </template>
+              <el-table :data="taskList" stripe style="width: 100%">
+                <el-table-column prop="id" label="Task ID" width="150"></el-table-column>
+                <el-table-column prop="topic" label="调研主题 (Topic)" min-width="200"></el-table-column>
+                <el-table-column prop="score" label="综合 Ragas 评分" width="150">
+                  <template #default="scope">
+                    <el-progress :percentage="scope.row.score * 100" :color="customColors" />
+                  </template>
+                </el-table-column>
+                <el-table-column prop="tokens" label="Token 消耗" width="120"></el-table-column>
+                <el-table-column prop="date" label="执行日期" width="180"></el-table-column>
+                <el-table-column label="操作" width="120" fixed="right">
+                  <template #default="scope">
+                    <el-button type="primary" size="small" plain @click="viewTaskDetail(scope.row)">查看分析</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-card>
+          </div>
+
+          <!-- 隐藏页面: 任务详情 -->
+          <div v-show="activePage === 'detail'">
+            <el-page-header @back="activePage = 'history'" :content="'任务分析报告：' + currentTask.topic" style="margin-bottom: 20px;"></el-page-header>
+            <el-row :gutter="20">
+              <el-col :span="10">
+                <el-card class="data-card">
+                  <template #header><div class="card-header">任务多维评价雷达图</div></template>
+                  <div id="radar-chart" class="chart-container"></div>
+                </el-card>
+              </el-col>
+              <el-col :span="14">
+                <div class="detail-container">
+                  <el-tabs v-model="activeTab">
+                    <el-tab-pane label="检索轨迹与引用 (Traces & Contexts)" name="traces">
+                      <div style="height: 350px; overflow-y: auto;">
+                        <el-alert title="Double Agent 机制：Researcher 负责以下信息搜集..." type="info" show-icon style="margin-bottom: 10px;"></el-alert>
+                        <el-timeline>
+                          <el-timeline-item color="#409EFF">
+                            <el-card shadow="never"><div class="timeline-action">arXiv Search</div><div class="timeline-thought">🧠 从学术库提取资料，保存至 Contexts...</div></el-card>
+                          </el-timeline-item>
+                          <el-timeline-item color="#67C23A"><el-card shadow="never">🏁 Researcher 获取资料完毕，移交 Writer...</el-card></el-timeline-item>
+                        </el-timeline>
+                      </div>
+                    </el-tab-pane>
+                    <el-tab-pane label="Writer 最终生成 (Final Output)" name="output">
+                      <div style="height: 350px; overflow-y: auto; padding: 10px; background: #fafafa;">
+                        <h3>{{ currentTask.topic }}</h3>
+                        <p>（本文为 Writer Agent 生成的多流派综合研判报告...）</p>
+                      </div>
+                    </el-tab-pane>
+                  </el-tabs>
+                </div>
+              </el-col>
+            </el-row>
+          </div>
+
+          <!-- 页面 3: 架构对比 (A/B Test) - NEW! -->
+          <div v-show="activePage === 'compare'">
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <el-card class="data-card">
+                  <template #header>
+                    <div class="card-header">
+                      <span>架构基准对比：单智能体 (ReAct) vs 双智能体 (Hybrid)</span>
+                      <el-button type="warning" plain size="small">导出评估报告</el-button>
+                    </div>
+                  </template>
+                  <el-alert title="项目核心成果亮点展示 (极其适合答辩和学术报告)" type="success" description="采用定量的形式证明我们在“迭代二”中提出的 Double Agent Pipeline 架构较原先的 Single Agent 架构有显著的提升。尤其在长文本连贯性和格式阻断率上表现优异。" show-icon style="margin-bottom: 20px;"></el-alert>
+                  <p style="color: #666; font-size: 14px; margin-bottom: 10px; text-align: center;">基于相同 Golden Dataset 的 A/B 侧边回归测试结果</p>
+                  <div id="compare-chart" style="width: 100%; height: 400px;"></div>
+                </el-card>
+              </el-col>
+            </el-row>
+          </div>
+
+          <!-- 页面 4: 评测基准集 (Dataset) - NEW! -->
+          <div v-show="activePage === 'dataset'">
+            <el-card class="data-card">
+              <template #header>
+                <div class="card-header">
+                  <span>Golden Dataset: 评测基准测试集管理</span>
+                  <el-button type="success">+ 导入测试问题库 (JSONL)</el-button>
+                </div>
+              </template>
+              <el-alert title="什么是 Golden Dataset？" type="info" description="作为标准的“考卷”，我们在比较不同模型基座（如 GPT-4 vs Llama-3）或不同系统架构时，必须使用同样的一批学术提问与期待上下文（Expected Context）。" show-icon style="margin-bottom: 20px;"></el-alert>
+              
+              <el-table :data="datasetList" border style="width: 100%">
+                <el-table-column prop="id" label="用例 ID" width="120"></el-table-column>
+                <el-table-column prop="query" label="测试用户指令 (User Query)"></el-table-column>
+                <el-table-column prop="domain" label="领域" width="150">
+                  <template #default="scope">
+                    <el-tag size="small" type="info">{{ scope.row.domain }}</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="status" label="累积执行" width="120" align="center"></el-table-column>
+                <el-table-column label="操作" width="150" align="center" fixed="right">
+                  <template #default>
+                    <el-button type="primary" link size="small">发令测试该题</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-card>
+          </div>
+
+        </el-main>
+      </el-container>
+    </el-container>
+  </div>
+
+  <script>
+    const { createApp, ref, onMounted, nextTick, watch } = Vue;
+
+    const app = createApp({
+      setup() {
+        const activePage = ref('dashboard');
+        const activeTab = ref('traces');
+        
+        const activities = ref([
+          { content: '基准测试集 (Golden Dataset) 更新了 3 条困难用例', timestamp: '10 分钟前', type: 'info' },
+          { content: '架构比对 (A/B Test) 批处理测试完成', timestamp: '1 小时前', type: 'success' },
+          { content: '检测到任务 TASK-011 响应不忠实 (Low Faithfulness)', timestamp: '3 小时前', type: 'warning' },
+        ]);
+
+        const customColors = [ { color: '#f56c6c', percentage: 60 }, { color: '#e6a23c', percentage: 80 }, { color: '#5cb87a', percentage: 100 } ];
+        
+        const taskList = ref([
+          { id: 'TASK-20260416-012', topic: 'RAG 检索增强技术最新进展', score: 0.92, tokens: '14.2k', date: '2026-04-16 10:20' },
+          { id: 'TASK-20260415-011', topic: 'LLM Agent Memory机制', score: 0.88, tokens: '18.1k', date: '2026-04-15 16:40' },
+          { id: 'TASK-20260414-010', topic: '大模型在软件工程的代码生成', score: 0.64, tokens: '9.8k', date: '2026-04-14 09:12' },
+        ]);
+
+        const datasetList = ref([
+          { id: 'GOLD-01', query: '综述大语言模型解决长上下文(Long-Context)的方法', domain: '大模型基座', status: 12 },
+          { id: 'GOLD-02', query: '对比 ReAct、Plan-and-Solve 与 Reflexion 的技术区别', domain: 'Agent', status: 10 },
+          { id: 'GOLD-03', query: '什么是指令微调(SFT)及RLHF的人类对齐机制？', domain: '微调机制', status: 10 },
+          { id: 'GOLD-04', query: '解释联邦学习在大规模联邦节点中的通信优化', domain: '机器学习', status: 5 },
+        ]);
+
+        const currentTask = ref({});
+        
+        let trendChart = null;
+        let radarChart = null;
+        let compareChart = null;
+
+        const initTrendChart = () => {
+          if (!document.getElementById('trend-chart')) return;
+          if (trendChart) trendChart.dispose();
+          trendChart = echarts.init(document.getElementById('trend-chart'));
+          trendChart.setOption({
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['Faithfulness', 'Answer Relevance'] },
+            xAxis: { type: 'category', data: ['Task 8', 'Task 9', 'Task 10', 'Task 11', 'Task 12'], boundaryGap: false },
+            yAxis: { type: 'value', min: 0, max: 1 },
+            series: [
+              { name: 'Faithfulness', type: 'line', data: [0.6, 0.75, 0.8, 0.88, 0.92], itemStyle: {color: '#67C23A'}, smooth: true, areaStyle: {opacity: 0.1} },
+              { name: 'Answer Relevance', type: 'line', data: [0.8, 0.85, 0.7, 0.89, 0.90], itemStyle: {color: '#409EFF'}, smooth: true }
+            ]
+          });
+        };
+
+        const initRadarChart = () => {
+          if (!document.getElementById('radar-chart')) return;
+          if (radarChart) radarChart.dispose();
+          radarChart = echarts.init(document.getElementById('radar-chart'));
+          radarChart.setOption({
+            tooltip: {},
+            radar: {
+              indicator: [
+                { name: 'Faithfulness', max: 1 },
+                { name: 'Answer Relevance', max: 1 },
+                { name: 'Context Precision', max: 1 },
+                { name: 'Context Recall', max: 1 },
+                { name: 'Tool Accuracy', max: 1 }
+              ]
+            },
+            series: [{
+              name: 'Task Metrics',
+              type: 'radar',
+              itemStyle: {color: '#409EFF'},
+              areaStyle: {opacity: 0.2},
+              data: [ { value: [0.92, 0.88, 0.85, 0.95, 1.0], name: 'Current Task' } ]
+            }]
+          });
+        };
+
+        const initCompareChart = () => {
+          if (!document.getElementById('compare-chart')) return;
+          if (compareChart) compareChart.dispose();
+          compareChart = echarts.init(document.getElementById('compare-chart'));
+          compareChart.setOption({
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            legend: { data: ['初版架构 (Single Agent 纯 ReAct)', '升级架构 (Double Agent 双阶段流水线)'] },
+            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            xAxis: { type: 'category', data: ['平均输出字数(长度)', 'Ragas 事实忠实度', 'Ragas 上下文利用率', 'JSON阻断失败率(更低更好)'] },
+            yAxis: { type: 'value' },
+            series: [
+              {
+                name: '初版架构 (Single Agent 纯 ReAct)',
+                type: 'bar',
+                barGap: 0,
+                emphasis: { focus: 'series' },
+                itemStyle: { color: '#909399' },
+                data: [0.3, 0.75, 0.65, 0.80] // 失败率高、文章短
+              },
+              {
+                name: '升级架构 (Double Agent 双阶段流水线)',
+                type: 'bar',
+                emphasis: { focus: 'series' },
+                itemStyle: { color: '#67C23A' },
+                data: [0.95, 0.92, 0.88, 0.05] // 失败率极低、文章极长
+              }
+            ]
+          });
+        };
+
+        const handleMenuSelect = (index) => {
+          activePage.value = index;
+          if (index === 'dashboard') nextTick(() => initTrendChart());
+          if (index === 'compare') nextTick(() => setTimeout(initCompareChart, 50));
+        };
+
+        const viewTaskDetail = (row) => {
+          currentTask.value = row;
+          activePage.value = 'detail';
+          nextTick(() => initRadarChart());
+        };
+
+        onMounted(() => {
+          nextTick(() => initTrendChart());
+          window.addEventListener('resize', () => {
+            if (trendChart) trendChart.resize();
+            if (radarChart) radarChart.resize();
+            if (compareChart) compareChart.resize();
+          });
+        });
+
+        return { activePage, activities, taskList, datasetList, customColors, currentTask, activeTab, viewTaskDetail, handleMenuSelect };
+      }
+    });
+
+    app.use(ElementPlus);
+    app.mount('#app');
+  </script>
+</body>
+</html>
