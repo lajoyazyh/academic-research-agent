@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -993,6 +993,12 @@
             </div>
 
             <div id="papersTab" class="tab-content">
+                <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; background: var(--surface-light); padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <input type="text" id="customPaperInput" placeholder="输入 arXiv ID 或 PDF 链接，例如：2308.11432 或 https://..." style="flex: 1; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); color: var(--text-color);">
+                    <button class="btn-primary" onclick="app.addCustomPaper()" id="addCustomPaperBtn">
+                        <i class="fas fa-plus"></i> 追加此论文
+                    </button>
+                </div>
                 <div id="papersList" style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="color: var(--text-secondary); text-align: center; margin-top: 2rem;">
                         加载记录后显示已下载的 PDF...

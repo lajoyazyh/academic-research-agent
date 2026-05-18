@@ -573,6 +573,74 @@ def update_paper_status(session_id: str, paper_id: str, status: str = "pending")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+class AddCustomPaperRequest(BaseModel):
+    paper_id: str
+
+@app.post("/api/sessions/{session_id}/papers/custom")
+def add_custom_paper(session_id: str, payload: AddCustomPaperRequest):
+    """用户手动添加自定义论文并自动合并入笔记，重新生成综述"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session 不存在")
+    
+    paper_id = payload.paper_id.strip()
+    if not paper_id:
+        raise HTTPException(status_code=400, detail="paper_id 不能为空")
+
+    from tools.pdf_tools import ArxivPdfReaderTool
+    
+    # 获取真正的 session 存储目录
+    import os
+    session_dir = session_mgr.root / session_id
+    papers_dir = str(session_dir / "papers")
+    os.makedirs(papers_dir, exist_ok=True)
+    reader = ArxivPdfReaderTool(papers_dir=papers_dir)
+    
+    res_text = reader.execute(paper_id=paper_id, read_full=True)
+    if "发生错误" in res_text or "解析失败" in res_text or "下载失败" in res_text:
+        raise HTTPException(status_code=400, detail=res_text)
+
+    session_papers = session.get("papers", [])
+    paper_title = f"User Upload: {paper_id}"
+    
+    clean_id = paper_id
+    if paper_id.startswith("http"):
+        import hashlib
+        clean_id = "paper_" + hashlib.md5(paper_id.encode('utf-8')).hexdigest()[:8]
+    else:
+        clean_id = paper_id.split("v")[0] if "v" in paper_id else paper_id
+
+    if any(p.get("paper_id") == clean_id for p in session_papers):
+        return {"message": "Success", "notes": session.get("notes", ""), "draft": session.get("draft", ""), "exists": True}
+
+    session_papers.append({
+        "paper_id": clean_id,
+        "title": paper_title,
+        "source": "user_custom",
+        "status": "accepted"
+    })
+    session_mgr.save_papers_list(session_id, session_papers)
+
+    from llms.client import LLMClient
+    llm = LLMClient()
+    topic = session.get("metadata", {}).get("topic", "")
+    
+    summarize_prompt = f"""你是一名擅长文献总结的研究员。这里是用户上传的一篇新论文的初步文本内容。研究主题是《{topic}》。
+请你认真阅读后，提炼出这篇论文的关键发现、方法或指标，并撰写一段学术笔记（约 300-500 字）。
+
+论文原文（前几页）：
+{res_text}
+
+请直接输出你的高质量学术笔记：
+"""
+    new_note = llm.chat("你是深度的学术研究员。", summarize_prompt, []).strip()
+
+    old_notes = session.get("notes", "")
+    updated_notes = old_notes + f"\n\n## 追加参考文献: {paper_id}\n\n{new_note}\n\n---\n"
+    session_mgr.save_notes(session_id, updated_notes)
+    
+    return {"message": "Success", "notes": updated_notes, "draft": session.get("draft", "")}
+
 
 # ━━━━━ 笔记管理（第一波基础接口，完整功能在第三波）━━━━━
 
