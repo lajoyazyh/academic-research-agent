@@ -395,10 +395,11 @@ textarea {
   margin-top: 18px;
   border-radius: 30px;
   padding: 16px;
-  min-height: calc(100vh - 110px);
+  height: calc(100vh - 120px);
   display: grid;
-  grid-template-columns: minmax(360px, 0.95fr) minmax(420px, 1.05fr);
+  grid-template-columns: minmax(300px, 0.38fr) minmax(450px, 0.62fr);
   gap: 16px;
+  overflow: hidden;
 }
 
 .workbench,
@@ -411,10 +412,11 @@ textarea {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  max-height: 100%;
 }
 
 .panel-head {
-  padding: 18px 18px 14px;
+  padding: 14px 16px 10px;
   border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
@@ -667,11 +669,12 @@ textarea {
 }
 
 .markdown pre {
-  background: #111827;
-  color: #e5e7eb;
-  border-radius: 16px;
-  padding: 14px;
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 12px;
   overflow: auto;
+  font-size: 0.9rem;
 }
 
 .detail-panel {
@@ -682,11 +685,13 @@ textarea {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(160px, 0.22fr);
+  grid-template-rows: 1fr auto;
 }
 
 .detail-content-wrap {
+  flex: 1 1 0;
   min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -694,11 +699,12 @@ textarea {
 }
 
 .detail-viewport {
-  flex: 1;
+  height: 100%;
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 16px;
   padding: 16px;
   background: rgba(250, 251, 253, 0.94);
 }

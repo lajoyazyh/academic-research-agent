@@ -733,7 +733,14 @@ const notebooklm = {
   },
 
   renderReviewView(session) {
-    const draft = session?.draft || session?.notes || "";
+    let draft = session?.draft || session?.notes || "";
+    // 去除大纲的markdown代码块包裹 — 处理所有可能的代码块
+    draft = draft.replace(/```markdown\s*([\s\S]*?)```/g, '$1');
+    draft = draft.replace(/```\s*([\s\S]*?)```/g, (match, content) => {
+      // 如果内容看起来像markdown（有#标题），去掉包裹
+      if (content.trim().match(/^#+\s/m)) return content.trim();
+      return match;
+    });
     const acceptedCount = (session?.papers || []).filter((paper) => paper.status === "accepted").length;
     return `
       <div class="detail-hero">
