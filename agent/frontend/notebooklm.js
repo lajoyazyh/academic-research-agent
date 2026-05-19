@@ -128,47 +128,41 @@ const notebooklm = {
       const rightTime = new Date(right.updated_at || right.created_at || 0).getTime();
       return rightTime - leftTime;
     });
-    if (this.els.historyCount) {
-      this.els.historyCount.textContent = `${sessions.length} 个综述`;
-    }
 
     if (!this.els.homeRail) return;
     this.els.homeRail.innerHTML = "";
 
-    // Always show a create card first (mirrors NotebookLM layout)
+    // Always show a Create card first (NotebookLM style)
     const createCard = document.createElement("article");
-    createCard.className = "topic-card create";
+    createCard.className = "home-card home-card--create";
     createCard.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
-        <div style="font-size:28px;color:var(--accent);"><i class="fa-solid fa-plus"></i></div>
-        <div style="font-size:13px;color:var(--subtle);">新建综述</div>
+      <div class="home-card-inner">
+        <span class="home-card-icon"><i class="fa-solid fa-plus"></i></span>
+        <span class="home-card-label">新建综述</span>
       </div>
     `;
     createCard.setAttribute('role', 'button');
     createCard.setAttribute('tabindex', '0');
-    createCard.style.cursor = 'pointer';
     createCard.addEventListener('click', () => this.openTopicModal());
     createCard.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.openTopicModal(); } });
     this.els.homeRail.appendChild(createCard);
 
-    // Render up to 5 recent sessions as clickable cards
-    const visible = sessions.slice(0, 5);
+    // Render recent sessions as cards
+    const visible = sessions.slice(0, 7);
     visible.forEach((session) => {
       const card = document.createElement("article");
-      card.className = "topic-card";
-
+      card.className = "home-card";
       const title = this.escapeHtml(session.topic || "未命名综述");
       const time = this.formatDate(session.updated_at || session.created_at);
-
       const paperCount = session.paper_count || 0;
       const noteFlag = session.note_size && session.note_size > 0 ? '有笔记' : '无笔记';
 
       card.innerHTML = `
         <div>
           <h3 title="${title}">${title}</h3>
-          <small>更新时间 ${time}</small>
+          <small>${time}</small>
         </div>
-        <div class="meta-row">
+        <div class="home-card-meta">
           <span class="badge">${paperCount} 个来源</span>
           <span class="badge">${noteFlag}</span>
         </div>
@@ -179,40 +173,31 @@ const notebooklm = {
       });
 
       const deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
-      deleteBtn.className = "tiny-btn card-delete";
-      deleteBtn.title = "删除综述";
+      deleteBtn.className = "home-card-delete";
+      deleteBtn.title = "删除";
       deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
       deleteBtn.addEventListener("click", async (event) => {
         event.stopPropagation();
         event.preventDefault();
         await this.deleteHomeSession(session.session_id);
       });
-
-      const metaRow = card.querySelector(".meta-row");
-      if (metaRow) {
-        metaRow.appendChild(deleteBtn);
-      }
+      card.appendChild(deleteBtn);
 
       this.els.homeRail.appendChild(card);
     });
 
-    // If there are more sessions, add a '更多' card
-    if (sessions.length > 5) {
+    // "更多" link if sessions > 7
+    if (sessions.length > 7) {
       const moreCard = document.createElement('article');
-      moreCard.className = 'topic-card';
+      moreCard.className = 'home-card home-card--ghost';
       moreCard.innerHTML = `
-        <div>
-          <h3>更多历史</h3>
-          <small>查看全部历史会话</small>
-        </div>
-        <div class="meta-row">
-          <button class="btn-text" id="viewAllSessions">查看全部</button>
+        <div class="home-card-inner">
+          <span class="home-card-icon"><i class="fa-solid fa-ellipsis"></i></span>
+          <span class="home-card-label">更多历史 · ${sessions.length - 7} 个</span>
         </div>
       `;
+      moreCard.addEventListener('click', () => window.location.href = '/app/history');
       this.els.homeRail.appendChild(moreCard);
-      const viewAllBtn = document.getElementById('viewAllSessions');
-      if (viewAllBtn) viewAllBtn.addEventListener('click', () => window.location.href = '/app/history');
     }
   },
 
@@ -609,21 +594,8 @@ const notebooklm = {
   },
 
   renderNotesBlock() {
-    if (!this.els.notesBlock) return;
-    const notes = this.state.currentSession?.notes || "";
-    const hasNotes = Boolean(notes.trim());
-    // 笔记不再在左侧展开显示，改为右侧报告/综述视图展示
-    if (hasNotes) {
-      this.els.notesBlock.innerHTML = `
-        <div class="panel-block-head">
-          <strong>生成笔记</strong>
-          <span class="chip ok"><i class="fa-regular fa-file-lines"></i> 已生成</span>
-        </div>
-        <div class="plain-text" style="color:var(--subtle);">笔记已生成，点击左侧论文后在右侧摘要/报告视图查看相关内容，或在综述视图中基于笔记生成综述。</div>
-      `;
-    } else {
-      this.els.notesBlock.style.display = "none";
-    }
+    // notesBlock 已从 HTML 中移除，笔记在右侧报告/综述视图中展示
+    return;
   },
 
   renderReviewBlock() {
@@ -1302,19 +1274,12 @@ const notebooklm = {
 
   appendChatMessage(role, text, mode, note = "") {
     if (!this.els.chatList) return;
-    const message = document.createElement("div");
-    message.className = "chat-message";
-    const avatar = document.createElement("div");
-    avatar.className = `chat-avatar ${role}`;
-    avatar.innerHTML = role === "user" ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
-
-    const bubble = document.createElement("div");
-    bubble.className = `chat-bubble ${role}`;
-    bubble.innerHTML = `${note ? `<small>${this.escapeHtml(note)}</small>` : ""}${this.escapeHtml(text)}`;
-
-    message.appendChild(avatar);
-    message.appendChild(bubble);
-    this.els.chatList.appendChild(message);
+    const msg = document.createElement("div");
+    msg.className = "chat-msg";
+    const roleLabel = role === "user" ? "你" : "AI";
+    const noteHtml = note ? `<span style="font-size:11px;color:var(--subtle);display:block">${this.escapeHtml(note)}</span>` : "";
+    msg.innerHTML = `<span class="chat-role">${roleLabel}</span><span>${noteHtml}${this.escapeHtml(text)}</span>`;
+    this.els.chatList.appendChild(msg);
     this.els.chatList.scrollTop = this.els.chatList.scrollHeight;
   },
 

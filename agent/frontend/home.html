@@ -8,41 +8,35 @@
   <link rel="stylesheet" href="/static/notebooklm.css">
 </head>
 <body data-page="home">
-  <div class="shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark"><i class="fa-solid fa-wave-square"></i></div>
-        <div class="brand-title">
-          <strong>智能学术综述助手</strong>
-        </div>
-      </div>
-    </header>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span>
+      <strong>智能学术综述助手</strong>
+    </div>
+  </header>
 
-    <section class="section">
-      <div class="section-head">
-        <div>
-          <h2>最近打开过的综述</h2>
-        </div>
+  <main class="home-main">
+    <section class="home-section">
+      <div class="home-section-head">
+        <h2>最近打开过的综述</h2>
       </div>
-      <div class="rail" id="homeRail"></div>
+      <div class="home-grid" id="homeRail"></div>
     </section>
 
-    <section class="section">
-      <div class="section-head">
-        <div>
-          <h2>使用指南</h2>
-        </div>
+    <section class="home-section">
+      <div class="home-section-head">
+        <h2>使用指南</h2>
       </div>
-      <div class="rail" id="guideRail" style="padding:6px 10px 12px 10px;">
-        <article class="topic-card create guide" role="button" tabindex="0" style="cursor:pointer;" onclick="window.location.href='/app/help'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='/app/help';}">
-          <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
-            <div style="font-size:28px;color:var(--accent);"><i class="fa-solid fa-circle-info"></i></div>
-            <div style="font-size:13px;color:var(--subtle);">使用指南</div>
+      <div class="home-grid" id="guideRail">
+        <article class="home-card home-card--ghost" role="button" tabindex="0" onclick="window.location.href='/app/help'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='/app/help';}">
+          <div class="home-card-inner">
+            <span class="home-card-icon"><i class="fa-solid fa-circle-info"></i></span>
+            <span class="home-card-label">使用指南</span>
           </div>
         </article>
       </div>
     </section>
-  </div>
+  </main>
 
   <div class="modal" id="topicModal" aria-hidden="true">
     <div class="modal-card">
