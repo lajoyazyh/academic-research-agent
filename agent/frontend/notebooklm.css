@@ -240,6 +240,30 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 140px;
+  padding: 14px;
+}
+
+/* Accessible focus styles for clickable topic cards */
+.topic-card[role="button"]:focus,
+.topic-card[role="button"]:focus-visible {
+  outline: none;
+  border-color: rgba(15, 111, 255, 0.36);
+  box-shadow: 0 18px 40px rgba(15, 111, 255, 0.12);
+  transform: translateY(-4px);
+}
+
+/* Ensure pointer cursor for clickable cards */
+.topic-card[role="button"] {
+  cursor: pointer;
+}
+
+/* Make guide cards show same hover effect as create cards */
+.topic-card.create.guide:hover,
+.topic-card.guide:hover {
+  border-color: rgba(15, 111, 255, 0.36);
+  box-shadow: 0 18px 40px rgba(15, 111, 255, 0.08);
+  transform: translateY(-4px);
 }
 
 .topic-card.more {

@@ -14,7 +14,6 @@
         <div class="brand-mark"><i class="fa-solid fa-wave-square"></i></div>
         <div class="brand-title">
           <strong>智能学术综述助手</strong>
-          <span>最近打开过的综述、快速新建、进入历史</span>
         </div>
       </div>
     </header>
@@ -34,11 +33,13 @@
           <h2>使用指南</h2>
         </div>
       </div>
-      <div class="guide-card guide-entry">
-        <div></div>
-        <div class="meta-row">
-          <button class="primary-btn" onclick="window.location.href='/app/help'">使用指南</button>
-        </div>
+      <div class="rail" id="guideRail" style="padding:6px 10px 12px 10px;">
+        <article class="topic-card create guide" role="button" tabindex="0" style="cursor:pointer;" onclick="window.location.href='/app/help'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='/app/help';}">
+          <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+            <div style="font-size:28px;color:var(--accent);"><i class="fa-solid fa-circle-info"></i></div>
+            <div style="font-size:13px;color:var(--subtle);">使用指南</div>
+          </div>
+        </article>
       </div>
     </section>
   </div>

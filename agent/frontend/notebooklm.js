@@ -87,6 +87,20 @@ const notebooklm = {
       const response = await fetch("/api/sessions/list");
       const sessions = await response.json();
       this.state.sessions = Array.isArray(sessions) ? sessions : [];
+      // Enrich sessions with quick metadata (paper/note sizes) by calling session summary endpoints in parallel (best-effort)
+      const enriched = await Promise.all(this.state.sessions.slice(0,10).map(async (s) => {
+        try {
+          const res = await fetch(`/api/sessions/${encodeURIComponent(s.session_id)}`);
+          if (!res.ok) return s;
+          const detail = await res.json();
+          s.paper_count = Array.isArray(detail.papers) ? detail.papers.length : (detail.papers || []).length || 0;
+          s.note_size = detail.notes ? detail.notes.length : 0;
+        } catch (e) {
+          // ignore
+        }
+        return s;
+      }));
+      this.state.sessions = enriched.concat(this.state.sessions.slice(10));
       this.renderHomeSessions();
     } catch (error) {
       this.els.homeRail.innerHTML = `<div class="empty-state">加载失败：${this.escapeHtml(error.message)}</div>`;
@@ -110,38 +124,65 @@ const notebooklm = {
     const createCard = document.createElement("article");
     createCard.className = "topic-card create";
     createCard.innerHTML = `
-      <div></div>
-      <div class="meta-row">
-        <button class="primary-btn" id="homeCreateBtn">新建综述</button>
+      <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+        <div style="font-size:28px;color:var(--accent);"><i class="fa-solid fa-plus"></i></div>
+        <div style="font-size:13px;color:var(--subtle);">新建综述</div>
       </div>
     `;
+    createCard.setAttribute('role', 'button');
+    createCard.setAttribute('tabindex', '0');
+    createCard.style.cursor = 'pointer';
+    createCard.addEventListener('click', () => this.openTopicModal());
+    createCard.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.openTopicModal(); } });
     this.els.homeRail.appendChild(createCard);
 
-    // Attach create button handler
-    const homeCreateBtn = document.getElementById("homeCreateBtn");
-    if (homeCreateBtn) {
-      homeCreateBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        this.openTopicModal();
-      });
-    }
-
-    // Render up to 5 recent sessions as non-clickable display cards
-    sessions.slice(0, 5).forEach((session) => {
+    // Render up to 5 recent sessions as clickable cards
+    const visible = sessions.slice(0, 5);
+    visible.forEach((session) => {
       const card = document.createElement("article");
       card.className = "topic-card";
 
       const title = this.escapeHtml(session.topic || "未命名综述");
       const time = this.formatDate(session.updated_at || session.created_at);
 
+      const paperCount = session.paper_count || 0;
+      const noteFlag = session.note_size && session.note_size > 0 ? '有笔记' : '无笔记';
+
       card.innerHTML = `
         <div>
           <h3 title="${title}">${title}</h3>
           <small>更新时间 ${time}</small>
         </div>
+        <div class="meta-row">
+          <span class="badge">${paperCount} 个来源</span>
+          <span class="badge">${noteFlag}</span>
+        </div>
       `;
+
+      card.addEventListener('click', () => {
+        window.location.href = `/app/console?sessionId=${encodeURIComponent(session.session_id)}`;
+      });
+
       this.els.homeRail.appendChild(card);
     });
+
+    // If there are more sessions, add a '更多' card
+    if (sessions.length > 5) {
+      const moreCard = document.createElement('article');
+      moreCard.className = 'topic-card';
+      moreCard.innerHTML = `
+        <div>
+          <h3>更多历史</h3>
+          <small>查看全部历史会话</small>
+        </div>
+        <div class="meta-row">
+          <button class="btn-text" id="viewAllSessions">查看全部</button>
+        </div>
+      `;
+      this.els.homeRail.appendChild(moreCard);
+      const viewAllBtn = document.getElementById('viewAllSessions');
+      if (viewAllBtn) viewAllBtn.addEventListener('click', () => window.location.href = '/app/history');
+    }
   },
 
   openTopicModal() {

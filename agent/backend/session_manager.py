@@ -158,6 +158,10 @@ class SessionManager:
                 continue
             meta = self._read_json(d / "metadata.json")
             if meta:
+                # attempt to include quick metrics: paper count and note size
+                papers = self._read_json(d / "papers" / "papers_list.json") or []
+                notes_path = d / "notes" / "draft_notes.md"
+                note_size = notes_path.stat().st_size if notes_path.exists() else 0
                 sessions.append({
                     "session_id": meta.get("session_id", d.name),
                     "topic": meta.get("topic", ""),
@@ -165,6 +169,8 @@ class SessionManager:
                     "state_label": STATE_LABELS.get(meta.get("state", ""), "未知"),
                     "created_at": meta.get("created_at", ""),
                     "updated_at": meta.get("updated_at", ""),
+                    "paper_count": len(papers),
+                    "note_size": note_size,
                 })
         return sessions
 
