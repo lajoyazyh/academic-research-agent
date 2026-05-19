@@ -423,6 +423,8 @@ def get_run_status(run_id: str) -> RunStatusResponse:
 
 class CreateSessionRequest(BaseModel):
     topic: str
+    # keywords can be a raw string (from simple textarea) or a structured list
+    keywords: Optional[list] = None
 
 class UpdateStateRequest(BaseModel):
     state: str
@@ -457,12 +459,14 @@ class AddPaperRequest(BaseModel):
 
 
 @app.post("/api/sessions/create")
-def create_session(payload: CreateSessionRequest) -> dict:
-    """创建新 Session"""
-    if not payload.topic.strip():
+def create_session(payload: dict) -> dict:
+    """创建新 Session，支持可选的 keywords 字段（字符串或数组）。"""
+    topic = str(payload.get("topic", "")).strip()
+    if not topic:
         raise HTTPException(status_code=400, detail="主题不能为空")
+    keywords = payload.get("keywords")
     try:
-        return session_mgr.create_session(payload.topic.strip())
+        return session_mgr.create_session(topic, keywords=keywords)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Session 创建失败: {str(e)}")
 

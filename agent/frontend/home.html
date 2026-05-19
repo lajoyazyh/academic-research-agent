@@ -47,16 +47,28 @@
   <div class="modal" id="topicModal" aria-hidden="true">
     <div class="modal-card">
       <h3>新建综述</h3>
-      <p>输入主题后会创建新的会话，并跳转到 Notebook 风格控制台完成关键词确认和论文检索。</p>
+      <p>先输入主题，再由系统生成 AI 关键词规划；确认后直接进入控制台开始检索。</p>
       <div class="field-grid">
         <label>
           主题
           <input id="topicInput" type="text" placeholder="例如：多智能体协作记忆机制" />
         </label>
         <label>
-          关键词提示（可选）
+          关键词种子（可选）
           <textarea id="keywordInput" rows="4" placeholder="例如：memory, retrieval, agent planning, RAG"></textarea>
         </label>
+      </div>
+      <div class="planning-block">
+        <div class="planning-block-head">
+          <strong>AI 关键词规划</strong>
+          <div class="planning-actions">
+            <button class="secondary-btn" id="keywordAddHome" type="button"><i class="fa-solid fa-plus"></i> 添加关键词行</button>
+            <button class="secondary-btn" id="keywordPlanGenerate" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> 生成规划</button>
+          </div>
+        </div>
+        <div id="homeKeywordList" class="keyword-plan-list">
+          <div class="keyword-plan-empty">输入主题后点击“生成规划”，系统会先给出可编辑的关键词建议。</div>
+        </div>
       </div>
       <div class="modal-actions">
         <button class="secondary-btn" id="topicCancel">取消</button>

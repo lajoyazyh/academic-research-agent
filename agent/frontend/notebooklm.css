@@ -812,6 +812,8 @@ textarea {
 
 .modal-card {
   width: min(680px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.7);
@@ -849,6 +851,83 @@ textarea {
   padding: 12px 14px;
   background: #fff;
   color: var(--text);
+  min-width: 0;
+  width: 100%;
+}
+
+.planning-block {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(15, 111, 255, 0.12);
+  background: linear-gradient(180deg, rgba(15, 111, 255, 0.04), rgba(255, 255, 255, 0.96));
+}
+
+.planning-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.planning-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.planning-block-head strong {
+  font-size: 1rem;
+}
+
+.keyword-plan-list {
+  display: grid;
+  gap: 12px;
+}
+
+.keyword-plan-empty {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px dashed rgba(15, 111, 255, 0.18);
+  color: var(--subtle);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.keyword-plan-row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 42px;
+  gap: 10px;
+  align-items: center;
+}
+
+.keyword-plan-row input {
+  min-width: 0;
+  width: 100%;
+}
+
+.keyword-plan-index {
+  color: var(--subtle);
+  font-size: 0.84rem;
+  white-space: nowrap;
+}
+
+.keyword-plan-row .kw-remove {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  justify-content: center;
+}
+
+.keyword-plan-row .tiny-btn,
+.keyword-plan-row .secondary-btn,
+.planning-actions .secondary-btn {
+  min-width: 0;
+}
+
+.topic-card .meta-row .card-delete {
+  margin-left: auto;
+  color: var(--danger);
 }
 
 .modal-actions {
@@ -901,6 +980,29 @@ textarea {
   .console-layout {
     padding: 16px;
     border-radius: 22px;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    padding: 18px;
+  }
+
+  .planning-block-head,
+  .modal-actions {
+    align-items: stretch;
+  }
+
+  .planning-actions {
+    width: 100%;
+  }
+
+  .keyword-plan-row {
+    grid-template-columns: 1fr;
+  }
+
+  .keyword-plan-index {
+    white-space: normal;
   }
 
   .hero-stat {

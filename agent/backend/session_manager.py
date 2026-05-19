@@ -68,8 +68,10 @@ class SessionManager:
 
     # ━━━━━ 基础 CRUD ━━━━━
 
-    def create_session(self, topic: str) -> dict:
-        """创建新 Session，生成唯一 ID 和完整目录结构"""
+    def create_session(self, topic: str, keywords: list = None) -> dict:
+        """创建新 Session，生成唯一 ID 和完整目录结构
+        keywords: 可选的初始关键词列表（字符串或已结构化数组）
+        """
         session_id = f"sess_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
         session_dir = self.root / session_id
 
@@ -81,15 +83,32 @@ class SessionManager:
         (session_dir / "traces").mkdir(parents=True, exist_ok=True)
 
         now = datetime.datetime.now().isoformat()
+        initial_state = SessionState.PLAN_CONFIRMED.value if keywords else SessionState.PLANNING.value
         metadata = {
             "session_id": session_id,
             "topic": topic,
-            "state": SessionState.PLANNING.value,
+            "state": initial_state,
             "created_at": now,
             "updated_at": now,
             "rewrite_count": 0,
         }
         self._write_json(session_dir / "metadata.json", metadata)
+
+        # 保存初始关键词（如果有）到 plan/confirmed_keywords.json
+        if keywords:
+            # Normalize keywords: accept comma/newline separated string or list of dicts/strings
+            norm = []
+            if isinstance(keywords, str):
+                parts = [p.strip() for p in keywords.replace('，', ',').split(',') if p.strip()]
+                norm = [{"original": p, "english": "", "synonyms": ""} for p in parts]
+            elif isinstance(keywords, list):
+                for k in keywords:
+                    if isinstance(k, str):
+                        norm.append({"original": k, "english": "", "synonyms": ""})
+                    elif isinstance(k, dict):
+                        norm.append(k)
+            if norm:
+                self._write_json(session_dir / "plan" / "confirmed_keywords.json", norm)
 
         return self.load_session(session_id)
 

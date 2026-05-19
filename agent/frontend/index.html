@@ -113,14 +113,19 @@
   <div class="modal" id="keywordModal" aria-hidden="true">
     <div class="modal-card">
       <h3>确认关键词</h3>
-      <p>这里对应 NotebookLM 的主题确认步骤。你可以直接修改关键词，再开始检索。</p>
-      <div class="field-grid">
-        <label>
-          当前主题
-          <input id="keywordTopic" type="text" readonly />
-        </label>
-        <div id="keywordList" class="field-grid"></div>
-        <button class="secondary-btn" id="keywordAdd" type="button"><i class="fa-solid fa-plus"></i> 添加关键词行</button>
+      <p>这里对应 NotebookLM 的主题确认步骤。你可以继续增删改关键词，再开始检索。</p>
+      <div class="planning-block">
+        <div class="planning-block-head">
+          <strong>AI 关键词规划</strong>
+          <button class="secondary-btn" id="keywordAdd" type="button"><i class="fa-solid fa-plus"></i> 添加关键词行</button>
+        </div>
+        <div class="field-grid">
+          <label>
+            当前主题
+            <input id="keywordTopic" type="text" readonly />
+          </label>
+        </div>
+        <div id="keywordList" class="keyword-plan-list"></div>
       </div>
       <div class="modal-actions">
         <button class="secondary-btn" id="keywordCancel">取消</button>

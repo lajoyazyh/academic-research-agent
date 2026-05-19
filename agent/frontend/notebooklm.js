@@ -29,8 +29,11 @@ const notebooklm = {
     this.els.topicModal = document.getElementById("topicModal");
     this.els.topicInput = document.getElementById("topicInput");
     this.els.keywordInput = document.getElementById("keywordInput");
+    this.els.keywordPlanGenerate = document.getElementById("keywordPlanGenerate");
+    this.els.homeKeywordList = document.getElementById("homeKeywordList");
     this.els.topicSubmit = document.getElementById("topicSubmit");
     this.els.topicCancel = document.getElementById("topicCancel");
+    this.els.keywordAddHome = document.getElementById("keywordAddHome");
     this.els.homeRail = document.getElementById("homeRail");
     this.els.historyCount = document.getElementById("historyCount");
 
@@ -74,6 +77,18 @@ const notebooklm = {
     }
     if (this.els.topicCancel) {
       this.els.topicCancel.addEventListener("click", () => this.closeTopicModal());
+    }
+    if (this.els.keywordPlanGenerate) {
+      this.els.keywordPlanGenerate.addEventListener("click", () => this.generateHomeKeywordPlan());
+    }
+    if (this.els.keywordAddHome) {
+      this.els.keywordAddHome.addEventListener("click", () => this.addHomeKeywordRow({}, (this.els.homeKeywordList?.querySelectorAll(".keyword-plan-row").length || 0) + 1));
+    }
+    if (this.els.keywordInput) {
+      this.els.keywordInput.addEventListener("input", () => this.syncKeywordPlanHint());
+    }
+    if (this.els.topicInput) {
+      this.els.topicInput.addEventListener("input", () => this.syncKeywordPlanHint());
     }
 
     await this.loadHomeSessions();
@@ -163,6 +178,22 @@ const notebooklm = {
         window.location.href = `/app/console?sessionId=${encodeURIComponent(session.session_id)}`;
       });
 
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "tiny-btn card-delete";
+      deleteBtn.title = "删除综述";
+      deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      deleteBtn.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        await this.deleteHomeSession(session.session_id);
+      });
+
+      const metaRow = card.querySelector(".meta-row");
+      if (metaRow) {
+        metaRow.appendChild(deleteBtn);
+      }
+
       this.els.homeRail.appendChild(card);
     });
 
@@ -195,6 +226,8 @@ const notebooklm = {
     if (this.els.keywordInput) {
       this.els.keywordInput.value = localStorage.getItem("notebooklm:lastKeywords") || "";
     }
+    this.renderHomeKeywordPlan([]);
+    this.syncKeywordPlanHint();
   },
 
   closeTopicModal() {
@@ -205,36 +238,187 @@ const notebooklm = {
 
   async createTopicFromModal() {
     const topic = (this.els.topicInput?.value || "").trim();
-    const keywords = (this.els.keywordInput?.value || "").trim();
+    const keywords = this.collectHomeKeywords();
     if (!topic) {
       alert("请输入主题");
+      return;
+    }
+    if (!keywords.length) {
+      alert("请先生成并确认 AI 关键词规划");
       return;
     }
 
     try {
       localStorage.setItem("notebooklm:lastTopic", topic);
-      if (keywords) {
-        localStorage.setItem("notebooklm:lastKeywords", keywords);
+      localStorage.setItem("notebooklm:lastKeywords", (this.els.keywordInput?.value || "").trim());
+
+      const createBtn = this.els.topicSubmit;
+      if (createBtn) {
+        createBtn.disabled = true;
+        createBtn.textContent = "创建中...";
       }
 
       const response = await fetch("/api/sessions/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ topic, keywords }),
       });
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.detail || "创建会话失败");
       }
 
-      if (keywords) {
-        sessionStorage.setItem(`notebooklm:seedKeywords:${data.session_id}`, keywords);
+      if (keywords.length) {
+        const seedText = keywords
+          .map((item) => item.original || item.english || item.synonyms || "")
+          .filter(Boolean)
+          .join(", ");
+        sessionStorage.setItem(`notebooklm:seedKeywords:${data.session_id}`, seedText);
       }
 
       this.closeTopicModal();
+
       window.location.href = `/app/console?sessionId=${encodeURIComponent(data.session_id)}`;
     } catch (error) {
       alert(`创建失败：${error.message}`);
+    } finally {
+      const createBtn = this.els.topicSubmit;
+      if (createBtn) {
+        createBtn.disabled = false;
+        createBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> 进入控制台';
+      }
+    }
+  },
+
+  keywordPlanDictionary: {
+    "多智能体": { english: "Multi-Agent", synonyms: "多智能体系统, 多智能体技术" },
+    "协作": { english: "Collaboration", synonyms: "协同, 协作机制" },
+    "记忆": { english: "Memory", synonyms: "记忆辅助, 记忆支持" },
+    "机制": { english: "Mechanism", synonyms: "机制设计, 机制分析" },
+    "检索": { english: "Retrieval", synonyms: "信息检索, 检索增强" },
+    "规划": { english: "Planning", synonyms: "任务规划, 显式规划" },
+    "综述": { english: "Review", synonyms: "文献综述, 研究综述" },
+    "学术": { english: "Academic", synonyms: "学术研究, 学术论文" },
+    "大模型": { english: "LLM", synonyms: "大语言模型, 语言模型" },
+    "智能": { english: "Intelligent", synonyms: "智能系统, 智能化" },
+    "知识": { english: "Knowledge", synonyms: "知识图谱, 知识增强" },
+    "RAG": { english: "Retrieval-Augmented Generation", synonyms: "检索增强生成" },
+  },
+
+  normalizeSeedKeywords(seedText) {
+    return (seedText || "")
+      .replace(/[，；;\n]/g, ",")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  },
+
+  inferKeywordPlan(topic, seedText) {
+    const seeds = this.normalizeSeedKeywords(seedText);
+    const bag = [];
+    const text = `${topic || ""} ${seeds.join(" ")}`;
+    Object.entries(this.keywordPlanDictionary).forEach(([token, mapped]) => {
+      if (text.includes(token)) {
+        bag.push({ original: token, english: mapped.english, synonyms: mapped.synonyms });
+      }
+    });
+
+    seeds.forEach((seed) => {
+      const matched = Object.keys(this.keywordPlanDictionary).find((token) => seed.includes(token));
+      if (matched) {
+        bag.push({ original: matched, english: this.keywordPlanDictionary[matched].english, synonyms: this.keywordPlanDictionary[matched].synonyms });
+      } else {
+        bag.push({ original: seed, english: "", synonyms: "" });
+      }
+    });
+
+    if (topic && !bag.length) {
+      const fragments = topic.split(/\s+/).filter(Boolean).slice(0, 4);
+      fragments.forEach((fragment) => bag.push({ original: fragment, english: "", synonyms: "" }));
+    }
+
+    const seen = new Set();
+    return bag.filter((item) => {
+      const key = `${item.original}__${item.english}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 6);
+  },
+
+  renderHomeKeywordPlan(keywords) {
+    if (!this.els.homeKeywordList) return;
+    this.els.homeKeywordList.innerHTML = "";
+    if (!keywords.length) {
+      const empty = document.createElement("div");
+      empty.className = "keyword-plan-empty";
+      empty.textContent = "输入主题后点击“生成规划”，系统会先给出可编辑的关键词建议。";
+      this.els.homeKeywordList.appendChild(empty);
+      return;
+    }
+    keywords.forEach((keyword, index) => this.addHomeKeywordRow(keyword, index + 1));
+  },
+
+  addHomeKeywordRow(keyword = {}, index = 1) {
+    if (!this.els.homeKeywordList) return;
+    const row = document.createElement("div");
+    row.className = "keyword-plan-row";
+    row.innerHTML = `
+      <div class="keyword-plan-index">关键词 ${index}</div>
+      <input type="text" class="kw-original" placeholder="中文原词" value="${this.escapeHtml(keyword.original || "")}">
+      <input type="text" class="kw-english" placeholder="英文学术词" value="${this.escapeHtml(keyword.english || "")}">
+      <input type="text" class="kw-synonyms" placeholder="同义词（逗号分隔）" value="${this.escapeHtml(keyword.synonyms || "")}">
+      <button class="tiny-btn kw-remove" type="button" title="删除"><i class="fa-solid fa-trash"></i></button>
+    `;
+    row.querySelector(".kw-remove")?.addEventListener("click", () => row.remove());
+    this.els.homeKeywordList.appendChild(row);
+  },
+
+  async deleteHomeSession(sessionId) {
+    if (!sessionId) return;
+    if (!confirm("确定删除这个综述吗？删除后无法恢复。")) return;
+
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "删除失败");
+      }
+
+      this.state.sessions = (this.state.sessions || []).filter((session) => session.session_id !== sessionId);
+      this.renderHomeSessions();
+    } catch (error) {
+      alert(`删除失败：${error.message}`);
+    }
+  },
+
+  collectHomeKeywords() {
+    const rows = Array.from(this.els.homeKeywordList?.querySelectorAll(".keyword-plan-row") || []);
+    return rows.map((row) => ({
+      original: row.querySelector(".kw-original")?.value?.trim() || "",
+      english: row.querySelector(".kw-english")?.value?.trim() || "",
+      synonyms: row.querySelector(".kw-synonyms")?.value?.trim() || "",
+    })).filter((item) => item.original || item.english || item.synonyms);
+  },
+
+  generateHomeKeywordPlan() {
+    const topic = (this.els.topicInput?.value || "").trim();
+    if (!topic) {
+      alert("请先输入主题");
+      return;
+    }
+    const plan = this.inferKeywordPlan(topic, this.els.keywordInput?.value || "");
+    this.renderHomeKeywordPlan(plan);
+  },
+
+  syncKeywordPlanHint() {
+    if (!this.els.homeKeywordList) return;
+    const hasRows = this.els.homeKeywordList.querySelectorAll(".keyword-plan-row").length > 0;
+    if (hasRows) return;
+    const topic = (this.els.topicInput?.value || "").trim();
+    const seeds = this.normalizeSeedKeywords(this.els.keywordInput?.value || "");
+    if (topic && seeds.length) {
+      this.renderHomeKeywordPlan(this.inferKeywordPlan(topic, this.els.keywordInput?.value || ""));
     }
   },
 
@@ -646,7 +830,13 @@ const notebooklm = {
 
   openKeywordModal(topic, keywords = []) {
     if (!this.els.keywordModal) return;
-    this.els.keywordTopic.textContent = topic || "主题";
+    if (this.els.keywordTopic) {
+      if ("value" in this.els.keywordTopic) {
+        this.els.keywordTopic.value = topic || "主题";
+      } else {
+        this.els.keywordTopic.textContent = topic || "主题";
+      }
+    }
     this.els.keywordList.innerHTML = "";
     if (keywords.length === 0) {
       this.addKeywordRow();
@@ -663,15 +853,15 @@ const notebooklm = {
   addKeywordRow(keyword = {}) {
     if (!this.els.keywordList) return;
     const row = document.createElement("div");
-    row.className = "field-grid";
-    row.style.gridTemplateColumns = "0.7fr 1fr 1fr auto";
+    row.className = "keyword-plan-row";
     row.innerHTML = `
+      <div class="keyword-plan-index">关键词 ${this.els.keywordList.children.length + 1}</div>
       <input type="text" class="kw-original" placeholder="中文原词" value="${this.escapeHtml(keyword.original || "")}">
       <input type="text" class="kw-english" placeholder="英文学术词" value="${this.escapeHtml(keyword.english || "")}">
       <input type="text" class="kw-synonyms" placeholder="同义词（逗号分隔）" value="${this.escapeHtml(keyword.synonyms || "")}">
-      <button class="tiny-btn" type="button" title="删除"><i class="fa-solid fa-trash"></i></button>
+      <button class="tiny-btn kw-remove" type="button" title="删除"><i class="fa-solid fa-trash"></i></button>
     `;
-    row.querySelector("button").addEventListener("click", () => row.remove());
+    row.querySelector(".kw-remove")?.addEventListener("click", () => row.remove());
     this.els.keywordList.appendChild(row);
   },
 
