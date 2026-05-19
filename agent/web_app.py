@@ -914,6 +914,70 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         raise HTTPException(status_code=500, detail=f"撰写阶段执行失败: {str(e)}")
 
 
+# ━━━ 迭代三新增：为选中论文生成独立笔记 ━━━
+
+class RunNotesRequest(BaseModel):
+    topic: str
+    paper_ids: list[str]
+
+@app.post("/api/sessions/{session_id}/run/notes")
+def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
+    """【阶段2b】为选中的每篇论文生成独立笔记"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    papers = session.get("papers", [])
+    paper_ids = [pid.strip() for pid in payload.paper_ids if pid.strip()]
+    if not paper_ids:
+        raise HTTPException(status_code=400, detail="paper_ids 不能为空")
+
+    from llms.client import LLMClient
+    llm = LLMClient()
+    topic = payload.topic.strip()
+    notes_map = {}
+
+    for paper in papers:
+        pid = paper.get("paper_id", "")
+        if pid not in paper_ids:
+            continue
+
+        title = paper.get("title", pid)
+        abstract = paper.get("abstract", "")
+        source_info = paper.get("source_type", paper.get("source", ""))
+
+        note_prompt = f"""你是一名学术研究员。请为以下论文撰写一份结构化的学术笔记（300-500字）：
+
+研究主题：{topic}
+论文标题：{title}
+来源：{source_info}
+摘要：{abstract}
+
+请按以下格式输出：
+## 论文笔记：{title}
+- **核心方法**：（简述该论文使用的核心技术或方法）
+- **关键发现**：（列出最重要的实验发现或结论）
+- **与研究主题的关联**：（说明该论文如何与「{topic}」相关联）
+- **亮点与不足**：（简要评价论文的贡献和局限）
+
+直接输出笔记内容，不要额外解释。"""
+
+        try:
+            note_text = llm.chat("你是严谨的学术研究员。", note_prompt, []).strip()
+            notes_map[pid] = note_text
+        except Exception as e:
+            notes_map[pid] = f"## 论文笔记：{title}\n\n生成笔记时出错：{str(e)}"
+
+    if notes_map:
+        session_mgr.batch_update_paper_notes(session_id, notes_map)
+
+    return {
+        "phase": "notes",
+        "notes_map": notes_map,
+        "count": len(notes_map),
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
 

@@ -48,7 +48,7 @@ const notebooklm = {
     this.els.notesBlock = document.getElementById("notesBlock");
     this.els.reviewBlock = document.getElementById("reviewBlock");
     this.els.detailHeader = document.getElementById("detailHeader");
-    this.els.detailTitle = document.getElementById("detailTitle");
+    this.els.detailTitle = document.getElementById("detailHeader");
     this.els.detailMeta = document.getElementById("detailMeta");
     this.els.detailContent = document.getElementById("detailContent");
     this.els.viewSummary = document.getElementById("viewSummary");
@@ -533,16 +533,16 @@ const notebooklm = {
   renderPaperList() {
     if (!this.els.paperList) return;
     const papers = this.state.currentSession?.papers || [];
-    const notes = this.state.currentSession?.notes || "";
     const draft = this.state.currentSession?.draft || "";
 
     // 更新论文计数
     const countChip = document.getElementById("paperCountChip");
     if (countChip) {
       const acceptedCount = papers.filter(p => p.status === "accepted").length;
+      const hasNotesCount = papers.filter(p => p.has_notes).length;
       countChip.innerHTML = acceptedCount > 0
-        ? `<i class="fa-solid fa-check"></i> ${papers.length} 篇（${acceptedCount} 篇已选）`
-        : `<i class="fa-solid fa-check"></i> ${papers.length} 篇`;
+        ? `<i class="fa-solid fa-check"></i> ${papers.length} 篇（${acceptedCount} 已选，${hasNotesCount} 有笔记）`
+        : `<i class="fa-solid fa-check"></i> ${papers.length} 篇（${hasNotesCount} 有笔记）`;
     }
 
     if (!papers.length) {
@@ -552,11 +552,9 @@ const notebooklm = {
 
     this.els.paperList.innerHTML = "";
     papers.forEach((paper) => {
-      // 用 paper_id 在笔记/综述中匹配（更可靠）
-      const pid = (paper.paper_id || "").toLowerCase();
-      const pidClean = pid.replace(".pdf", "").replace(/^paper_/, "");
-      paper._hasNotes = notes.toLowerCase().includes(pidClean) || notes.toLowerCase().includes(pid);
-      paper._hasReview = draft.toLowerCase().includes(pidClean) || draft.toLowerCase().includes(pid);
+      // 直接使用后端 per-paper 字段
+      paper._hasNotes = paper.has_notes === true || Boolean((paper.notes || "").trim());
+      paper._hasReview = Boolean(draft.trim());
 
       const row = document.createElement("article");
       row.className = `paper-row ${paper.paper_id === this.state.currentPaperId ? "active" : ""}`;
@@ -569,17 +567,20 @@ const notebooklm = {
 
       const title = paper.title || paper.paper_id || "未命名论文";
       const authorLine = paper.authors || paper.source_type || paper.source || "来源未标记";
+      const abstractPreview = (paper.abstract || "").slice(0, 80) + (paper.abstract && paper.abstract.length > 80 ? "..." : "");
+      
       const statusIcon = paper._hasNotes
         ? '<span class="chip ok" title="已生成笔记"><i class="fa-solid fa-check-circle"></i> 有笔记</span>'
         : '<span class="chip warn" title="未生成笔记"><i class="fa-regular fa-circle"></i> 无笔记</span>';
       const reviewIcon = paper._hasReview
         ? '<span class="chip ok" title="已纳入综述"><i class="fa-solid fa-check-circle"></i> 已纳入综述</span>'
         : '';
+      const selectedClass = paper.status === "accepted" ? "accepted" : "";
 
       row.innerHTML = `
         <div class="paper-main">
           <h4>${this.escapeHtml(title)}</h4>
-          <p>${this.escapeHtml(authorLine)}</p>
+          <p>${this.escapeHtml(abstractPreview || authorLine)}</p>
           <div class="paper-meta">
             <span class="chip"><i class="fa-regular fa-circle-dot"></i> ${this.escapeHtml(paper.source || "agent_search")}</span>
             ${statusIcon}
@@ -589,7 +590,7 @@ const notebooklm = {
         </div>
         <div class="paper-actions">
           <button class="mini-btn remove" title="移除论文" data-action="remove"><i class="fa-solid fa-xmark"></i></button>
-          <button class="mini-btn ${paper.status === "accepted" ? "accepted" : ""}" title="${paper.status === 'accepted' ? '取消选中' : '选中论文'}" data-action="accept"><i class="fa-solid fa-check"></i></button>
+          <button class="mini-btn ${selectedClass}" title="${paper.status === 'accepted' ? '取消选中' : '选中论文'}" data-action="accept"><i class="fa-solid fa-check"></i></button>
         </div>
       `;
 
@@ -629,24 +630,51 @@ const notebooklm = {
     if (!this.els.reviewBlock) return;
     const draft = this.state.currentSession?.draft || "";
     const hasDraft = Boolean(draft.trim());
-    this.els.reviewBlock.innerHTML = `
-      <div class="panel-block-head">
-        <strong>生成综述</strong>
-        <span class="chip"><i class="fa-regular fa-pen-to-square"></i> ${hasDraft ? `v${this.state.currentSession?.draft_version || 1}` : "未生成"}</span>
-      </div>
-      <div class="markdown">${hasDraft ? marked.parse(draft) : '<div class="empty-state">还没有综述草稿。完成笔记后，点击下方「生成综述」按钮生成。</div>'}</div>
-    `;
+    const topic = this.state.currentSession?.topic || "综述";
+
+    if (hasDraft) {
+      // 有综述 → 只显示标题，点击跳转到右侧综述视图
+      this.els.reviewBlock.innerHTML = `
+        <div class="panel-block-head">
+          <strong>📝 综述</strong>
+          <span class="chip ok"><i class="fa-solid fa-check-circle"></i> 已生成</span>
+        </div>
+        <div class="review-title-link" id="reviewTitleLink" style="cursor:pointer;padding:10px 0;border:1px solid var(--line);border-radius:12px;padding:14px;">
+          <h4 style="margin:0;font-size:0.95rem;color:var(--accent);">${this.escapeHtml(topic)}</h4>
+          <span style="font-size:0.82rem;color:var(--subtle);">点击查看完整综述 →</span>
+        </div>
+      `;
+      const link = document.getElementById("reviewTitleLink");
+      if (link) {
+        link.addEventListener("click", () => {
+          this.state.currentViewMode = "review";
+          this.renderDetailPanel();
+          this.renderViewButtons();
+          this.renderChatContext();
+        });
+      }
+    } else {
+      this.els.reviewBlock.innerHTML = `
+        <div class="panel-block-head">
+          <strong>📝 综述</strong>
+          <span class="chip"><i class="fa-regular fa-pen-to-square"></i> 未生成</span>
+        </div>
+        <div class="empty-state">还没有综述草稿。选中论文并生成笔记后，点击「生成综述」按钮生成。</div>
+      `;
+    }
   },
 
   renderDetailPanel() {
-    if (!this.state.currentSession || !this.els.detailContent || !this.els.detailTitle) return;
+    if (!this.state.currentSession || !this.els.detailContent) return;
 
     const session = this.state.currentSession;
     const paper = this.getCurrentPaper();
     const paperCount = session.papers?.length || 0;
     const selectedLabel = paper ? paper.title || paper.paper_id : "未选择论文";
 
-    this.els.detailTitle.textContent = selectedLabel;
+    if (this.els.detailTitle) {
+      this.els.detailTitle.textContent = selectedLabel;
+    }
     if (this.els.detailMeta) {
       this.els.detailMeta.textContent = `${paperCount} 个来源 · ${this.viewModeLabel(this.state.currentViewMode)} · ${session.state_label || session.state}`;
     }
@@ -668,7 +696,7 @@ const notebooklm = {
       return '<div class="empty-state">请先在左侧选择一篇论文。</div>';
     }
 
-    const extracted = this.extractPaperSnippet(paper, session?.notes || "", 420);
+    const abstract = paper.abstract || paper.summary || paper.description || "";
     return `
       <div class="detail-hero">
         <span class="topic-badge"><i class="fa-regular fa-note-sticky"></i> 摘要</span>
@@ -677,8 +705,8 @@ const notebooklm = {
       </div>
       <div class="detail-blocks" style="margin-top:16px;">
         <div class="panel-block">
-          <div class="panel-block-head"><strong>论文简介</strong><span class="chip">只读</span></div>
-          <div class="plain-text">${this.escapeHtml(paper.abstract || paper.summary || paper.description || extracted || "当前没有可用摘要，建议继续检索或添加 PDF 以补全信息。")}</div>
+          <div class="panel-block-head"><strong>论文摘要</strong><span class="chip">只读</span></div>
+          <div class="plain-text">${this.escapeHtml(abstract || "当前没有可用摘要，建议继续检索或添加 PDF 以补全信息。")}</div>
         </div>
         <div class="panel-block">
           <div class="panel-block-head"><strong>来源信息</strong><span class="chip">${this.escapeHtml(paper.status || "pending")}</span></div>
@@ -689,17 +717,17 @@ const notebooklm = {
   },
 
   renderPaperReport(paper, session) {
-    const notes = session?.notes || "";
-    const reportText = this.extractPaperSnippet(paper, notes, 900) || notes || "暂无报告内容";
+    const notes = paper.notes || session.notes || "";
+    const hasPaperNotes = paper._hasNotes;
     return `
       <div class="detail-hero">
         <span class="topic-badge"><i class="fa-solid fa-chart-line"></i> 报告</span>
         <h3>${this.escapeHtml(paper?.title || paper?.paper_id || session.topic || "综合报告")}</h3>
-        <div class="lead">报告视图默认只读，展示当前论文与会话笔记中的关联内容。</div>
+        <div class="lead">${hasPaperNotes ? '这是该论文的研究笔记，由 AI 自动生成。' : '该论文尚未生成笔记，请选中后点击左侧「生成笔记」。'}</div>
       </div>
       <div class="panel-block" style="margin-top:16px;">
-        <div class="panel-block-head"><strong>报告内容</strong><span class="chip">来自笔记 / 研究轨迹</span></div>
-        <div class="markdown">${marked.parse(reportText)}</div>
+        <div class="panel-block-head"><strong>${hasPaperNotes ? '研究笔记' : '报告内容'}</strong><span class="chip">${hasPaperNotes ? 'AI生成' : '待生成'}</span></div>
+        <div class="markdown">${notes.trim() ? marked.parse(notes) : '<div class="empty-state">该论文还没有研究笔记。请选中该论文后点击左侧「生成笔记」按钮。</div>'}</div>
       </div>
     `;
   },
@@ -762,70 +790,72 @@ const notebooklm = {
 
     const papers = session.papers || [];
     const hasPapers = papers.length > 0;
-    const hasNotes = Boolean((session.notes || "").trim());
     const hasDraft = Boolean((session.draft || "").trim());
-
-    // 统计选中状态
     const acceptedPapers = papers.filter(p => p.status === "accepted");
-    const acceptedCount = acceptedPapers.length;
-    // 有效选中：有accepted论文就用accepted的，否则所有论文都算
-    const effectivePapers = acceptedCount > 0 ? acceptedPapers : papers;
-    const allHaveNotes = effectivePapers.length > 0 && effectivePapers.every(p => p._hasNotes);
-    const allHaveReview = effectivePapers.length > 0 && effectivePapers.every(p => p._hasReview);
+    const effectivePapers = acceptedPapers.length > 0 ? acceptedPapers : papers;
+
+    // 计数：有效选中论文中，有笔记的 / 没笔记的
+    const withNotes = effectivePapers.filter(p => p._hasNotes).length;
+    const withoutNotes = effectivePapers.length - withNotes;
+    const allHaveNotes = effectivePapers.length > 0 && withoutNotes === 0;
+    const anyNeedNotes = withoutNotes > 0;
+    const notesGenerated = effectivePapers.length > 0 && allHaveNotes;
 
     // AI检索论文 按钮
     if (this.els.searchBtn) {
       if (!session.keywords || !session.keywords.length || session.state === "planning") {
-        this.els.searchBtn.classList.add("active");
         this.els.searchBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> 生成关键词';
         this.els.searchBtn.disabled = false;
       } else if (session.state === "plan_confirmed") {
-        this.els.searchBtn.classList.add("active");
         this.els.searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> AI检索论文';
         this.els.searchBtn.disabled = false;
       } else if (session.state === "searching") {
-        this.els.searchBtn.classList.remove("active");
         this.els.searchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 检索中...';
         this.els.searchBtn.disabled = true;
       } else {
-        this.els.searchBtn.classList.add("active");
         this.els.searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> 重新检索';
         this.els.searchBtn.disabled = false;
       }
     }
 
-    // 添加论文 按钮：始终可用（只要有关键词确认后或已有论文）
+    // 添加论文 按钮
     if (this.els.addPaperBtn) {
       this.els.addPaperBtn.disabled = false;
     }
 
-    // 生成笔记 按钮：有论文就可用
+    // 生成笔记 按钮
+    // 规则：有效选中论文中，有未生成笔记的 → 亮；全都有 → 灰（不能重新生成）
     if (this.els.notesBtn) {
-      this.els.notesBtn.disabled = !hasPapers;
-      if (hasNotes) {
-        this.els.notesBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 重新生成笔记';
-        this.els.notesBtn.classList.add("active");
-      } else if (hasPapers) {
+      if (!effectivePapers.length || !hasPapers) {
+        this.els.notesBtn.disabled = true;
+        this.els.notesBtn.innerHTML = '<i class="fa-regular fa-file-lines"></i> 生成笔记';
+        this.els.notesBtn.classList.remove("active");
+      } else if (anyNeedNotes) {
+        this.els.notesBtn.disabled = false;
         this.els.notesBtn.innerHTML = '<i class="fa-regular fa-file-lines"></i> 生成笔记';
         this.els.notesBtn.classList.add("active");
       } else {
-        this.els.notesBtn.innerHTML = '<i class="fa-regular fa-file-lines"></i> 生成笔记';
+        this.els.notesBtn.disabled = true;
+        this.els.notesBtn.innerHTML = '<i class="fa-solid fa-check"></i> 笔记已生成';
         this.els.notesBtn.classList.remove("active");
       }
     }
 
-    // 生成综述 按钮：有笔记就可用
+    // 生成综述 按钮
+    // 规则：所选全部有笔记 + 无草稿 → 亮；已有草稿 → 灰
     if (this.els.reviewBtn) {
-      this.els.reviewBtn.disabled = !hasNotes;
-      if (hasDraft) {
-        this.els.reviewBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 重新生成综述';
-        this.els.reviewBtn.classList.add("active");
-      } else if (hasNotes) {
-        this.els.reviewBtn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i> 生成综述';
-        this.els.reviewBtn.classList.add("active");
-      } else {
+      if (!notesGenerated) {
+        this.els.reviewBtn.disabled = true;
         this.els.reviewBtn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i> 生成综述';
         this.els.reviewBtn.classList.remove("active");
+      } else if (hasDraft) {
+        this.els.reviewBtn.disabled = true;
+        this.els.reviewBtn.innerHTML = '<i class="fa-solid fa-check"></i> 综述已生成';
+        this.els.reviewBtn.classList.remove("active");
+      } else {
+        this.els.reviewBtn.disabled = false;
+        this.els.reviewBtn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i> 生成综述';
+        this.els.reviewBtn.classList.add("active");
       }
     }
 
@@ -837,13 +867,15 @@ const notebooklm = {
       } else if (session.state === "plan_confirmed") {
         hint.innerHTML = '<i class="status-dot live"></i>关键词已确认，点击「AI检索论文」开始搜索';
       } else if (session.state === "searching") {
-        hint.innerHTML = '<i class="status-dot live"></i>正在检索论文并生成笔记...';
+        hint.innerHTML = '<i class="status-dot live"></i>正在检索论文并同步笔记...';
       } else if (hasDraft) {
         hint.innerHTML = '<i class="status-dot ok"></i>综述已生成，可在右侧查看与提问';
-      } else if (allHaveNotes) {
-        hint.innerHTML = '<i class="status-dot ok"></i>笔记已生成，点击「生成综述」撰写初稿';
+      } else if (notesGenerated) {
+        hint.innerHTML = '<i class="status-dot ok"></i>选中论文笔记已全部生成，点击「生成综述」撰写初稿';
+      } else if (anyNeedNotes) {
+        hint.innerHTML = `<i class="status-dot live"></i>${withoutNotes} 篇选中论文未生成笔记，点击「生成笔记」`;
       } else if (hasPapers) {
-        hint.innerHTML = '<i class="status-dot live"></i>论文已就绪，点击「生成笔记」开始分析';
+        hint.innerHTML = '<i class="status-dot live"></i>请选中论文（✓），然后生成笔记';
       } else {
         hint.innerHTML = '<i class="status-dot live"></i>请先检索论文，再生成笔记与综述';
       }
@@ -889,12 +921,54 @@ const notebooklm = {
   },
 
   async generateNotesAction() {
-    // 生成笔记 = 运行搜索阶段（搜索+笔记是一体的）
-    await this.runSearchPhase();
+    const session = this.state.currentSession;
+    if (!session || !this.state.currentSessionId) return;
+
+    const papers = session.papers || [];
+    const acceptedPapers = papers.filter(p => p.status === "accepted");
+    const effectivePapers = acceptedPapers.length > 0 ? acceptedPapers : papers;
+    // 只处理未生成笔记的论文
+    const needNotes = effectivePapers.filter(p => !p._hasNotes);
+    
+    if (needNotes.length === 0) {
+      alert("所有选中论文已生成笔记，无需重复生成。");
+      return;
+    }
+
+    const paperIds = needNotes.map(p => p.paper_id);
+    
+    try {
+      this.setConsoleStatus("writing", `正在为 ${paperIds.length} 篇论文生成笔记...`);
+      const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: session.topic, paper_ids: paperIds }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "生成笔记失败");
+      }
+
+      await this.reloadCurrentSession();
+      // 自动选中刚生成笔记的论文
+      for (const pid of paperIds) {
+        try {
+          await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/papers/${encodeURIComponent(pid)}/status`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "accepted" }),
+          });
+        } catch (e) { /* ignore */ }
+      }
+      await this.reloadCurrentSession();
+      this.switchViewMode("report");
+      this.setConsoleStatus("search_complete", `${data.count || paperIds.length} 篇论文笔记已生成`);
+    } catch (error) {
+      this.setConsoleStatus("error", `生成笔记失败：${error.message}`);
+    }
   },
 
   async generateReviewAction() {
-    // 生成综述 = 运行撰写阶段
     await this.runWritePhase();
   },
 

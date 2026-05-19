@@ -532,17 +532,84 @@ def run_search_only(
             with open(notes_draft_path, 'w', encoding='utf-8') as f:
                 f.write(notes_content)
 
-    # 收集论文列表
+    # 收集论文列表（从traces中提取标题和摘要）
     papers_list = []
     if os.path.exists(papers_dir):
+        pdf_names = set()
         for fname in sorted(os.listdir(papers_dir)):
             if fname.endswith(".pdf"):
+                pdf_names.add(fname.replace(".pdf", ""))
+        
+        # 从 traces 中提取论文元数据
+        for step in researcher_agent.traces:
+            obs = str(step.get("observation", ""))
+            action = str(step.get("action", ""))
+            action_input = step.get("action_input", {}) if isinstance(step.get("action_input", {}), dict) else {}
+            
+            if action == "append_note":
+                content = str(action_input.get("content", "") or step.get("input", ""))
+                title_match = re.search(r'标题[：:]\s*(.+?)(?:\n|$)', content)
+                abstract_match = re.search(r'摘要[：:]\s*(.+?)(?:\n|作者|关联|DOI|PDF)', content, re.DOTALL)
+                paper_title = title_match.group(1).strip() if title_match else ""
+                paper_abstract = abstract_match.group(1).strip()[:500] if abstract_match else ""
+                
+                # 匹配对应的 PDF
+                for pid in pdf_names:
+                    if pid in content or (paper_title and any(w in content for w in paper_title.split()[:3])):
+                        if not any(p.get("paper_id") == pid for p in papers_list):
+                            papers_list.append({
+                                "paper_id": pid,
+                                "title": paper_title or pid,
+                                "authors": "",
+                                "source": "agent_search",
+                                "source_type": "arxiv",
+                                "status": "pending",
+                                "abstract": paper_abstract,
+                                "notes": "",
+                                "has_notes": False,
+                                "added_at": datetime.datetime.now().isoformat(),
+                            })
+                        break
+            
+            # 也从搜索结果中收集论文信息
+            if action in ("arxiv_search", "openalex_search", "crossref_search", "semantic_scholar_search"):
+                # 解析搜索结果中的标题
+                for title_m in re.finditer(r'(?:Title|标题)[：:]\s*(.+?)(?:\n|$)', obs, re.IGNORECASE):
+                    t = title_m.group(1).strip()
+                    abs_m = re.search(r'(?:Summary|Abstract|摘要)[：:]\s*(.+?)(?=\n(?:ID|Title|Authors|DOI|$))', obs, re.IGNORECASE | re.DOTALL)
+                    abstract = abs_m.group(1).strip()[:500] if abs_m else ""
+                    # 找匹配的PDF
+                    for pid in pdf_names:
+                        clean_pid = pid.replace("paper_", "").replace("_", "")
+                        if clean_pid[:6] in obs or any(w.lower() in obs.lower() for w in t.split()[:3]):
+                            if not any(p.get("paper_id") == pid for p in papers_list):
+                                papers_list.append({
+                                    "paper_id": pid,
+                                    "title": t,
+                                    "authors": "",
+                                    "source": "agent_search",
+                                    "source_type": "arxiv",
+                                    "status": "pending",
+                                    "abstract": abstract,
+                                    "notes": "",
+                                    "has_notes": False,
+                                    "added_at": datetime.datetime.now().isoformat(),
+                                })
+                            break
+
+        # 补漏：任何未匹配的 PDF
+        for pid in pdf_names:
+            if not any(p.get("paper_id") == pid for p in papers_list):
                 papers_list.append({
-                    "paper_id": fname.replace(".pdf", ""),
-                    "title": fname,
+                    "paper_id": pid,
+                    "title": pid,
+                    "authors": "",
                     "source": "agent_search",
                     "source_type": "arxiv",
                     "status": "pending",
+                    "abstract": "",
+                    "notes": "",
+                    "has_notes": False,
                     "added_at": datetime.datetime.now().isoformat(),
                 })
 
