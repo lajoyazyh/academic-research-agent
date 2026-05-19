@@ -436,8 +436,8 @@ const notebooklm = {
   bindConsoleActions() {
     this.els.searchBtn?.addEventListener("click", () => this.primarySourceAction());
     this.els.addPaperBtn?.addEventListener("click", () => this.addPaperFromPrompt());
-    this.els.notesBtn?.addEventListener("click", () => this.runSearchPhase());
-    this.els.reviewBtn?.addEventListener("click", () => this.runWritePhase());
+    this.els.notesBtn?.addEventListener("click", () => this.generateNotesAction());
+    this.els.reviewBtn?.addEventListener("click", () => this.generateReviewAction());
     this.els.viewSummary?.addEventListener("click", () => this.switchViewMode("summary"));
     this.els.viewReport?.addEventListener("click", () => this.switchViewMode("report"));
     this.els.viewReview?.addEventListener("click", () => this.switchViewMode("review"));
@@ -533,6 +533,17 @@ const notebooklm = {
   renderPaperList() {
     if (!this.els.paperList) return;
     const papers = this.state.currentSession?.papers || [];
+    const notes = this.state.currentSession?.notes || "";
+    const draft = this.state.currentSession?.draft || "";
+
+    // 更新论文计数
+    const countChip = document.getElementById("paperCountChip");
+    if (countChip) {
+      const acceptedCount = papers.filter(p => p.status === "accepted").length;
+      countChip.innerHTML = acceptedCount > 0
+        ? `<i class="fa-solid fa-check"></i> ${papers.length} 篇（${acceptedCount} 篇已选）`
+        : `<i class="fa-solid fa-check"></i> ${papers.length} 篇`;
+    }
 
     if (!papers.length) {
       this.els.paperList.innerHTML = '<div class="empty-state">点击「AI 检索论文」或「添加论文」开始构建来源库。</div>';
@@ -541,6 +552,11 @@ const notebooklm = {
 
     this.els.paperList.innerHTML = "";
     papers.forEach((paper) => {
+      // 标记每篇论文是否已生成笔记/综述
+      const paperTitle = (paper.title || paper.paper_id || "").toLowerCase();
+      paper._hasNotes = notes.toLowerCase().includes(paperTitle) || notes.toLowerCase().includes((paper.paper_id || "").toLowerCase());
+      paper._hasReview = draft.toLowerCase().includes(paperTitle) || draft.toLowerCase().includes((paper.paper_id || "").toLowerCase());
+
       const row = document.createElement("article");
       row.className = `paper-row ${paper.paper_id === this.state.currentPaperId ? "active" : ""}`;
       row.addEventListener("click", () => {
@@ -552,6 +568,8 @@ const notebooklm = {
 
       const title = paper.title || paper.paper_id || "未命名论文";
       const authorLine = paper.authors || paper.source_type || paper.source || "来源未标记";
+      const statusIcon = paper._hasNotes ? '<span class="chip ok" title="已生成笔记"><i class="fa-solid fa-check-circle"></i> 有笔记</span>' : '<span class="chip warn" title="未生成笔记"><i class="fa-regular fa-circle"></i> 无笔记</span>';
+      const reviewIcon = paper._hasReview ? '<span class="chip ok" title="已纳入综述"><i class="fa-solid fa-check-circle"></i> 已纳入综述</span>' : '';
 
       row.innerHTML = `
         <div class="paper-main">
@@ -559,13 +577,14 @@ const notebooklm = {
           <p>${this.escapeHtml(authorLine)}</p>
           <div class="paper-meta">
             <span class="chip"><i class="fa-regular fa-circle-dot"></i> ${this.escapeHtml(paper.source || "agent_search")}</span>
-            <span class="chip"><i class="fa-regular fa-bookmark"></i> ${this.escapeHtml(paper.status || "pending")}</span>
+            ${statusIcon}
+            ${reviewIcon}
             ${paper.added_at ? `<span class="chip"><i class="fa-regular fa-clock"></i> ${this.formatDate(paper.added_at)}</span>` : ""}
           </div>
         </div>
         <div class="paper-actions">
           <button class="mini-btn remove" title="移除论文" data-action="remove"><i class="fa-solid fa-xmark"></i></button>
-          <button class="mini-btn ${paper.status === "accepted" ? "accepted" : ""}" title="选中论文" data-action="accept"><i class="fa-solid fa-check"></i></button>
+          <button class="mini-btn ${paper.status === "accepted" ? "accepted" : ""}" title="${paper.status === 'accepted' ? '取消选中' : '选中论文'}" data-action="accept"><i class="fa-solid fa-check"></i></button>
         </div>
       `;
 
@@ -605,7 +624,7 @@ const notebooklm = {
         <strong>生成综述</strong>
         <span class="chip"><i class="fa-regular fa-pen-to-square"></i> ${hasDraft ? `v${this.state.currentSession?.draft_version || 1}` : "未生成"}</span>
       </div>
-      <div class="markdown">${hasDraft ? marked.parse(draft) : '<div class="empty-state">还没有综述草稿。完成笔记后，点击右上按钮生成综述。</div>'}</div>
+      <div class="markdown">${hasDraft ? marked.parse(draft) : '<div class="empty-state">还没有综述草稿。完成笔记后，点击下方「生成综述」按钮生成。</div>'}</div>
     `;
   },
 
@@ -731,31 +750,95 @@ const notebooklm = {
     const session = this.state.currentSession;
     if (!session) return;
 
+    const papers = session.papers || [];
+    const hasPapers = papers.length > 0;
     const hasNotes = Boolean((session.notes || "").trim());
     const hasDraft = Boolean((session.draft || "").trim());
-    const hasPapers = Boolean((session.papers || []).length);
 
+    // 统计选中状态
+    const acceptedPapers = papers.filter(p => p.status === "accepted");
+    const acceptedCount = acceptedPapers.length;
+    // 有效选中：有accepted论文就用accepted的，否则所有论文都算
+    const effectivePapers = acceptedCount > 0 ? acceptedPapers : papers;
+    const allHaveNotes = effectivePapers.length > 0 && effectivePapers.every(p => p._hasNotes);
+    const allHaveReview = effectivePapers.length > 0 && effectivePapers.every(p => p._hasReview);
+
+    // AI检索论文 按钮
     if (this.els.searchBtn) {
-      if (!session.keywords || !session.keywords.length) {
+      if (!session.keywords || !session.keywords.length || session.state === "planning") {
         this.els.searchBtn.classList.add("active");
         this.els.searchBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> 生成关键词';
-      } else if (session.state === "plan_confirmed" || session.state === "searching") {
+        this.els.searchBtn.disabled = false;
+      } else if (session.state === "plan_confirmed") {
         this.els.searchBtn.classList.add("active");
         this.els.searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> AI检索论文';
+        this.els.searchBtn.disabled = false;
+      } else if (session.state === "searching") {
+        this.els.searchBtn.classList.remove("active");
+        this.els.searchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 检索中...';
+        this.els.searchBtn.disabled = true;
       } else {
-        this.els.searchBtn.classList.toggle("active", hasPapers && !hasNotes);
-        this.els.searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> AI检索论文';
+        this.els.searchBtn.classList.add("active");
+        this.els.searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> 重新检索';
+        this.els.searchBtn.disabled = false;
       }
     }
 
-    if (this.els.notesBtn) {
-      this.els.notesBtn.classList.toggle("active", hasPapers && !hasNotes);
-      this.els.notesBtn.innerHTML = hasNotes ? '<i class="fa-solid fa-rotate"></i> 重写笔记' : '<i class="fa-solid fa-file-lines"></i> 生成笔记';
+    // 添加论文 按钮：始终可用（只要有关键词确认后或已有论文）
+    if (this.els.addPaperBtn) {
+      this.els.addPaperBtn.disabled = false;
     }
 
+    // 生成笔记 按钮：有论文但没有笔记时亮起
+    if (this.els.notesBtn) {
+      const canGenerateNotes = hasPapers && !allHaveNotes;
+      this.els.notesBtn.disabled = !canGenerateNotes;
+      if (hasNotes) {
+        this.els.notesBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 重新生成笔记';
+      } else {
+        this.els.notesBtn.innerHTML = '<i class="fa-regular fa-file-lines"></i> 生成笔记';
+      }
+      if (canGenerateNotes || hasNotes) {
+        this.els.notesBtn.classList.add("active");
+      } else {
+        this.els.notesBtn.classList.remove("active");
+      }
+    }
+
+    // 生成综述 按钮：有笔记但没有综述时亮起
     if (this.els.reviewBtn) {
-      this.els.reviewBtn.classList.toggle("active", hasNotes && !hasDraft);
-      this.els.reviewBtn.innerHTML = hasDraft ? '<i class="fa-solid fa-rotate"></i> 重写综述' : '<i class="fa-solid fa-pen-nib"></i> 生成综述';
+      const canGenerateReview = allHaveNotes && !allHaveReview;
+      this.els.reviewBtn.disabled = !canGenerateReview && !hasDraft;
+      if (hasDraft) {
+        this.els.reviewBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 重新生成综述';
+      } else {
+        this.els.reviewBtn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i> 生成综述';
+      }
+      if (canGenerateReview || hasDraft) {
+        this.els.reviewBtn.classList.add("active");
+      } else {
+        this.els.reviewBtn.classList.remove("active");
+      }
+    }
+
+    // 更新状态提示
+    const hint = document.getElementById("statusHint");
+    if (hint) {
+      if (session.state === "planning") {
+        hint.innerHTML = '<i class="status-dot warn"></i>请先确认关键词规划';
+      } else if (session.state === "plan_confirmed") {
+        hint.innerHTML = '<i class="status-dot live"></i>关键词已确认，点击「AI检索论文」开始搜索';
+      } else if (session.state === "searching") {
+        hint.innerHTML = '<i class="status-dot live"></i>正在检索论文并生成笔记...';
+      } else if (hasDraft) {
+        hint.innerHTML = '<i class="status-dot ok"></i>综述已生成，可在右侧查看与提问';
+      } else if (allHaveNotes) {
+        hint.innerHTML = '<i class="status-dot ok"></i>笔记已生成，点击「生成综述」撰写初稿';
+      } else if (hasPapers) {
+        hint.innerHTML = '<i class="status-dot live"></i>论文已就绪，点击「生成笔记」开始分析';
+      } else {
+        hint.innerHTML = '<i class="status-dot live"></i>请先检索论文，再生成笔记与综述';
+      }
     }
   },
 
@@ -795,6 +878,16 @@ const notebooklm = {
       return;
     }
     await this.runSearchPhase();
+  },
+
+  async generateNotesAction() {
+    // 生成笔记 = 运行搜索阶段（搜索+笔记是一体的）
+    await this.runSearchPhase();
+  },
+
+  async generateReviewAction() {
+    // 生成综述 = 运行撰写阶段
+    await this.runWritePhase();
   },
 
   async runPlanPhase() {
@@ -1098,17 +1191,23 @@ const notebooklm = {
     const session = this.state.currentSession || {};
     const mode = this.state.currentViewMode;
 
+    // ━━━ 综述模式：可基于选中论文+综述回答，可请求修订 ━━━
     if (mode === "review") {
+      const acceptedPapers = (session.papers || []).filter(p => p.status === "accepted");
+      const acceptedNames = acceptedPapers.map(p => p.title || p.paper_id).join("、");
+      const draftSummary = (session.draft || "").slice(0, 200);
       return {
-        text: `我会按当前综述与已选论文来回答。基于你刚才的问题「${message}」，我建议先明确要修改的章节，再把修改意见压成 3 到 5 条可执行建议。当前选中的论文有 ${session.papers?.filter((item) => item.status === "accepted").length || 0} 篇。`,
-        note: "可点击「生成修订版」把这条建议写入反馈并重新生成综述。",
+        text: `根据当前综述草稿和 ${acceptedPapers.length} 篇已选论文（${acceptedNames || "暂无"}），关于「${message}」：我建议你明确要修改的章节或段落，然后将修改意见压缩为 3-5 条可执行建议。你可以点击「生成修订版」按钮让我基于反馈重新生成综述。`,
+        note: "综述模式：可点击「生成修订版」把本条建议写入反馈并重新生成综述。",
       };
     }
 
+    // ━━━ 摘要/报告模式：仅回答当前论文内容，不可修改 ━━━
     const currentName = paper?.title || paper?.paper_id || session.topic || "当前论文";
+    const modeLabel = mode === "report" ? "报告" : "摘要";
     return {
-      text: `针对「${currentName}」，我可以只基于摘要 / 报告内容来回答。关于「${message}」，当前可用信息显示该论文属于 ${paper?.source || "当前主题来源"}，你可以继续切换到报告视图查看更多上下文。`,
-      note: "该模式仅回答当前论文内容，不会改写报告或综述。",
+      text: `针对「${currentName}」的${modeLabel}内容回答：「${message}」。该论文来源为 ${paper?.source || "当前主题来源"}。你可以切换到报告视图查看更多上下文，或切换到综述视图进行修改。`,
+      note: `当前为${modeLabel}模式，仅回答当前论文内容，不会修改报告或摘要。`,
     };
   },
 

@@ -18,10 +18,7 @@
         </div>
       </div>
       <div class="top-actions">
-        <button class="ghost-btn" onclick="window.location.href='/'">返回首页</button>
-        <button class="ghost-btn" onclick="window.location.href='/app/history'">历史记录</button>
-        <button class="ghost-btn" onclick="window.location.href='/app/help'">使用指南</button>
-        <button class="primary-btn" id="searchPaperBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> AI检索论文</button>
+        <button class="ghost-btn" onclick="window.location.href='/'"><i class="fa-solid fa-arrow-left"></i> 返回首页</button>
       </div>
     </header>
 
@@ -30,31 +27,33 @@
         <div class="panel-head">
           <div>
             <h2>来源</h2>
-            <div class="panel-subtitle">上方是检索与添加入口，中间是论文列表，下方是笔记与综述按钮。</div>
+            <div class="panel-subtitle">上方检索与添加论文，中间管理论文列表，下方生成笔记与综述。</div>
           </div>
-          <button class="icon-btn" title="切换视图" onclick="window.notebooklm.switchViewMode('summary')"><i class="fa-solid fa-list"></i></button>
         </div>
 
         <div class="panel-body">
           <div class="source-actions">
+            <button class="primary-btn" id="searchPaperBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> AI检索论文</button>
             <button class="secondary-btn" id="addPaperBtn"><i class="fa-solid fa-plus"></i> 添加论文</button>
-            <button class="secondary-btn" id="generateNotesBtn"><i class="fa-regular fa-file-lines"></i> 生成笔记</button>
-            <button class="secondary-btn" id="generateReviewBtn"><i class="fa-regular fa-pen-to-square"></i> 生成综述</button>
           </div>
 
-          <div class="panel-block">
+          <div class="panel-block" id="paperListBlock">
             <div class="panel-block-head">
               <strong>检索到和添加的论文</strong>
-              <span class="chip"><i class="fa-solid fa-check"></i> 右侧按钮用于移除和选中</span>
+              <span class="chip" id="paperCountChip"><i class="fa-solid fa-check"></i> 0 篇</span>
             </div>
             <div class="list-scroll" id="paperList">
-              <div class="empty-state">正在加载会话...</div>
+              <div class="empty-state">点击「AI 检索论文」或「添加论文」开始构建来源库。</div>
             </div>
+          </div>
+
+          <div class="source-actions" id="generateActions" style="margin-top:0;">
+            <button class="secondary-btn" id="generateNotesBtn" disabled><i class="fa-regular fa-file-lines"></i> 生成笔记</button>
+            <button class="secondary-btn" id="generateReviewBtn" disabled><i class="fa-regular fa-pen-to-square"></i> 生成综述</button>
           </div>
 
           <div class="status-line">
-            <span><i class="status-dot live"></i>生成笔记与综述后会自动刷新下方内容</span>
-            <span class="chip"><i class="fa-regular fa-folder-open"></i> 当前会话</span>
+            <span id="statusHint"><i class="status-dot live"></i>请先检索论文，再生成笔记与综述</span>
           </div>
 
           <div class="panel-block" id="notesBlock"></div>

@@ -286,6 +286,18 @@ textarea {
   line-height: 1;
 }
 
+.chip.ok {
+  background: rgba(26, 127, 55, 0.08);
+  color: var(--success);
+  border-color: rgba(26, 127, 55, 0.2);
+}
+
+.chip.warn {
+  background: rgba(245, 158, 11, 0.08);
+  color: var(--warning);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
 .topic-badge {
   background: rgba(15, 111, 255, 0.08);
   color: var(--accent);
@@ -437,6 +449,47 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.source-actions .primary-btn {
+  flex: 1;
+  justify-content: center;
+  font-size: 0.95rem;
+  height: 46px;
+}
+
+.source-actions .secondary-btn {
+  flex: 1;
+  justify-content: center;
+  font-size: 0.95rem;
+  height: 46px;
+}
+
+/* 论文列表下方生成按钮区 */
+#generateActions {
+  padding: 0;
+  margin-top: 4px;
+}
+
+#generateActions .secondary-btn {
+  flex: 1;
+  justify-content: center;
+  height: 44px;
+  font-size: 0.92rem;
+  transition: all 200ms ease;
+}
+
+#generateActions .secondary-btn.active {
+  background: rgba(15, 111, 255, 0.1);
+  border-color: rgba(15, 111, 255, 0.3);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+#generateActions .secondary-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .pill-btn,
@@ -629,7 +682,7 @@ textarea {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(180px, 0.28fr);
+  grid-template-rows: minmax(0, 1fr) minmax(160px, 0.22fr);
 }
 
 .detail-content-wrap {
