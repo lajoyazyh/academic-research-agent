@@ -353,6 +353,51 @@ html, body {
 .home-card:hover .home-card-delete { opacity: 1; }
 .home-card-delete:hover { background: rgba(0,0,0,.06); }
 
+/* ====== Help / Guide Page ====== */
+.help-flow { display: flex; flex-direction: column; gap: 0; }
+.help-step { display: flex; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.help-step:last-child { border-bottom: none; }
+.help-step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 600; font-size: 16px; flex-shrink: 0; }
+.help-step strong { display: block; font-size: 15px; margin-bottom: 4px; }
+.help-step p { margin: 0; font-size: 13px; color: var(--subtle); line-height: 1.7; }
+
+/* ====== Help / Guide Page ====== */
+.help-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.help-step {
+  display: flex;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.help-step:last-child { border-bottom: none; }
+.help-step-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.help-step strong {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+.help-step p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--subtle);
+  line-height: 1.7;
+}
+
 .home-grid .home-card--create .home-card-inner {
   gap: 10px;
 }

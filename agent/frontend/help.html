@@ -2,62 +2,118 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>帮助与指南 - 智能学术助手</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #0f172a, #1a1f35);
-            color: #f1f5f9;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            margin: 0;
-            padding: 2rem;
-        }
-        h1 {
-            text-align: center;
-            background: linear-gradient(135deg, #6366f1, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .content {
-            max-width: 800px;
-            margin: 0 auto;
-            line-height: 1.8;
-        }
-        .card {
-            background: rgba(30, 41, 59, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(148,163,184,0.2);
-            border-radius: 16px;
-            padding: 2rem;
-            margin: 1.5rem 0;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用指南 - 智能学术综述助手</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/notebooklm.css">
 </head>
-<body>
-    <div class="content">
-        <h1>📖 帮助与指南</h1>
-        <div class="card">
-            <h2>系统架构</h2>
-            <p>本系统基于多 Agent 协作：<strong>研究者 Agent</strong> 负责自动搜索、下载和整理论文，生成研究笔记；<strong>撰写 Agent</strong> 基于笔记生成结构化学术综述。</p>
-        </div>
-        <div class="card">
-            <h2>使用方法</h2>
-            <ul>
-                <li>在<strong>研究控制台</strong>创建新会话，输入主题，选择交互式/快速模式。</li>
-                <li>交互模式下，系统会生成关键词方案供您确认，然后逐步搜索文献，最后生成综述。</li>
-                <li>快速模式一键完成全部过程，结果自动保存并加入收藏夹。</li>
-                <li>在<strong>历史记录</strong>页面查看以往综述和论文PDF，可加入收藏。</li>
-                <li>使用<strong>AI 对话助手</strong>与文献知识问答。</li>
-            </ul>
-        </div>
-        <div class="card">
-            <h2>数据来源</h2>
-            <p>系统集成了 arXiv、Semantic Scholar、Crossref、OpenAlex 等多个学术数据库，根据领域自动选择最佳来源。</p>
-        </div>
-        <div class="card">
-            <h2>常见问题</h2>
-            <p><strong>Q: 为什么没有搜到论文？</strong><br>A: 尝试使用英文关键词，或调整研究主题的泛化程度。</p>
-        </div>
+<body style="overflow-y:auto; height:100vh; background:var(--bg);">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><i class="fa-solid fa-circle-info"></i></span>
+      <strong>使用指南</strong>
     </div>
+    <div class="topbar-right">
+      <button class="ghost-btn" onclick="window.location.href='/'"><i class="fa-solid fa-arrow-left"></i> 返回首页</button>
+    </div>
+  </header>
+
+  <main class="home-main" style="height:auto; min-height:calc(100vh - 52px);">
+    <section class="home-section">
+      <div class="home-section-head">
+        <h2>📋 完整操作流程</h2>
+      </div>
+      <div class="home-grid" style="grid-template-columns:1fr;">
+        <div class="help-flow">
+          <div class="help-step">
+            <span class="help-step-num">1</span>
+            <div>
+              <strong>首页新建综述</strong>
+              <p>在首页点击「+ 新建综述」卡片，输入研究主题和关键词种子。系统会基于主题自动生成关键词规划（中文原词 → 英文学术词 → 同义词），你可以编辑、增删后确认。</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <span class="help-step-num">2</span>
+            <div>
+              <strong>AI 检索论文</strong>
+              <p>进入控制台后，点击「AI检索论文」按钮。Agent 会自主调用 arXiv、OpenAlex、Crossref 等学术数据库，根据确认的关键词搜索相关论文，每篇论文自动提取标题、作者和摘要。</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <span class="help-step-num">3</span>
+            <div>
+              <strong>管理论文来源</strong>
+              <p>检索完成后，左侧显示论文列表。你可以点击 ✓ 选中论文、✕ 移除不需要的论文，或通过「添加论文」手动上传 PDF/arXiv ID。每篇论文显示摘要预览和笔记/综述状态。</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <span class="help-step-num">4</span>
+            <div>
+              <strong>生成论文笔记</strong>
+              <p>选中需要深度分析的论文后，点击「生成笔记」。系统会为每篇选中的论文自动生成结构化学术笔记，包含核心方法、关键发现、与研究主题的关联分析。</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <span class="help-step-num">5</span>
+            <div>
+              <strong>生成文献综述</strong>
+              <p>所有选中论文的笔记生成完毕后，点击「生成综述」。AI Writer 会基于笔记内容撰写完整综述，包括引言与背景、核心方法对比、实验分析、局限性与未来方向四大章节。</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <span class="help-step-num">6</span>
+            <div>
+              <strong>查看与修订</strong>
+              <p>点击论文可在右侧「摘要」视图查看基本信息，切换到「笔记」视图查看详细笔记，切换到「综述」视图阅读完整综述。在综述模式下，可通过底部 AI 对话提出修改意见并生成修订版。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-section">
+      <div class="home-section-head">
+        <h2>🛠 数据来源</h2>
+      </div>
+      <div class="home-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+        <div class="home-card home-card--ghost" style="cursor:default; min-height:auto; padding:20px;">
+          <strong>arXiv</strong>
+          <p style="font-size:13px;color:var(--subtle);margin:8px 0 0;">CS/AI/理工科优先，包含标题+作者+摘要，限流较宽松</p>
+        </div>
+        <div class="home-card home-card--ghost" style="cursor:default; min-height:auto; padding:20px;">
+          <strong>OpenAlex</strong>
+          <p style="font-size:13px;color:var(--subtle);margin:8px 0 0;">跨学科综合学术搜索，人文社科/医学优先使用</p>
+        </div>
+        <div class="home-card home-card--ghost" style="cursor:default; min-height:auto; padding:20px;">
+          <strong>Semantic Scholar</strong>
+          <p style="font-size:13px;color:var(--subtle);margin:8px 0 0;">检索能力强但限流极严，仅作大规模补充检索</p>
+        </div>
+        <div class="home-card home-card--ghost" style="cursor:default; min-height:auto; padding:20px;">
+          <strong>Crossref</strong>
+          <p style="font-size:13px;color:var(--subtle);margin:8px 0 0;">补全 DOI 与期刊元数据，支持按标题/作者搜索</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-section">
+      <div class="home-section-head">
+        <h2>❓ 常见问题</h2>
+      </div>
+      <div class="home-grid" style="grid-template-columns:1fr;">
+        <div class="home-card" style="cursor:default; min-height:auto;">
+          <p style="margin:0;"><strong>Q: 为什么没有搜到论文？</strong></p>
+          <p style="margin:6px 0 0;font-size:13px;color:var(--subtle);">A: 尝试使用英文关键词，或换用更通用的学术术语。系统会自动在多个数据库间切换，如果某数据库限流会自动切换到备选数据库。</p>
+        </div>
+        <div class="home-card" style="cursor:default; min-height:auto;">
+          <p style="margin:0;"><strong>Q: 综述大纲显示异常怎么办？</strong></p>
+          <p style="margin:6px 0 0;font-size:13px;color:var(--subtle);">A: 系统已自动处理 Markdown 围栏包裹问题。如果仍有问题，刷新页面即可。新生成的综述不会再有此问题。</p>
+        </div>
+        <div class="home-card" style="cursor:default; min-height:auto;">
+          <p style="margin:0;"><strong>Q: 可以修改生成的内容吗？</strong></p>
+          <p style="margin:6px 0 0;font-size:13px;color:var(--subtle);">A: 综述模式下，通过底部 AI 对话输入修改意见，再点击「生成修订版」即可让 AI 基于反馈重新生成综述。论文笔记不支持修改，但可以重新检索。</p>
+        </div>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
