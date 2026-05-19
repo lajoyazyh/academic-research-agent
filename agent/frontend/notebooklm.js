@@ -552,10 +552,11 @@ const notebooklm = {
 
     this.els.paperList.innerHTML = "";
     papers.forEach((paper) => {
-      // 标记每篇论文是否已生成笔记/综述
-      const paperTitle = (paper.title || paper.paper_id || "").toLowerCase();
-      paper._hasNotes = notes.toLowerCase().includes(paperTitle) || notes.toLowerCase().includes((paper.paper_id || "").toLowerCase());
-      paper._hasReview = draft.toLowerCase().includes(paperTitle) || draft.toLowerCase().includes((paper.paper_id || "").toLowerCase());
+      // 用 paper_id 在笔记/综述中匹配（更可靠）
+      const pid = (paper.paper_id || "").toLowerCase();
+      const pidClean = pid.replace(".pdf", "").replace(/^paper_/, "");
+      paper._hasNotes = notes.toLowerCase().includes(pidClean) || notes.toLowerCase().includes(pid);
+      paper._hasReview = draft.toLowerCase().includes(pidClean) || draft.toLowerCase().includes(pid);
 
       const row = document.createElement("article");
       row.className = `paper-row ${paper.paper_id === this.state.currentPaperId ? "active" : ""}`;
@@ -568,8 +569,12 @@ const notebooklm = {
 
       const title = paper.title || paper.paper_id || "未命名论文";
       const authorLine = paper.authors || paper.source_type || paper.source || "来源未标记";
-      const statusIcon = paper._hasNotes ? '<span class="chip ok" title="已生成笔记"><i class="fa-solid fa-check-circle"></i> 有笔记</span>' : '<span class="chip warn" title="未生成笔记"><i class="fa-regular fa-circle"></i> 无笔记</span>';
-      const reviewIcon = paper._hasReview ? '<span class="chip ok" title="已纳入综述"><i class="fa-solid fa-check-circle"></i> 已纳入综述</span>' : '';
+      const statusIcon = paper._hasNotes
+        ? '<span class="chip ok" title="已生成笔记"><i class="fa-solid fa-check-circle"></i> 有笔记</span>'
+        : '<span class="chip warn" title="未生成笔记"><i class="fa-regular fa-circle"></i> 无笔记</span>';
+      const reviewIcon = paper._hasReview
+        ? '<span class="chip ok" title="已纳入综述"><i class="fa-solid fa-check-circle"></i> 已纳入综述</span>'
+        : '';
 
       row.innerHTML = `
         <div class="paper-main">
@@ -588,12 +593,12 @@ const notebooklm = {
         </div>
       `;
 
-      row.querySelector('[data-action="remove"]').addEventListener("click", async (event) => {
+      row.querySelector('[data-action="remove"]')?.addEventListener("click", async (event) => {
         event.stopPropagation();
         await this.removePaper(paper.paper_id);
       });
 
-      row.querySelector('[data-action="accept"]').addEventListener("click", async (event) => {
+      row.querySelector('[data-action="accept"]')?.addEventListener("click", async (event) => {
         event.stopPropagation();
         await this.setPaperStatus(paper.paper_id, paper.status === "accepted" ? "pending" : "accepted");
       });
@@ -606,13 +611,18 @@ const notebooklm = {
     if (!this.els.notesBlock) return;
     const notes = this.state.currentSession?.notes || "";
     const hasNotes = Boolean(notes.trim());
-    this.els.notesBlock.innerHTML = `
-      <div class="panel-block-head">
-        <strong>生成笔记</strong>
-        <span class="chip"><i class="fa-regular fa-file-lines"></i> ${hasNotes ? "已生成" : "未生成"}</span>
-      </div>
-      <div class="markdown">${hasNotes ? marked.parse(notes) : '<div class="empty-state">还没有研究笔记。点击下方按钮启动 AI 检索，系统会自动汇总成笔记。</div>'}</div>
-    `;
+    // 笔记不再在左侧展开显示，改为右侧报告/综述视图展示
+    if (hasNotes) {
+      this.els.notesBlock.innerHTML = `
+        <div class="panel-block-head">
+          <strong>生成笔记</strong>
+          <span class="chip ok"><i class="fa-regular fa-file-lines"></i> 已生成</span>
+        </div>
+        <div class="plain-text" style="color:var(--subtle);">笔记已生成，点击左侧论文后在右侧摘要/报告视图查看相关内容，或在综述视图中基于笔记生成综述。</div>
+      `;
+    } else {
+      this.els.notesBlock.style.display = "none";
+    }
   },
 
   renderReviewBlock() {
@@ -789,34 +799,32 @@ const notebooklm = {
       this.els.addPaperBtn.disabled = false;
     }
 
-    // 生成笔记 按钮：有论文但没有笔记时亮起
+    // 生成笔记 按钮：有论文就可用
     if (this.els.notesBtn) {
-      const canGenerateNotes = hasPapers && !allHaveNotes;
-      this.els.notesBtn.disabled = !canGenerateNotes;
+      this.els.notesBtn.disabled = !hasPapers;
       if (hasNotes) {
         this.els.notesBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 重新生成笔记';
-      } else {
+        this.els.notesBtn.classList.add("active");
+      } else if (hasPapers) {
         this.els.notesBtn.innerHTML = '<i class="fa-regular fa-file-lines"></i> 生成笔记';
-      }
-      if (canGenerateNotes || hasNotes) {
         this.els.notesBtn.classList.add("active");
       } else {
+        this.els.notesBtn.innerHTML = '<i class="fa-regular fa-file-lines"></i> 生成笔记';
         this.els.notesBtn.classList.remove("active");
       }
     }
 
-    // 生成综述 按钮：有笔记但没有综述时亮起
+    // 生成综述 按钮：有笔记就可用
     if (this.els.reviewBtn) {
-      const canGenerateReview = allHaveNotes && !allHaveReview;
-      this.els.reviewBtn.disabled = !canGenerateReview && !hasDraft;
+      this.els.reviewBtn.disabled = !hasNotes;
       if (hasDraft) {
         this.els.reviewBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 重新生成综述';
-      } else {
+        this.els.reviewBtn.classList.add("active");
+      } else if (hasNotes) {
         this.els.reviewBtn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i> 生成综述';
-      }
-      if (canGenerateReview || hasDraft) {
         this.els.reviewBtn.classList.add("active");
       } else {
+        this.els.reviewBtn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i> 生成综述';
         this.els.reviewBtn.classList.remove("active");
       }
     }

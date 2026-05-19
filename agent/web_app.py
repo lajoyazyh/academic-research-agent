@@ -573,11 +573,15 @@ def batch_delete_papers(session_id: str, paper_ids: list[str]) -> dict:
         raise HTTPException(status_code=400, detail=str(e))
 
 
+class UpdatePaperStatusRequest(BaseModel):
+    status: str = "pending"
+
+
 @app.put("/api/sessions/{session_id}/papers/{paper_id}/status")
-def update_paper_status(session_id: str, paper_id: str, status: str = "pending") -> dict:
+def update_paper_status(session_id: str, paper_id: str, payload: UpdatePaperStatusRequest) -> dict:
     """更新论文审查状态"""
     try:
-        return session_mgr.update_paper_status(session_id, paper_id, status)
+        return session_mgr.update_paper_status(session_id, paper_id, payload.status)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
