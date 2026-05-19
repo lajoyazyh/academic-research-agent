@@ -548,6 +548,7 @@ const notebooklm = {
         this.renderPaperList();
         this.renderDetailPanel();
         this.renderChatContext();
+        this.renderViewButtons();
       });
 
       const title = paper.title || paper.paper_id || "未命名论文";
@@ -706,13 +707,11 @@ const notebooklm = {
 
   renderReviewView(session) {
     let draft = session?.draft || session?.notes || "";
-    // 去除大纲的markdown代码块包裹 — 处理所有可能的代码块
-    draft = draft.replace(/```markdown\s*([\s\S]*?)```/g, '$1');
-    draft = draft.replace(/```\s*([\s\S]*?)```/g, (match, content) => {
-      // 如果内容看起来像markdown（有#标题），去掉包裹
-      if (content.trim().match(/^#+\s/m)) return content.trim();
-      return match;
-    });
+    // 去除大纲的 markdown 代码块包裹 — 两种情形：
+    // 1. 有闭合围栏：```markdown ... ```
+    // 2. 无闭合围栏：```markdown ...（到文末或 --- 分隔符）
+    draft = draft.replace(/```markdown\s*\n([\s\S]*?)```/g, '$1');
+    draft = draft.replace(/```markdown\s*\n([\s\S]*?)(\n---|\n## (?!##)|$)/, '$1$2');
     const acceptedCount = (session?.papers || []).filter((paper) => paper.status === "accepted").length;
     return `
       <div class="detail-hero">
@@ -742,9 +741,27 @@ const notebooklm = {
       report: this.els.viewReport,
       review: this.els.viewReview,
     };
+    const paper = this.getCurrentPaper();
+    const hasNotes = paper ? paper._hasNotes : false;
+    const hasDraft = Boolean((this.state.currentSession?.draft || "").trim());
+    const acceptedPapers = (this.state.currentSession?.papers || []).filter(p => p.status === "accepted");
+    const anyHasNotes = acceptedPapers.some(p => p._hasNotes) || paper?._hasNotes;
+    
     Object.entries(map).forEach(([mode, el]) => {
       if (!el) return;
       el.classList.toggle("active", this.state.currentViewMode === mode);
+      
+      // 动态禁用逻辑：
+      // - "摘要" 始终可用
+      // - "笔记"（报告）：当前论文有笔记时才可用
+      // - "综述"：有综述草稿时才可用
+      if (mode === "summary") {
+        el.disabled = false;
+      } else if (mode === "report") {
+        el.disabled = !hasNotes;
+      } else if (mode === "review") {
+        el.disabled = !hasDraft;
+      }
     });
   },
 

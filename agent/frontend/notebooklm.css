@@ -121,6 +121,7 @@ html, body {
 
 .view-btn { background: transparent; color: var(--subtle); padding: 6px 14px; }
 .view-btn.active { background: var(--accent-light); color: var(--accent); }
+.view-btn:disabled { opacity: .35; cursor: not-allowed; pointer-events: none; }
 
 .mini-btn {
   width: 30px; height: 30px; border-radius: 50%;

@@ -93,6 +93,13 @@ def compose_review_from_notes(topic: str, notes_content: str) -> tuple[str, str]
     llm = LLMClient()
     outline = _build_writer_outline(llm, topic, notes_content)
     body = _compose_review_by_sections(llm, topic, notes_content, outline)
+    # 确保大纲不被 ```markdown 围栏包裹
+    if outline.startswith("```markdown") and outline.endswith("```"):
+        outline = outline[len("```markdown"):-3].strip()
+    elif outline.startswith("```markdown"):
+        outline = outline[len("```markdown"):].strip()
+    elif outline.startswith("```") and outline.endswith("```"):
+        outline = outline[3:-3].strip()
     review = f"## 综述大纲\n\n{outline}\n\n---\n\n{body}"
     return outline, review
 
