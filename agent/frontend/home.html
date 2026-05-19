@@ -1,202 +1,69 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智能学术助手 - 首页</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #6366f1;
-            --secondary-color: #ec4899;
-            --accent-color: #06b6d4;
-            --background-color: #0f172a;
-            --surface-color: rgba(30, 41, 59, 0.7);
-            --surface-light: rgba(51, 65, 85, 0.5);
-            --card-background: rgba(30, 41, 59, 0.6);
-            --text-color: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --border-color: rgba(148, 163, 184, 0.2);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1a1f35 50%, #0f172a 100%);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .home-container {
-            max-width: 1100px;
-            width: 100%;
-        }
-
-        .home-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .home-header h1 {
-            font-size: 2.8rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #06b6d4 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-        }
-
-        .home-header p {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .card {
-            background: var(--card-background);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 2.5rem 2rem;
-            text-decoration: none;
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            gap: 1rem;
-        }
-
-        .card:hover {
-            transform: translateY(-6px);
-            border-color: var(--primary-color);
-            background: var(--surface-color);
-            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.25);
-        }
-
-        .card i {
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-
-        .card:nth-child(2) i {
-            color: var(--accent-color);
-        }
-
-        .card:nth-child(3) i {
-            color: var(--secondary-color);
-        }
-
-        .card h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .card p {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin: 0;
-        }
-
-        .card-action {
-            margin-top: 0.5rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .card:hover .card-action {
-            color: var(--accent-color);
-        }
-
-        .footer {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            .home-header h1 {
-                font-size: 2rem;
-            }
-            .card-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能学术综述助手</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/notebooklm.css">
 </head>
-<body>
-    <div class="home-container">
-        <header class="home-header">
-            <h1>智能学术助手</h1>
-            <p>基于多 Agent 协作的自动化文献调研与综述生成系统</p>
-        </header>
-
-        <div class="card-grid">
-            <div class="card-grid">
-                <a class="card" href="/app/console">
-                    <i class="fas fa-sliders-h fa-3x"></i>
-                    <h2>开始研究</h2>
-                    <p>创建或继续一个研究会话，指定主题，由 AI Agent 自动搜索论文、整理笔记并生成综述。</p>
-                    <span class="card-action">进入控制台 <i class="fas fa-arrow-right"></i></span>
-                </a>
-
-                <a class="card" href="/app/history">
-                    <i class="fas fa-project-diagram fa-3x"></i>
-                    <h2>历史记录</h2>
-                    <p>览以往的研究成果，查看已生成的综述文档和下载的原始论文 PDF。</p>
-                    <span class="card-action">查看轨迹 <i class="fas fa-arrow-right"></i></span>
-                </a>
-
-                <a class="card" href="/app/chat">
-                    <i class="fas fa-comments fa-3x"></i>
-                    <h2>AI 助手</h2>
-                    <p>全屏对话模式，询问学术问题、优化综述与解释论文方法。</p>
-                    <span class="card-action">开始对话 <i class="fas fa-arrow-right"></i></span>
-                </a>
-
-                <a class="card" href="/app/help">
-                    <i class="fas fa-question-circle fa-3x"></i>
-                    <h2>使用指南</h2>
-                    <p>了解系统架构、Agent 工作流程、关键词拆解策略、API 接口以及其他常见问题。</p>
-                    <span class="card-action">学习指南 <i class="fas fa-arrow-right"></i></span>
-                </a>
-            </div>
+<body data-page="home">
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><i class="fa-solid fa-wave-square"></i></div>
+        <div class="brand-title">
+          <strong>智能学术综述助手</strong>
+          <span>最近打开过的综述、快速新建、进入历史</span>
         </div>
+      </div>
+    </header>
 
-        <footer class="footer">
-            <p>© 2025 Academic Agent · Powered by FastAPI + Llama Index + Multi-Agent</p>
-        </footer>
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>最近打开过的综述</h2>
+        </div>
+      </div>
+      <div class="rail" id="homeRail"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>使用指南</h2>
+        </div>
+      </div>
+      <div class="guide-card guide-entry">
+        <div></div>
+        <div class="meta-row">
+          <button class="primary-btn" onclick="window.location.href='/app/help'">使用指南</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal" id="topicModal" aria-hidden="true">
+    <div class="modal-card">
+      <h3>新建综述</h3>
+      <p>输入主题后会创建新的会话，并跳转到 Notebook 风格控制台完成关键词确认和论文检索。</p>
+      <div class="field-grid">
+        <label>
+          主题
+          <input id="topicInput" type="text" placeholder="例如：多智能体协作记忆机制" />
+        </label>
+        <label>
+          关键词提示（可选）
+          <textarea id="keywordInput" rows="4" placeholder="例如：memory, retrieval, agent planning, RAG"></textarea>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="secondary-btn" id="topicCancel">取消</button>
+        <button class="primary-btn" id="topicSubmit"><i class="fa-solid fa-arrow-right"></i> 进入控制台</button>
+      </div>
     </div>
+  </div>
+
+  <script src="/static/notebooklm.js"></script>
 </body>
 </html>

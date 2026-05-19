@@ -430,6 +430,10 @@ class UpdateStateRequest(BaseModel):
 class UpdateKeywordsRequest(BaseModel):
     keywords: list[dict]
 
+
+class SaveFeedbackRequest(BaseModel):
+    feedback: str
+
 class SessionSummary(BaseModel):
     session_id: str
     topic: str
@@ -660,6 +664,15 @@ def save_notes(session_id: str, payload: dict) -> dict:
     version_note = payload.get("version_note", "")
     try:
         return session_mgr.save_notes(session_id, content, version_note)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.put("/api/sessions/{session_id}/feedback")
+def save_feedback(session_id: str, payload: SaveFeedbackRequest) -> dict:
+    """保存综述修改反馈"""
+    try:
+      return session_mgr.save_feedback(session_id, payload.feedback)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
