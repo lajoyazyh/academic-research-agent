@@ -66,6 +66,7 @@ const notebooklm = {
     this.els.keywordAdd = document.getElementById("keywordAdd");
     this.els.keywordConfirm = document.getElementById("keywordConfirm");
     this.els.keywordCancel = document.getElementById("keywordCancel");
+    this.els.themeToggle = document.getElementById("themeToggle");
   },
 
   async initHome() {
@@ -90,6 +91,11 @@ const notebooklm = {
     }
     if (this.els.topicInput) {
       this.els.topicInput.addEventListener("input", () => this.syncKeywordPlanHint());
+    }
+
+    // 深色模式切换按钮
+    if (this.els.themeToggle) {
+      this.els.themeToggle.addEventListener("click", () => this.toggleTheme());
     }
 
     await this.loadHomeSessions();
@@ -440,6 +446,11 @@ const notebooklm = {
     this.els.keywordConfirm?.addEventListener("click", () => this.confirmKeywords());
     this.els.keywordCancel?.addEventListener("click", () => this.closeKeywordModal());
     this.els.keywordAdd?.addEventListener("click", () => this.addKeywordRow());
+
+    // 深色模式切换按钮
+    if (this.els.themeToggle) {
+      this.els.themeToggle.addEventListener("click", () => this.toggleTheme());
+    }
   },
 
   async loadSession(sessionId) {
@@ -1429,6 +1440,23 @@ const notebooklm = {
     const theme = localStorage.getItem("notebooklm:theme");
     if (theme === "dark") {
       document.body.dataset.theme = "dark";
+    }
+    this.updateThemeIcon();
+  },
+
+  toggleTheme() {
+    const isDark = document.body.dataset.theme === "dark";
+    document.body.dataset.theme = isDark ? "" : "dark";
+    localStorage.setItem("notebooklm:theme", isDark ? "light" : "dark");
+    this.updateThemeIcon();
+  },
+
+  updateThemeIcon() {
+    const isDark = document.body.dataset.theme === "dark";
+    const btn = document.getElementById("themeToggle");
+    if (btn) {
+      btn.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+      btn.title = isDark ? "切换浅色模式" : "切换深色模式";
     }
   },
 

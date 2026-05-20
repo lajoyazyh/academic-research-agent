@@ -145,6 +145,9 @@ def get_history() -> list[Dict[str, Any]]:
     if not DOCS_DIR.exists():
         return []
 
+    favs = _load_favorites()
+    fav_filenames = {f.get("filename") for f in favs}
+
     runs = []
     for d in DOCS_DIR.iterdir():
         if not d.is_dir():
@@ -160,7 +163,11 @@ def get_history() -> list[Dict[str, Any]]:
             size = 0
 
         if size > 0:
-            runs.append({"filename": d.name, "size": size})
+            runs.append({
+                "filename": d.name,
+                "size": size,
+                "favorited": d.name in fav_filenames,
+            })
 
     runs.sort(key=lambda x: x["filename"], reverse=True)
     return runs
