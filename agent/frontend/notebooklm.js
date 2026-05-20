@@ -645,13 +645,21 @@ const notebooklm = {
     const session = this.state.currentSession;
     const paper = this.getCurrentPaper();
     const paperCount = session.papers?.length || 0;
-    const selectedLabel = paper ? paper.title || paper.paper_id : "未选择论文";
+    const isPerSession = this.state.currentViewMode === "review" || this.state.currentViewMode === "trace";
+    const selectedLabel = isPerSession
+      ? (session.topic || "未命名主题")
+      : (paper ? paper.title || paper.paper_id : "未选择论文");
 
     if (this.els.detailTitle) {
       this.els.detailTitle.textContent = selectedLabel;
     }
     if (this.els.detailMeta) {
-      this.els.detailMeta.textContent = `${paperCount} 个来源 · ${this.viewModeLabel(this.state.currentViewMode)} · ${session.state_label || session.state}`;
+      const modeLabel = this.viewModeLabel(this.state.currentViewMode);
+      if (isPerSession) {
+        this.els.detailMeta.textContent = `${paperCount} 个来源 · ${modeLabel} · ${session.state_label || session.state}`;
+      } else {
+        this.els.detailMeta.textContent = `${paperCount} 个来源 · ${modeLabel} · ${session.state_label || session.state}`;
+      }
     }
 
     let html = "";
