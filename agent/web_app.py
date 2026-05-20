@@ -145,6 +145,9 @@ def get_history() -> list[Dict[str, Any]]:
     if not DOCS_DIR.exists():
         return []
 
+    favs = _load_favorites()
+    fav_filenames = {f.get("filename") for f in favs}
+
     runs = []
     for d in DOCS_DIR.iterdir():
         if not d.is_dir():
@@ -160,7 +163,11 @@ def get_history() -> list[Dict[str, Any]]:
             size = 0
 
         if size > 0:
-            runs.append({"filename": d.name, "size": size})
+            runs.append({
+                "filename": d.name,
+                "size": size,
+                "favorited": d.name in fav_filenames,
+            })
 
     runs.sort(key=lambda x: x["filename"], reverse=True)
     return runs
@@ -423,12 +430,18 @@ def get_run_status(run_id: str) -> RunStatusResponse:
 
 class CreateSessionRequest(BaseModel):
     topic: str
+    # keywords can be a raw string (from simple textarea) or a structured list
+    keywords: Optional[list] = None
 
 class UpdateStateRequest(BaseModel):
     state: str
 
 class UpdateKeywordsRequest(BaseModel):
     keywords: list[dict]
+
+
+class SaveFeedbackRequest(BaseModel):
+    feedback: str
 
 class SessionSummary(BaseModel):
     session_id: str
@@ -453,12 +466,14 @@ class AddPaperRequest(BaseModel):
 
 
 @app.post("/api/sessions/create")
-def create_session(payload: CreateSessionRequest) -> dict:
-    """创建新 Session"""
-    if not payload.topic.strip():
+def create_session(payload: dict) -> dict:
+    """创建新 Session，支持可选的 keywords 字段（字符串或数组）。"""
+    topic = str(payload.get("topic", "")).strip()
+    if not topic:
         raise HTTPException(status_code=400, detail="主题不能为空")
+    keywords = payload.get("keywords")
     try:
-        return session_mgr.create_session(payload.topic.strip())
+        return session_mgr.create_session(topic, keywords=keywords)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Session 创建失败: {str(e)}")
 
@@ -565,11 +580,15 @@ def batch_delete_papers(session_id: str, paper_ids: list[str]) -> dict:
         raise HTTPException(status_code=400, detail=str(e))
 
 
+class UpdatePaperStatusRequest(BaseModel):
+    status: str = "pending"
+
+
 @app.put("/api/sessions/{session_id}/papers/{paper_id}/status")
-def update_paper_status(session_id: str, paper_id: str, status: str = "pending") -> dict:
+def update_paper_status(session_id: str, paper_id: str, payload: UpdatePaperStatusRequest) -> dict:
     """更新论文审查状态"""
     try:
-        return session_mgr.update_paper_status(session_id, paper_id, status)
+        return session_mgr.update_paper_status(session_id, paper_id, payload.status)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -660,6 +679,15 @@ def save_notes(session_id: str, payload: dict) -> dict:
     version_note = payload.get("version_note", "")
     try:
         return session_mgr.save_notes(session_id, content, version_note)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.put("/api/sessions/{session_id}/feedback")
+def save_feedback(session_id: str, payload: SaveFeedbackRequest) -> dict:
+    """保存综述修改反馈"""
+    try:
+      return session_mgr.save_feedback(session_id, payload.feedback)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -891,6 +919,70 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"撰写阶段执行失败: {str(e)}")
+
+
+# ━━━ 迭代三新增：为选中论文生成独立笔记 ━━━
+
+class RunNotesRequest(BaseModel):
+    topic: str
+    paper_ids: list[str]
+
+@app.post("/api/sessions/{session_id}/run/notes")
+def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
+    """【阶段2b】为选中的每篇论文生成独立笔记"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    papers = session.get("papers", [])
+    paper_ids = [pid.strip() for pid in payload.paper_ids if pid.strip()]
+    if not paper_ids:
+        raise HTTPException(status_code=400, detail="paper_ids 不能为空")
+
+    from llms.client import LLMClient
+    llm = LLMClient()
+    topic = payload.topic.strip()
+    notes_map = {}
+
+    for paper in papers:
+        pid = paper.get("paper_id", "")
+        if pid not in paper_ids:
+            continue
+
+        title = paper.get("title", pid)
+        abstract = paper.get("abstract", "")
+        source_info = paper.get("source_type", paper.get("source", ""))
+
+        note_prompt = f"""你是一名学术研究员。请为以下论文撰写一份结构化的学术笔记（300-500字）：
+
+研究主题：{topic}
+论文标题：{title}
+来源：{source_info}
+摘要：{abstract}
+
+请按以下格式输出：
+## 论文笔记：{title}
+- **核心方法**：（简述该论文使用的核心技术或方法）
+- **关键发现**：（列出最重要的实验发现或结论）
+- **与研究主题的关联**：（说明该论文如何与「{topic}」相关联）
+- **亮点与不足**：（简要评价论文的贡献和局限）
+
+直接输出笔记内容，不要额外解释。"""
+
+        try:
+            note_text = llm.chat("你是严谨的学术研究员。", note_prompt, []).strip()
+            notes_map[pid] = note_text
+        except Exception as e:
+            notes_map[pid] = f"## 论文笔记：{title}\n\n生成笔记时出错：{str(e)}"
+
+    if notes_map:
+        session_mgr.batch_update_paper_notes(session_id, notes_map)
+
+    return {
+        "phase": "notes",
+        "notes_map": notes_map,
+        "count": len(notes_map),
+    }
 
 
 if __name__ == "__main__":

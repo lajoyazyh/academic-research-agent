@@ -331,7 +331,7 @@ const app = {
         if (!listDiv) return;
         listDiv.innerHTML = '<div style="color:var(--text-secondary);font-size:0.85rem;">加载收藏夹...</div>';
 
-        fetch("/api/favorites/list")
+        fetch("/api/favorites")
             .then(res => res.json())
             .then(data => {
                 // 兼容后端可能返回对象或数组

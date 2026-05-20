@@ -68,8 +68,10 @@ class SessionManager:
 
     # ━━━━━ 基础 CRUD ━━━━━
 
-    def create_session(self, topic: str) -> dict:
-        """创建新 Session，生成唯一 ID 和完整目录结构"""
+    def create_session(self, topic: str, keywords: list = None) -> dict:
+        """创建新 Session，生成唯一 ID 和完整目录结构
+        keywords: 可选的初始关键词列表（字符串或已结构化数组）
+        """
         session_id = f"sess_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
         session_dir = self.root / session_id
 
@@ -81,15 +83,32 @@ class SessionManager:
         (session_dir / "traces").mkdir(parents=True, exist_ok=True)
 
         now = datetime.datetime.now().isoformat()
+        initial_state = SessionState.PLAN_CONFIRMED.value if keywords else SessionState.PLANNING.value
         metadata = {
             "session_id": session_id,
             "topic": topic,
-            "state": SessionState.PLANNING.value,
+            "state": initial_state,
             "created_at": now,
             "updated_at": now,
             "rewrite_count": 0,
         }
         self._write_json(session_dir / "metadata.json", metadata)
+
+        # 保存初始关键词（如果有）到 plan/confirmed_keywords.json
+        if keywords:
+            # Normalize keywords: accept comma/newline separated string or list of dicts/strings
+            norm = []
+            if isinstance(keywords, str):
+                parts = [p.strip() for p in keywords.replace('，', ',').split(',') if p.strip()]
+                norm = [{"original": p, "english": "", "synonyms": ""} for p in parts]
+            elif isinstance(keywords, list):
+                for k in keywords:
+                    if isinstance(k, str):
+                        norm.append({"original": k, "english": "", "synonyms": ""})
+                    elif isinstance(k, dict):
+                        norm.append(k)
+            if norm:
+                self._write_json(session_dir / "plan" / "confirmed_keywords.json", norm)
 
         return self.load_session(session_id)
 
@@ -158,6 +177,10 @@ class SessionManager:
                 continue
             meta = self._read_json(d / "metadata.json")
             if meta:
+                # attempt to include quick metrics: paper count and note size
+                papers = self._read_json(d / "papers" / "papers_list.json") or []
+                notes_path = d / "notes" / "draft_notes.md"
+                note_size = notes_path.stat().st_size if notes_path.exists() else 0
                 sessions.append({
                     "session_id": meta.get("session_id", d.name),
                     "topic": meta.get("topic", ""),
@@ -165,6 +188,8 @@ class SessionManager:
                     "state_label": STATE_LABELS.get(meta.get("state", ""), "未知"),
                     "created_at": meta.get("created_at", ""),
                     "updated_at": meta.get("updated_at", ""),
+                    "paper_count": len(papers),
+                    "note_size": note_size,
                 })
         return sessions
 
@@ -232,23 +257,33 @@ class SessionManager:
         return self._read_json(session_dir / "papers" / "papers_list.json") or []
 
     def save_papers_list(self, session_id: str, papers: list[dict]) -> None:
-        """保存论文列表"""
+        """保存论文列表（自动标准化）"""
         session_dir = self.root / session_id
         if not session_dir.exists():
             raise ValueError(f"Session {session_id} 不存在")
-        self._write_json(session_dir / "papers" / "papers_list.json", papers)
+        self._write_json(session_dir / "papers" / "papers_list.json", self._normalize_papers(papers))
         self._touch_metadata(session_dir)
 
     def add_paper(self, session_id: str, paper: dict) -> dict:
-        """添加单篇论文到列表（去重）"""
+        """添加单篇论文到列表（去重 + 标准化字段）"""
         papers = self.get_papers(session_id)
         paper_id = paper.get("paper_id", "")
         # 去重
         if not any(p.get("paper_id") == paper_id for p in papers):
-            paper.setdefault("source", "user_upload")
-            paper.setdefault("status", "pending")
-            paper.setdefault("added_at", datetime.datetime.now().isoformat())
-            papers.append(paper)
+            # 标准化所有字段
+            norm = {
+                "paper_id": paper_id,
+                "title": paper.get("title", ""),
+                "authors": paper.get("authors", ""),
+                "source": paper.get("source", "agent_search"),
+                "source_type": paper.get("source_type", ""),
+                "status": paper.get("status", "pending"),
+                "added_at": paper.get("added_at", datetime.datetime.now().isoformat()),
+                "abstract": paper.get("abstract", paper.get("summary", "")),
+                "notes": paper.get("notes", ""),
+                "has_notes": paper.get("has_notes", False),
+            }
+            papers.append(norm)
             self.save_papers_list(session_id, papers)
         return self.load_session(session_id)
 
@@ -287,7 +322,40 @@ class SessionManager:
                 break
         self.save_papers_list(session_id, papers)
         return self.load_session(session_id)
+    def update_paper_notes(self, session_id: str, paper_id: str, notes: str) -> dict:
+        """保存单篇论文的独立笔记"""
+        papers = self.get_papers(session_id)
+        for p in papers:
+            if p.get("paper_id") == paper_id:
+                p["notes"] = notes
+                p["has_notes"] = bool(notes.strip())
+                break
+        self.save_papers_list(session_id, papers)
+        return self.load_session(session_id)
 
+    def batch_update_paper_notes(self, session_id: str, paper_notes_map: dict) -> dict:
+        """批量更新多篇论文的笔记：{paper_id: notes_text}"""
+        papers = self.get_papers(session_id)
+        for p in papers:
+            pid = p.get("paper_id", "")
+            if pid in paper_notes_map:
+                p["notes"] = paper_notes_map[pid]
+                p["has_notes"] = bool(paper_notes_map[pid].strip())
+        self.save_papers_list(session_id, papers)
+        return self.load_session(session_id)
+
+    def _normalize_papers(self, papers: list[dict]) -> list[dict]:
+        """标准化 papers 列表，确保每条都包含所有必需字段"""
+        for p in papers:
+            p.setdefault("title", "")
+            p.setdefault("authors", "")
+            p.setdefault("source", "agent_search")
+            p.setdefault("source_type", "")
+            p.setdefault("status", "pending")
+            p.setdefault("abstract", "")
+            p.setdefault("notes", "")
+            p.setdefault("has_notes", False)
+        return papers
     def get_paper_dir(self, session_id: str, paper_id: str) -> Path:
         """获取某篇论文的存储目录"""
         paper_dir = self.root / session_id / "papers" / paper_id
