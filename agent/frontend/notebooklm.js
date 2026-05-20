@@ -456,6 +456,7 @@ const notebooklm = {
 
   async initConsole() {
     this.bindConsoleActions();
+    this.initResizeHandle();
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("sessionId");
     if (!sessionId) {
@@ -491,6 +492,48 @@ const notebooklm = {
     if (this.els.themeToggle) {
       this.els.themeToggle.addEventListener("click", () => this.toggleTheme());
     }
+  },
+
+  initResizeHandle() {
+    const handle = document.getElementById("resizeHandle");
+    const dock = document.querySelector(".chat-dock");
+    const panel = document.querySelector(".content-panel");
+    if (!handle || !dock || !panel) return;
+
+    let dragging = false;
+    let startY = 0;
+    let startHeight = 0;
+
+    const onMove = (e) => {
+      if (!dragging) return;
+      const deltaY = startY - e.clientY;
+      let newHeight = startHeight + deltaY;
+      const maxH = panel.offsetHeight * 0.6;
+      newHeight = Math.max(160, Math.min(newHeight, maxH));
+      dock.style.height = newHeight + "px";
+    };
+
+    const onUp = () => {
+      if (!dragging) return;
+      dragging = false;
+      handle.classList.remove("active");
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+
+    handle.addEventListener("mousedown", (e) => {
+      dragging = true;
+      startY = e.clientY;
+      startHeight = dock.offsetHeight;
+      handle.classList.add("active");
+      document.body.style.cursor = "row-resize";
+      document.body.style.userSelect = "none";
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+      e.preventDefault();
+    });
   },
 
   async loadSession(sessionId) {
@@ -1310,6 +1353,15 @@ const notebooklm = {
       await this.reloadCurrentSession();
       this.switchViewMode("review");
       this.setConsoleStatus("reviewing_draft", "综述已生成，可以继续提问或提交修改建议");
+
+      // 自动将 AI 修改建议追加到对话列表
+      if (data.auto_suggestion && this.els.chatList) {
+        const suggestionMsg = document.createElement("div");
+        suggestionMsg.className = "chat-msg";
+        suggestionMsg.innerHTML = `<span class="chat-role">AI 建议</span><span>${this.escapeHtml(data.auto_suggestion)}</span>`;
+        this.els.chatList.appendChild(suggestionMsg);
+        this.els.chatList.scrollTop = this.els.chatList.scrollHeight;
+      }
     } catch (error) {
       this.setConsoleStatus("error", `写作失败：${error.message}`);
     }

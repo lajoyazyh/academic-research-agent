@@ -996,7 +996,30 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         except ValueError:
             pass
 
+        # ━━━ 自动生成修改建议，作为 AI 消息推送 ━━━
+        suggestion = ""
+        try:
+            from llms.client import LLMClient
+            llm = LLMClient()
+            draft = result.get("draft", "")
+            topic = payload.topic.strip()
+            suggestion_prompt = f"""你是学术综述审稿专家。请阅读以下综述草稿，生成 1-2 条用户可能需要的修改建议。
+要求：
+1. 建议要具体、可操作（例如"补充 XX 方法的实验数据对比"而非"写得不够好"）
+2. 语气友好、建设性
+3. 用中文，控制在 80 字以内
+4. 直接输出建议文本，不要加前缀或编号
+
+研究主题：{topic}
+综述草稿（前 2000 字）：
+{draft[:2000]}
+"""
+            suggestion = llm.chat("你是严谨的学术审稿专家。", suggestion_prompt, []).strip()
+        except Exception:
+            suggestion = ""
+
         result["session_id"] = session_id
+        result["auto_suggestion"] = suggestion
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"撰写阶段执行失败: {str(e)}")
