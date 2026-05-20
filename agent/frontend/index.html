@@ -57,6 +57,7 @@
           <button class="view-btn active" id="viewSummary">摘要</button>
           <button class="view-btn" id="viewReport">笔记</button>
           <button class="view-btn" id="viewReview">综述</button>
+          <button class="view-btn" id="viewTrace">轨迹</button>
         </div>
       </div>
       <div class="content-body" id="detailContent">
@@ -80,8 +81,23 @@
       </div>
     </section>
   </main>
-              </div>
-            </div>
+
+  <!-- 关键词编辑弹窗（复用已有逻辑，需保持 HTML 结构不变） -->
+  <div class="modal-overlay" id="keywordModal">
+    <div class="modal-box" style="max-width:680px;">
+      <div class="modal-head">
+        <h3>确认关键词</h3>
+        <button class="ghost-btn" id="keywordCancel"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="modal-hint" id="keywordTopic"></p>
+      <div id="keywordList" class="keyword-list"></div>
+      <div class="modal-foot">
+        <button class="secondary-btn" id="keywordAdd"><i class="fa-solid fa-plus"></i> 添加关键词</button>
+        <button class="primary-btn" id="keywordConfirm"><i class="fa-solid fa-check"></i> 确认并开始搜索</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="/static/notebooklm.js"></script>
 </body>

@@ -398,6 +398,135 @@ html, body {
   line-height: 1.7;
 }
 
+/* ====== Trace 轨迹视图 ====== */
+.trace-step {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.trace-body {
+  padding: 12px 16px;
+}
+.trace-section {
+  margin-bottom: 10px;
+}
+.trace-section:last-child {
+  margin-bottom: 0;
+}
+.trace-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--subtle);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.trace-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.trace-pre {
+  margin: 0;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;
+}
+
+/* ====== 关键词编辑弹窗 ====== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.active {
+  display: flex;
+}
+.modal-box {
+  background: var(--panel);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  padding: 24px;
+  width: 90%;
+  max-width: 680px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.modal-head h3 {
+  margin: 0;
+  font-size: 17px;
+}
+.modal-hint {
+  font-size: 13px;
+  color: var(--subtle);
+  margin-bottom: 16px;
+}
+.keyword-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.keyword-plan-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.keyword-plan-index {
+  font-size: 12px;
+  color: var(--subtle);
+  min-width: 60px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.keyword-plan-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #f8f9fa;
+}
+.keyword-plan-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+}
+.modal-foot {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+.keyword-plan-empty {
+  font-size: 13px;
+  color: var(--subtle);
+  padding: 12px 0;
+  text-align: center;
+}
 .home-grid .home-card--create .home-card-inner {
   gap: 10px;
 }

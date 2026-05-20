@@ -54,6 +54,7 @@ const notebooklm = {
     this.els.viewSummary = document.getElementById("viewSummary");
     this.els.viewReport = document.getElementById("viewReport");
     this.els.viewReview = document.getElementById("viewReview");
+    this.els.viewTrace = document.getElementById("viewTrace");
     this.els.chatList = document.getElementById("chatList");
     this.els.chatInput = document.getElementById("chatInput");
     this.els.chatSend = document.getElementById("chatSend");
@@ -426,6 +427,7 @@ const notebooklm = {
     this.els.viewSummary?.addEventListener("click", () => this.switchViewMode("summary"));
     this.els.viewReport?.addEventListener("click", () => this.switchViewMode("report"));
     this.els.viewReview?.addEventListener("click", () => this.switchViewMode("review"));
+    this.els.viewTrace?.addEventListener("click", () => this.switchViewMode("trace"));
     this.els.chatSend?.addEventListener("click", () => this.sendChatMessage());
     this.els.chatApply?.addEventListener("click", () => this.applyReviewFeedback());
     this.els.chatInput?.addEventListener("keydown", (event) => {
@@ -657,6 +659,8 @@ const notebooklm = {
       html = this.renderPaperSummary(paper, session);
     } else if (this.state.currentViewMode === "report") {
       html = this.renderPaperReport(paper, session);
+    } else if (this.state.currentViewMode === "trace") {
+      html = this.renderTraceView(session);
     } else {
       html = this.renderReviewView(session);
     }
@@ -740,6 +744,7 @@ const notebooklm = {
       summary: this.els.viewSummary,
       report: this.els.viewReport,
       review: this.els.viewReview,
+      trace: this.els.viewTrace,
     };
     const paper = this.getCurrentPaper();
     const hasNotes = paper ? paper._hasNotes : false;
@@ -752,10 +757,10 @@ const notebooklm = {
       el.classList.toggle("active", this.state.currentViewMode === mode);
       
       // 动态禁用逻辑：
-      // - "摘要" 始终可用
+      // - "摘要" 和 "轨迹" 始终可用
       // - "笔记"（报告）：当前论文有笔记时才可用
       // - "综述"：有综述草稿时才可用
-      if (mode === "summary") {
+      if (mode === "summary" || mode === "trace") {
         el.disabled = false;
       } else if (mode === "report") {
         el.disabled = !hasNotes;
@@ -763,6 +768,93 @@ const notebooklm = {
         el.disabled = !hasDraft;
       }
     });
+  },
+
+  renderTraceView(session) {
+    const traces = session?.traces || [];
+    const topic = session?.topic || "当前会话";
+
+    let html = `
+      <div class="detail-hero">
+        <span class="topic-badge"><i class="fa-solid fa-route"></i> 执行轨迹</span>
+        <h3>${this.escapeHtml(topic)}</h3>
+        <div class="lead">共 ${traces.length} 步 · 当前状态：${session.state_label || session.state || "未知"}</div>
+      </div>
+      <div class="detail-blocks" style="margin-top:16px;">
+    `;
+
+    if (!traces || traces.length === 0) {
+      html += `
+        <div class="panel-block">
+          <div class="panel-block-head"><strong>暂无轨迹</strong></div>
+          <div class="empty-state">Agent 尚未执行，或轨迹尚未生成。请先执行规划或检索。</div>
+        </div>
+      `;
+    } else {
+      traces.forEach((step, idx) => {
+        const action = step.action || "执行";
+        const thought = step.thought || "";
+        const observation = step.observation || "";
+        const errorType = step.error_type || "";
+        const inputObj = step.input || step.action_input || {};
+        const inputStr = typeof inputObj === "string" ? inputObj : JSON.stringify(inputObj, null, 2);
+
+        let statusChip = "";
+        if (errorType) {
+          statusChip = `<span class="chip err" title="错误类型: ${this.escapeHtml(errorType)}"><i class="fa-solid fa-triangle-exclamation"></i> 失败</span>`;
+        } else {
+          statusChip = `<span class="chip ok"><i class="fa-solid fa-circle-check"></i> 成功</span>`;
+        }
+
+        html += `
+          <div class="panel-block trace-step">
+            <div class="panel-block-head">
+              <strong>第 ${idx + 1} 轮 · ${this.escapeHtml(action)}</strong>
+              ${statusChip}
+            </div>
+            <div class="trace-body">
+        `;
+
+        if (thought) {
+          html += `
+              <div class="trace-section">
+                <div class="trace-label">💭 思考</div>
+                <div class="trace-text">${this.escapeHtml(thought)}</div>
+              </div>
+          `;
+        }
+
+        if (inputStr && inputStr !== "{}" && inputStr !== "null") {
+          html += `
+              <div class="trace-section">
+                <div class="trace-label">📥 参数</div>
+                <pre class="trace-pre">${this.escapeHtml(inputStr)}</pre>
+              </div>
+          `;
+        }
+
+        if (observation) {
+          // 截断过长的 observation
+          const truncated = observation.length > 2000
+            ? observation.slice(0, 2000) + "\n\n... (观察内容过长，已截断)"
+            : observation;
+          html += `
+              <div class="trace-section">
+                <div class="trace-label">👁 观察</div>
+                <pre class="trace-pre">${this.escapeHtml(truncated)}</pre>
+              </div>
+          `;
+        }
+
+        html += `
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    html += `</div>`;
+    return html;
   },
 
   renderChatContext() {
@@ -883,6 +975,7 @@ const notebooklm = {
       summary: "摘要",
       report: "报告",
       review: "综述",
+      trace: "轨迹",
     }[mode] || "摘要";
   },
 
