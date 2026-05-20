@@ -136,19 +136,21 @@ class SessionManager:
         plan_path = session_dir / "plan" / "initial_plan.md"
         initial_plan = plan_path.read_text(encoding="utf-8") if plan_path.exists() else ""
 
-        # 加载最新草稿
-        draft = ""
+        # 加载最新草稿：优先使用 get_draft（它会优先读取 current_draft.md），并尝试确定版本号
+        draft = self.get_draft(session_id)
         draft_version = 0
         draft_dir = session_dir / "draft"
         if draft_dir.exists():
             draft_files = sorted(draft_dir.glob("draft_v*.md"), reverse=True)
             if draft_files:
-                draft = draft_files[0].read_text(encoding="utf-8")
-                # 从文件名提取版本号
+                # 从最新的版本化文件名中解析版本号（如果存在）
                 import re
                 m = re.search(r"draft_v(\d+)", draft_files[0].name)
                 if m:
-                    draft_version = int(m.group(1))
+                    try:
+                        draft_version = int(m.group(1))
+                    except Exception:
+                        draft_version = 0
 
         # 加载轨迹
         traces = self._read_json(session_dir / "traces" / "run_traces.json") or []
@@ -417,9 +419,20 @@ class SessionManager:
             return draft_path.read_text(encoding="utf-8") if draft_path.exists() else ""
 
         # 获取最新版本
+        # 优先使用 current_draft.md（用于快速同步最新草稿），否则回退到按版本的文件
+        current_path = draft_dir / "current_draft.md"
+        if current_path.exists():
+            try:
+                return current_path.read_text(encoding="utf-8")
+            except Exception:
+                pass
+
         draft_files = sorted(draft_dir.glob("draft_v*.md"), reverse=True)
         if draft_files:
-            return draft_files[0].read_text(encoding="utf-8")
+            try:
+                return draft_files[0].read_text(encoding="utf-8")
+            except Exception:
+                return ""
         return ""
 
     def save_draft(self, session_id: str, content: str, version: int = None) -> dict:
@@ -439,9 +452,18 @@ class SessionManager:
         draft_path = draft_dir / f"draft_v{version}.md"
         draft_path.write_text(content, encoding="utf-8")
 
+        # 额外写入一份 current_draft.md，便于前端快速获取最新草稿
+        try:
+            current_path = draft_dir / "current_draft.md"
+            current_path.write_text(content, encoding="utf-8")
+        except Exception:
+            pass
+
         # 更新重写计数
         metadata = self._read_json(session_dir / "metadata.json") or {}
         metadata["rewrite_count"] = version - 1
+        # 记录当前草稿版本，便于外部接口快速获取
+        metadata["draft_version"] = version
         metadata["updated_at"] = datetime.datetime.now().isoformat()
         self._write_json(session_dir / "metadata.json", metadata)
 

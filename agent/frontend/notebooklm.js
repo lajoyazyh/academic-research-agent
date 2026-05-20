@@ -1403,7 +1403,7 @@ const notebooklm = {
     }
   },
 
-  sendChatMessage() {
+  async sendChatMessage() {
     if (!this.els.chatInput) return;
     const message = this.els.chatInput.value.trim();
     if (!message) return;
@@ -1411,35 +1411,49 @@ const notebooklm = {
     this.appendChatMessage("user", message, this.state.currentViewMode);
     this.els.chatInput.value = "";
 
-    const reply = this.generateChatReply(message);
-    this.appendChatMessage("agent", reply.text, this.state.currentViewMode, reply.note);
+    // show a temporary loading indicator
+    this.appendChatMessage("agent", "正在生成回复...", this.state.currentViewMode, "");
+    // await AI reply
+    const reply = await this.generateChatReply(message);
+
+    // replace the last agent message with the real reply
+    const msgs = Array.from(this.els.chatList.querySelectorAll('.chat-msg'));
+    const lastMsg = msgs[msgs.length - 1];
+    if (lastMsg) {
+      lastMsg.innerHTML = `<span class="chat-role">AI</span><span>${this.escapeHtml(reply.text || '')}</span>`;
+    }
+
     this.state.lastReviewFeedback = this.state.currentViewMode === "review" ? message : this.state.lastReviewFeedback;
     this.renderChatContext();
   },
 
-  generateChatReply(message) {
+  async generateChatReply(message) {
     const paper = this.getCurrentPaper();
     const session = this.state.currentSession || {};
     const mode = this.state.currentViewMode;
 
-    // ━━━ 综述模式：可基于选中论文+综述回答，可请求修订 ━━━
-    if (mode === "review") {
-      const acceptedPapers = (session.papers || []).filter(p => p.status === "accepted");
-      const acceptedNames = acceptedPapers.map(p => p.title || p.paper_id).join("、");
-      const draftSummary = (session.draft || "").slice(0, 200);
-      return {
-        text: `根据当前综述草稿和 ${acceptedPapers.length} 篇已选论文（${acceptedNames || "暂无"}），关于「${message}」：我建议你明确要修改的章节或段落，然后将修改意见压缩为 3-5 条可执行建议。你可以点击「生成修订版」按钮让我基于反馈重新生成综述。`,
-        note: "综述模式：可点击「生成修订版」把本条建议写入反馈并重新生成综述。",
-      };
-    }
+    // Show a temporary loading reply while waiting for backend
+    try {
+      const payload = { message, mode };
+      if (paper && paper.paper_id) payload.paper_id = paper.paper_id;
 
-    // ━━━ 摘要/报告模式：仅回答当前论文内容，不可修改 ━━━
-    const currentName = paper?.title || paper?.paper_id || session.topic || "当前论文";
-    const modeLabel = mode === "report" ? "报告" : "摘要";
-    return {
-      text: `针对「${currentName}」的${modeLabel}内容回答：「${message}」。该论文来源为 ${paper?.source || "当前主题来源"}。你可以切换到报告视图查看更多上下文，或切换到综述视图进行修改。`,
-      note: `当前为${modeLabel}模式，仅回答当前论文内容，不会修改报告或摘要。`,
-    };
+      const res = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        console.warn('后端聊天接口返回错误，使用本地简短回复：', data);
+        return { text: data.detail || 'AI 回复失败，请稍后重试。', note: '' };
+      }
+
+      return { text: data.reply || '（空回复）', note: '' };
+    } catch (e) {
+      console.warn('调用后端聊天接口失败：', e);
+      return { text: 'AI 服务不可用，无法生成智能回复。', note: '' };
+    }
   },
 
   appendChatMessage(role, text, mode, note = "") {
@@ -1465,14 +1479,40 @@ const notebooklm = {
       return;
     }
 
+    const applyBtn = this.els.chatApply;
     try {
-      await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/feedback`, {
+      // Disable button immediately to prevent duplicate submissions
+      if (applyBtn) {
+        applyBtn.disabled = true;
+        applyBtn.setAttribute('aria-disabled', 'true');
+        applyBtn.title = '已提交修订，正在生成中...';
+      }
+
+      const res = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/feedback`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ feedback }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || '提交失败');
+      }
+
       await this.runWritePhase();
+
+      // Keep the button disabled after successful submission to indicate it's been used
+      if (applyBtn) {
+        applyBtn.disabled = true;
+        applyBtn.setAttribute('aria-disabled', 'true');
+        applyBtn.textContent = '已提交修订';
+      }
     } catch (error) {
+      // Re-enable button on error to allow retry
+      if (applyBtn) {
+        applyBtn.disabled = false;
+        applyBtn.setAttribute('aria-disabled', 'false');
+        applyBtn.title = '生成修订版';
+      }
       alert(`应用修改失败：${error.message}`);
     }
   },

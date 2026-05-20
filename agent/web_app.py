@@ -708,6 +708,63 @@ def get_draft(session_id: str, version: int = None) -> dict:
     }
 
 
+
+@app.post("/api/sessions/{session_id}/chat")
+def session_chat(session_id: str, payload: dict) -> dict:
+    """为前端聊天提供后端 AI 回复服务。
+
+    请求体示例:
+      {"message": "用户输入内容", "mode": "review"|"report"|"summary", "paper_id": "可选"}
+
+    返回:
+      {"reply": "AI 回复文本", "note": "可选的辅助说明"}
+    """
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    message = (payload.get("message", "") or "").strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="message 不能为空")
+
+    mode = payload.get("mode", "summary")
+    paper_id = payload.get("paper_id") or None
+
+    try:
+        from llms.client import LLMClient
+        llm = LLMClient()
+
+        # 构建不同模式下的 prompt
+        if mode == "review":
+            draft = session.get("draft", "")
+            accepted = [p for p in session.get("papers", []) if p.get("status") == "accepted"]
+            accepted_titles = "；".join([p.get("title") or p.get("paper_id") for p in accepted]) or "暂无已选论文"
+            system = "你是一个严谨的学术助理，擅长基于综述草稿和已选论文给出建议和可执行的编辑指令。"
+            user_prompt = f"用户提问/修改意见：{message}\n\n当前综述草稿：\n{draft}\n\n已选论文：{accepted_titles}\n\n请基于草稿和已选论文给出清晰、可执行的建议或直接回答用户的问题，若需要修改综述请提供 3 条可执行的改写建议。中文回答。"
+
+        else:
+            # report / summary -> 以单篇论文为中心回答
+            paper = None
+            if paper_id:
+                for p in session.get("papers", []):
+                    if p.get("paper_id") == paper_id:
+                        paper = p
+                        break
+            if not paper:
+                paper = session.get("papers", [None])[0] or {}
+            title = paper.get("title", "未知论文")
+            abstract = paper.get("abstract", "")
+            notes = paper.get("notes", "") or session.get("notes", "")
+
+            system = "你是一个严谨的学术助理，基于给定论文的摘要/笔记回答用户问题或进行解释。"
+            user_prompt = f"研究主题：{session.get('topic','')}\n论文标题：{title}\n摘要：{abstract}\n论文笔记：{notes}\n\n用户问题：{message}\n\n请用中文根据上述内容直接回答，若信息不足请说明并给出建议的后续检索策略。"
+
+        reply = llm.chat(system, user_prompt, [])
+        return {"reply": reply}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI 生成回复失败: {str(e)}")
+
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  迭代三新增：Session 驱动的 Agent 执行端点
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
