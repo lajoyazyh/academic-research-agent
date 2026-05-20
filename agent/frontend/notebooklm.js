@@ -399,8 +399,48 @@ const notebooklm = {
       alert("请先输入主题");
       return;
     }
-    const plan = this.inferKeywordPlan(topic, this.els.keywordInput?.value || "");
-    this.renderHomeKeywordPlan(plan);
+    // Try backend AI extraction first
+    const seed = (this.els.keywordInput?.value || "").trim();
+    this.renderHomeKeywordPlan([]);
+    const loading = document.createElement("div");
+    loading.className = "keyword-plan-loading";
+    loading.textContent = "正在调用 AI 生成关键词...";
+    this.els.homeKeywordList.appendChild(loading);
+
+    fetch('/api/keywords/extract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, seed }),
+    }).then(async (res) => {
+      if (!res.ok) throw new Error((await res.json()).detail || '后端返回错误');
+      return res.json();
+    }).then((data) => {
+      const kws = Array.isArray(data.keywords) ? data.keywords.slice() : [];
+      // 如果前端有 seed 关键词，把它们追加为原始关键词
+      if (seed) {
+        const lines = seed.replace(/[，；\n]/g, ',').split(',').map(s => s.trim()).filter(Boolean);
+        lines.forEach((s) => kws.push({ original: s, english: '', synonyms: '' }));
+      }
+      if (kws.length === 0) {
+        // fallback to local dictionary pairing
+        const plan = this.inferKeywordPlan(topic, seed || '');
+        this.renderHomeKeywordPlan(plan);
+      } else {
+        // normalize each keyword object to expected shape
+        const normalized = kws.slice(0, 6).map((k) => ({
+          original: k.original || k.chinese || k.text || '',
+          english: k.english || k.en || '',
+          synonyms: k.synonyms || k.syn || k.aliases || '',
+        }));
+        this.renderHomeKeywordPlan(normalized);
+      }
+    }).catch((err) => {
+      console.warn('AI 关键词生成失败，使用本地规则回退：', err);
+      const plan = this.inferKeywordPlan(topic, seed || '');
+      this.renderHomeKeywordPlan(plan);
+    }).finally(() => {
+      loading.remove();
+    });
   },
 
   syncKeywordPlanHint() {
@@ -1297,6 +1337,7 @@ const notebooklm = {
     if (!paperId || !paperId.trim()) return;
 
     try {
+      this.setConsoleStatus("searching", "论文搜索中");
       const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/papers/custom`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

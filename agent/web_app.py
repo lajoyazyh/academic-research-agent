@@ -750,6 +750,30 @@ def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         raise HTTPException(status_code=500, detail=f"规划阶段执行失败: {str(e)}")
 
 
+@app.post("/api/keywords/extract")
+def extract_keywords_endpoint(payload: dict) -> dict:
+    """调用后端的规划+关键词抽取逻辑，返回关键词候选项（用于创建会话前的预览）。
+
+    请求体示例: {"topic": "主题文本", "seed": "可选的种子关键词, 用逗号分隔"}
+    返回: {"initial_plan": "...", "keywords": [...]}
+    """
+    try:
+        topic = (payload.get("topic", "") or "").strip()
+        if not topic:
+            raise HTTPException(status_code=400, detail="topic 不能为空")
+
+        # 延迟导入以避免循环依赖，并使用已有 run_plan_only 实现
+        from main import run_plan_only
+
+        result = run_plan_only(topic)
+
+        return {"initial_plan": result.get("initial_plan", ""), "keywords": result.get("keywords", [])}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"关键词抽取失败: {str(e)}")
+
+
 def _run_search_in_background(session_id: str, topic: str, keywords: list[dict], max_loops: int) -> None:
     """后台执行搜索阶段，周期性保存 traces 供前端实时轮询"""
     import time as _time
