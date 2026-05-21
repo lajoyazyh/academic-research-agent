@@ -349,6 +349,7 @@ class SessionManager:
     def _normalize_papers(self, papers: list[dict]) -> list[dict]:
         """标准化 papers 列表，确保每条都包含所有必需字段"""
         for p in papers:
+            # Ensure keys exist with sensible defaults
             p.setdefault("title", "")
             p.setdefault("authors", "")
             p.setdefault("source", "agent_search")
@@ -356,7 +357,54 @@ class SessionManager:
             p.setdefault("status", "pending")
             p.setdefault("abstract", "")
             p.setdefault("notes", "")
-            p.setdefault("has_notes", False)
+
+            # Normalize values: if a field is a list, join it. For most fields we then
+            # truncate at the first line break (handling literal "\\n" sequences),
+            # but for the 'notes' field we must preserve the full multi-line content.
+            for key in ("title", "authors", "source", "source_type", "status", "abstract", "notes"):
+                val = p.get(key, "")
+                # Convert lists to comma-separated string
+                if isinstance(val, (list, tuple)):
+                    try:
+                        val = ", ".join(str(x) for x in val)
+                    except Exception:
+                        val = ""
+
+                # For 'notes' we intentionally preserve the full text (no truncation at newlines)
+                if key == "notes":
+                    if isinstance(val, str):
+                        p[key] = val.strip()
+                    else:
+                        p[key] = str(val)
+                    continue
+
+                # For other string fields, prefer truncating at a literal "\\n" sequence if present
+                # (some upstream outputs encode newlines as the two-character sequence "\\n").
+                # Otherwise fall back to actual line breaks.
+                if isinstance(val, str):
+                    try:
+                        if "\\n" in val:
+                            # Split on the literal backslash-n sequence and take the first segment
+                            parts = val.split("\\n")
+                            val = parts[0].strip() if parts else ""
+                        else:
+                            # splitlines returns all real lines; take the first non-empty line if present
+                            lines = val.splitlines()
+                            if lines:
+                                val = lines[0].strip()
+                            else:
+                                val = val.strip()
+                    except Exception:
+                        val = val.strip() if isinstance(val, str) else str(val)
+                else:
+                    # Fallback: coerce to string
+                    val = str(val)
+
+                p[key] = val
+
+            # Update has_notes based on notes content
+            p.setdefault("has_notes", bool(p.get("notes", "").strip()))
+
         return papers
     def get_paper_dir(self, session_id: str, paper_id: str) -> Path:
         """获取某篇论文的存储目录"""

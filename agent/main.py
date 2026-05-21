@@ -475,6 +475,9 @@ def run_search_only(
         # work_dir = sessions/{id}/，只取 papers 的父目录一次！！
         work_dir = os.path.dirname(papers_dir)  # sessions/{id}/
         note_path = os.path.join(work_dir, 'research_notes.md')
+        # 如果调用者提供了 session_notes_path（sessions/{id}/notes/draft_notes.md），优先使用它
+        if session_notes_path and os.path.exists(session_notes_path):
+            note_path = session_notes_path
     else:
         import re as m_re
         safe_topic = m_re.sub(r'[/\:*?"<>|]', '_', user_topic)
@@ -548,60 +551,98 @@ def run_search_only(
             with open(notes_draft_path, 'w', encoding='utf-8') as f:
                 f.write(notes_content)
 
-    # 收集论文列表（从traces中提取标题和摘要）
+    # 收集论文列表：优先根据 notes_content（如果提供的 Session 环境），解析每篇笔记块并匹配本地 PDF
     papers_list = []
     if os.path.exists(papers_dir):
         pdf_names = set()
         for fname in sorted(os.listdir(papers_dir)):
             if fname.endswith(".pdf"):
                 pdf_names.add(fname.replace(".pdf", ""))
-        
-        # 从 traces 中提取论文元数据
-        for step in researcher_agent.traces:
-            obs = str(step.get("observation", ""))
-            action = str(step.get("action", ""))
-            action_input = step.get("action_input", {}) if isinstance(step.get("action_input", {}), dict) else {}
-            
-            if action == "append_note":
-                content = str(action_input.get("content", "") or step.get("input", ""))
-                title_match = re.search(r'标题[：:]\s*(.+?)(?:\n|$)', content)
-                abstract_match = re.search(r'摘要[：:]\s*(.+?)(?:\n|作者|关联|DOI|PDF)', content, re.DOTALL)
-                paper_title = title_match.group(1).strip() if title_match else ""
-                paper_abstract = abstract_match.group(1).strip()[:500] if abstract_match else ""
-                
-                # 匹配对应的 PDF
-                for pid in pdf_names:
-                    if pid in content or (paper_title and any(w in content for w in paper_title.split()[:3])):
-                        if not any(p.get("paper_id") == pid for p in papers_list):
-                            papers_list.append({
-                                "paper_id": pid,
-                                "title": paper_title or pid,
-                                "authors": "",
-                                "source": "agent_search",
-                                "source_type": "arxiv",
-                                "status": "pending",
-                                "abstract": paper_abstract,
-                                "notes": "",
-                                "has_notes": False,
-                                "added_at": datetime.datetime.now().isoformat(),
-                            })
-                        break
-            
-            # 也从搜索结果中收集论文信息
-            if action in ("arxiv_search", "openalex_search", "crossref_search", "semantic_scholar_search"):
-                # 解析搜索结果中的标题
-                for title_m in re.finditer(r'(?:Title|标题)[：:]\s*(.+?)(?:\n|$)', obs, re.IGNORECASE):
-                    t = title_m.group(1).strip()
-                    abs_m = re.search(r'(?:Summary|Abstract|摘要)[：:]\s*(.+?)(?=\n(?:ID|Title|Authors|DOI|$))', obs, re.IGNORECASE | re.DOTALL)
-                    abstract = abs_m.group(1).strip()[:500] if abs_m else ""
-                    # 找匹配的PDF
+
+        # 如果存在 notes_content（Session 模式），优先解析 notes 中的每篇论文条目
+        def _extract_blocks(text: str) -> list[str]:
+            # 先把��能被转义的 "\\n" 恢复为真实换行，便于后续正则按���解析
+            text = text.replace('\\n', '\n')
+            # 使用等号/短横线分隔线，或连续两个及以上的空行作为分割段落
+            parts = re.split(r"\n={2,}\n|\n-{2,}\n|\n{2,}", text)
+            return [p.strip() for p in parts if p.strip()]
+
+        def _first_nonempty(*args):
+            for a in args:
+                if a:
+                    return a
+            return ""
+
+
+        matched_pids = set()
+
+        if notes_content and notes_content.strip():
+            blocks = _extract_blocks(notes_content)
+            for blk in blocks:
+                # ensure escaped newlines are normalized
+                blk_proc = blk.replace('\\n', '\n')
+
+                # 提取论文ID（优先），标题，摘要
+                arxiv_ids = re.findall(r"\b(\d{4}\.\d{4,5})(?:v\d+)?\b", blk_proc)
+                pid_found = None
+                if arxiv_ids:
+                    # prefer the first
+                    pid_found = arxiv_ids[0]
+                    # if pdf exists without version
+                    if pid_found in pdf_names:
+                        matched_pid = pid_found
+                    else:
+                        # try matching partial
+                        for p in pdf_names:
+                            if p.startswith(pid_found):
+                                matched_pid = p
+                                break
+                        else:
+                            matched_pid = pid_found
+
+                    if matched_pid not in matched_pids:
+                        # 抽取标题（单行）
+                        title = re.search(r'论文标题[：:]\s*(.+?)(?:\n|$)', blk_proc) or re.search(r'标题[：:]\s*(.+?)(?:\n|$)', blk_proc)
+                        # 抽取摘要：允许多行，直到下一个已知字段（作者/标题/DOI/PDF）或两个连续换行
+                        abstract = re.search(r'摘要[：:]\s*(.+?)(?=\n(?:作者|标题|论文标题|DOI|PDF)|\n{2,}|$)', blk_proc, re.DOTALL)
+                        abstract_text = abstract.group(1).strip() if abstract else ""
+                        # 尝试抽取作者
+                        authors = re.search(r'作者[：:]\s*(.+?)(?:\n|$)', blk_proc)
+                        authors_text = authors.group(1).strip() if authors else ""
+
+                        papers_list.append({
+                            "paper_id": matched_pid,
+                            "title": _first_nonempty(title.group(1).strip() if title else "", matched_pid),
+                            "authors": authors_text,
+                            "source": "agent_search",
+                            "source_type": "arxiv",
+                            "status": "pending",
+                            "abstract": (abstract_text[:500] if abstract_text else ""),
+                            "notes": "",
+                            "has_notes": False,
+                            "added_at": datetime.datetime.now().isoformat(),
+                        })
+                        matched_pids.add(matched_pid)
+                    continue
+
+                # 否则尝试提取标题并用模糊匹配匹配 PDF 名称或已知 papers_list.json
+                title_m = re.search(r'论文标题[：:]\s*(.+?)(?:\n|$)', blk_proc) or re.search(r'标题[：:]\s*(.+?)(?:\n|$)', blk_proc)
+                # 抽取摘要（多行）
+                abstract_m = re.search(r'摘要[：:]\s*(.+?)(?=\n(?:作者|标题|论文标题|DOI|PDF)|\n{2,}|$)', blk_proc, re.DOTALL)
+                title = title_m.group(1).strip() if title_m else ""
+                abstract = abstract_m.group(1).strip()[:500] if abstract_m else ""
+
+                # 尝试在 pdf_names 中找到包含 title 关键字的文件名
+                found_any = False
+                if title:
+                    title_tokens = [t.lower() for t in re.findall(r"[\w\u4e00-\u9fff]+", title)[:6]]
                     for pid in pdf_names:
-                        clean_pid = pid.replace("paper_", "").replace("_", "")
-                        if clean_pid[:6] in obs or any(w.lower() in obs.lower() for w in t.split()[:3]):
-                            if not any(p.get("paper_id") == pid for p in papers_list):
+                        low = pid.lower()
+                        if all(tok in low for tok in title_tokens if len(tok) > 1):
+                            if pid not in matched_pids:
                                 papers_list.append({
                                     "paper_id": pid,
-                                    "title": t,
+                                    "title": title,
                                     "authors": "",
                                     "source": "agent_search",
                                     "source_type": "arxiv",
@@ -611,7 +652,108 @@ def run_search_only(
                                     "has_notes": False,
                                     "added_at": datetime.datetime.now().isoformat(),
                                 })
-                            break
+                                matched_pids.add(pid)
+                                found_any = True
+                    # 如果没有通过 filename 匹配到，仍添加一条以标题为名的记录（paper_id 设为标题摘要hash）
+                if not found_any:
+                    pseudo_id = re.sub(r"\s+", "_", (title or abstract[:30]))
+                    if pseudo_id and pseudo_id not in matched_pids:
+                        papers_list.append({
+                            "paper_id": pseudo_id,
+                            "title": title or pseudo_id,
+                            "authors": "",
+                            "source": "agent_search",
+                            "source_type": "arxiv",
+                            "status": "pending",
+                            "abstract": abstract,
+                            "notes": "",
+                            "has_notes": False,
+                            "added_at": datetime.datetime.now().isoformat(),
+                        })
+                        matched_pids.add(pseudo_id)
+
+        # 如果 notes_content 不存在或解析未命中任何 PDF，再回退到从 traces 提取（更宽松地匹配多篇）
+        if not papers_list:
+            # 从 traces 中提取论文元数据（允许为单次 append_note 生成多篇记录，将不再在发现第一个匹配后 break）
+            for step in researcher_agent.traces:
+                obs = str(step.get("observation", ""))
+                action = str(step.get("action", ""))
+                action_input = step.get("action_input", {}) if isinstance(step.get("action_input", {}), dict) else {}
+
+                if action == "append_note":
+                    content = str(action_input.get("content", "") or step.get("input", ""))
+                    # 查找所有可能的标题/摘要对
+                    title_matches = list(re.finditer(r'标题[：:]\s*(.+?)(?:\n|$)', content))
+                    if not title_matches:
+                        title_matches = list(re.finditer(r'论文标题[：:]\s*(.+?)(?:\n|$)', content))
+
+                    # 如果没有标题，仍尝试抽取单个摘要
+                    if title_matches:
+                        for tm in title_matches:
+                            paper_title = tm.group(1).strip()
+                            # 尝试提取该标题附近的摘要
+                            tail = content[tm.end():tm.end()+2000]
+                            abstract_match = re.search(r'摘要[：:]\s*(.+?)(?:\n|作者|关联|DOI|PDF)', tail, re.DOTALL)
+                            paper_abstract = abstract_match.group(1).strip()[:500] if abstract_match else ""
+                            for pid in pdf_names:
+                                if pid in content or (paper_title and any(w in content for w in paper_title.split()[:3])):
+                                    if not any(p.get("paper_id") == pid for p in papers_list):
+                                        papers_list.append({
+                                            "paper_id": pid,
+                                            "title": paper_title or pid,
+                                            "authors": "",
+                                            "source": "agent_search",
+                                            "source_type": "arxiv",
+                                            "status": "pending",
+                                            "abstract": paper_abstract,
+                                            "notes": "",
+                                            "has_notes": False,
+                                            "added_at": datetime.datetime.now().isoformat(),
+                                        })
+                    else:
+                        # 没有标题，尝试抽取 arXiv id
+                        arxiv_ids = re.findall(r'\b(\d{4}\.\d{4,5})(?:v\d+)?\b', content)
+                        for aid in arxiv_ids:
+                            for pid in pdf_names:
+                                if pid.startswith(aid):
+                                    if not any(p.get("paper_id") == pid for p in papers_list):
+                                        papers_list.append({
+                                            "paper_id": pid,
+                                            "title": pid,
+                                            "authors": "",
+                                            "source": "agent_search",
+                                            "source_type": "arxiv",
+                                            "status": "pending",
+                                            "abstract": "",
+                                            "notes": "",
+                                            "has_notes": False,
+                                            "added_at": datetime.datetime.now().isoformat(),
+                                        })
+
+                # 也从搜索结果中收集论文信息
+                if action in ("arxiv_search", "openalex_search", "crossref_search", "semantic_scholar_search"):
+                    # 解析搜索结果中的标题
+                    for title_m in re.finditer(r'(?:Title|标题)[：:]\s*(.+?)(?:\n|$)', obs, re.IGNORECASE):
+                        t = title_m.group(1).strip()
+                        abs_m = re.search(r'(?:Summary|Abstract|摘要)[：:]\s*(.+?)(?=\n(?:ID|Title|Authors|DOI|$))', obs, re.IGNORECASE | re.DOTALL)
+                        abstract = abs_m.group(1).strip()[:500] if abs_m else ""
+                        # 找匹配的PDF，允许多匹配
+                        for pid in pdf_names:
+                            clean_pid = pid.replace("paper_", "").replace("_", "")
+                            if clean_pid[:6] in obs or any(w.lower() in obs.lower() for w in t.split()[:3]):
+                                if not any(p.get("paper_id") == pid for p in papers_list):
+                                    papers_list.append({
+                                        "paper_id": pid,
+                                        "title": t,
+                                        "authors": "",
+                                        "source": "agent_search",
+                                        "source_type": "arxiv",
+                                        "status": "pending",
+                                        "abstract": abstract,
+                                        "notes": "",
+                                        "has_notes": False,
+                                        "added_at": datetime.datetime.now().isoformat(),
+                                    })
 
         # 补漏：任何未匹配的 PDF
         for pid in pdf_names:
@@ -628,6 +770,16 @@ def run_search_only(
                     "has_notes": False,
                     "added_at": datetime.datetime.now().isoformat(),
                 })
+
+        # 如果处于 session 模式，持久化 papers_list 到 sessions/{id}/papers/papers_list.json，方便前端/SessionManager 读取
+        try:
+            if session_papers_dir:
+                papers_list_path = os.path.join(papers_dir, 'papers_list.json')
+                with open(papers_list_path, 'w', encoding='utf-8') as f:
+                    json.dump(papers_list, f, ensure_ascii=False, indent=2)
+        except Exception:
+            # 忽略写入错误，返回结果仍然包含 papers
+            pass
 
     return {
         "phase": "search",
