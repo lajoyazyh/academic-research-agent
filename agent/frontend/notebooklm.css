@@ -46,7 +46,7 @@
   --hover-bg: #3a3a3a;
   --hover-subtle: rgba(255,255,255,.06);
   --code-bg: #252525;
-  --input-bg: #1e1e1e;
+  --input-bg: #252525;
   --chat-bg: #252525;
   --msg-bg: #2d2d2d;
   --modal-bg: #2d2d2d;
@@ -308,11 +308,51 @@ html, body {
 .field-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
 .field-grid label { font-size: 13px; color: var(--subtle); }
 .field-grid input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 14px; margin-top: 4px; background: var(--input-bg); color: var(--text); }
-.planning-block { border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+.field-grid textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+  margin-top: 4px;
+  background: var(--input-bg);
+  color: var(--text);
+  resize: vertical;
+  min-height: 96px;
+  font-family: inherit;
+}
+.field-grid input::placeholder,
+.field-grid textarea::placeholder,
+.keyword-plan-row input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+.planning-block { border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 12px; background: var(--input-bg); }
+[data-theme="dark"] .planning-block {
+  background: #2a2a2a;
+}
 .planning-block-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .keyword-plan-list { display: flex; flex-direction: column; gap: 8px; }
 .keyword-plan-row { display: grid; grid-template-columns: 60px 1fr 1fr 1fr 36px; gap: 6px; align-items: center; }
-.keyword-plan-row input { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 13px; background: var(--input-bg); color: var(--text); }
+.keyword-plan-row input { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 13px; background: var(--code-bg); color: var(--text); }
+.keyword-plan-row .kw-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 8px;
+  background: var(--code-bg);
+  color: var(--danger);
+  border: 1px solid var(--line);
+  font-size: 14px;
+  cursor: pointer;
+}
+.keyword-plan-row .kw-remove:hover {
+  background: var(--red-light);
+  border-color: transparent;
+}
 .keyword-plan-index { font-size: 12px; color: var(--subtle); }
 .keyword-plan-empty { font-size: 13px; color: var(--subtle); text-align: center; padding: 16px; }
 
@@ -596,12 +636,13 @@ html, body {
   border-radius: 8px;
   font-size: 13px;
   font-family: inherit;
-  background: #f8f9fa;
+  background: var(--code-bg);
+  color: var(--text);
 }
 .keyword-plan-row input:focus {
   outline: none;
   border-color: var(--accent);
-  background: var(--panel);
+  box-shadow: 0 0 0 2px rgba(102,157,246,.2);
 }
 .modal-foot {
   display: flex;
