@@ -960,8 +960,18 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
 
     notes = session.get("notes", "")
+    # 如果 draft_notes.md 为空，尝试从 papers_list.json 中聚合各论文的笔记
     if not notes.strip():
-        raise HTTPException(status_code=400, detail="笔记为空，请先完成搜索阶段")
+        papers = session.get("papers", [])
+        aggregated = []
+        for p in papers:
+            pn = (p.get("notes") or "").strip()
+            if pn:
+                aggregated.append(f"## {p.get('title', p.get('paper_id', ''))}\n\n{pn}")
+        notes = "\n\n---\n\n".join(aggregated)
+    
+    if not notes.strip():
+        raise HTTPException(status_code=400, detail="笔记为空，请先为选中论文生成笔记")
 
     previous_draft = session.get("draft", "")
     feedback = session_mgr.get_feedback(session_id)
