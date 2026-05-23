@@ -113,11 +113,11 @@ cd agent/
 python web_app.py
 ```
 
-浏览器打开 `http://127.0.0.1:8000`，在控制台输入主题即可实时查看：
-- **运行轨迹**：每轮的 thought → action → observation
-- **研究笔记**：Agent 记录的结构化笔记
-- **最终综述**：Writer 生成的万字综述
-- **参考论文**：下载的 PDF 列表，可直接查看/下载
+浏览器打开 `http://127.0.0.1:8000`，即可进入 **会话驱动的交互式调研平台**：
+- **全流程干预**：分为关键词规划、搜集论文、提取笔记、撰写综述等多个可暂停检查的阶段。
+- **互动审批机制**：可编辑检索计划（Plan）、剔除或上传相关论文（Papers）、在线修改文献笔记（Notes）。
+- **综述反馈重写**：系统多版本保存最终草稿，用户提供建议后 Agent 可自动重写、反馈迭代（Drafts/Review）。
+- **运行轨迹与参考**：保留运行中间日志的溯源能力，并附带所有相关 PDF 文件的本地下载和审阅功能。
 
 ---
 
@@ -125,6 +125,10 @@ python web_app.py
 
 ```
 agent/
+├── backend/
+│   ├── api.py            # 独立 API
+│   └── session_manager.py # Session 会话状态管理
+├── config/               # 配置管理
 ├── core/
 │   ├── agent.py          # Agent 主循环（Plan+ReAct+Reflexion）
 │   ├── tools.py          # 工具基类
@@ -133,20 +137,29 @@ agent/
 │   ├── arxiv_tools.py    # arXiv 搜索/获取/下载/读取
 │   ├── semantic_scholar_tools.py  # Semantic Scholar
 │   ├── crossref_tools.py # Crossref 元数据
+│   ├── openalex_tools.py # OpenAlex 综合搜索
 │   ├── pdf_tools.py      # PDF 下载与正文提取
 │   └── file_tools.py     # 笔记管理
 ├── llms/
 │   └── client.py         # LLM 客户端（智谱/OpenAI 兼容）
+├── sessions/             # Session 数据存储
+├── prompts/              # Prompt 模板
 ├── utils/
 │   └── parser.py         # JSON 解析器
 ├── frontend/
-│   ├── index.html        # Web 界面
-│   ├── app.js            # 前端逻辑
-│   └── styles.css        # 样式
+│   ├── index.html        # Web 界面入口
+│   ├── home.html         # 首页
+│   ├── history.html      # 历史记录页面
+│   ├── chat.html         # 对话页面
+│   ├── help.html         # 帮助页面
+│   ├── app.js            # 前端入口逻辑
+│   ├── notebooklm.js     # 页面内部交互与状态管理
+│   ├── styles.css        # 基础样式
+│   └── notebooklm.css    # UI 样式库
 ├── main.py               # CLI 入口
 ├── web_app.py            # Web 入口（FastAPI）
 ├── .env                  # 环境配置
-├── documents/            # 运行结果输出目录
+├── documents/            # CLI 运行输出与迭代二兼容目录
 └── README.md
 ```
 
@@ -164,7 +177,6 @@ agent/
 
 ## 当前限制
 
-- 主要面向 CS/AI 方向的 arXiv 论文，医学、社科等领域覆盖不足
 - 依赖 LLM 稳定输出 JSON 格式，模型质量直接影响 Agent 成功率
 - Semantic Scholar 无 API Key 时限流严重（60% 429），建议注册免费 Key
 - arXiv `id_list` 端点限流比 `search_query` 严格得多，已通过全局限流器和退避策略缓解

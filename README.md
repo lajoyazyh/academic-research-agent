@@ -16,10 +16,18 @@ agent/
 ├── core/                   # Agent 核心（ReAct 循环、工具调度）
 ├── tools/                  # 学术检索工具
 ├── llms/                   # LLM 客户端（智谱 API）
+├── config/                 # 配置管理
+├── utils/                  # 辅助工具与解析器
 ├── frontend/               # Web UI
 │   ├── index.html
+│   ├── home.html
+│   ├── history.html
+│   ├── chat.html
+│   ├── help.html
 │   ├── app.js
-│   └── styles.css
+│   ├── notebooklm.js
+│   ├── styles.css
+│   └── notebooklm.css
 ├── sessions/               # Session 数据存储
 │   └── {session_id}/
 │       ├── metadata.json
@@ -27,9 +35,11 @@ agent/
 │       ├── papers/         # 论文 PDF + 元数据
 │       ├── notes/          # 笔记草稿 + 编辑历史
 │       └── draft/          # 综述草稿多版本
-├── documents/              # 迭代二兼容：历史综述产物
-├── tests/                  # 自动化测试
+├── documents/              # CLI 运行输出与迭代二兼容目录
 └── prompts/                # Prompt 模板
+
+tests/                      # 自动化测试目录
+docs/                       # 文档相关目录
 
 ## 迭代三核心创新
 
@@ -52,17 +62,17 @@ planning -> plan_confirmed -> searching -> search_complete
 
 ### 3. 关键步骤可见化
 - **关键词审核**（✅ 已实现）：Plan 阶段后展示关键词方案，用户可编辑/删除/新增；可随时通过会话旁的 ✏️ 编辑按钮重新修改
-- **论文管理**（第二波规划）：混合 Agent 搜索 + 用户上传，支持审查模式
-- **笔记编辑**（第三波规划）：在线 Markdown 分屏编辑器，修改后可重新撰写
-- **综述反馈**（第三波规划）：提交修改意见，最多 2 次反馈重写
+- **论文管理**（✅ 已实现）：混合 Agent 搜索 + 用户上传，支持审查模式、删除及状态更新
+- **笔记编辑**（✅ 已实现）：在线 Markdown 分屏编辑器，支持查看、编辑修改研究笔记
+- **综述反馈**（✅ 已实现）：提交综述修改审核意见并在历史记录跟踪草稿版本
 
 ## 当前实现进度
 
 | 波次 | 状态 | 已实现 |
 |------|:----:|------|
 | 第一波：Session 管理 + 关键词确认 | 完成 | SessionManager、状态机、关键词确认 UI、折叠/删除 |
-| 第二波：论文管理 + 混合来源 | 待开发 | -- |
-| 第三波：笔记编辑 + 综述重写 | 待开发 | -- |
+| 第二波：论文管理 + 混合来源 | 完成 | 支持多选删除论文、改变论文状态、上传本地PDF论文及自定义元数据加入文献库 |
+| 第三波：笔记编辑 + 综述重写 | 完成 | 在线 Markdown 编辑器编辑研究笔记、提供反馈并重写综述 |
 
 ## 环境安装
 
@@ -91,13 +101,26 @@ python web_app.py
 | GET | /api/sessions/list | 列出所有会话 |
 | GET | /api/sessions/{id} | 获取会话完整状态 |
 | DELETE | /api/sessions/{id} | 删除会话 |
+| PUT | /api/sessions/{id} | 更新会话元数据 |
 | PUT | /api/sessions/{id}/state | 状态转移（带校验） |
 | PUT | /api/sessions/{id}/keywords | 保存确认后的关键词 |
+| GET | /api/sessions/{id}/papers | 获取论文列表 |
+| DELETE | /api/sessions/{id}/papers/{paper_id} | 删除单篇论文 |
+| POST | /api/sessions/{id}/papers/batch-delete | 批量删除论文 |
+| PUT | /api/sessions/{id}/papers/{paper_id}/status | 更新论文状态 |
+| POST | /api/sessions/{id}/papers/custom | 添加自定义论文元数据 |
+| POST | /api/sessions/{id}/papers/upload | 上传论文PDF进行解析 |
+| GET | /api/sessions/{id}/notes | 获取研究笔记 |
+| PUT | /api/sessions/{id}/notes | 保存修改后的研究笔记 |
+| PUT | /api/sessions/{id}/feedback | 提交综述修改审核意见 |
+| GET | /api/sessions/{id}/draft | 获取所有综述草稿列表 |
+| GET | /api/sessions/state-machine | 获取状态机定义 |
 | POST | /api/sessions/{id}/run/plan | 执行规划阶段 |
 | POST | /api/sessions/{id}/run/search | 执行搜索阶段 |
+| GET  | /api/sessions/{id}/run/status | 轮询执行状态 |
+| POST | /api/sessions/{id}/run/notes | 执行提取笔记阶段 |
 | POST | /api/sessions/{id}/run/write | 执行撰写阶段 |
-| GET | /api/sessions/{id}/papers | 获取论文列表 |
-| GET | /api/sessions/state-machine | 获取状态机定义 |
+| POST | /api/keywords/extract | 辅助接口：仅提取关键词，不创建会话 |
 
 ## 收藏夹 API
 
