@@ -803,14 +803,6 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
         # 保存论文列表到 Session
         if result.get("papers"):
             session_mgr.save_papers_list(session_id, result["papers"])
-        # 保存笔记（从 result 中获取，run_search_only 已正确读取）
-        if result.get("notes"):
-            session_mgr.save_notes(session_id, result["notes"])
-        # 也从 work_dir 的 research_notes.md 二次确认
-        work_dir = SESSIONS_DIR / session_id
-        notes_file = work_dir / "research_notes.md"
-        if notes_file.exists() and not result.get("notes"):
-            session_mgr.save_notes(session_id, notes_file.read_text(encoding="utf-8"))
         # 保存轨迹
         if result.get("traces"):
             session_mgr.save_traces(session_id, result["traces"])
@@ -921,6 +913,21 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         raise HTTPException(status_code=500, detail=f"撰写阶段执行失败: {str(e)}")
 
 
+# ━━━ 迭代三：关键词提取（新建会话前即可使用）━━━
+
+class KeywordExtractRequest(BaseModel):
+    topic: str
+
+@app.post("/api/keywords/extract")
+def extract_keywords(payload: KeywordExtractRequest) -> dict:
+    """【辅助】仅提取关键词，不创建 Session"""
+    from main import _build_initial_plan, _extract_keywords_from_plan
+    from llms.client import LLMClient
+    llm = LLMClient()
+    plan = _build_initial_plan(llm, payload.topic.strip())
+    keywords = _extract_keywords_from_plan(plan)
+    return {"keywords": keywords, "plan": plan}
+
 # ━━━ 迭代三新增：为选中论文生成独立笔记 ━━━
 
 class RunNotesRequest(BaseModel):
@@ -953,21 +960,30 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
         abstract = paper.get("abstract", "")
         source_info = paper.get("source_type", paper.get("source", ""))
 
-        note_prompt = f"""你是一名学术研究员。请为以下论文撰写一份结构化的学术笔记（300-500字）：
+        note_prompt = f"""你是一名严谨的学术研究员。请为以下论文撰写一份**深度学术笔记**（800-1200字），使其能够直接支撑后续的综述写作。
 
 研究主题：{topic}
 论文标题：{title}
 来源：{source_info}
 摘要：{abstract}
 
-请按以下格式输出：
-## 论文笔记：{title}
-- **核心方法**：（简述该论文使用的核心技术或方法）
-- **关键发现**：（列出最重要的实验发现或结论）
-- **与研究主题的关联**：（说明该论文如何与「{topic}」相关联）
-- **亮点与不足**：（简要评价论文的贡献和局限）
+请按以下详细格式输出：
 
-直接输出笔记内容，不要额外解释。"""
+## 论文笔记：{title}
+
+- **核心方法**：（详细描述该论文提出的技术核心，包括模型架构、算法流程、公式或创新点等。至少 150 字。）
+
+- **实验设置**：（列举使用的数据集名称、规模、评估指标（如 BLEU、F1、Accuracy 等），以及基线模型。至少 80 字。）
+
+- **关键结果**：（详细列出主要实验结果，包括具体数值和改进幅度。例如："在 X 数据集上相比基线 Y 提升了 Z%。" 至少 100 字。）
+
+- **消融与分析**：（论文是否做了消融实验？哪些组件贡献最大？是否有可视化分析或案例研究？至少 80 字。）
+
+- **与研究主题的关联**：（具体说明该论文如何支撑「{topic}」的研究，填补了什么空白，或者提供了什么新视角。至少 60 字。）
+
+- **亮点与不足**：（客观评价论文的主要贡献、创新性以及潜在局限、未解决的问题。至少 60 字。）
+
+写作要求：内容具体、引用数值，避免空洞概括。直接输出笔记，不要额外解释。"""
 
         try:
             note_text = llm.chat("你是严谨的学术研究员。", note_prompt, []).strip()

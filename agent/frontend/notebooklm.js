@@ -393,14 +393,31 @@ const notebooklm = {
     })).filter((item) => item.original || item.english || item.synonyms);
   },
 
-  generateHomeKeywordPlan() {
+  async generateHomeKeywordPlan() {
     const topic = (this.els.topicInput?.value || "").trim();
     if (!topic) {
       alert("请先输入主题");
       return;
     }
-    const plan = this.inferKeywordPlan(topic, this.els.keywordInput?.value || "");
-    this.renderHomeKeywordPlan(plan);
+    const seed = this.els.keywordInput?.value || "";
+    try {
+      const res = await fetch("/api/keywords/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "提取失败");
+      const keywords = Array.isArray(data.keywords) ? data.keywords : [];
+      // 如果用户在种子输入框中也提供了词，追加到 AI 返回的结果后面
+      if (seed.trim()) {
+        const seeds = seed.split(/[，,;\n]/).map(s => s.trim()).filter(Boolean);
+        seeds.forEach(s => keywords.push({ original: s, english: "", synonyms: "" }));
+      }
+      this.renderHomeKeywordPlan(keywords);
+    } catch (e) {
+      alert("关键词生成失败：" + e.message);
+    }
   },
 
   syncKeywordPlanHint() {
@@ -410,7 +427,8 @@ const notebooklm = {
     const topic = (this.els.topicInput?.value || "").trim();
     const seeds = this.normalizeSeedKeywords(this.els.keywordInput?.value || "");
     if (topic && seeds.length) {
-      this.renderHomeKeywordPlan(this.inferKeywordPlan(topic, this.els.keywordInput?.value || ""));
+      // 自动触发关键词提取
+      this.generateHomeKeywordPlan();
     }
   },
 
@@ -692,7 +710,25 @@ const notebooklm = {
       return '<div class="empty-state">请先在左侧选择一篇论文。</div>';
     }
 
-    const abstract = paper.abstract || paper.summary || paper.description || "";
+    const pid = paper.paper_id || "";
+    const sessionNotes = session.notes || "";
+
+    // 从 session.notes（draft_notes.md）中用论文 id 提取对应的整段 Markdown
+    let sectionMd = "";
+    if (pid && sessionNotes) {
+      // 按「论文id:」分割，找到匹配 pid 的那一段
+      const blocks = sessionNotes.split(/\n(?=论文id:)/);
+      for (const block of blocks) {
+        if (block.includes(`论文id: ${pid}`)) {
+          // 去掉开头的「论文id: xxx」行，保留其余结构
+          sectionMd = block.replace(/^论文id:\s*\S+\s*\n?/, '').trim();
+          break;
+        }
+      }
+    }
+
+    const hasSection = Boolean(sectionMd);
+
     return `
       <div class="detail-hero">
         <span class="topic-badge"><i class="fa-regular fa-note-sticky"></i> 摘要</span>
@@ -701,8 +737,10 @@ const notebooklm = {
       </div>
       <div class="detail-blocks" style="margin-top:16px;">
         <div class="panel-block">
-          <div class="panel-block-head"><strong>论文摘要</strong><span class="chip">只读</span></div>
-          <div class="plain-text">${this.escapeHtml(abstract || "当前没有可用摘要，建议继续检索或添加 PDF 以补全信息。")}</div>
+          <div class="panel-block-head"><strong>调研笔记（draft_notes）</strong><span class="chip">${hasSection ? '自动提取' : '无'}</span></div>
+          ${hasSection
+            ? `<div class="markdown">${marked.parse(sectionMd)}</div>`
+            : `<div class="plain-text">${this.escapeHtml(paper.abstract || "当前没有可用摘要。")}</div>`}
         </div>
         <div class="panel-block">
           <div class="panel-block-head"><strong>来源信息</strong><span class="chip">${this.escapeHtml(paper.status || "pending")}</span></div>

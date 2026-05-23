@@ -27,7 +27,7 @@ def _build_initial_plan(llm: LLMClient, topic: str) -> str:
 2) 数据源与调用顺序（必须明确说明优先级：医学/社科类及跨学科主题优先使用 openalex_search，CS/AI及理工科优先使用 arxiv_search。Semantic Scholar仅作严重缺失时的后备补充且要警惕限流）
 3) 选取/排除标准（例如时间下限、核心概念匹配度）
 4) 失败回退策略（0结果、限流、检索过泛时如何修改关键词）
-5) 预期的3~5步行动序列（每步务必写明要调用的具体工具名，如 openalex_search, arxiv_search, append_note 等）
+5) 预期的3~5步行动序列（每步务必写明要调用的具体工具名，如 openalex_search, arxiv_search, arxiv_download_pdf 等）
 输出只包含计划内容，不要写长段解释。
 """
     plan = llm.chat("你是严谨的研究规划师。", plan_prompt, []).strip()
@@ -38,7 +38,7 @@ def _build_initial_plan(llm: LLMClient, topic: str) -> str:
             "- 数据源顺序：arXiv/OpenAlex -> Semantic Scholar -> Crossref 补元数据\n"
             "- 选择标准：近3年；顶会/知名期刊；可获取PDF优先\n"
             "- 回退策略：关键词同义词/上位词；切换源；减少限制项\n"
-            "- 行动序列：arxiv_search -> arxiv_fetch/pdf_reader -> openalex_search/semantic_scholar_search -> crossref_fetch_doi -> append_note\n"
+            "- 行动序列：arxiv_search -> arxiv_fetch/pdf_reader -> openalex_search/semantic_scholar_search -> crossref_fetch_doi -> arxiv_download_pdf\n"
         )
     return plan
 
@@ -400,38 +400,42 @@ def _build_research_query(topic: str, initial_plan: str, confirmed_keywords: lis
 
     return (
         f"## 🎯 研究目标\n"
-        f"对《{topic}》进行深度学术文献调研，自主搜索并下载至少 3 篇高质量前沿论文的 PDF 和摘要。\n\n"
-        "## 📋 硬性完成标准（不满足不得 FINISH）\n"
-        "1. 必须至少成功用 arxiv_download_pdf 下载了 3 篇不同论文的 PDF。\n"
-        "2. 必须至少使用了两个不同的学术数据库（arXiv + OpenAlex/Semantic Scholar (根据研究领域进行选择)；可辅以 Crossref 补充元数据）。\n"
-        "3. 对每一篇你下载的论文，必须通过 arxiv_pdf_reader 提取内容或至少获取摘要。\n\n"
+        f"对《{topic}》进行学术文献调研。你的任务是**搜索并收集**至少 3 篇高质量论文的标题、作者、摘要。\n\n"
+        "## 📋 硬性完成标准\n"
+        "1. 必须搜索到至少 3 篇相关论文，并获得标题+作者+摘要。\n"
+        "2. 必须至少使用了两个不同的学术数据库。\n"
+        "3. **收集够 3 篇高质量论文后必须立即 FINISH，不要无谓重复搜索！**\n\n"
+        "## ⛔ 严禁行为（违反直接判定失败）\n"
+        "- **禁止用同一关键词反复搜索同一个数据库**：最多 2 次，之后必须换关键词或换数据库。\n"
+        "- **禁止连续 3 轮用相同参数调用同一个工具**：观察返回是否相同，若是则立即换策略。\n"
+        "- **禁止搜索到好论文后还继续搜同一篇**：搜到元数据后换新关键词找下一篇。\n"
+        "- **禁止尝试访问 PDF 链接**：OpenAlex 的 pdf_url 往往是 null，不要反复查询。\n\n"
         "## 🧠 自主规划要求\n"
-        "你是一个具备自主决策能力的研究员，不是死板的脚本执行器。请你：\n"
+        "你是一个具备自主决策能力的调研员。你的唯一任务是搜索和收集论文元数据，PDF 下载由系统在后台自动完成。\n"
         "- **先规划，再执行**：在第一轮，用你的 thought 字段分析主题、拆分关键词策略（中→英学术关键词提取）、决定先用哪个数据库、预计搜索几轮。\n"
-        "- **数据库选择优先级**：CS/AI/理工科优先使用 arxiv_search（arXiv限流较松）；医学/社科/综述性话题优先使用 openalex_search 补充；Semantic Scholar 检索能力强但限流极严，只在大规模检索或补充时使用。\n"
-        "- **动态调整策略**：如果某个关键词没搜到好结果，自行换同义词/上位词/下位词重试，或切换数据库。不要死磕同一个查询。同一个数据库连续失败 2 次后必须换另一个数据库。\n"
-        "- **429 错误处理**：如果某个数据库返回 HTTP 429（限流），说明该数据库暂时不可用，应立即切换到另一个数据库，不要反复重试同一个数据库。"
-        "- **遇到困难时**：如果某篇论文拿不到全文，自主决定是换一篇还是用摘要替代；如果某个数据库持续失败，果断换另一个。\n\n"
+        "- **数据库选择优先级**：CS/AI/理工科优先使用 arxiv_search（结果最完整）；OpenAlex 补充跨学科论文；Semantic Scholar 只在大规模检索或补充时使用（限流严格）。\n"
+        "- **动态调整策略**：如果某个关键词没搜到好结果，换同义词/上位词/下位词重试，或切换数据库。同一个数据库连续失败 2 次后换另一个数据库。\n"
+        "- **429 错误处理**：返回 HTTP 429（限流），立即切换到另一个数据库，不要反复重试。\n"
+        "- **不要尝试下载 PDF**：arxiv_download_pdf 只接受 arXiv ID，而 Crossref 等返回的是 DOI，强行传入 DOI 只会失败。系统会在你收集完元数据后自动下载。\n"
+        "- **遇到困难时**：如果某篇论文搜不到详细信息，换更泛化的关键词；如果某个数据库持续失败，果断换另一个。\n\n"
         "## 🛠 可用工具速览\n"
-        "- arxiv_search：arXiv 搜索（已自带标题+作者+摘要）\n"
-        "- arxiv_fetch：按 arXiv ID 补全单篇论文信息\n"
-        "- arxiv_download_pdf：下载论文 PDF 到本地 papers/ 目录（**每篇论文都要下载**）\n"
-        "- arxiv_pdf_reader：下载 PDF 并提取正文文本（用于深度阅读）\n"
-        "- semantic_scholar_search / semantic_scholar_fetch：Semantic Scholar 检索与详情\n"
-        "- openalex_search：OpenAlex 跨学科综合学术搜索（推荐在人文社科、医学领域优先使用）\n"
-        "- crossref_search / crossref_fetch_doi：Crossref 补全 DOI 与期刊元数据\n\n"
-        "## ⚠️ 关键经验（前人的试错教训，请内化为你的行动准则）\n"
-        "- arxiv_search 返回结果已包含标题+作者+摘要，拿到后即可下载 PDF，不必额外调 arxiv_fetch。\n"
-        "- **每确认一篇论文后立即用 arxiv_download_pdf 下载该论文 PDF，确保本地可访问。传入 arXiv ID 或者是包含 .pdf 的 URL。**\n"
-        "- arxiv_download_pdf 接受 arXiv ID（如 2308.11432）或 http 开头的 PDF 短链。如果 paper_id 带版本号（如 v3），工具会自动去掉。\n"
-        "- 中文主题必须在 thought 中自行翻译为英文关键词后再搜索。\n"
-        "- crossref_search 传入论文标题/作者名，不要直接扔 arXiv ID。\n"
-        "- 如果某个数据库返回 HTTP 429（限流），立即换另一个数据库，不要反复重试。\n"
-        "- 不要调用不存在的工具。所有可用工具已在上面列出。\n"
+        "- arxiv_search：arXiv 搜索（返回标题+作者+摘要，最完整）\n"
+        "- arxiv_fetch：按 arXiv ID 补全信息（仅信息不足时用）\n"
+        "- arxiv_download_pdf：下载 PDF（仅接受 arXiv ID，不用 DOI 调用）\n"
+        "- arxiv_pdf_reader：读取已下载 PDF 的内容\n"
+        "- openalex_search：OpenAlex 跨学科搜索\n"
+        "- crossref_search / crossref_fetch_doi：Crossref 搜索与 DOI 补全\n"
+        "- semantic_scholar_search / semantic_scholar_fetch：Semantic Scholar 搜索\n\n"
+        "## ⚠️ 关键经验\n"
+        "- arxiv_search 结果已包含完整元数据，是最好的来源，拿到后继续搜下一批。\n"
+        "- **不要用 DOI 调用 arxiv_download_pdf！** arxiv_download_pdf 只接受 arXiv ID（格式如 2308.11432）。DOI（如 10.xxxx）不是 arXiv ID。\n"
+        "- 中文主题必须在 thought 中翻译为英文关键词后搜索。\n"
+        "- crossref_search 传入论文标题/作者名。\n"
+        "- HTTP 429 立即换数据库。\n"
         + keyword_hint +
         "## 🧭 初始计划草案（供参考，可在 thought 中修订）\n"
         f"{initial_plan}\n\n"
-        "现在请开始你的自主研究。先用 thought 制定/修订你的检索计划，然后执行。"
+        "现在请开始你的调研。先用 thought 制定检索计划，然后执行。记住：**搜索元数据即可，不要下载 PDF。**"
     )
 
 
@@ -456,7 +460,6 @@ def run_search_only(
         os.makedirs(papers_dir, exist_ok=True)
         # work_dir = sessions/{id}/，只取 papers 的父目录一次！！
         work_dir = os.path.dirname(papers_dir)  # sessions/{id}/
-        note_path = os.path.join(work_dir, 'research_notes.md')
     else:
         import re as m_re
         safe_topic = m_re.sub(r'[/\:*?"<>|]', '_', user_topic)
@@ -464,7 +467,6 @@ def run_search_only(
         folder_name = f"{safe_topic}_{timestamp}"
         work_dir = os.path.join(os.path.dirname(__file__), 'documents', folder_name)
         papers_dir = os.path.join(work_dir, 'papers')
-        note_path = os.path.join(work_dir, 'research_notes.md')
         os.makedirs(work_dir, exist_ok=True)
 
     os.makedirs(papers_dir, exist_ok=True)
@@ -474,11 +476,9 @@ def run_search_only(
     t5, t6 = CrossrefSearchTool(), CrossrefFetchByDoiTool()
     t7 = ArxivPdfReaderTool(papers_dir=papers_dir)
     t8 = ArxivDownloadPdfTool(papers_dir=papers_dir)
-    t9 = ClearNoteTool(work_dir=work_dir)
-    t10 = AppendNoteTool(work_dir=work_dir)
-    t11 = OpenAlexSearchTool()
+    t9 = OpenAlexSearchTool()
 
-    researcher_agent = BaseAgent(tools=[t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11], max_loops=max_loops)
+    researcher_agent = BaseAgent(tools=[t1, t2, t3, t4, t5, t6, t7, t8, t9], max_loops=max_loops)
     if agent_callback:
         agent_callback(researcher_agent, work_dir)
 
@@ -532,7 +532,6 @@ def run_search_only(
         "papers": papers_list,
         "traces": researcher_agent.traces,
         "papers_dir": str(papers_dir),
-        "note_path": str(note_path),
     }
 
 

@@ -136,16 +136,14 @@ class BaseAgent:
             
             # 3. 终局判断（带质量门禁 + Pre-FINISH 自主质检）
             if action.lower() == "finish":
-                # ━━━ 质量门禁：检查是否满足硬性质量约束 ━━━
-                note_count = sum(1 for t in self.traces if t.get("action") == "append_note")
-                if note_count < 3:
+                # ━━━ 质量门禁：检查是否下载了足够的论文 ━━━
+                download_actions = {"arxiv_download_pdf", "arxiv_fetch"}
+                recorded_count = sum(1 for t in self.traces if t.get("action") in download_actions)
+                if recorded_count < 3:
                     gate_msg = (
-                        f"⚠️ 质量门禁拦截：你目前只记录了 {note_count} 篇论文笔记，"
-                        "但硬性要求是至少 3 篇独立笔记。你不能在此刻 FINISH。\n\n"
-                        "【立即使用已获取的信息写笔记】\n"
-                        "你已经搜索到了多篇论文并下载了 PDF。请立即用 append_note 工具"
-                        "根据你已阅读的摘要或论文内容写笔记，每篇笔记包含：标题、作者、"
-                        "核心方法、关键发现。不要再去搜索新的论文——先写好已找到的论文的笔记。"
+                        f"⚠️ 质量门禁拦截：你目前只下载/记录了 {recorded_count} 篇论文，"
+                        "但需要至少 3 篇。请用 arxiv_download_pdf 下载你觉得好的论文，"
+                        "然后再 FINISH。不要在没下载够的情况下结束。"
                     )
                     self.traces.append({
                         "thought": thought,
@@ -155,31 +153,6 @@ class BaseAgent:
                         "error_type": "quality_gate",
                     })
                     current_query = gate_msg
-                    continue
-
-                # ━━━ Pre-FINISH 自主质检（Self-Critique）━━━
-                if not self._critique_round:
-                    self._critique_round = True
-                    critique_prompt = (
-                        "🔍 自主质检回合：在你真正 FINISH 之前，请审查你已完成的所有研究笔记。\n\n"
-                        "对每一篇你已记录笔记的论文，逐一检查是否包含以下要素：\n"
-                        "1. ✅ 完整标题\n"
-                        "2. ✅ 作者列表\n"
-                        "3. ✅ DOI（或 arXiv ID）\n"
-                        "4. ✅ 核心方法/技术路线描述\n"
-                        "5. ✅ 关键实验发现或结论\n"
-                        "6. ✅ 与你研究主题的关联分析\n\n"
-                        "如果任何一篇笔记缺失了以上要素，请在下一轮用 append_note 补充，"
-                        "或搜索更多信息来完善笔记。如果所有笔记都足够完整，请再次输出 FINISH。"
-                    )
-                    self.traces.append({
-                        "thought": thought,
-                        "action": "SELF_CRITIQUE",
-                        "input": {},
-                        "observation": "系统已触发 Pre-FINISH 自主质检，请审查笔记完整性。",
-                        "error_type": "",
-                    })
-                    current_query = critique_prompt
                     continue
 
                 # 质检已通过，允许 FINISH
@@ -214,45 +187,6 @@ class BaseAgent:
                     error_type = "tool_runtime_error"
 
                 # 自动后处理：如果刚刚 append_note 成功，则尝试自动下载对应的 arXiv PDF
-                try:
-                    if action == "append_note" and "笔记已成功" in observation:
-                        # 优先从 action_input.content 中提取 arXiv ID 或 PDF URL
-                        import re
-                        content_to_scan = thought + "\n" + str(action_input)
-                        
-                        # 扩大嗅探范围：若刚才没包含 URL，往前回溯最近 3 轮 Observation 寻找有没有遗留的 ID或PDF链接
-                        for t in reversed(self.traces[-3:]):
-                            content_to_scan += "\n" + str(t.get("observation", ""))
-                        
-                        paper_id_or_url = None
-                        
-                        # 首先提取显式的 JSON 字段 pdf_url 或 openAccessPdf，这最准确
-                        m_json_url = re.search(r"['\"](?:pdf_url|openAccessPdf)['\"]\s*:\s*['\"](https?://[^\s\>\)\]\",]+)['\"]", content_to_scan, re.IGNORECASE)
-                        if m_json_url:
-                            paper_id_or_url = m_json_url.group(1)
-                        else:
-                            # 匹配常见 arXiv ID，例如 2308.11432 或 2308.11432v3 的特征
-                            m_arxiv = re.search(r"\b(\d{4}\.\d{4,5})(v\d+)?\b", content_to_scan)
-                            if m_arxiv:
-                                paper_id_or_url = m_arxiv.group(1)
-                            else:
-                                # 最后匹配任意形如 http://xxx.pdf 的直链
-                                m_url = re.search(r"(https?://[^\s\>\)\]\",]+\.pdf)", content_to_scan, re.IGNORECASE)
-                                if m_url:
-                                    paper_id_or_url = m_url.group(1)
-                        
-                        if paper_id_or_url:
-                            download_tool = self.tools.get("arxiv_download_pdf")
-                            if download_tool:
-                                try:
-                                    dl_res = download_tool.execute(paper_id=paper_id_or_url)
-                                    observation = observation + f"\n\n[自动下载附加结果] {dl_res}"
-                                except Exception as e:
-                                    observation = observation + f"\n\n[自动下载附加结果] 触发下载时发生错误：{str(e)}"
-                except Exception:
-                    # 不让自动后处理影响主流程
-                    pass
-            
             # 记录本轮轨迹，给前台的可视化呈现使用
             self.traces.append({
                 "thought": thought,
