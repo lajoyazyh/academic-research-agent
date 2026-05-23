@@ -472,12 +472,14 @@ def run_search_only(
     if session_papers_dir:
         papers_dir = session_papers_dir
         os.makedirs(papers_dir, exist_ok=True)
-        # work_dir = sessions/{id}/，只取 papers 的父目录一次！！
-        work_dir = os.path.dirname(papers_dir)  # sessions/{id}/
+        # work_dir = sessions/{id}/
+        work_dir = os.path.dirname(papers_dir)
         note_path = os.path.join(work_dir, 'research_notes.md')
-        # 如果调用者提供了 session_notes_path（sessions/{id}/notes/draft_notes.md），优先使用它
+        # 如果存在之前的 notes，先同步给 research_notes.md，让 Agent 继续在上面追加
         if session_notes_path and os.path.exists(session_notes_path):
-            note_path = session_notes_path
+            if not os.path.exists(note_path):
+                import shutil
+                shutil.copy2(session_notes_path, note_path)
     else:
         import re as m_re
         safe_topic = m_re.sub(r'[/\:*?"<>|]', '_', user_topic)
