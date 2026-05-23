@@ -259,11 +259,17 @@ class SessionManager:
         return self._read_json(session_dir / "papers" / "papers_list.json") or []
 
     def save_papers_list(self, session_id: str, papers: list[dict]) -> None:
-        """保存论文列表（自动标准化）"""
+        """保存论文列表（自动标准化，并排除被手动删除过的论文）"""
         session_dir = self.root / session_id
         if not session_dir.exists():
             raise ValueError(f"Session {session_id} 不存在")
-        self._write_json(session_dir / "papers" / "papers_list.json", self._normalize_papers(papers))
+            
+        deleted_list_path = session_dir / "papers" / "deleted_papers.json"
+        deleted_ids = set(self._read_json(deleted_list_path) or [])
+        
+        filtered_papers = [p for p in papers if p.get("paper_id") not in deleted_ids]
+        
+        self._write_json(session_dir / "papers" / "papers_list.json", self._normalize_papers(filtered_papers))
         self._touch_metadata(session_dir)
 
     def add_paper(self, session_id: str, paper: dict) -> dict:
@@ -295,11 +301,21 @@ class SessionManager:
         papers = [p for p in papers if p.get("paper_id") != paper_id]
         self.save_papers_list(session_id, papers)
 
-        # 同时清理 PDF 文件
-        paper_dir = self.root / session_id / "papers" / paper_id
-        if paper_dir.exists():
-            shutil.rmtree(paper_dir)
-
+        # 清理 PDF 文件及可能存在的 txt 提取结果
+        pdf_file = self.root / session_id / "papers" / f"{paper_id}.pdf"
+        if pdf_file.exists():
+            pdf_file.unlink()
+            
+        txt_file = self.root / session_id / "papers" / f"{paper_id}.txt"
+        if txt_file.exists():
+            txt_file.unlink()
+            
+        # 记录被删除的论文 ID，防止重新跑 agent 时被再次加回来
+        deleted_list_path = self.root / session_id / "papers" / "deleted_papers.json"
+        deleted_ids = set(self._read_json(deleted_list_path) or [])
+        deleted_ids.add(paper_id)
+        self._write_json(deleted_list_path, list(deleted_ids))
+            
         return self.load_session(session_id)
 
     def batch_delete_papers(self, session_id: str, paper_ids: list[str]) -> dict:
@@ -308,10 +324,19 @@ class SessionManager:
         papers = [p for p in papers if p.get("paper_id") not in paper_ids]
         self.save_papers_list(session_id, papers)
 
+        deleted_list_path = self.root / session_id / "papers" / "deleted_papers.json"
+        deleted_ids = set(self._read_json(deleted_list_path) or [])
+
         for pid in paper_ids:
-            paper_dir = self.root / session_id / "papers" / pid
-            if paper_dir.exists():
-                shutil.rmtree(paper_dir)
+            pdf_file = self.root / session_id / "papers" / f"{pid}.pdf"
+            if pdf_file.exists():
+                pdf_file.unlink()
+            txt_file = self.root / session_id / "papers" / f"{pid}.txt"
+            if txt_file.exists():
+                txt_file.unlink()
+            deleted_ids.add(pid)
+            
+        self._write_json(deleted_list_path, list(deleted_ids))
 
         return self.load_session(session_id)
 
