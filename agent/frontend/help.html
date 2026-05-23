@@ -7,13 +7,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/static/notebooklm.css">
 </head>
-<body style="overflow-y:auto; height:100vh; background:var(--bg);">
+<body data-page="help" style="overflow-y:auto; height:100vh; background:var(--bg);">
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark"><i class="fa-solid fa-circle-info"></i></span>
       <strong>使用指南</strong>
     </div>
     <div class="topbar-right">
+      <button class="ghost-btn" id="themeToggle" title="切换深色模式"><i class="fa-solid fa-moon"></i></button>
       <button class="ghost-btn" onclick="window.location.href='/'"><i class="fa-solid fa-arrow-left"></i> 返回首页</button>
     </div>
   </header>
@@ -115,5 +116,7 @@
       </div>
     </section>
   </main>
+
+  <script src="/static/notebooklm.js"></script>
 </body>
 </html>

@@ -17,12 +17,19 @@ const notebooklm = {
     this.bindCommonElements();
     this.loadThemePreference();
 
+    // 为所有页面绑定主题切换按钮
+    this.els.themeToggle = document.getElementById("themeToggle");
+    if (this.els.themeToggle) {
+      this.els.themeToggle.addEventListener("click", () => this.toggleTheme());
+    }
+
     const page = document.body.dataset.page || "home";
     if (page === "home") {
       this.initHome();
     } else if (page === "console") {
       this.initConsole();
     }
+    // help 页面只需主题切换，不需要额外初始化
   },
 
   bindCommonElements() {
