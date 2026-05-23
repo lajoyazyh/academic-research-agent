@@ -512,17 +512,97 @@ def run_search_only(
 
     notes_content = ""
 
-    # 收集论文列表
+    # ━━━ 从 traces 中提取每篇论文的完整元数据 ━━━
     papers_list = []
-    if os.path.exists(papers_dir):
-        for fname in sorted(os.listdir(papers_dir)):
-            if fname.endswith(".pdf"):
+    seen_ids = set()
+    
+    # 第 1 步：收集所有下载成功的 arXiv ID
+    for fname in sorted(os.listdir(papers_dir)) if os.path.exists(papers_dir) else []:
+        if fname.endswith(".pdf"):
+            pid = fname.replace(".pdf", "")
+            seen_ids.add(pid)
+
+    # 第 2 步：从 traces 中提取完整元数据（标题、作者、摘要）
+    for step in researcher_agent.traces:
+        obs = str(step.get("observation", ""))
+        action = str(step.get("action", ""))
+        if action in ("arxiv_search", "openalex_search"):
+            # 扫描观察内容中的论文块
+            blocks = re.split(r'\n---\n', obs)
+            for block in blocks:
+                # 提取 arXiv ID
+                id_match = re.search(r'ID:\s*(\d{4}\.\d{4,5})(?:v\d+)?', block)
+                if not id_match:
+                    continue
+                pid = id_match.group(1)
+                if pid not in seen_ids:
+                    continue  # 没下载到的不收录
+                
+                # 提取标题
+                title_match = re.search(r'Title:\s*(.+?)(?:\n(?:Authors|Published|Summary|$))', block)
+                title = title_match.group(1).strip() if title_match else pid
+                
+                # 提取作者
+                authors_match = re.search(r'Authors?:\s*(.+?)(?:\n(?:Published|Summary|$))', block)
+                authors = authors_match.group(1).strip() if authors_match else ""
+                
+                # 提取摘要 —— 从 Summary: 开始到下一个 --- 或下一个 ID: 或文末
+                summary_match = re.search(r'Summary:\s*([\s\S]+?)(?=\n---\n|\nID:|\Z)', block)
+                abstract = summary_match.group(1).strip()[:1200] if summary_match else ""
+                
                 papers_list.append({
-                    "paper_id": fname.replace(".pdf", ""),
-                    "title": fname,
+                    "paper_id": pid,
+                    "title": title,
+                    "authors": authors,
                     "source": "agent_search",
                     "source_type": "arxiv",
                     "status": "pending",
+                    "abstract": abstract,
+                    "notes": "",
+                    "has_notes": False,
+                    "added_at": datetime.datetime.now().isoformat(),
+                })
+                seen_ids.discard(pid)  # 已处理
+        
+        elif action == "crossref_search":
+            # 对 Crossref 结果也做类似提取，但没有 arXiv ID 的 DOI 论文可能无 PDF
+            for doi_match in re.finditer(r'DOI:\s*(10\.\d{4,}/[^\s\n]+)', obs):
+                doi = doi_match.group(1).strip()
+                doi_clean = doi.replace("https://doi.org/", "").replace("/", "_").replace(".", "_")
+                if doi_clean not in seen_ids:
+                    continue
+                # 简单提取
+                title_m = re.search(r'Title:\s*(.+?)(?:\n|$)', obs)
+                authors_m = re.search(r'Authors?:\s*(.+?)(?:\n|$)', obs)
+                papers_list.append({
+                    "paper_id": doi_clean,
+                    "title": title_m.group(1).strip() if title_m else doi_clean,
+                    "authors": authors_m.group(1).strip() if authors_m else "",
+                    "source": "agent_search",
+                    "source_type": "crossref",
+                    "status": "pending",
+                    "abstract": "",
+                    "notes": "",
+                    "has_notes": False,
+                    "added_at": datetime.datetime.now().isoformat(),
+                })
+                seen_ids.discard(doi_clean)
+
+    # 第 3 步：补漏——已下载 PDF 但没在 traces 中找到元数据的
+    for fname in sorted(os.listdir(papers_dir)) if os.path.exists(papers_dir) else []:
+        if fname.endswith(".pdf"):
+            pid = fname.replace(".pdf", "")
+            if pid not in [p["paper_id"] for p in papers_list]:
+                papers_list.append({
+                    "paper_id": pid,
+                    "title": f"{pid}（待补全信息）",
+                    "authors": "",
+                    "source": "agent_search",
+                    "source_type": "arxiv",
+                    "status": "pending",
+                    "abstract": "",
+                    "notes": "",
+                    "has_notes": False,
                     "added_at": datetime.datetime.now().isoformat(),
                 })
 
