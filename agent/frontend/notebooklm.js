@@ -42,7 +42,6 @@ const notebooklm = {
     this.els.consoleStateDot = document.getElementById("consoleStateDot");
     this.els.searchBtn = document.getElementById("searchPaperBtn");
     this.els.addPaperBtn = document.getElementById("addPaperBtn");
-    this.els.uploadPdfBtn = document.getElementById("uploadPdfBtn");
     this.els.pdfFileInput = document.getElementById("pdfFileInput");
     this.els.notesBtn = document.getElementById("generateNotesBtn");
     this.els.reviewBtn = document.getElementById("generateReviewBtn");
@@ -513,9 +512,8 @@ const notebooklm = {
 
   bindConsoleActions() {
     this.els.searchBtn?.addEventListener("click", () => this.primarySourceAction());
-    this.els.addPaperBtn?.addEventListener("click", () => this.addPaperFromPrompt());
-    this.els.uploadPdfBtn?.addEventListener("click", () => this.els.pdfFileInput?.click());
-    this.els.pdfFileInput?.addEventListener("change", (e) => this.uploadLocalPdf(e));
+    this.els.addPaperBtn?.addEventListener("click", () => this.openAddPaperModal());
+    this.els.pdfFileInput?.addEventListener("change", (e) => this.handleDropZoneFile(e.target.files[0]));
     this.els.notesBtn?.addEventListener("click", () => this.generateNotesAction());
     this.els.reviewBtn?.addEventListener("click", () => this.generateReviewAction());
     this.els.viewSummary?.addEventListener("click", () => this.switchViewMode("summary"));
@@ -1397,57 +1395,191 @@ const notebooklm = {
     this.renderConsoleSession();
   },
 
-  async addPaperFromPrompt() {
+  // ━━━ 统一的「添加论文」弹窗（arXiv ID + 拖拽上传）━━━
+  _dropZoneFile: null,
+
+  openAddPaperModal() {
     const sessionId = this.state.currentSessionId;
-    if (!sessionId) return;
+    if (!sessionId) {
+      alert("当前没有活跃的会话，请先创建会话！");
+      return;
+    }
 
-    const paperId = prompt("输入 arXiv ID、论文链接或可下载 PDF 链接：");
-    if (!paperId || !paperId.trim()) return;
+    // 延迟获取弹窗元素
+    this.els.addPaperModal = document.getElementById("addPaperModal");
+    this.els.addPaperArxivInput = document.getElementById("addPaperArxivInput");
+    this.els.addPaperSubmitBtn = document.getElementById("addPaperSubmitBtn");
+    this.els.addPaperCancel = document.getElementById("addPaperCancel");
+    this.els.addPaperClose = document.getElementById("addPaperClose");
+    this.els.dropZoneClear = document.getElementById("dropZoneClear");
 
-    try {
-      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/papers/custom`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paper_id: paperId.trim() }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.detail || "添加论文失败");
+    // 重置状态
+    this._dropZoneFile = null;
+    if (this.els.addPaperArxivInput) this.els.addPaperArxivInput.value = "";
+    this._setDropZonePreview(null);
+
+    // 显示弹窗
+    if (this.els.addPaperModal) this.els.addPaperModal.classList.add("active");
+
+    // 首次打开时绑定事件
+    this._bindAddPaperModalEvents();
+  },
+
+  _bindAddPaperModalEvents() {
+    if (this._addPaperModalBound) return;
+    this._addPaperModalBound = true;
+
+    const close = () => {
+      if (this.els.addPaperModal) this.els.addPaperModal.classList.remove("active");
+    };
+
+    // × 和取消按钮关闭
+    this.els.addPaperCancel?.addEventListener("click", close);
+    this.els.addPaperClose?.addEventListener("click", close);
+    // 点击遮罩关闭
+    this.els.addPaperModal?.addEventListener("click", (e) => {
+      if (e.target === this.els.addPaperModal) close();
+    });
+
+    // 统一的「添加」按钮
+    this.els.addPaperSubmitBtn?.addEventListener("click", () => this._submitAddPaper());
+
+    // 回车提交 arXiv 输入
+    this.els.addPaperArxivInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") this._submitAddPaper();
+    });
+
+    // 拖拽上传区域
+    this._setupDropZone();
+
+    // 清除已选文件
+    this.els.dropZoneClear?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this._dropZoneFile = null;
+      this._setDropZonePreview(null);
+    });
+  },
+
+  _setupDropZone() {
+    const zone = document.getElementById("addPaperDropZone");
+    if (!zone) return;
+
+    // 点击选择文件
+    zone.addEventListener("click", () => {
+      if (this._dropZoneFile) return;
+      this.els.pdfFileInput?.click();
+    });
+
+    // 拖拽悬停
+    zone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.classList.add("drop-zone-active");
+    });
+    zone.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.classList.remove("drop-zone-active");
+    });
+
+    // 拖拽放下 → 仅预览，不自动提交
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.classList.remove("drop-zone-active");
+
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+          alert("仅支持 PDF 文件");
+          return;
+        }
+        this._dropZoneFile = file;
+        this._setDropZonePreview(file);
       }
+    });
+  },
 
-      await this.reloadCurrentSession();
-      const latest = this.getCurrentPaper();
-      if (latest) {
-        this.state.currentPaperId = latest.paper_id;
-      }
-      this.switchViewMode("summary");
-      this.setConsoleStatus("search_complete", data.exists ? "论文已存在，已刷新来源列表" : "论文已添加并同步笔记");
-    } catch (error) {
-      alert(`添加失败：${error.message}`);
+  _setDropZonePreview(file) {
+    const content = document.querySelector("#addPaperDropZone .drop-zone-content");
+    const preview = document.getElementById("dropZonePreview");
+    const fileName = document.getElementById("dropZoneFileName");
+    const zone = document.getElementById("addPaperDropZone");
+
+    if (file) {
+      if (content) content.style.display = "none";
+      if (preview) preview.style.display = "flex";
+      if (fileName) fileName.textContent = file.name;
+      if (zone) zone.classList.add("has-file");
+    } else {
+      if (content) content.style.display = "";
+      if (preview) preview.style.display = "none";
+      if (fileName) fileName.textContent = "";
+      if (zone) zone.classList.remove("has-file");
     }
   },
 
-  async uploadLocalPdf(e) {
+  // 文件选择器回调（点击拖拽区触发）→ 仅预览
+  handleDropZoneFile(file) {
+    if (!file) return;
+    this._dropZoneFile = file;
+    this._setDropZonePreview(file);
+    if (this.els.pdfFileInput) this.els.pdfFileInput.value = "";
+  },
+
+  // 统一的提交入口：优先处理 arXiv 输入，其次处理拖拽文件
+  async _submitAddPaper() {
+    const arxivVal = this.els.addPaperArxivInput?.value?.trim();
+
+    if (arxivVal) {
+      // 有 arXiv ID → 走 arXiv 通道
+      await this._doAddPaper("arxiv", arxivVal);
+      if (this.els.addPaperArxivInput) this.els.addPaperArxivInput.value = "";
+    } else if (this._dropZoneFile) {
+      // 有拖拽文件 → 走上传通道
+      await this._doAddPaper("upload", this._dropZoneFile);
+      this._dropZoneFile = null;
+      this._setDropZonePreview(null);
+    } else {
+      alert("请输入 arXiv ID 或拖拽上传 PDF 文件");
+    }
+  },
+
+  async _doAddPaper(type, payload) {
     const sessionId = this.state.currentSessionId;
     if (!sessionId) return;
-    
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    e.target.value = "";
-    
+
+    // 禁用提交按钮防止重复点击
+    const btn = this.els.addPaperSubmitBtn;
+    const origHTML = btn?.innerHTML;
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 添加中...';
+    }
+
     try {
-      this.setConsoleStatus("searching", "正在解析并上传论文...");
-      const formData = new FormData();
-      formData.append("file", file);
-      
-      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/papers/upload`, {
-        method: "POST",
-        body: formData,
-      });
+      this.setConsoleStatus("searching", type === "arxiv" ? "正在下载并解析论文..." : "正在解析并上传论文...");
+
+      let response;
+      if (type === "arxiv") {
+        response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/papers/custom`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paper_id: payload }),
+        });
+      } else {
+        const formData = new FormData();
+        formData.append("file", payload);
+        response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/papers/upload`, {
+          method: "POST",
+          body: formData,
+        });
+      }
+
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.detail || "上传论文失败");
+        throw new Error(data.detail || "添加论文失败");
       }
 
       await this.reloadCurrentSession();
@@ -1459,10 +1591,20 @@ const notebooklm = {
         this.state.currentPaperId = sessionPapers[sessionPapers.length - 1].paper_id;
       }
       this.switchViewMode("summary");
-      this.setConsoleStatus("search_complete", data.exists ? "论文已存在，已刷新来源列表" : "论文已上传并生成笔记");
+
+      const msg = data.exists ? "论文已存在，已刷新来源列表" : "论文已添加并同步笔记";
+      this.setConsoleStatus("search_complete", msg);
+
+      // 关闭弹窗
+      if (this.els.addPaperModal) this.els.addPaperModal.classList.remove("active");
     } catch (error) {
-      alert(`上传失败：${error.message}`);
-      this.setConsoleStatus("search_complete", "上传失败");
+      alert(`添加失败：${error.message}`);
+      this.setConsoleStatus("search_complete", "添加失败");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origHTML || '<i class="fa-solid fa-plus"></i> 添加';
+      }
     }
   },
 

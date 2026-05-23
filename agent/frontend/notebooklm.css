@@ -662,3 +662,99 @@ html, body {
 .home-grid .home-card--create .home-card-icon {
   font-size: 28px;
 }
+
+/* ====== 添加论文弹窗：分隔线 ====== */
+.add-paper-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.add-paper-divider::before,
+.add-paper-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* ====== 拖拽上传区域 ====== */
+.drop-zone {
+  border: 2px dashed var(--line);
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+  background: var(--code-bg);
+  position: relative;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.drop-zone:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.drop-zone-active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: 0 0 0 3px rgba(11,87,208,.12);
+}
+.drop-zone.has-file {
+  border-style: solid;
+  border-color: var(--success);
+  background: var(--green-light);
+}
+
+.drop-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.drop-zone-icon {
+  font-size: 36px;
+  color: var(--muted);
+  transition: color .2s;
+}
+.drop-zone:hover .drop-zone-icon,
+.drop-zone-active .drop-zone-icon {
+  color: var(--accent);
+}
+.drop-zone-text {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.drop-zone-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--subtle);
+}
+
+.drop-zone-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+}
+.drop-zone-file-icon {
+  font-size: 28px;
+  color: var(--danger);
+  flex-shrink: 0;
+}
+.drop-zone-preview span {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

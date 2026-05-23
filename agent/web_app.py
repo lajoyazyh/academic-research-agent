@@ -632,6 +632,9 @@ def add_custom_paper(session_id: str, payload: AddCustomPaperRequest):
     if any(p.get("paper_id") == clean_id for p in session_papers):
         return {"message": "Success", "notes": session.get("notes", ""), "draft": session.get("draft", ""), "exists": True}
 
+    # 从删除列表中移除，允许重新添加
+    session_mgr.undelete_paper(session_id, clean_id)
+
     session_papers.append({
         "paper_id": clean_id,
         "title": paper_title,
@@ -642,7 +645,7 @@ def add_custom_paper(session_id: str, payload: AddCustomPaperRequest):
 
     from llms.client import LLMClient
     llm = LLMClient()
-    topic = session.get("metadata", {}).get("topic", "")
+    topic = session.get("topic", "")
     
     summarize_prompt = f"""你是一名擅长文献总结的研究员。这里是用户上传的一篇新论文的初步文本内容。研究主题是《{topic}》。
 请你认真阅读后，提炼出这篇论文的关键发现、方法或指标，并撰写一段学术笔记（约 300-500 字）。
@@ -711,6 +714,9 @@ async def upload_paper(session_id: str, file: UploadFile = File(...)):
     if any(p.get("paper_id") == clean_id for p in session_papers):
         return {"message": "Success", "notes": session.get("notes", ""), "draft": session.get("draft", ""), "exists": True, "paper_id": clean_id}
 
+    # 从删除列表中移除，允许重新添加
+    session_mgr.undelete_paper(session_id, clean_id)
+
     session_papers.append({
         "paper_id": clean_id,
         "title": paper_title,
@@ -721,7 +727,7 @@ async def upload_paper(session_id: str, file: UploadFile = File(...)):
 
     from llms.client import LLMClient
     llm = LLMClient()
-    topic = session.get("metadata", {}).get("topic", "")
+    topic = session.get("topic", "")
     
     summarize_prompt = f"""你是一名擅长文献总结的研究员。这里是用户上传的一篇新论文的初步文本内容。研究主题是《{topic}》。
 请你认真阅读后，提炼出这篇论文的关键发现、方法或指标，并撰写一段学术笔记（约 300-500 字）。

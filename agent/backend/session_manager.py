@@ -272,6 +272,15 @@ class SessionManager:
         self._write_json(session_dir / "papers" / "papers_list.json", self._normalize_papers(filtered_papers))
         self._touch_metadata(session_dir)
 
+    def undelete_paper(self, session_id: str, paper_id: str) -> None:
+        """从删除列表中移除论文 ID，允许其重新被加入论文列表"""
+        session_dir = self.root / session_id
+        deleted_list_path = session_dir / "papers" / "deleted_papers.json"
+        deleted_ids = self._read_json(deleted_list_path) or []
+        if paper_id in deleted_ids:
+            deleted_ids.remove(paper_id)
+            self._write_json(deleted_list_path, deleted_ids)
+
     def add_paper(self, session_id: str, paper: dict) -> dict:
         """添加单篇论文到列表（去重 + 标准化字段）"""
         papers = self.get_papers(session_id)
