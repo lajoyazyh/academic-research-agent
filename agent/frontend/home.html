@@ -27,16 +27,28 @@
     </section>
 
     <section class="home-section">
-      <div class="home-section-head">
-        <h2>使用指南</h2>
-      </div>
-      <div class="home-grid" id="guideRail">
-        <article class="home-card home-card--ghost" role="button" tabindex="0" onclick="window.location.href='/app/help'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='/app/help';}">
-          <div class="home-card-inner">
-            <span class="home-card-icon"><i class="fa-solid fa-circle-info"></i></span>
-            <span class="home-card-label">使用指南</span>
+      <div class="home-bottom-row">
+        <div class="home-bottom-col">
+          <div class="home-section-head">
+            <h2>使用指南</h2>
           </div>
-        </article>
+          <div class="home-grid" id="guideRail">
+            <article class="home-card home-card--ghost" role="button" tabindex="0" onclick="window.location.href='/app/help'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='/app/help';}">
+              <div class="home-card-inner">
+                <span class="home-card-icon"><i class="fa-solid fa-circle-info"></i></span>
+                <span class="home-card-label">使用指南</span>
+              </div>
+            </article>
+          </div>
+        </div>
+        <div class="home-bottom-col">
+          <div class="home-section-head">
+            <h2>工作台概览</h2>
+          </div>
+          <div class="stats-grid" id="statsGrid">
+            <div class="stats-loading">加载中...</div>
+          </div>
+        </div>
       </div>
     </section>
   </main>

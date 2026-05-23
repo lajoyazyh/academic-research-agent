@@ -101,12 +101,8 @@ const notebooklm = {
       this.els.topicInput.addEventListener("input", () => this.syncKeywordPlanHint());
     }
 
-    // 深色模式切换按钮
-    if (this.els.themeToggle) {
-      this.els.themeToggle.addEventListener("click", () => this.toggleTheme());
-    }
-
     await this.loadHomeSessions();
+    await this.loadHomeStats();
   },
 
   async loadHomeSessions() {
@@ -280,6 +276,104 @@ const notebooklm = {
           });
       this.els.homeRail.appendChild(moreCard);
     }
+  },
+
+  async loadHomeStats() {
+    const statsGrid = document.getElementById("statsGrid");
+    if (!statsGrid) return;
+
+    statsGrid.innerHTML = '<div class="stats-loading">加载中...</div>';
+    try {
+      const response = await fetch("/api/stats");
+      if (!response.ok) throw new Error("API error");
+      const stats = await response.json();
+      this.renderHomeStats(stats);
+    } catch (error) {
+      statsGrid.innerHTML = `<div class="stats-loading">统计加载失败：${this.escapeHtml(error.message)}</div>`;
+    }
+  },
+
+  renderHomeStats(stats) {
+    const statsGrid = document.getElementById("statsGrid");
+    if (!statsGrid) return;
+
+    const stateBreakdown = stats.state_breakdown || {};
+    const stateColors = {
+      "规划中": "var(--muted)",
+      "关键词已确认": "var(--muted)",
+      "搜索中": "var(--warning)",
+      "搜索完成": "var(--warning)",
+      "笔记审核中": "var(--accent)",
+      "撰写中": "var(--accent)",
+      "初稿评审中": "var(--accent)",
+      "已完成": "var(--success)",
+    };
+
+    // 生成状态标签
+    let breakdownTags = "";
+    for (const [label, count] of Object.entries(stateBreakdown)) {
+      const color = stateColors[label] || "var(--muted)";
+      breakdownTags += `<span class="stats-tag"><span class="stats-tag-dot" style="background:${color}"></span>${this.escapeHtml(label)} ${count}</span>`;
+    }
+
+    // 最近活动
+    let recentHtml = "";
+    if (stats.recent_activity) {
+      const ra = stats.recent_activity;
+      const timeAgo = this.timeAgo(ra.time);
+      recentHtml = `
+        <div class="stats-recent">
+          <i class="fa-solid fa-clock"></i>
+          <span>最近活跃 · ${this.escapeHtml(ra.topic || "未命名")} · ${timeAgo}</span>
+          <span class="stats-recent-link" onclick="window.location.href='/app/console?sessionId=${encodeURIComponent(ra.session_id || '')}'">进入 <i class="fa-solid fa-arrow-right"></i></span>
+        </div>`;
+    }
+
+    statsGrid.innerHTML = `
+      <div class="stats-card">
+        <span class="stats-card-icon"><i class="fa-solid fa-file-lines"></i></span>
+        <span class="stats-card-value">${stats.total_sessions || 0}</span>
+        <span class="stats-card-label">综述项目</span>
+      </div>
+      <div class="stats-card">
+        <span class="stats-card-icon"><i class="fa-solid fa-book-open"></i></span>
+        <span class="stats-card-value">${stats.total_papers || 0}</span>
+        <span class="stats-card-label">收录论文</span>
+      </div>
+      <div class="stats-card">
+        <span class="stats-card-icon"><i class="fa-solid fa-note-sticky"></i></span>
+        <span class="stats-card-value">${stats.total_notes || 0}</span>
+        <span class="stats-card-label">撰写笔记</span>
+      </div>
+      <div class="stats-card">
+        <span class="stats-card-icon"><i class="fa-solid fa-pen-to-square"></i></span>
+        <span class="stats-card-value">${stats.total_reviews || 0}</span>
+        <span class="stats-card-label">完成综述</span>
+      </div>
+      <div class="stats-breakdown">
+        <div class="stats-breakdown-title">状态分布</div>
+        <div class="stats-breakdown-tags">
+          ${breakdownTags || '<span class="stats-tag">暂无数据</span>'}
+        </div>
+      </div>
+      ${recentHtml}
+    `;
+  },
+
+  timeAgo(dateStr) {
+    if (!dateStr) return "";
+    const now = new Date();
+    const then = new Date(dateStr);
+    const diffMs = now - then;
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return "刚刚";
+    if (diffMin < 60) return `${diffMin} 分钟前`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr} 小时前`;
+    const diffDay = Math.floor(diffHr / 24);
+    if (diffDay < 30) return `${diffDay} 天前`;
+    const diffMon = Math.floor(diffDay / 30);
+    return `${diffMon} 月前`;
   },
 
   openTopicModal() {

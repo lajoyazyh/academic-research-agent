@@ -484,6 +484,90 @@ def list_sessions() -> list[dict]:
     return session_mgr.list_sessions()
 
 
+@app.get("/api/stats")
+def get_stats() -> dict:
+    """获取全局统计信息（首页仪表盘用）"""
+    sessions = session_mgr.list_sessions()
+    total_sessions = len(sessions)
+
+    total_papers = 0
+    total_notes = 0
+    total_reviews = 0
+    state_counts = {}
+    recent_activity = None
+    all_activities = []  # 用于时间线
+
+    for s in sessions:
+        # 论文数（list_sessions 已包含 paper_count）
+        total_papers += s.get("paper_count", 0)
+        # 笔记数：需要读 papers_list.json 中的 per-paper notes
+        session_dir = SESSIONS_DIR / s["session_id"]
+        papers_list = None
+        papers_path = session_dir / "papers" / "papers_list.json"
+        if papers_path.exists():
+            try:
+                papers_list = json.loads(papers_path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, Exception):
+                papers_list = []
+        if papers_list:
+            for p in papers_list:
+                if isinstance(p, dict) and p.get("notes", "").strip():
+                    total_notes += 1
+
+        # 综述数：draft 目录下有内容
+        draft_dir = session_dir / "draft"
+        if draft_dir.exists():
+            drafts = list(draft_dir.glob("*.md"))
+            if drafts:
+                total_reviews += len(drafts)
+
+        # 状态分布
+        st = s.get("state", "planning")
+        label = s.get("state_label", "未知")
+        state_counts[label] = state_counts.get(label, 0) + 1
+
+        # 最近活动（最活跃的一条）
+        updated = s.get("updated_at") or s.get("created_at")
+        if updated and (recent_activity is None or updated > recent_activity["time"]):
+            recent_activity = {
+                "time": updated,
+                "topic": s.get("topic", ""),
+                "state": s.get("state", "planning"),
+                "state_label": label,
+                "session_id": s["session_id"],
+            }
+
+        # 收集所有活动记录（按时间逆序取最近 5 条用于时间线）
+        all_activities.append({
+            "time": updated or "",
+            "topic": s.get("topic", ""),
+            "state": s.get("state", "planning"),
+            "state_label": label,
+            "session_id": s["session_id"],
+            "paper_count": s.get("paper_count", 0),
+        })
+
+    # 活跃会话数（未完成的）
+    active_count = sum(
+        1 for s in sessions
+        if s.get("state") not in ("complete",)
+    )
+
+    # 按时间逆序排列，取最近 5 条
+    all_activities.sort(key=lambda x: x.get("time", ""), reverse=True)
+    recent_activities = all_activities[:5]
+
+    return {
+        "total_sessions": total_sessions,
+        "active_sessions": active_count,
+        "total_papers": total_papers,
+        "total_notes": total_notes,
+        "total_reviews": total_reviews,
+        "state_breakdown": state_counts,
+        "recent_activity": recent_activity,
+    }
+
+
 @app.get("/api/sessions/state-machine")
 def get_state_machine() -> dict:
     """获取状态机定义（供前端参考）—— 必须放在 {session_id} 路由之前"""

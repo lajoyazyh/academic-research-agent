@@ -481,6 +481,139 @@ html, body {
 .home-card:hover .home-card-delete { opacity: 1; }
 .home-card-delete:hover { background: var(--hover-subtle); }
 
+/* ====== Home Bottom Row ====== */
+.home-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.home-bottom-col {
+  min-width: 0;
+}
+
+/* ====== Stats Grid ====== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stats-loading {
+  grid-column: 1 / -1;
+  color: var(--subtle);
+  font-size: 13px;
+  text-align: center;
+  padding: 20px;
+}
+
+.stats-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.stats-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.stats-card-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.2;
+}
+
+.stats-card-label {
+  font-size: 13px;
+  color: var(--subtle);
+}
+
+.stats-card-icon {
+  font-size: 18px;
+  color: var(--accent);
+  opacity: .65;
+}
+
+.stats-breakdown {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
+.stats-breakdown-title {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.stats-breakdown-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.stats-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  background: var(--hover-bg);
+  color: var(--subtle);
+  border: 1px solid transparent;
+}
+
+.stats-tag .stats-tag-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stats-tag .stats-tag-dot.planning { background: var(--muted); }
+.stats-tag .stats-tag-dot.searching { background: var(--warning); }
+.stats-tag .stats-tag-dot.writing { background: var(--accent); }
+.stats-tag .stats-tag-dot.complete { background: var(--success); }
+
+.stats-recent {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  padding: 12px 14px;
+  background: var(--accent-light);
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--subtle);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stats-recent i {
+  color: var(--accent);
+  font-size: 14px;
+}
+
+.stats-recent .stats-recent-link {
+  color: var(--accent);
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.stats-recent .stats-recent-link:hover {
+  text-decoration: underline;
+}
+
 /* ====== Help / Guide Page ====== */
 .help-flow { display: flex; flex-direction: column; gap: 0; }
 .help-step { display: flex; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--line); }
