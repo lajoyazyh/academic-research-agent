@@ -42,6 +42,8 @@ const notebooklm = {
     this.els.consoleStateDot = document.getElementById("consoleStateDot");
     this.els.searchBtn = document.getElementById("searchPaperBtn");
     this.els.addPaperBtn = document.getElementById("addPaperBtn");
+    this.els.uploadPdfBtn = document.getElementById("uploadPdfBtn");
+    this.els.pdfFileInput = document.getElementById("pdfFileInput");
     this.els.notesBtn = document.getElementById("generateNotesBtn");
     this.els.reviewBtn = document.getElementById("generateReviewBtn");
     this.els.paperList = document.getElementById("paperList");
@@ -469,6 +471,8 @@ const notebooklm = {
   bindConsoleActions() {
     this.els.searchBtn?.addEventListener("click", () => this.primarySourceAction());
     this.els.addPaperBtn?.addEventListener("click", () => this.addPaperFromPrompt());
+    this.els.uploadPdfBtn?.addEventListener("click", () => this.els.pdfFileInput?.click());
+    this.els.pdfFileInput?.addEventListener("change", (e) => this.uploadLocalPdf(e));
     this.els.notesBtn?.addEventListener("click", () => this.generateNotesAction());
     this.els.reviewBtn?.addEventListener("click", () => this.generateReviewAction());
     this.els.viewSummary?.addEventListener("click", () => this.switchViewMode("summary"));
@@ -1409,6 +1413,45 @@ const notebooklm = {
       this.setConsoleStatus("search_complete", data.exists ? "论文已存在，已刷新来源列表" : "论文已添加并同步笔记");
     } catch (error) {
       alert(`添加失败：${error.message}`);
+    }
+  },
+
+  async uploadLocalPdf(e) {
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId) return;
+    
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    e.target.value = "";
+    
+    try {
+      this.setConsoleStatus("searching", "正在解析并上传论文...");
+      const formData = new FormData();
+      formData.append("file", file);
+      
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/papers/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "上传论文失败");
+      }
+
+      await this.reloadCurrentSession();
+      const sessionPapers = this.state.currentSession?.papers || [];
+      const uploadedId = data.paper_id;
+      if (uploadedId) {
+        this.state.currentPaperId = uploadedId;
+      } else if (sessionPapers.length > 0) {
+        this.state.currentPaperId = sessionPapers[sessionPapers.length - 1].paper_id;
+      }
+      this.switchViewMode("summary");
+      this.setConsoleStatus("search_complete", data.exists ? "论文已存在，已刷新来源列表" : "论文已上传并生成笔记");
+    } catch (error) {
+      alert(`上传失败：${error.message}`);
+      this.setConsoleStatus("search_complete", "上传失败");
     }
   },
 

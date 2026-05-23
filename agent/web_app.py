@@ -661,6 +661,87 @@ def add_custom_paper(session_id: str, payload: AddCustomPaperRequest):
     return {"message": "Success", "notes": updated_notes, "draft": session.get("draft", "")}
 
 
+@app.post("/api/sessions/{session_id}/papers/upload")
+async def upload_paper(session_id: str, file: UploadFile = File(...)):
+    """用户上传本地 PDF，解析并总结笔记"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session 不存在")
+    
+    import os
+    import shutil
+    import hashlib
+    session_dir = session_mgr.root / session_id
+    papers_dir = session_dir / "papers"
+    os.makedirs(papers_dir, exist_ok=True)
+    
+    safe_filename = file.filename
+    clean_id = "paper_" + hashlib.md5(safe_filename.encode('utf-8')).hexdigest()[:8]
+    
+    file_path = papers_dir / safe_filename
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    try:
+        import fitz
+    except ImportError:
+        raise HTTPException(status_code=500, detail="缺少依赖 PyMuPDF")
+
+    try:
+        doc = fitz.open(str(file_path))
+        total_pages = len(doc)
+        if total_pages == 0:
+            raise ValueError("PDF 为空。")
+
+        text_blocks = []
+        pages_to_read = list(range(min(5, total_pages)))
+        for p_num in pages_to_read:
+            t = doc.load_page(p_num).get_text("text").strip()
+            if t: text_blocks.append(f"--- 第 {p_num + 1} 页全文 ---\n{t}")
+            
+        res_text = "\n\n".join(text_blocks)
+        if not res_text.strip():
+            raise ValueError("无法从 PDF 提取文本内容")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"解析 PDF 失败：{str(e)}")
+
+    session_papers = session.get("papers", [])
+    paper_title = f"{safe_filename}"
+
+    if any(p.get("paper_id") == clean_id for p in session_papers):
+        return {"message": "Success", "notes": session.get("notes", ""), "draft": session.get("draft", ""), "exists": True, "paper_id": clean_id}
+
+    session_papers.append({
+        "paper_id": clean_id,
+        "title": paper_title,
+        "source": "user_upload",
+        "status": "accepted"
+    })
+    session_mgr.save_papers_list(session_id, session_papers)
+
+    from llms.client import LLMClient
+    llm = LLMClient()
+    topic = session.get("metadata", {}).get("topic", "")
+    
+    summarize_prompt = f"""你是一名擅长文献总结的研究员。这里是用户上传的一篇新论文的初步文本内容。研究主题是《{topic}》。
+请你认真阅读后，提炼出这篇论文的关键发现、方法或指标，并撰写一段学术笔记（约 300-500 字）。
+
+论文原文（前几页）：
+{res_text}
+
+请直接输出你的高质量学术笔记：
+"""
+    try:
+        new_note = llm.chat("你是深度的学术研究员。", summarize_prompt, []).strip()
+    except Exception as e:
+        new_note = f"生成笔记失败: {str(e)}"
+
+    old_notes = session.get("notes", "")
+    updated_notes = old_notes + f"\n\n## 追加参考文献: {safe_filename}\n\n{new_note}\n\n---\n"
+    session_mgr.save_notes(session_id, updated_notes)
+    
+    return {"message": "Success", "notes": updated_notes, "draft": session.get("draft", ""), "paper_id": clean_id}
+
 # ━━━━━ 笔记管理（第一波基础接口，完整功能在第三波）━━━━━
 
 @app.get("/api/sessions/{session_id}/notes")
