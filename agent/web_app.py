@@ -708,63 +708,6 @@ def get_draft(session_id: str, version: int = None) -> dict:
     }
 
 
-
-@app.post("/api/sessions/{session_id}/chat")
-def session_chat(session_id: str, payload: dict) -> dict:
-    """为前端聊天提供后端 AI 回复服务。
-
-    请求体示例:
-      {"message": "用户输入内容", "mode": "review"|"report"|"summary", "paper_id": "可选"}
-
-    返回:
-      {"reply": "AI 回复文本", "note": "可选的辅助说明"}
-    """
-    session = session_mgr.load_session(session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
-
-    message = (payload.get("message", "") or "").strip()
-    if not message:
-        raise HTTPException(status_code=400, detail="message 不能为空")
-
-    mode = payload.get("mode", "summary")
-    paper_id = payload.get("paper_id") or None
-
-    try:
-        from llms.client import LLMClient
-        llm = LLMClient()
-
-        # 构建不同模式下的 prompt
-        if mode == "review":
-            draft = session.get("draft", "")
-            accepted = [p for p in session.get("papers", []) if p.get("status") == "accepted"]
-            accepted_titles = "；".join([p.get("title") or p.get("paper_id") for p in accepted]) or "暂无已选论文"
-            system = "你是一个严谨的学术助理，擅长基于综述草稿和已选论文给出建议和可执行的编辑指令。"
-            user_prompt = f"用户提问/修改意见：{message}\n\n当前综述草稿：\n{draft}\n\n已选论文：{accepted_titles}\n\n请基于草稿和已选论文给出清晰、可执行的建议或直接回答用户的问题，若需要修改综述请提供 3 条可执行的改写建议。中文回答。"
-
-        else:
-            # report / summary -> 以单篇论文为中心回答
-            paper = None
-            if paper_id:
-                for p in session.get("papers", []):
-                    if p.get("paper_id") == paper_id:
-                        paper = p
-                        break
-            if not paper:
-                paper = session.get("papers", [None])[0] or {}
-            title = paper.get("title", "未知论文")
-            abstract = paper.get("abstract", "")
-            notes = paper.get("notes", "") or session.get("notes", "")
-
-            system = "你是一个严谨的学术助理，基于给定论文的摘要/笔记回答用户问题或进行解释。"
-            user_prompt = f"研究主题：{session.get('topic','')}\n论文标题：{title}\n摘要：{abstract}\n论文笔记：{notes}\n\n用户问题：{message}\n\n请用中文根据上述内容直接回答，若信息不足请说明并给出建议的后续检索策略。"
-
-        reply = llm.chat(system, user_prompt, [])
-        return {"reply": reply}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"AI 生成回复失败: {str(e)}")
-
-
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  迭代三新增：Session 驱动的 Agent 执行端点
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -805,30 +748,6 @@ def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"规划阶段执行失败: {str(e)}")
-
-
-@app.post("/api/keywords/extract")
-def extract_keywords_endpoint(payload: dict) -> dict:
-    """调用后端的规划+关键词抽取逻辑，返回关键词候选项（用于创建会话前的预览）。
-
-    请求体示例: {"topic": "主题文本", "seed": "可选的种子关键词, 用逗号分隔"}
-    返回: {"initial_plan": "...", "keywords": [...]}
-    """
-    try:
-        topic = (payload.get("topic", "") or "").strip()
-        if not topic:
-            raise HTTPException(status_code=400, detail="topic 不能为空")
-
-        # 延迟导入以避免循环依赖，并使用已有 run_plan_only 实现
-        from main import run_plan_only
-
-        result = run_plan_only(topic)
-
-        return {"initial_plan": result.get("initial_plan", ""), "keywords": result.get("keywords", [])}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"关键词抽取失败: {str(e)}")
 
 
 def _run_search_in_background(session_id: str, topic: str, keywords: list[dict], max_loops: int) -> None:
@@ -996,30 +915,7 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         except ValueError:
             pass
 
-        # ━━━ 自动生成修改建议，作为 AI 消息推送 ━━━
-        suggestion = ""
-        try:
-            from llms.client import LLMClient
-            llm = LLMClient()
-            draft = result.get("draft", "")
-            topic = payload.topic.strip()
-            suggestion_prompt = f"""你是学术综述审稿专家。请阅读以下综述草稿，生成 1-2 条用户可能需要的修改建议。
-要求：
-1. 建议要具体、可操作（例如"补充 XX 方法的实验数据对比"而非"写得不够好"）
-2. 语气友好、建设性
-3. 用中文，控制在 80 字以内
-4. 直接输出建议文本，不要加前缀或编号
-
-研究主题：{topic}
-综述草稿（前 2000 字）：
-{draft[:2000]}
-"""
-            suggestion = llm.chat("你是严谨的学术审稿专家。", suggestion_prompt, []).strip()
-        except Exception:
-            suggestion = ""
-
         result["session_id"] = session_id
-        result["auto_suggestion"] = suggestion
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"撰写阶段执行失败: {str(e)}")

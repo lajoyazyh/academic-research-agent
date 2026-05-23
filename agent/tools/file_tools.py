@@ -4,7 +4,7 @@ from core.tools import BaseTool
 
 class ClearNoteTool(BaseTool):
     name = "clear_notes"
-    description = "清空草稿本。每次新任务开始时调用。"
+    description = "清空临时研究笔记文件（research_notes.md）。用于清理本次运行的临时笔记缓存。"
     parameters = {}
 
     def __init__(self, work_dir: str):
@@ -18,7 +18,7 @@ class ClearNoteTool(BaseTool):
 
 class AppendNoteTool(BaseTool):
     name = "append_note"
-    description = "用于在调研过程中记录单篇论文的深度阅读笔记。请务必将笔记写得非常详尽充实（300-500 字），严格使用'论文标题：'、'作者：'、'摘要：'、'关键发现：'、'方法：'、'结论：' 这样的结构化排版。"
+    description = "用于记录单篇论文的深度阅读笔记（临时写入 research_notes.md）。请在笔记中明确标注论文 ID，系统会从执行轨迹中提取并将笔记与对应论文关联。"
     parameters = {
         "content": "严格结构化的Markdown格式笔记，必须包含 论文id、论文标题、作者、摘要、关键发现(列表)、方法、结论 几大部分，字数300-500左右。"
     }
