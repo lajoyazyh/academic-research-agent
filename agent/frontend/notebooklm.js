@@ -197,15 +197,81 @@ const notebooklm = {
 
     // "更多" link if sessions > 7
     if (sessions.length > 7) {
-      const moreCard = document.createElement('article');
+      const moreCard = document.createElement('div');
       moreCard.className = 'home-card home-card--ghost';
-      moreCard.innerHTML = `
-        <div class="home-card-inner">
-          <span class="home-card-icon"><i class="fa-solid fa-ellipsis"></i></span>
-          <span class="home-card-label">更多历史 · ${sessions.length - 7} 个</span>
-        </div>
-      `;
-      moreCard.addEventListener('click', () => window.location.href = '/app/history');
+      const extraCount = sessions.length - 7;
+      const renderMoreLabel = (expanded) => expanded
+        ? `<div class="home-card-inner"><span class="home-card-icon"><i class="fa-solid fa-angle-up"></i></span><span class="home-card-label">收起</span></div>`
+        : `<div class="home-card-inner"><span class="home-card-icon"><i class="fa-solid fa-ellipsis"></i></span><span class="home-card-label">更多历史 · ${extraCount} 个</span></div>`;
+
+      moreCard.innerHTML = renderMoreLabel(false);
+      moreCard.setAttribute('role', 'button');
+      moreCard.setAttribute('tabindex', '0');
+      moreCard.addEventListener('click', () => {
+        const parent = moreCard.parentElement;
+        if (!parent) return;
+        const expanded = moreCard.dataset.expanded === 'true';
+        if (expanded) {
+          // collapse: remove dynamically added extra cards
+          const extras = Array.from(parent.querySelectorAll('.home-card--extra'));
+          extras.forEach((el) => el.remove());
+          moreCard.dataset.expanded = 'false';
+          moreCard.innerHTML = renderMoreLabel(false);
+        } else {
+          // expand: insert remaining cards before the moreCard and mark them as extra
+          try {
+            if (typeof sessions !== 'undefined' && sessions.length > 7) {
+              for (let i = 7; i < sessions.length; i++) {
+                const sess = sessions[i];
+                const card = document.createElement('article');
+                card.className = 'home-card home-card--extra';
+                const title = this.escapeHtml(sess.topic || "未命名综述");
+                const time = this.formatDate(sess.updated_at || sess.created_at);
+                const paperCount = sess.paper_count || 0;
+                const noteFlag = sess.note_size && sess.note_size > 0 ? '有笔记' : '无笔记';
+
+                card.innerHTML = `
+                  <div>
+                    <h3 title="${title}">${title}</h3>
+                    <small>${time}</small>
+                  </div>
+                  <div class="home-card-meta">
+                    <span class="badge">${paperCount} 个来源</span>
+                    <span class="badge">${noteFlag}</span>
+                  </div>
+                `;
+
+                card.addEventListener('click', () => {
+                  window.location.href = `/app/console?sessionId=${encodeURIComponent(sess.session_id)}`;
+                });
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'home-card-delete';
+                deleteBtn.title = '删除';
+                deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                deleteBtn.addEventListener('click', async (event) => {
+                  event.stopPropagation();
+                  event.preventDefault();
+                  await this.deleteHomeSession(sess.session_id);
+                });
+                card.appendChild(deleteBtn);
+
+                parent.insertBefore(card, moreCard);
+              }
+            }
+                moreCard.dataset.expanded = 'true';
+                moreCard.innerHTML = renderMoreLabel(true);
+          } catch (e) {
+            console.warn('无法展开更多历史：', e);
+          }
+        }
+      });
+          moreCard.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              moreCard.click();
+            }
+          });
       this.els.homeRail.appendChild(moreCard);
     }
   },
@@ -1563,3 +1629,5 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 window.notebooklm = notebooklm;
+
+
