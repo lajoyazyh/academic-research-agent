@@ -358,6 +358,57 @@ const notebooklm = {
       </div>
       ${recentHtml}
     `;
+
+    this.renderHomeTimeline(stats);
+  },
+
+  renderHomeTimeline(stats) {
+    const timelineBox = document.getElementById("timelineBox");
+    if (!timelineBox) return;
+
+    const activities = stats.recent_activities || [];
+    if (activities.length === 0) {
+      timelineBox.innerHTML = '<div class="timeline-empty">暂无活动记录</div>';
+      return;
+    }
+
+    const stateDisplay = {
+      "planning": { label: "规划中", icon: "fa-lightbulb" },
+      "plan_confirmed": { label: "关键词已确认", icon: "fa-check-circle" },
+      "searching": { label: "搜索中", icon: "fa-magnifying-glass" },
+      "search_complete": { label: "搜索完成", icon: "fa-check-double" },
+      "reviewing_notes": { label: "笔记审核", icon: "fa-clipboard-check" },
+      "writing": { label: "撰写中", icon: "fa-pen-fancy" },
+      "reviewing_draft": { label: "评审中", icon: "fa-comments" },
+      "complete": { label: "已完成", icon: "fa-circle-check" },
+    };
+
+    let itemsHtml = "";
+    for (const act of activities) {
+      const disp = stateDisplay[act.state] || { label: act.state_label || act.state, icon: "fa-circle" };
+      const timeAgo = this.timeAgo(act.time);
+      const topic = this.escapeHtml(act.topic || "未命名综述");
+      const pc = act.paper_count || 0;
+      const sid = encodeURIComponent(act.session_id || "");
+
+      itemsHtml += `
+        <div class="timeline-item" onclick="window.location.href='/app/console?sessionId=${sid}'" role="button" tabindex="0">
+          <span class="timeline-dot ${act.state}"></span>
+          <div class="timeline-body">
+            <span class="timeline-topic" title="${topic}">${topic}</span>
+            <span class="timeline-meta">
+              <span class="timeline-badge"><i class="fa-solid ${disp.icon}"></i> ${disp.label}</span>
+              <span class="timeline-papers">${pc} 篇论文</span>
+              <span>· ${timeAgo}</span>
+            </span>
+          </div>
+        </div>`;
+    }
+
+    timelineBox.innerHTML = `
+      <div class="timeline-title">最近活动</div>
+      <div class="timeline-list">${itemsHtml}</div>
+    `;
   },
 
   timeAgo(dateStr) {

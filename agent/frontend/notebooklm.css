@@ -614,6 +614,109 @@ html, body {
   text-decoration: underline;
 }
 
+/* ====== Activity Timeline ====== */
+.timeline-box {
+  margin-top: 20px;
+  padding: 0;
+}
+
+.timeline-box .timeline-title {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 12px;
+}
+
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: background .12s;
+  border-radius: 6px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.timeline-item:last-child {
+  border-bottom: none;
+}
+
+.timeline-item:hover {
+  background: var(--hover-subtle);
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+  border: 2px solid var(--line);
+  background: var(--muted);
+}
+
+.timeline-dot.planning, .timeline-dot.plan_confirmed { background: var(--muted); border-color: var(--muted); }
+.timeline-dot.searching, .timeline-dot.search_complete, .timeline-dot.reviewing_notes { background: var(--warning); border-color: var(--warning); }
+.timeline-dot.writing, .timeline-dot.reviewing_draft { background: var(--accent); border-color: var(--accent); }
+.timeline-dot.complete { background: var(--success); border-color: var(--success); }
+
+.timeline-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline-body .timeline-topic {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.timeline-body .timeline-meta {
+  font-size: 11px;
+  color: var(--subtle);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeline-meta .timeline-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  background: var(--hover-bg);
+  color: var(--subtle);
+}
+
+.timeline-body .timeline-papers {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.timeline-empty {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 16px 0;
+}
+
 /* ====== Help / Guide Page ====== */
 .help-flow { display: flex; flex-direction: column; gap: 0; }
 .help-step { display: flex; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--line); }

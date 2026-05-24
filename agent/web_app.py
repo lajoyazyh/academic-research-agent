@@ -495,12 +495,10 @@ def get_stats() -> dict:
     total_reviews = 0
     state_counts = {}
     recent_activity = None
-    all_activities = []  # 用于时间线
+    all_activities = []
 
     for s in sessions:
-        # 论文数（list_sessions 已包含 paper_count）
         total_papers += s.get("paper_count", 0)
-        # 笔记数：需要读 papers_list.json 中的 per-paper notes
         session_dir = SESSIONS_DIR / s["session_id"]
         papers_list = None
         papers_path = session_dir / "papers" / "papers_list.json"
@@ -514,19 +512,16 @@ def get_stats() -> dict:
                 if isinstance(p, dict) and p.get("notes", "").strip():
                     total_notes += 1
 
-        # 综述数：draft 目录下有内容
         draft_dir = session_dir / "draft"
         if draft_dir.exists():
             drafts = list(draft_dir.glob("*.md"))
             if drafts:
                 total_reviews += len(drafts)
 
-        # 状态分布
         st = s.get("state", "planning")
         label = s.get("state_label", "未知")
         state_counts[label] = state_counts.get(label, 0) + 1
 
-        # 最近活动（最活跃的一条）
         updated = s.get("updated_at") or s.get("created_at")
         if updated and (recent_activity is None or updated > recent_activity["time"]):
             recent_activity = {
@@ -537,7 +532,6 @@ def get_stats() -> dict:
                 "session_id": s["session_id"],
             }
 
-        # 收集所有活动记录（按时间逆序取最近 5 条用于时间线）
         all_activities.append({
             "time": updated or "",
             "topic": s.get("topic", ""),
@@ -547,13 +541,11 @@ def get_stats() -> dict:
             "paper_count": s.get("paper_count", 0),
         })
 
-    # 活跃会话数（未完成的）
     active_count = sum(
         1 for s in sessions
         if s.get("state") not in ("complete",)
     )
 
-    # 按时间逆序排列，取最近 5 条
     all_activities.sort(key=lambda x: x.get("time", ""), reverse=True)
     recent_activities = all_activities[:5]
 
@@ -565,6 +557,7 @@ def get_stats() -> dict:
         "total_reviews": total_reviews,
         "state_breakdown": state_counts,
         "recent_activity": recent_activity,
+        "recent_activities": recent_activities,
     }
 
 
