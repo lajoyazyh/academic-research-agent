@@ -841,8 +841,13 @@ def save_notes(session_id: str, payload: dict) -> dict:
     """保存笔记编辑"""
     content = payload.get("content", "")
     version_note = payload.get("version_note", "")
+    paper_id = payload.get("paper_id", "")
     try:
-        return session_mgr.save_notes(session_id, content, version_note)
+        if paper_id:
+            session_mgr.batch_update_paper_notes(session_id, {paper_id: content})
+            return {"message": "Success"}
+        else:
+            return session_mgr.save_notes(session_id, content, version_note)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -870,6 +875,16 @@ def get_draft(session_id: str, version: int = None) -> dict:
         "draft_version": session.get("draft_version", 0),
         "rewrite_count": session.get("rewrite_count", 0),
     }
+
+@app.put("/api/sessions/{session_id}/draft")
+def save_draft(session_id: str, payload: dict) -> dict:
+    """保存综述草稿编辑"""
+    content = payload.get("content", "")
+    try:
+        session_mgr.save_draft(session_id, content)
+        return {"message": "Success"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

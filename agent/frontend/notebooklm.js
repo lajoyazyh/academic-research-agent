@@ -9,6 +9,10 @@ const notebooklm = {
     pollTimer: null,
     pendingSeedKeywords: "",
     lastReviewFeedback: "",
+    isEditingReport: false,
+    reportEditText: "",
+    isEditingReview: false,
+    reviewEditText: "",
   },
 
   els: {},
@@ -971,17 +975,40 @@ const notebooklm = {
   },
 
   renderPaperReport(paper, session) {
-    const notes = paper.notes || session.notes || "";
-    const hasPaperNotes = paper._hasNotes;
+    const rawNotes = paper?.notes || session?.notes || "";
+    const notes = typeof this.state.reportEditText === "string" && this.state.isEditingReport ? this.state.reportEditText : rawNotes;
+    const hasPaperNotes = paper?._hasNotes;
+    
+    let contentHtml = "";
+    if (this.state.isEditingReport) {
+      contentHtml = `
+        <textarea id="reportEditArea" class="chat-input" style="width: 100%; min-height: 400px; padding: 12px; margin-bottom: 12px; font-family: monospace; line-height: 1.5;" placeholder="编辑笔记内容...">${this.escapeHtml(notes)}</textarea>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button class="secondary-btn" onclick="notebooklm.cancelEditReport()">取消</button>
+          <button class="primary-btn" onclick="notebooklm.saveEditReport()">保存</button>
+        </div>
+      `;
+    } else {
+      contentHtml = notes.trim() ? `<div class="markdown">${marked.parse(notes)}</div>` : '<div class="empty-state">该论文还没有研究笔记。请选中该论文后点击左侧「生成笔记」按钮。</div>';
+    }
+
+    const editBtnHtml = hasPaperNotes && !this.state.isEditingReport ? `<button class="secondary-btn" title="编辑笔记" onclick="notebooklm.startEditReport()"><i class="fa-solid fa-pen" style="margin-right:4px;"></i>编辑笔记</button>` : "";
+
     return `
       <div class="detail-hero">
         <span class="topic-badge"><i class="fa-solid fa-chart-line"></i> 报告</span>
-        <h3>${this.escapeHtml(paper?.title || paper?.paper_id || session.topic || "综合报告")}</h3>
+        <h3>${this.escapeHtml(paper?.title || paper?.paper_id || session?.topic || "综合报告")}</h3>
         <div class="lead">${hasPaperNotes ? '这是该论文的研究笔记，由 AI 自动生成。' : '该论文尚未生成笔记，请选中后点击左侧「生成笔记」。'}</div>
       </div>
       <div class="panel-block" style="margin-top:16px;">
-        <div class="panel-block-head"><strong>${hasPaperNotes ? '研究笔记' : '报告内容'}</strong><span class="chip">${hasPaperNotes ? 'AI生成' : '待生成'}</span></div>
-        <div class="markdown">${notes.trim() ? marked.parse(notes) : '<div class="empty-state">该论文还没有研究笔记。请选中该论文后点击左侧「生成笔记」按钮。</div>'}</div>
+        <div class="panel-block-head">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <strong>${hasPaperNotes ? '研究笔记' : '报告内容'}</strong>
+            <span class="chip">${hasPaperNotes ? 'AI生成' : '待生成'}</span>
+          </div>
+          ${editBtnHtml}
+        </div>
+        ${contentHtml}
       </div>
     `;
   },
@@ -993,23 +1020,136 @@ const notebooklm = {
     // 2. 无闭合围栏：```markdown ...（到文末或 --- 分隔符）
     draft = draft.replace(/```markdown\s*\n([\s\S]*?)```/g, '$1');
     draft = draft.replace(/```markdown\s*\n([\s\S]*?)(\n---|\n## (?!##)|$)/, '$1$2');
+    
+    // 如果处于编辑态，则使用编辑中的内容
+    const editContent = typeof this.state.reviewEditText === "string" && this.state.isEditingReview ? this.state.reviewEditText : draft;
     const acceptedCount = (session?.papers || []).filter((paper) => paper.status === "accepted").length;
+    const hasDraft = Boolean(draft.trim());
+
+    let contentHtml = "";
+    if (this.state.isEditingReview) {
+      contentHtml = `
+        <textarea id="reviewEditArea" class="chat-input" style="width: 100%; min-height: 400px; padding: 12px; margin-bottom: 12px; font-family: monospace; line-height: 1.5;" placeholder="编辑综述内容...">${this.escapeHtml(editContent)}</textarea>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button class="secondary-btn" onclick="notebooklm.cancelEditReview()">取消</button>
+          <button class="primary-btn" onclick="notebooklm.saveEditReview()">保存</button>
+        </div>
+      `;
+    } else {
+      contentHtml = editContent.trim() ? `<div class="markdown">${marked.parse(editContent)}</div>` : '<div class="empty-state">还没有综述草稿。</div>';
+    }
+
+    const editBtnHtml = hasDraft && !this.state.isEditingReview ? `<button class="secondary-btn" title="编辑综述" onclick="notebooklm.startEditReview()"><i class="fa-solid fa-pen" style="margin-right:4px;"></i>编辑综述</button>` : "";
+
     return `
       <div class="detail-hero">
         <span class="topic-badge"><i class="fa-solid fa-layer-group"></i> 综述</span>
         <h3>${this.escapeHtml(session.topic || "综合综述")}</h3>
-        <div class="lead">该视图会结合已选论文和综述草稿给出回答，并允许你通过底部对话区提交修改意见。</div>
+        <div class="lead">该视图会结合已选论文和综述草稿给出回答，并允许你通过底部对话区提交修改意见，或者手动修改。</div>
       </div>
       <div class="detail-blocks" style="margin-top:16px;">
         <div class="panel-block">
-          <div class="panel-block-head"><strong>综述草稿</strong><span class="chip">${acceptedCount} 篇已选论文</span></div>
-          <div class="markdown">${draft ? marked.parse(draft) : '<div class="empty-state">还没有综述草稿。</div>'}</div>
+          <div class="panel-block-head">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <strong>综述草稿</strong>
+              <span class="chip">${acceptedCount} 篇已选论文</span>
+            </div>
+            ${editBtnHtml}
+          </div>
+          ${contentHtml}
         </div>
       </div>
     `;
   },
 
+  startEditReport() {
+    this.state.isEditingReport = true;
+    const paper = this.getCurrentPaper();
+    const session = this.state.currentSession;
+    this.state.reportEditText = paper?.notes || session?.notes || "";
+    this.renderDetailPanel();
+  },
+
+  cancelEditReport() {
+    this.state.isEditingReport = false;
+    this.state.reportEditText = "";
+    this.renderDetailPanel();
+  },
+
+  async saveEditReport() {
+    const area = document.getElementById("reportEditArea");
+    if (!area) return;
+    const newNotes = area.value;
+    const sessionId = this.state.currentSessionId;
+    const paperId = this.state.currentPaperId;
+    if (!sessionId) return;
+    
+    this.els.detailContent.innerHTML = '<div class="loading-state">保存中...</div>';
+    
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/notes`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newNotes, version_note: "User manual edit", paper_id: paperId }),
+      });
+      if (!response.ok) throw new Error("保存失败");
+      
+      await this.reloadCurrentSession();
+      this.state.isEditingReport = false;
+      this.state.reportEditText = "";
+      this.renderDetailPanel();
+    } catch (error) {
+      alert(error.message);
+      this.renderDetailPanel();
+    }
+  },
+
+  startEditReview() {
+    this.state.isEditingReview = true;
+    const session = this.state.currentSession;
+    let draft = session?.draft || session?.notes || "";
+    draft = draft.replace(/```markdown\s*\n([\s\S]*?)```/g, '$1');
+    draft = draft.replace(/```markdown\s*\n([\s\S]*?)(\n---|\n## (?!##)|$)/, '$1$2');
+    this.state.reviewEditText = draft;
+    this.renderDetailPanel();
+  },
+
+  cancelEditReview() {
+    this.state.isEditingReview = false;
+    this.state.reviewEditText = "";
+    this.renderDetailPanel();
+  },
+
+  async saveEditReview() {
+    const area = document.getElementById("reviewEditArea");
+    if (!area) return;
+    const newDraft = area.value;
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId) return;
+    
+    this.els.detailContent.innerHTML = '<div class="loading-state">保存中...</div>';
+    
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/draft`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newDraft }),
+      });
+      if (!response.ok) throw new Error("保存失败");
+      
+      await this.reloadCurrentSession();
+      this.state.isEditingReview = false;
+      this.state.reviewEditText = "";
+      this.renderDetailPanel();
+    } catch (error) {
+      alert(error.message);
+      this.renderDetailPanel();
+    }
+  },
+
   switchViewMode(mode) {
+    this.state.isEditingReport = false;
+    this.state.isEditingReview = false;
     this.state.currentViewMode = mode;
     this.renderDetailPanel();
     this.renderViewButtons();
