@@ -29,7 +29,7 @@
       <div class="sources-toolbar">
         <button class="primary-btn" id="searchPaperBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> AI检索论文</button>
         <button class="secondary-btn" id="addPaperBtn"><i class="fa-solid fa-plus"></i> 添加论文</button>
-        <button class="secondary-btn" id="uploadPdfBtn" title="上传本地PDF"><i class="fa-solid fa-upload"></i> 上传</button>
+        
         <input type="file" id="pdfFileInput" accept="application/pdf" style="display:none" />
       </div>
       <div class="sources-section">
@@ -98,6 +98,45 @@
       <div class="modal-foot">
         <button class="secondary-btn" id="keywordAdd"><i class="fa-solid fa-plus"></i> 添加关键词</button>
         <button class="primary-btn" id="keywordConfirm"><i class="fa-solid fa-check"></i> 确认并开始搜索</button>
+      </div>
+    </div>
+  </div>
+  <!-- 添加论文弹窗（合并 arXiv ID + 本地拖拽上传） -->
+  <div class="modal-overlay" id="addPaperModal">
+    <div class="modal-box" style="max-width:580px;">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-plus"></i> 添加论文</h3>
+        <button class="ghost-btn" id="addPaperCancel"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="modal-hint">输入 arXiv ID / 论文链接，或拖拽本地 PDF 文件到下方区域，然后点击「添加」</p>
+
+      <!-- arXiv ID 输入区 -->
+      <div class="field-grid" style="margin-bottom:12px;">
+        <label>arXiv ID 或论文链接</label>
+        <input type="text" id="addPaperArxivInput" placeholder="例如：2301.12345 或 https://arxiv.org/abs/2301.12345" />
+      </div>
+
+      <div class="add-paper-divider">
+        <span>或</span>
+      </div>
+
+      <!-- 拖拽上传区 -->
+      <div class="drop-zone" id="addPaperDropZone">
+        <div class="drop-zone-content">
+          <i class="fa-solid fa-cloud-arrow-up drop-zone-icon"></i>
+          <p class="drop-zone-text">拖拽 PDF 文件到此处</p>
+          <p class="drop-zone-hint">或点击选择文件</p>
+        </div>
+        <div class="drop-zone-preview" id="dropZonePreview" style="display:none;">
+          <i class="fa-solid fa-file-pdf drop-zone-file-icon"></i>
+          <span id="dropZoneFileName"></span>
+          <button class="tiny-btn" id="dropZoneClear" title="清除"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="secondary-btn" id="addPaperClose">取消</button>
+        <button class="primary-btn" id="addPaperSubmitBtn"><i class="fa-solid fa-plus"></i> 添加</button>
       </div>
     </div>
   </div>
