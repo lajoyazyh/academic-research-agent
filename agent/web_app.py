@@ -720,25 +720,26 @@ def add_custom_paper(session_id: str, payload: AddCustomPaperRequest):
     })
     session_mgr.save_papers_list(session_id, session_papers)
 
-    from llms.client import LLMClient
-    llm = LLMClient()
-    topic = session.get("topic", "")
-    
-    summarize_prompt = f"""你是一名擅长文献总结的研究员。这里是用户上传的一篇新论文的初步文本内容。研究主题是《{topic}》。
-请你认真阅读后，提炼出这篇论文的关键发现、方法或指标，并撰写一段学术笔记（约 300-500 字）。
-
-论文原文（前几页）：
-{res_text}
-
-请直接输出你的高质量学术笔记：
-"""
-    new_note = llm.chat("你是深度的学术研究员。", summarize_prompt, []).strip()
-
-    old_notes = session.get("notes", "")
-    updated_notes = old_notes + f"\n\n## 追加参考文献: {paper_id}\n\n{new_note}\n\n---\n"
-    session_mgr.save_notes(session_id, updated_notes)
-    
-    return {"message": "Success", "notes": updated_notes, "draft": session.get("draft", "")}
+#    from llms.client import LLMClient
+#    llm = LLMClient()
+#    topic = session.get("topic", "")
+#    
+#    summarize_prompt = f"""你是一名擅长文献总结的研究员。这里是用户上传的一篇新论文的初步文本内容。研究主题是《{topic}》。
+#请你认真阅读后，提炼出这篇论文的关键发现、方法或指标，并撰写一段学术笔记（约 300-500 字）。
+#
+#论文原文（前几页）：
+#{res_text}
+#
+#请直接输出你的高质量学术笔记：
+#"""
+#    new_note = llm.chat("你是深度的学术研究员。", summarize_prompt, []).strip()
+#
+#    old_notes = session.get("notes", "")
+#    updated_notes = old_notes + f"\n\n## 追加参考文献: {paper_id}\n\n{new_note}\n\n---\n"
+#    session_mgr.save_notes(session_id, updated_notes)
+#    
+#    return {"message": "Success", "notes": updated_notes, "draft": session.get("draft", "")}
+    return {"message": "Success"}
 
 
 @app.post("/api/sessions/{session_id}/papers/upload")
@@ -802,28 +803,29 @@ async def upload_paper(session_id: str, file: UploadFile = File(...)):
     })
     session_mgr.save_papers_list(session_id, session_papers)
 
-    from llms.client import LLMClient
-    llm = LLMClient()
-    topic = session.get("topic", "")
-    
-    summarize_prompt = f"""你是一名擅长文献总结的研究员。这里是用户上传的一篇新论文的初步文本内容。研究主题是《{topic}》。
-请你认真阅读后，提炼出这篇论文的关键发现、方法或指标，并撰写一段学术笔记（约 300-500 字）。
-
-论文原文（前几页）：
-{res_text}
-
-请直接输出你的高质量学术笔记：
-"""
-    try:
-        new_note = llm.chat("你是深度的学术研究员。", summarize_prompt, []).strip()
-    except Exception as e:
-        new_note = f"生成笔记失败: {str(e)}"
-
-    old_notes = session.get("notes", "")
-    updated_notes = old_notes + f"\n\n## 追加参考文献: {safe_filename}\n\n{new_note}\n\n---\n"
-    session_mgr.save_notes(session_id, updated_notes)
-    
-    return {"message": "Success", "notes": updated_notes, "draft": session.get("draft", ""), "paper_id": clean_id}
+#    from llms.client import LLMClient
+#    llm = LLMClient()
+#    topic = session.get("topic", "")
+#    
+#    summarize_prompt = f"""你是一名擅长文献总结的研究员。这里是用户上传的一篇新论文的初步文本内容。研究主题是《{topic}》。
+#请你认真阅读后，提炼出这篇论文的关键发现、方法或指标，并撰写一段学术笔记（约 300-500 字）。
+#
+#论文原文（前几页）：
+#{res_text}
+#
+#请直接输出你的高质量学术笔记：
+#"""
+#    try:
+#        new_note = llm.chat("你是深度的学术研究员。", summarize_prompt, []).strip()
+#    except Exception as e:
+#        new_note = f"生成笔记失败: {str(e)}"
+#
+#    old_notes = session.get("notes", "")
+#    updated_notes = old_notes + f"\n\n## 追加参考文献: {safe_filename}\n\n{new_note}\n\n---\n"
+#    session_mgr.save_notes(session_id, updated_notes)
+#    
+#    return {"message": "Success", "notes": updated_notes, "draft": session.get("draft", ""), "paper_id": clean_id}
+    return {"message": "Success"}
 
 # ━━━━━ 笔记管理（第一波基础接口，完整功能在第三波）━━━━━
 
@@ -1151,24 +1153,21 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
 
         note_prompt = f"""你是一名严谨的学术研究员。请为以下论文撰写一份**深度学术笔记**（800-1200字），使其能够直接支撑后续的综述写作。
 
-研究主题：{topic}
-论文标题：{title}
-来源：{source_info}
-摘要：{abstract}
+
 
 请按以下详细格式输出：
 
 ## 论文笔记：{title}
 
-- **核心方法**：（详细描述该论文提出的技术核心，包括模型架构、算法流程、公式或创新点等。至少 150 字。）
+- **核心方法**：（详细描述该论文提出的技术核心至少 150 字。）
 
-- **实验设置**：（列举使用的数据集名称、规模、评估指标（如 BLEU、F1、Accuracy 等），以及基线模型。至少 80 字。）
+- **实验设置**：（列举论文进行的实验（若存在）。至少 80 字。）
 
-- **关键结果**：（详细列出主要实验结果，包括具体数值和改进幅度。例如："在 X 数据集上相比基线 Y 提升了 Z%。" 至少 100 字。）
+- **关键结果**：（详细列出主要实验结果。 至少 100 字。）
 
-- **消融与分析**：（论文是否做了消融实验？哪些组件贡献最大？是否有可视化分析或案例研究？至少 80 字。）
+- **消融与分析**：（论文是否做了消融实验？是否有可视化分析或案例研究？至少 80 字。）
 
-- **与研究主题的关联**：（具体说明该论文如何支撑「{topic}」的研究，填补了什么空白，或者提供了什么新视角。至少 60 字。）
+- **与研究主题的关联**：（具体说明该论文如何支撑研究，填补了什么空白，或者提供了什么新视角。至少 60 字。）
 
 - **亮点与不足**：（客观评价论文的主要贡献、创新性以及潜在局限、未解决的问题。至少 60 字。）
 
