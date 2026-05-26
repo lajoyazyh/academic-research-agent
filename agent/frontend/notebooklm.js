@@ -705,7 +705,11 @@ const notebooklm = {
 
       this.state.currentSessionId = sessionId;
       this.state.currentSession = session;
-      this.state.currentPaperId = session.papers?.[0]?.paper_id || null;
+      
+      // Preserve the currentPaperId if it still exists in the refreshed session's papers
+      const prevPaperId = this.state.currentPaperId;
+      const paperExists = prevPaperId && session.papers?.some(p => p.paper_id === prevPaperId);
+      this.state.currentPaperId = paperExists ? prevPaperId : (session.papers?.[0]?.paper_id || null);
 
       this.renderConsoleSession();
 
@@ -1285,7 +1289,7 @@ const notebooklm = {
 
     this.els.chatContext.innerHTML = `<span class="chip"><i class="fa-solid fa-sparkles"></i> ${this.escapeHtml(label)}</span>`;
     if (this.els.chatApply) {
-      this.els.chatApply.style.display = this.state.currentViewMode === "review" ? "inline-flex" : "none";
+      this.els.chatApply.style.display = (this.state.currentViewMode === "review" || this.state.currentViewMode === "report") ? "inline-flex" : "none";
     }
   },
 
@@ -1953,7 +1957,7 @@ const notebooklm = {
 
     const reply = this.generateChatReply(message);
     this.appendChatMessage("agent", reply.text, this.state.currentViewMode, reply.note);
-    this.state.lastReviewFeedback = this.state.currentViewMode === "review" ? message : this.state.lastReviewFeedback;
+    this.state.lastReviewFeedback = (this.state.currentViewMode === "review" || this.state.currentViewMode === "report") ? message : this.state.lastReviewFeedback;
     this.renderChatContext();
   },
 
@@ -1968,17 +1972,25 @@ const notebooklm = {
       const acceptedNames = acceptedPapers.map(p => p.title || p.paper_id).join("、");
       const draftSummary = (session.draft || "").slice(0, 200);
       return {
-        text: `根据当前综述草稿和 ${acceptedPapers.length} 篇已选论文（${acceptedNames || "暂无"}），关于「${message}」：我建议你明确要修改的章节或段落，然后将修改意见压缩为 3-5 条可执行建议。你可以点击「生成修订版」按钮让我基于反馈重新生成综述。`,
-        note: "综述模式：可点击「生成修订版」把本条建议写入反馈并重新生成综述。",
+        text: `根据当前综述草稿和 ${acceptedPapers.length} 篇已选论文（${acceptedNames || "暂无"}），关于「${message}」：我建议你明确要修改的章节或段落，然后将修改意见压缩为 3-5 条可执行建议。你可以点击应用修改按钮让我基于反馈重新生成综述。`,
+        note: "综述模式：可点击应用修改按钮把本条建议写入反馈并重新生成综述。",
+      };
+    }
+    
+    // ━━━ 笔记(report)模式：可请求修订 ━━━
+    if (mode === "report") {
+      return {
+        text: `收到你对笔记的修改意见：「${message}」。你可以点击应用修改按钮让我基于反馈对现有研究笔记进行修订。`,
+        note: "笔记模式：可点击应用修改按钮把本条建议写入反馈并修订当前笔记。",
       };
     }
 
-    // ━━━ 摘要/报告模式：仅回答当前论文内容，不可修改 ━━━
+    // ━━━ 摘要模式：仅回答当前论文内容，不可修改 ━━━
     const currentName = paper?.title || paper?.paper_id || session.topic || "当前论文";
-    const modeLabel = mode === "report" ? "报告" : "摘要";
+    const modeLabel = "摘要";
     return {
-      text: `针对「${currentName}」的${modeLabel}内容回答：「${message}」。该论文来源为 ${paper?.source || "当前主题来源"}。你可以切换到报告视图查看更多上下文，或切换到综述视图进行修改。`,
-      note: `当前为${modeLabel}模式，仅回答当前论文内容，不会修改报告或摘要。`,
+      text: `针对「${currentName}」的${modeLabel}内容回答：「${message}」。该论文来源为 ${paper?.source || "当前主题来源"}。你可以切换到笔记视图或综述视图进行修改。`,
+      note: `当前为${modeLabel}模式，仅回答当前论文内容，不可在此模式下修改内容。`,
     };
   },
 
@@ -1994,24 +2006,42 @@ const notebooklm = {
   },
 
   async applyReviewFeedback() {
-    if (this.state.currentViewMode !== "review") {
+    if (this.state.currentViewMode !== "review" && this.state.currentViewMode !== "report") {
+      alert("请在笔记或综述视图下应用修改");
       return;
     }
     if (!this.state.currentSessionId) return;
 
     const feedback = this.state.lastReviewFeedback || this.els.chatInput?.value.trim() || "";
     if (!feedback) {
-      alert("请先输入一条综述修改建议");
+      alert("请先输入一条修改建议");
       return;
     }
 
     try {
-      await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/feedback`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feedback }),
-      });
-      await this.runWritePhase();
+      if (this.state.currentViewMode === "review") {
+        await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/feedback`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ feedback }),
+        });
+        await this.runWritePhase();
+      } else if (this.state.currentViewMode === "report") {
+        this.setConsoleStatus("writing", "正在根据反馈修订笔记...");
+        const topic = this.state.currentSession?.topic || "未知主题";
+        const paper_id = this.state.currentPaperId; // Add paper_id to payload
+        const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/notes/revise`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic, feedback, paper_id }),
+        });
+        if (!response.ok) {
+           throw new Error(await response.text());
+        }
+        await this.loadSession(this.state.currentSessionId);
+        this.setConsoleStatus("reviewing_notes", "笔记修订完成，请查看");
+        if (this.els.chatInput) this.els.chatInput.value = "";
+      }
     } catch (error) {
       alert(`应用修改失败：${error.message}`);
     }

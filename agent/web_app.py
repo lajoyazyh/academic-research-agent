@@ -1189,6 +1189,62 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
         "count": len(notes_map),
     }
 
+class ReviseNotesRequest(BaseModel):
+    topic: str
+    feedback: str
+    paper_id: str | None = None
+
+@app.post("/api/sessions/{session_id}/run/notes/revise")
+def revise_notes_phase(session_id: str, payload: ReviseNotesRequest) -> dict:
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session 不存在")
+    
+    # 优先获取论文独立笔记，否则获取整体笔记
+    notes = ""
+    is_paper_notes = False
+    if payload.paper_id:
+        papers = session.get("papers", [])
+        for p in papers:
+            if p.get("paper_id") == payload.paper_id:
+                notes = p.get("notes", "")
+                is_paper_notes = True
+                break
+    
+    if not notes:
+        notes = session.get("notes", "")
+        is_paper_notes = False
+
+    if not notes.strip():
+        raise HTTPException(status_code=400, detail="笔记为空，无法修订")
+    
+    from llms.client import LLMClient
+    llm = LLMClient()
+    
+    revise_prompt = f"""你是一名严谨的学术研究员。请根据用户的反馈意见，对现有的研究笔记进行修订。
+    
+研究主题：{payload.topic}
+
+【用户反馈意见】：
+{payload.feedback}
+
+【现有研究笔记】：
+{notes}
+
+请按照用户的反馈意见修改现有研究笔记，输出修改后的完整笔记内容，不要保留未修改部分的省略号，不要输出额外的解释。
+"""
+    try:
+        new_notes = llm.chat("你是学术笔记修改专家。", revise_prompt, []).strip()
+        
+        if is_paper_notes and payload.paper_id:
+            session_mgr.batch_update_paper_notes(session_id, {payload.paper_id: new_notes})
+        else:
+            session_mgr.save_notes(session_id, new_notes)
+            
+        return {"notes": new_notes, "message": "笔记已根据反馈修订"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"笔记修订执行失败: {str(e)}")
+
 
 if __name__ == "__main__":
     import uvicorn
