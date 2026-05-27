@@ -1146,28 +1146,67 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
         pid = paper.get("paper_id", "")
         if pid not in paper_ids:
             continue
+        try:
+            import fitz
+        except ImportError:
+            raise HTTPException(status_code=500, detail="缺少依赖 PyMuPDF")
 
         title = paper.get("title", pid)
         abstract = paper.get("abstract", "")
-        source_info = paper.get("source_type", paper.get("source", ""))
+        source_info = paper.get("source", "")
+        if source_info == "agent_search":
+            paper_path = session_mgr.get_agent_search_paper_path(session_id, pid)
+        elif source_info == "user_custom":
+            paper_path = session_mgr.get_user_custom_paper_path(session_id, pid)
+        elif source_info == "user_upload":
+            paper_path = session_mgr.get_user_upload_paper_path(session_id, title)
+        try:
+            doc = fitz.open(str(paper_path))
+        except Exception:
+            paper_path = None
+
+#这里最好能将全文交给 LLM 来理解，而不是只提取前几页的文本。
+        res_text = ""
+        if paper_path:
+            try:
+                doc = fitz.open(str(paper_path))
+                total_pages = len(doc)
+                if total_pages == 0:
+                    raise ValueError("PDF 为空。")
+
+                text_blocks = []
+                pages_to_read = list(range(min(5, total_pages)))
+                for p_num in pages_to_read:
+                    t = doc.load_page(p_num).get_text("text").strip()
+                    if t: text_blocks.append(f"--- 第 {p_num + 1} 页全文 ---\n{t}")
+            
+                res_text = "\n\n".join(text_blocks)
+                if not res_text.strip():
+                    raise ValueError("无法从 PDF 提取文本内容")
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"解析 PDF 失败：{str(e)}")
+
+
 
         note_prompt = f"""你是一名严谨的学术研究员。请为以下论文撰写一份**深度学术笔记**（800-1200字），使其能够直接支撑后续的综述写作。
 
 
+论文原文（前几页）：
+{res_text}
 
 请按以下详细格式输出：
 
 ## 论文笔记：{title}
 
-- **核心方法**：（详细描述该论文提出的技术核心至少 150 字。）
+- **核心方法**：（详细描述该论文提出的技术核心。至少 150 字。）
 
-- **实验设置**：（列举论文进行的实验（若存在）。至少 80 字。）
+- **实验设置**：（详细说明改论文的实验设计。至少 80 字。）
 
 - **关键结果**：（详细列出主要实验结果。 至少 100 字。）
 
 - **消融与分析**：（论文是否做了消融实验？是否有可视化分析或案例研究？至少 80 字。）
 
-- **与研究主题的关联**：（具体说明该论文如何支撑研究，填补了什么空白，或者提供了什么新视角。至少 60 字。）
+- **与研究主题的关联**：（具体说明该论文如何支撑「{topic}」的研究，填补了什么空白，或者提供了什么新视角。至少 60 字。）
 
 - **亮点与不足**：（客观评价论文的主要贡献、创新性以及潜在局限、未解决的问题。至少 60 字。）
 

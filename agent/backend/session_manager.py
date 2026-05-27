@@ -445,6 +445,23 @@ class SessionManager:
         paper_dir = self.root / session_id / "papers" / paper_id
         paper_dir.mkdir(parents=True, exist_ok=True)
         return paper_dir
+    
+    def get_agent_search_paper_path(self, session_id: str, paper_id: str) -> Path:
+        """获取某篇Agent查找的论文的存储目录"""
+        paper=paper_id+".pdf"
+        paper_dir = self.root / session_id / "papers" / paper
+        return paper_dir
+    
+    def get_user_custom_paper_path(self, session_id: str, paper_id: str) -> Path:
+        """获取某篇用户搜索的论文的存储目录"""
+        paper=paper_id+".pdf"
+        paper_dir = self.root / session_id / "papers" / paper
+        return paper_dir
+
+    def get_user_upload_paper_path(self, session_id: str, paper_id: str) -> Path:
+        """获取某篇用户上传的论文的存储目录"""
+        paper_dir = self.root / session_id / "papers" / paper_id
+        return paper_dir
 
     # ━━━━━ 笔记管理 ━━━━━
 
