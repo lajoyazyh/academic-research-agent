@@ -693,6 +693,46 @@ const notebooklm = {
     if (this.els.themeToggle) {
       this.els.themeToggle.addEventListener("click", () => this.toggleTheme());
     }
+
+    // 初始化对话助手拖拽缩放
+    this.initChatResize();
+  },
+
+  initChatResize() {
+    const resizeHandle = document.getElementById("resizeHandle");
+    const chatDock = document.querySelector(".chat-dock");
+    if (!resizeHandle || !chatDock) return;
+
+    let isResizing = false;
+    let startY = 0;
+    let startHeight = 0;
+
+    resizeHandle.addEventListener("mousedown", (e) => {
+      isResizing = true;
+      startY = e.clientY;
+      startHeight = chatDock.getBoundingClientRect().height;
+      resizeHandle.classList.add("active");
+      document.body.style.cursor = "row-resize";
+      e.preventDefault(); // 防止选中文本
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isResizing) return;
+      const dy = startY - e.clientY;
+      const newHeight = startHeight + dy;
+      // 限制最小和最大高度 (min 160, max 80vh)
+      if (newHeight >= 160 && newHeight <= window.innerHeight * 0.8) {
+        chatDock.style.height = `${newHeight}px`;
+      }
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (isResizing) {
+        isResizing = false;
+        resizeHandle.classList.remove("active");
+        document.body.style.cursor = "";
+      }
+    });
   },
 
   async loadSession(sessionId) {
