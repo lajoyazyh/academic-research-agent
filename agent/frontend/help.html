@@ -65,7 +65,7 @@
             <span class="help-step-num">6</span>
             <div>
               <strong>查看与修订</strong>
-              <p>点击论文可在右侧「摘要」视图查看基本信息，切换到「笔记」视图查看详细笔记，切换到「综述」视图阅读完整综述。对话区默认是普通对话；打开「Agent 模式」后，可输入「/修订 修改意见」让 AI 根据当前视图修订笔记或综述。</p>
+              <p>点击论文可在右侧「摘要」视图查看基本信息，切换到「笔记」视图查看详细笔记，切换到「综述」视图阅读完整综述。对话区默认是普通问答；打开「Agent 模式」后，隐式修改请求会先由 AI 判断是否为修订意图，再在聊天中显示「确认 / 取消」按钮。若你想直接修订，也可以输入「/修订 + 修改意见」。</p>
             </div>
           </div>
         </div>
@@ -94,7 +94,7 @@
           <p style="font-size:13px;color:var(--subtle);margin:8px 0 0;">补全 DOI 与期刊元数据，支持按标题/作者搜索</p>
         </div>
       </div>
-      <p style="margin-top:1rem;color:var(--subtle);font-size:13px;">提示：需要修订内容时，先打开 Agent 模式，再输入 /修订 + 修改意见。</p>
+      <p style="margin-top:1rem;color:var(--subtle);font-size:13px;">提示：普通问题直接提问即可；需要修订时可先切换 Agent 模式，系统会先判定是否为修改意图并要求确认。也可直接输入 /修订 + 修改意见。</p>
     </section>
 
     <section class="home-section">
@@ -112,7 +112,7 @@
         </div>
         <div class="home-card" style="cursor:default; min-height:auto;">
           <p style="margin:0;"><strong>Q: 可以修改生成的内容吗？</strong></p>
-          <p style="margin:6px 0 0;font-size:13px;color:var(--subtle);">A: 综述模式下，通过底部 AI 对话输入修改意见，再点击「生成修订版」即可让 AI 基于反馈重新生成综述。论文笔记不支持修改，但可以重新检索。</p>
+          <p style="margin:6px 0 0;font-size:13px;color:var(--subtle);">A: 可以。现在普通对话和修订协同已经合并到同一个聊天区：Agent 模式下输入修改意见后，系统会先判断是否真的是修订请求，再在对话里确认后执行；也可以直接用 /修订 + 修改意见 明确触发。</p>
         </div>
       </div>
     </section>
