@@ -2,6 +2,7 @@ import threading
 import uuid
 import json
 import datetime
+import re
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -443,6 +444,21 @@ class UpdateKeywordsRequest(BaseModel):
 class SaveFeedbackRequest(BaseModel):
     feedback: str
 
+class ChatMessageRequest(BaseModel):
+    message: str
+    view_mode: str = "summary"
+    chat_mode: str = "normal"
+    current_paper_id: str | None = None
+
+
+class ChatMessageResponse(BaseModel):
+    reply: str
+    note: str = ""
+    action_taken: bool = False
+    action: str = "chat"
+    session_state: str = ""
+    session_state_label: str = ""
+
 class SessionSummary(BaseModel):
     session_id: str
     topic: str
@@ -861,6 +877,140 @@ def save_feedback(session_id: str, payload: SaveFeedbackRequest) -> dict:
       return session_mgr.save_feedback(session_id, payload.feedback)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | None = None) -> dict[str, str]:
+    paper = None
+    if current_paper_id:
+        for item in session.get("papers", []):
+            if item.get("paper_id") == current_paper_id:
+                paper = item
+                break
+    if paper is None:
+        papers = session.get("papers", [])
+        paper = papers[0] if papers else None
+
+    if view_mode == "review":
+        accepted_count = len([p for p in session.get("papers", []) if p.get("status") == "accepted"])
+        accepted_names = "、".join(
+            [p.get("title") or p.get("paper_id", "") for p in session.get("papers", []) if p.get("status") == "accepted"]
+        )
+        return {
+            "reply": f"根据当前综述草稿和 {accepted_count} 篇已选论文（{accepted_names or '暂无'}），请明确要修改的章节或段落，并将修改意见压缩为 3-5 条可执行建议。",
+            "note": "综述模式：可直接输入 /修订 + 修改意见 触发综述重写。",
+        }
+
+    if view_mode == "report":
+        current_name = (paper or {}).get("title") or (paper or {}).get("paper_id") or session.get("topic", "当前论文")
+        return {
+            "reply": f"收到你对「{current_name}」笔记的修改意见。你可以直接输入 /修订 + 修改意见，让系统基于反馈修订当前笔记。",
+            "note": "笔记模式：可直接输入 /修订 + 修改意见 触发笔记修订。",
+        }
+
+    current_name = (paper or {}).get("title") or (paper or {}).get("paper_id") or session.get("topic", "当前主题")
+    return {
+        "reply": f"针对「{current_name}」的摘要内容，我可以继续回答你的问题。若要修改内容，请切换到笔记或综述视图后使用 Agent 模式和 /修订 指令。",
+        "note": "当前为摘要模式，仅回答当前论文内容。",
+    }
+
+
+def _parse_chat_revision(message: str, view_mode: str) -> tuple[str, str] | None:
+    text = (message or "").strip()
+    if not text:
+        return None
+
+    if text.startswith("/修订"):
+        content = re.sub(r"^/修订\s*", "", text).strip()
+        if not content:
+            return None
+        target_match = re.match(r"^(笔记|综述|report|review)\s+([\s\S]+)$", content, flags=re.IGNORECASE)
+        if target_match:
+            raw_target = target_match.group(1).lower()
+            target = "review" if raw_target in ("综述", "review") else "report"
+            return target, target_match.group(2).strip()
+        return ("review" if view_mode == "review" else "report"), content
+
+    revision_keywords = re.compile(r"(修订|修改|重写|润色|改写|完善|优化|补充|调整)")
+    target_hint = re.compile(r"(笔记|综述|草稿|这一段|这一节|当前内容|内容)")
+    question_hint = re.compile(r"(为什么|是什么|如何|怎么|能否|可以吗|请问|解释|分析)")
+
+    has_revision_signal = revision_keywords.search(text) or (view_mode != "summary" and target_hint.search(text))
+    if not has_revision_signal or question_hint.search(text):
+        return None
+
+    return ("review" if view_mode == "review" else "report"), text
+
+
+@app.post("/api/sessions/{session_id}/chat")
+def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
+    """统一聊天入口：普通对话与 Agent 修订动作共用一个接口。"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    message = payload.message.strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="message 不能为空")
+
+    revision = None
+    if payload.chat_mode == "agent":
+        revision = _parse_chat_revision(message, payload.view_mode)
+
+    if revision:
+        target, feedback = revision
+        if target == "review":
+            session_mgr.save_feedback(session_id, feedback)
+            result = run_write_phase(
+                session_id,
+                RunPhaseRequest(
+                    topic=session.get("topic", ""),
+                    start_phase="write",
+                    max_loops=20,
+                ),
+            )
+            fresh_session = session_mgr.load_session(session_id) or session
+            return {
+                "reply": "综述已根据你的反馈重新生成。",
+                "note": "综述修订已完成。",
+                "action_taken": True,
+                "action": "revise_review",
+                "session_state": fresh_session.get("state", ""),
+                "session_state_label": STATE_LABELS.get(fresh_session.get("state", ""), fresh_session.get("state", "")),
+                "draft": result.get("draft", fresh_session.get("draft", "")),
+            }
+
+        revise_result = revise_notes_phase(
+            session_id,
+            ReviseNotesRequest(
+                topic=session.get("topic", ""),
+                feedback=feedback,
+                paper_id=payload.current_paper_id,
+            ),
+        )
+        try:
+            session_mgr.update_session_state(session_id, "reviewing_notes")
+        except ValueError:
+            pass
+        fresh_session = session_mgr.load_session(session_id) or session
+        return {
+            "reply": "笔记已根据你的反馈修订。",
+            "note": "笔记修订已完成。",
+            "action_taken": True,
+            "action": "revise_notes",
+            "session_state": fresh_session.get("state", ""),
+            "session_state_label": STATE_LABELS.get(fresh_session.get("state", ""), fresh_session.get("state", "")),
+            "notes": revise_result.get("notes", ""),
+        }
+
+    reply_data = _build_chat_reply(session, payload.view_mode, payload.current_paper_id)
+    return {
+        "reply": reply_data["reply"],
+        "note": reply_data.get("note", ""),
+        "action_taken": False,
+        "action": "chat",
+        "session_state": session.get("state", ""),
+        "session_state_label": STATE_LABELS.get(session.get("state", ""), session.get("state", "")),
+    }
 
 
 # ━━━━━ 草稿管理（第一波基础接口，完整功能在第三波）━━━━━
