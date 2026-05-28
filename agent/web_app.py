@@ -925,6 +925,65 @@ def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | Non
     }
 
 
+def _build_chat_answer(session: dict, message: str, view_mode: str, current_paper_id: str | None = None) -> dict[str, str]:
+    paper = None
+    if current_paper_id:
+        for item in session.get("papers", []):
+            if item.get("paper_id") == current_paper_id:
+                paper = item
+                break
+    if paper is None:
+        papers = session.get("papers", [])
+        paper = papers[0] if papers else None
+
+    current_name = (paper or {}).get("title") or (paper or {}).get("paper_id") or session.get("topic", "当前主题")
+    current_abstract = (paper or {}).get("abstract", "") or (paper or {}).get("summary", "") or ""
+    current_notes = session.get("notes", "") or ""
+    current_draft = session.get("draft", "") or ""
+    accepted_names = "、".join(
+        [p.get("title") or p.get("paper_id", "") for p in session.get("papers", []) if p.get("status") == "accepted"]
+    )
+
+    system_prompt = """你是一个严谨、简洁的中文学术助理。
+你的任务是围绕当前论文、笔记或综述草稿，直接回答用户的问题。
+
+要求：
+- 只能基于给定上下文回答，不要编造未提供的信息。
+- 如果上下文不足，明确说明无法从当前材料判断，并给出下一步建议。
+- 用户是在提问或解释时，优先回答问题本身，不要输出修改入口提示。
+- 回答要自然、直接、简洁，默认 3-6 句；如果用户要求展开，可以适度加长。
+- 如果用户明显在请求修改，应该由外层路由处理，这里只负责普通问答。
+"""
+
+    user_prompt = f"""会话主题：{session.get('topic', '')}
+当前视图模式：{view_mode}
+当前论文：{current_name}
+已选论文：{accepted_names or '暂无'}
+
+当前论文摘要（如有）：
+{current_abstract or '无'}
+
+当前研究笔记（如有）：
+{current_notes[:4000] or '无'}
+
+当前综述草稿（如有）：
+{current_draft[:4000] or '无'}
+
+用户问题：{message}
+
+请直接回答用户问题。"""
+
+    try:
+        answer = _get_chat_intent_llm().chat(system_prompt, user_prompt, []).strip()
+        if answer:
+            note = f"基于当前{'综述' if view_mode == 'review' else '论文'}上下文生成回答。"
+            return {"reply": answer, "note": note}
+    except Exception:
+        pass
+
+    return _build_chat_reply(session, view_mode, current_paper_id)
+
+
 def _parse_explicit_chat_revision(message: str, view_mode: str) -> dict[str, str] | None:
     text = (message or "").strip()
     if not text:
@@ -1123,7 +1182,7 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
             "notes": revise_result.get("notes", ""),
         }
 
-    reply_data = _build_chat_reply(session, payload.view_mode, payload.current_paper_id)
+    reply_data = _build_chat_answer(session, message, payload.view_mode, payload.current_paper_id)
     return {
         "reply": reply_data["reply"],
         "note": reply_data.get("note", ""),
