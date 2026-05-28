@@ -65,7 +65,11 @@
           主题
           <input id="topicInput" type="text" placeholder="例如：多智能体协作记忆机制" />
         </label>
-        <label>
+        <!--
+          关键词种子字段仅隐藏，不建议删除。
+          它仍然参与旧的规划回填、会话创建和历史兼容链路；直接删除可能引发创建会话、自动规划或回填逻辑的级联回归。
+        -->
+        <label style="display:none;">
           关键词种子（可选）
           <textarea id="keywordInput" rows="4" placeholder="例如：memory, retrieval, agent planning, RAG"></textarea>
         </label>

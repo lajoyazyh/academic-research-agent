@@ -437,11 +437,12 @@ const notebooklm = {
     if (!this.els.topicModal) return;
     this.els.topicModal.classList.add("active");
     if (this.els.topicInput) {
-      this.els.topicInput.value = localStorage.getItem("notebooklm:lastTopic") || "";
+      this.els.topicInput.value = "";
       this.els.topicInput.focus();
     }
     if (this.els.keywordInput) {
-      this.els.keywordInput.value = localStorage.getItem("notebooklm:lastKeywords") || "";
+      // 仅隐藏，不删除：该字段仍被会话创建、规划回填和历史兼容链路使用，直接移除容易引发连锁回归。
+      this.els.keywordInput.value = "";
     }
     this.renderHomeKeywordPlan([]);
     this.syncKeywordPlanHint();
@@ -625,7 +626,13 @@ const notebooklm = {
       return;
     }
     const seed = this.els.keywordInput?.value || "";
+    const generateBtn = this.els.keywordPlanGenerate;
+    const originalBtnHtml = generateBtn?.innerHTML || "";
     try {
+      if (generateBtn) {
+        generateBtn.disabled = true;
+        generateBtn.textContent = "关键词生成中...";
+      }
       const res = await fetch("/api/keywords/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -642,6 +649,11 @@ const notebooklm = {
       this.renderHomeKeywordPlan(keywords);
     } catch (e) {
       alert("关键词生成失败：" + e.message);
+    } finally {
+      if (generateBtn) {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = originalBtnHtml || '<i class="fa-solid fa-wand-magic-sparkles"></i> 生成规划';
+      }
     }
   },
 
