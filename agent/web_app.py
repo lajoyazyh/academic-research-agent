@@ -3,6 +3,7 @@ import uuid
 import json
 import datetime
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -14,6 +15,8 @@ from pydantic import BaseModel
 
 from main import run_agent_pipeline, run_agent_pipeline_session
 from backend.session_manager import SessionManager, SessionState, STATE_LABELS, VALID_TRANSITIONS
+from llms.client import LLMClient
+from utils.parser import extract_json
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -484,6 +487,11 @@ class AddPaperRequest(BaseModel):
     paper: PaperInfo
 
 
+@lru_cache(maxsize=1)
+def _get_chat_intent_llm() -> LLMClient:
+    return LLMClient()
+
+
 @app.post("/api/sessions/create")
 def create_session(payload: dict) -> dict:
     """创建新 Session，支持可选的 keywords 字段（字符串或数组）。"""
@@ -917,7 +925,7 @@ def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | Non
     }
 
 
-def _parse_chat_revision(message: str, view_mode: str) -> dict[str, str] | None:
+def _parse_explicit_chat_revision(message: str, view_mode: str) -> dict[str, str] | None:
     text = (message or "").strip()
     if not text:
         return None
@@ -933,15 +941,83 @@ def _parse_chat_revision(message: str, view_mode: str) -> dict[str, str] | None:
             return target, target_match.group(2).strip()
         return {"target": "review" if view_mode == "review" else "report", "feedback": content, "source": "explicit"}
 
-    revision_keywords = re.compile(r"(修订|修改|重写|润色|改写|完善|优化|补充|调整|删除|去掉|移除|删掉|剔除)")
-    target_hint = re.compile(r"(笔记|综述|草稿|这一段|这一节|当前内容|内容)")
-    question_hint = re.compile(r"(为什么|是什么|如何|怎么|能否|可以吗|请问|解释|分析)")
+    return None
 
-    has_revision_signal = revision_keywords.search(text) or (view_mode != "summary" and target_hint.search(text))
-    if not has_revision_signal or question_hint.search(text):
+
+def _infer_chat_revision_ai(session: dict, message: str, view_mode: str, current_paper_id: str | None) -> dict[str, str] | None:
+    text = (message or "").strip()
+    if not text:
         return None
 
-    return {"target": "review" if view_mode == "review" else "report", "feedback": text, "source": "semantic"}
+    paper_title = ""
+    if current_paper_id:
+        for paper in session.get("papers", []):
+            if paper.get("paper_id") == current_paper_id:
+                paper_title = paper.get("title", "") or paper.get("paper_id", "")
+                break
+
+    system_prompt = """你是一个对用户自然语言消息进行意图分类的助手。
+你的任务不是回答问题，也不是直接修改内容，而是判断这条消息是否在请求修改当前笔记或综述。
+
+请只输出严格 JSON，不要输出解释、不要输出 Markdown 代码块。
+JSON 格式如下：
+{
+  "intent": "revise" | "chat" | "clarify",
+  "target": "report" | "review" | "none",
+  "confidence": 0.0-1.0,
+  "reason": "一句简短理由",
+  "feedback": "若 intent=revise，则提炼出的修改意见；否则为空字符串"
+}
+
+判定规则：
+- 只有当用户明显在要求改写、删除、补充、压缩、重组、重写当前内容时，才判断为 revise。
+- 如果用户是在提问、解释、讨论内容含义，则判断为 chat。
+- 如果用户表达模糊，无法确定是否要修改，则判断为 clarify。
+- target 只在 revise 时填写 report 或 review；其他情况填 none。
+"""
+
+    user_prompt = f"""会话上下文：
+- 当前视图模式：{view_mode}
+- 当前会话状态：{session.get('state', '')}
+- 当前论文标题：{paper_title or '无'}
+- 用户消息：{text}
+
+请进行意图分类，并严格按 JSON 输出。"""
+
+    try:
+        raw_response = _get_chat_intent_llm().chat(system_prompt, user_prompt, [])
+        result = extract_json(raw_response)
+    except Exception:
+        return None
+
+    intent = str(result.get("intent", "chat")).strip().lower()
+    target = str(result.get("target", "none")).strip().lower()
+    confidence = result.get("confidence", 0)
+    try:
+        confidence_value = float(confidence)
+    except (TypeError, ValueError):
+        confidence_value = 0.0
+
+    feedback = str(result.get("feedback", "")).strip()
+    reason = str(result.get("reason", "")).strip()
+
+    if intent == "revise":
+        if target not in {"report", "review"}:
+            target = "review" if view_mode == "review" else "report"
+        if confidence_value < 0.6:
+            return {"intent": "clarify", "target": "none", "feedback": "", "reason": reason}
+        return {
+            "intent": "revise",
+            "target": target,
+            "feedback": feedback or text,
+            "reason": reason,
+            "source": "ai",
+        }
+
+    if intent == "clarify":
+        return {"intent": "clarify", "target": "none", "feedback": "", "reason": reason, "source": "ai"}
+
+    return None
 
 
 @app.post("/api/sessions/{session_id}/chat")
@@ -966,14 +1042,27 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
                 "source": "confirmed",
             }
         else:
-            revision = _parse_chat_revision(message, payload.view_mode)
+            revision = _parse_explicit_chat_revision(message, payload.view_mode)
+            if not revision:
+                revision = _infer_chat_revision_ai(session, message, payload.view_mode, payload.current_paper_id)
+
+    if revision and revision.get("intent") == "clarify":
+        return {
+            "reply": "我还不能确定你是不是在请求修改内容。你可以直接说出要改哪里，或者用 /修订 + 修改意见 明确告诉我。",
+            "note": revision.get("reason", "需要你进一步澄清修改意图。"),
+            "action_taken": False,
+            "action": "clarify_revision",
+            "confirmation_required": False,
+            "session_state": session.get("state", ""),
+            "session_state_label": STATE_LABELS.get(session.get("state", ""), session.get("state", "")),
+        }
 
     if revision:
         target = revision["target"]
         feedback = revision["feedback"]
         source = revision.get("source", "explicit")
 
-        if source == "semantic":
+        if source == "semantic" or source == "ai":
             return {
                 "reply": "我判断你这条消息像是在请求修改内容。请在对话里确认后再执行，我会按你的确认内容进行修订。",
                 "note": "已识别到修改意图，等待你确认后执行。",
