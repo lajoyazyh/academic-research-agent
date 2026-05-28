@@ -449,6 +449,9 @@ class ChatMessageRequest(BaseModel):
     view_mode: str = "summary"
     chat_mode: str = "normal"
     current_paper_id: str | None = None
+    confirmed_revision: bool = False
+    revision_target: str | None = None
+    revision_feedback: str | None = None
 
 
 class ChatMessageResponse(BaseModel):
@@ -914,7 +917,7 @@ def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | Non
     }
 
 
-def _parse_chat_revision(message: str, view_mode: str) -> tuple[str, str] | None:
+def _parse_chat_revision(message: str, view_mode: str) -> dict[str, str] | None:
     text = (message or "").strip()
     if not text:
         return None
@@ -928,9 +931,9 @@ def _parse_chat_revision(message: str, view_mode: str) -> tuple[str, str] | None
             raw_target = target_match.group(1).lower()
             target = "review" if raw_target in ("综述", "review") else "report"
             return target, target_match.group(2).strip()
-        return ("review" if view_mode == "review" else "report"), content
+        return {"target": "review" if view_mode == "review" else "report", "feedback": content, "source": "explicit"}
 
-    revision_keywords = re.compile(r"(修订|修改|重写|润色|改写|完善|优化|补充|调整)")
+    revision_keywords = re.compile(r"(修订|修改|重写|润色|改写|完善|优化|补充|调整|删除|去掉|移除|删掉|剔除)")
     target_hint = re.compile(r"(笔记|综述|草稿|这一段|这一节|当前内容|内容)")
     question_hint = re.compile(r"(为什么|是什么|如何|怎么|能否|可以吗|请问|解释|分析)")
 
@@ -938,7 +941,7 @@ def _parse_chat_revision(message: str, view_mode: str) -> tuple[str, str] | None
     if not has_revision_signal or question_hint.search(text):
         return None
 
-    return ("review" if view_mode == "review" else "report"), text
+    return {"target": "review" if view_mode == "review" else "report", "feedback": text, "source": "semantic"}
 
 
 @app.post("/api/sessions/{session_id}/chat")
@@ -954,10 +957,37 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
 
     revision = None
     if payload.chat_mode == "agent":
-        revision = _parse_chat_revision(message, payload.view_mode)
+        if payload.confirmed_revision:
+            if not payload.revision_target or not payload.revision_feedback:
+                raise HTTPException(status_code=400, detail="确认修改时必须提供 revision_target 和 revision_feedback")
+            revision = {
+                "target": payload.revision_target,
+                "feedback": payload.revision_feedback,
+                "source": "confirmed",
+            }
+        else:
+            revision = _parse_chat_revision(message, payload.view_mode)
 
     if revision:
-        target, feedback = revision
+        target = revision["target"]
+        feedback = revision["feedback"]
+        source = revision.get("source", "explicit")
+
+        if source == "semantic":
+            return {
+                "reply": "我判断你这条消息像是在请求修改内容。请在对话里确认后再执行，我会按你的确认内容进行修订。",
+                "note": "已识别到修改意图，等待你确认后执行。",
+                "action_taken": False,
+                "action": "confirm_revision",
+                "confirmation_required": True,
+                "pending_revision": {
+                    "target": target,
+                    "feedback": feedback,
+                },
+                "session_state": session.get("state", ""),
+                "session_state_label": STATE_LABELS.get(session.get("state", ""), session.get("state", "")),
+            }
+
         if target == "review":
             session_mgr.save_feedback(session_id, feedback)
             result = run_write_phase(
@@ -974,6 +1004,7 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
                 "note": "综述修订已完成。",
                 "action_taken": True,
                 "action": "revise_review",
+                "confirmation_required": False,
                 "session_state": fresh_session.get("state", ""),
                 "session_state_label": STATE_LABELS.get(fresh_session.get("state", ""), fresh_session.get("state", "")),
                 "draft": result.get("draft", fresh_session.get("draft", "")),
@@ -997,6 +1028,7 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
             "note": "笔记修订已完成。",
             "action_taken": True,
             "action": "revise_notes",
+            "confirmation_required": False,
             "session_state": fresh_session.get("state", ""),
             "session_state_label": STATE_LABELS.get(fresh_session.get("state", ""), fresh_session.get("state", "")),
             "notes": revise_result.get("notes", ""),
@@ -1008,6 +1040,7 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
         "note": reply_data.get("note", ""),
         "action_taken": False,
         "action": "chat",
+        "confirmation_required": False,
         "session_state": session.get("state", ""),
         "session_state_label": STATE_LABELS.get(session.get("state", ""), session.get("state", "")),
     }

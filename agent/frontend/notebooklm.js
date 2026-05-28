@@ -6,6 +6,7 @@ const notebooklm = {
     currentPaperId: null,
     currentViewMode: "summary",
     chatMode: "normal",
+    pendingRevision: null,
     chatMessages: [],
     pollTimer: null,
     pendingSeedKeywords: "",
@@ -2043,6 +2044,23 @@ const notebooklm = {
         throw new Error(data.detail || data.message || "发送失败");
       }
 
+      if (data.confirmation_required) {
+        this.state.pendingRevision = data.pending_revision || null;
+        this.appendChatMessage(
+          "agent",
+          data.reply || "我判断你这条消息像是要修改内容，请确认后再执行。",
+          this.state.currentViewMode,
+          data.note || "",
+          [
+            { label: "确认", variant: "primary", onClick: () => this.confirmPendingRevision() },
+            { label: "取消", variant: "secondary", onClick: () => this.cancelPendingRevision() },
+          ],
+        );
+        this.renderChatContext();
+        return;
+      }
+
+      this.state.pendingRevision = null;
       this.appendChatMessage("agent", data.reply || "已收到。", this.state.currentViewMode, data.note || "");
       if (data.action_taken) {
         await this.reloadCurrentSession();
@@ -2057,145 +2075,99 @@ const notebooklm = {
     }
   },
 
-  parseRevisionCommand(message) {
-    const trimmed = (message || "").trim();
-    if (!trimmed.startsWith("/修订")) {
-      return null;
-    }
-
-    const content = trimmed.replace(/^\/修订\s*/, "").trim();
-    if (!content) {
-      return null;
-    }
-
-    const targetMatch = content.match(/^(笔记|综述|report|review)\s+(.+)$/i);
-    if (targetMatch) {
-      const rawTarget = targetMatch[1].toLowerCase();
-      const target = (rawTarget === "综述" || rawTarget === "review") ? "review" : "report";
-      return { target, feedback: targetMatch[2].trim() };
-    }
-
-    return {
-      target: this.state.currentViewMode === "review" ? "review" : "report",
-      feedback: content,
-    };
-  },
-
-  inferRevisionIntent(message) {
-    const text = (message || "").trim();
-    if (!text) {
-      return null;
-    }
-
-    const revisionKeywords = /(修订|修改|重写|润色|改写|完善|优化|补充|调整)/;
-    const targetHint = /(笔记|综述|草稿|这一段|这一节|当前内容|内容)/;
-    const questionHint = /(为什么|是什么|如何|怎么|能否|可以吗|请问|解释|分析)/;
-
-    const hasRevisionSignal = revisionKeywords.test(text) || (this.state.currentViewMode !== "summary" && targetHint.test(text));
-    if (!hasRevisionSignal || questionHint.test(text)) {
-      return null;
-    }
-
-    const target = this.state.currentViewMode === "review" ? "review" : "report";
-    return { target, feedback: text };
-  },
-
-  async handleRevisionMessage(target, feedback) {
-    if (!feedback) {
-      alert("请在 /修订 后补充修改意见");
+  async confirmPendingRevision() {
+    const pending = this.state.pendingRevision;
+    if (!pending) {
+      alert("当前没有待确认的修改请求");
       return;
     }
+    await this.executeConfirmedRevision(pending.target, pending.feedback);
+  },
 
-    if (!this.state.currentSessionId) return;
+  cancelPendingRevision() {
+    this.state.pendingRevision = null;
+    this.appendChatMessage("agent", "已取消本次修改请求。", this.state.currentViewMode, "你可以继续提问，或重新发起修改。");
+    this.renderChatContext();
+  },
 
-    if (target === "review") {
-      try {
-        this.setConsoleStatus("writing", "正在根据反馈修订综述...");
-        await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/feedback`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ feedback }),
-        });
-        await this.runWritePhase();
-      } catch (error) {
-        alert(`综述修订失败：${error.message}`);
-      }
+  async executeConfirmedRevision(target, feedback) {
+    if (!feedback || !this.state.currentSessionId) {
       return;
     }
 
     try {
-      this.setConsoleStatus("writing", "正在根据反馈修订笔记...");
-      const topic = this.state.currentSession?.topic || "未知主题";
-      const paper_id = this.state.currentPaperId;
-      const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/notes/revise`, {
+      this.setConsoleStatus("writing", target === "review" ? "正在修订综述..." : "正在修订笔记...");
+      const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, feedback, paper_id }),
+        body: JSON.stringify({
+          message: "确认修改",
+          view_mode: this.state.currentViewMode,
+          chat_mode: "agent",
+          current_paper_id: this.state.currentPaperId,
+          confirmed_revision: true,
+          revision_target: target,
+          revision_feedback: feedback,
+        }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.detail || "笔记修订失败");
+        throw new Error(data.detail || data.message || "执行修改失败");
       }
-      await this.reloadCurrentSession();
-      this.setConsoleStatus("reviewing_notes", "笔记修订完成，请查看");
-      this.appendChatMessage("agent", data.notes ? "已完成笔记修订。" : "笔记已更新。", this.state.currentViewMode);
+
+      this.state.pendingRevision = null;
+      this.appendChatMessage("agent", data.reply || "修订已完成。", this.state.currentViewMode, data.note || "");
+      if (data.action_taken) {
+        await this.reloadCurrentSession();
+        if (data.session_state) {
+          this.setConsoleStatus(data.session_state, data.session_state_label || data.session_state);
+        }
+      }
+      this.renderChatContext();
     } catch (error) {
-      alert(`笔记修订失败：${error.message}`);
+      this.appendChatMessage("agent", `执行修改失败：${error.message}`, this.state.currentViewMode, "请稍后重试。");
+      this.setConsoleStatus("error", `修改执行失败：${error.message}`);
     }
   },
 
-  generateChatReply(message) {
-    const paper = this.getCurrentPaper();
-    const session = this.state.currentSession || {};
-    const mode = this.state.currentViewMode;
-
-    // ━━━ 综述模式：可基于选中论文+综述回答，可请求修订 ━━━
-    if (mode === "review") {
-      const acceptedPapers = (session.papers || []).filter(p => p.status === "accepted");
-      const acceptedNames = acceptedPapers.map(p => p.title || p.paper_id).join("、");
-      const draftSummary = (session.draft || "").slice(0, 200);
-      return {
-        text: `根据当前综述草稿和 ${acceptedPapers.length} 篇已选论文（${acceptedNames || "暂无"}），关于「${message}」：我建议你明确要修改的章节或段落，然后将修改意见压缩为 3-5 条可执行建议。你可以点击应用修改按钮让我基于反馈重新生成综述。`,
-        note: "综述模式：可点击应用修改按钮把本条建议写入反馈并重新生成综述。",
-      };
-    }
-    
-    // ━━━ 笔记(report)模式：可请求修订 ━━━
-    if (mode === "report") {
-      return {
-        text: `收到你对笔记的修改意见：「${message}」。你可以点击应用修改按钮让我基于反馈对现有研究笔记进行修订。`,
-        note: "笔记模式：可点击应用修改按钮把本条建议写入反馈并修订当前笔记。",
-      };
-    }
-
-    // ━━━ 摘要模式：仅回答当前论文内容，不可修改 ━━━
-    const currentName = paper?.title || paper?.paper_id || session.topic || "当前论文";
-    const modeLabel = "摘要";
-    return {
-      text: `针对「${currentName}」的${modeLabel}内容回答：「${message}」。该论文来源为 ${paper?.source || "当前主题来源"}。你可以切换到笔记视图或综述视图进行修改。`,
-      note: `当前为${modeLabel}模式，仅回答当前论文内容，不可在此模式下修改内容。`,
-    };
-  },
-
-  appendChatMessage(role, text, mode, note = "") {
+  appendChatMessage(role, text, mode, note = "", actions = []) {
     if (!this.els.chatList) return;
     const msg = document.createElement("div");
     msg.className = "chat-msg";
     const roleLabel = role === "user" ? "你" : "AI";
     const noteHtml = note ? `<span style="font-size:11px;color:var(--subtle);display:block">${this.escapeHtml(note)}</span>` : "";
-    msg.innerHTML = `<span class="chat-role">${roleLabel}</span><span>${noteHtml}${this.escapeHtml(text)}</span>`;
+    const body = document.createElement("span");
+    body.innerHTML = `${noteHtml}${this.escapeHtml(text)}`;
+    msg.innerHTML = `<span class="chat-role">${roleLabel}</span>`;
+    msg.appendChild(body);
+
+    if (Array.isArray(actions) && actions.length > 0) {
+      const actionRow = document.createElement("div");
+      actionRow.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;";
+      actions.forEach((action) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `tiny-btn ${action.variant === "primary" ? "is-active" : ""}`.trim();
+        button.textContent = action.label;
+        button.addEventListener("click", action.onClick);
+        actionRow.appendChild(button);
+      });
+      msg.appendChild(actionRow);
+    }
+
     this.els.chatList.appendChild(msg);
     this.els.chatList.scrollTop = this.els.chatList.scrollHeight;
   },
 
   async applyReviewFeedback() {
-    const feedback = this.state.lastReviewFeedback || this.els.chatInput?.value.trim() || "";
+    const feedback = this.state.pendingRevision?.feedback || this.state.lastReviewFeedback || this.els.chatInput?.value.trim() || "";
     if (!feedback) {
       alert("请先输入一条修改建议");
       return;
     }
 
-    await this.handleRevisionMessage(this.state.currentViewMode === "review" ? "review" : "report", feedback);
+    const target = this.state.pendingRevision?.target || (this.state.currentViewMode === "review" ? "review" : "report");
+    await this.executeConfirmedRevision(target, feedback);
   },
 
   loadThemePreference() {
