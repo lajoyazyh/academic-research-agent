@@ -230,13 +230,12 @@ html, body {
   z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-right: 20px;
+  justify-content: center;
 }
 .resize-handle::before {
   content: "";
   position: absolute;
-  inset: -4px 0;
+  inset: -6px 0 -4px 0;
 }
 .resize-handle span {
   width: 40px;
@@ -244,8 +243,12 @@ html, body {
   border-radius: 2px;
   background: var(--muted);
   transition: background .15s, width .15s;
+  flex-shrink: 0;
 }
-.resize-handle:hover span,
+.resize-handle:hover span {
+  background: var(--accent);
+  width: 56px;
+}
 .resize-handle.active span {
   background: var(--accent);
   width: 56px;
@@ -254,17 +257,13 @@ html, body {
 /* ====== Chat Dock ====== */
 .chat-dock {
   flex-shrink: 0;
-  height: 52px;
-  min-height: 52px;
+  height: 160px;
+  min-height: 160px;
   max-height: 60vh;
   overflow: hidden;
   border-top: 1px solid var(--line);
   background: var(--chat-bg);
   display: flex; flex-direction: column;
-  transition: height .2s;
-}
-.chat-dock.expanded {
-  height: 320px;
 }
 .chat-messages {
   flex: 1;
@@ -272,11 +271,10 @@ html, body {
   overflow-y: auto;
   padding: 10px 20px;
   font-size: 13px;
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.chat-dock.expanded .chat-messages { display: flex; }
 .chat-msg { display: flex; gap: 8px; padding: 8px 12px; background: var(--msg-bg); border-radius: 12px; border: 1px solid var(--line); }
 .chat-role { font-weight: 600; color: var(--accent); flex-shrink: 0; }
 .chat-bar { padding: 10px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }

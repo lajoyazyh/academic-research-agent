@@ -713,9 +713,6 @@ const notebooklm = {
     const chatDock = document.querySelector(".chat-dock");
     if (!resizeHandle || !chatDock) return;
 
-    // 默认折叠到底部
-    chatDock.classList.remove("expanded");
-
     let isResizing = false;
     let startY = 0;
     let startHeight = 0;
@@ -726,19 +723,13 @@ const notebooklm = {
       startHeight = chatDock.getBoundingClientRect().height;
       resizeHandle.classList.add("active");
       document.body.style.cursor = "row-resize";
-      if (!chatDock.classList.contains("expanded")) {
-        chatDock.classList.add("expanded");
-        chatDock.style.height = "320px";
-        startHeight = 320;
-      }
-      e.preventDefault(); // 防止选中文本
+      e.preventDefault();
     });
 
     document.addEventListener("mousemove", (e) => {
       if (!isResizing) return;
       const dy = startY - e.clientY;
       const newHeight = startHeight + dy;
-      // 限制最小和最大高度 (min 160, max 80vh)
       if (newHeight >= 160 && newHeight <= window.innerHeight * 0.8) {
         chatDock.style.height = `${newHeight}px`;
       }
@@ -749,19 +740,6 @@ const notebooklm = {
         isResizing = false;
         resizeHandle.classList.remove("active");
         document.body.style.cursor = "";
-      }
-    });
-
-    // 点击拖拽手柄也可展开/折叠
-    resizeHandle.addEventListener("click", () => {
-      const dock = document.querySelector(".chat-dock");
-      if (!dock) return;
-      if (dock.classList.contains("expanded")) {
-        dock.classList.remove("expanded");
-        dock.style.height = "";
-      } else {
-        dock.classList.add("expanded");
-        dock.style.height = "320px";
       }
     });
   },
@@ -2047,10 +2025,9 @@ const notebooklm = {
     const message = this.els.chatInput.value.trim();
     if (!message) return;
 
-    // 自动展开聊天区
+    // 自动展开聊天区（如果太小则拉起来）
     const dock = document.querySelector(".chat-dock");
-    if (dock && !dock.classList.contains("expanded")) {
-      dock.classList.add("expanded");
+    if (dock && dock.getBoundingClientRect().height < 200) {
       dock.style.height = "320px";
     }
 
