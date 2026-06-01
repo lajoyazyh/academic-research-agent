@@ -937,8 +937,6 @@ const notebooklm = {
           this.renderChatContext();
         });
       }
-      // 异步加载收藏状态
-      this._renderFavButton(outputFile, topic);
     } else {
       this.els.reviewBlock.innerHTML = `
         <div class="panel-block-head">
