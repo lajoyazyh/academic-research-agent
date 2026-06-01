@@ -1036,8 +1036,8 @@ const notebooklm = {
     let contentHtml = "";
     if (this.state.isEditingReport) {
       contentHtml = `
-        <textarea id="reportEditArea" class="chat-input" style="width: 100%; min-height: 400px; padding: 12px; margin-bottom: 12px; font-family: monospace; line-height: 1.5;" placeholder="编辑笔记内容...">${this.escapeHtml(notes)}</textarea>
-        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <div id="reportEditArea" style="display:none;">${this.escapeHtml(notes)}</div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
           <button class="secondary-btn" onclick="notebooklm.cancelEditReport()">取消</button>
           <button class="primary-btn" onclick="notebooklm.saveEditReport()">保存</button>
         </div>
@@ -1083,8 +1083,8 @@ const notebooklm = {
     let contentHtml = "";
     if (this.state.isEditingReview) {
       contentHtml = `
-        <textarea id="reviewEditArea" class="chat-input" style="width: 100%; min-height: 400px; padding: 12px; margin-bottom: 12px; font-family: monospace; line-height: 1.5;" placeholder="编辑综述内容...">${this.escapeHtml(editContent)}</textarea>
-        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <div id="reviewEditArea" style="display:none;">${this.escapeHtml(editContent)}</div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
           <button class="secondary-btn" onclick="notebooklm.cancelEditReview()">取消</button>
           <button class="primary-btn" onclick="notebooklm.saveEditReview()">保存</button>
         </div>
@@ -1117,29 +1117,34 @@ const notebooklm = {
   },
 
   startEditReport() {
-    this.state.isEditingReport = true;
     const paper = this.getCurrentPaper();
     const session = this.state.currentSession;
-    this.state.reportEditText = paper?.notes || session?.notes || "";
+    const rawNotes = paper?.notes || session?.notes || "";
+
+    this.state.isEditingReport = true;
+    this.state.reportEditText = rawNotes;
     this.renderDetailPanel();
+
+    // 延迟初始化 Vditor（等 DOM 渲染完）
+    setTimeout(() => this._initVditor("reportEditArea", rawNotes), 50);
   },
 
   cancelEditReport() {
+    this._destroyVditor("reportEditArea");
     this.state.isEditingReport = false;
     this.state.reportEditText = "";
     this.renderDetailPanel();
   },
 
   async saveEditReport() {
-    const area = document.getElementById("reportEditArea");
-    if (!area) return;
-    const newNotes = area.value;
+    const vditor = this._vditors?.reportEditArea;
+    const newNotes = vditor ? vditor.getValue() : "";
     const sessionId = this.state.currentSessionId;
     const paperId = this.state.currentPaperId;
     if (!sessionId) return;
-    
+
     this.els.detailContent.innerHTML = '<div class="loading-state">保存中...</div>';
-    
+
     try {
       const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/notes`, {
         method: "PUT",
@@ -1147,7 +1152,8 @@ const notebooklm = {
         body: JSON.stringify({ content: newNotes, version_note: "User manual edit", paper_id: paperId }),
       });
       if (!response.ok) throw new Error("保存失败");
-      
+
+      this._destroyVditor("reportEditArea");
       await this.reloadCurrentSession();
       this.state.isEditingReport = false;
       this.state.reportEditText = "";
@@ -1159,30 +1165,33 @@ const notebooklm = {
   },
 
   startEditReview() {
-    this.state.isEditingReview = true;
     const session = this.state.currentSession;
     let draft = session?.draft || session?.notes || "";
     draft = draft.replace(/```markdown\s*\n([\s\S]*?)```/g, '$1');
     draft = draft.replace(/```markdown\s*\n([\s\S]*?)(\n---|\n## (?!##)|$)/, '$1$2');
+
+    this.state.isEditingReview = true;
     this.state.reviewEditText = draft;
     this.renderDetailPanel();
+
+    setTimeout(() => this._initVditor("reviewEditArea", draft), 50);
   },
 
   cancelEditReview() {
+    this._destroyVditor("reviewEditArea");
     this.state.isEditingReview = false;
     this.state.reviewEditText = "";
     this.renderDetailPanel();
   },
 
   async saveEditReview() {
-    const area = document.getElementById("reviewEditArea");
-    if (!area) return;
-    const newDraft = area.value;
+    const vditor = this._vditors?.reviewEditArea;
+    const newDraft = vditor ? vditor.getValue() : "";
     const sessionId = this.state.currentSessionId;
     if (!sessionId) return;
-    
+
     this.els.detailContent.innerHTML = '<div class="loading-state">保存中...</div>';
-    
+
     try {
       const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/draft`, {
         method: "PUT",
@@ -1190,7 +1199,8 @@ const notebooklm = {
         body: JSON.stringify({ content: newDraft }),
       });
       if (!response.ok) throw new Error("保存失败");
-      
+
+      this._destroyVditor("reviewEditArea");
       await this.reloadCurrentSession();
       this.state.isEditingReview = false;
       this.state.reviewEditText = "";
@@ -1201,7 +1211,56 @@ const notebooklm = {
     }
   },
 
+  // ━━━ Vditor 初始化/销毁 ━━━
+  _vditors: {},
+
+  _initVditor(id, content) {
+    if (typeof Vditor === "undefined") return;
+    this._destroyVditor(id);
+
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = "none";
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "editor-container";
+    wrapper.id = id + "_vditor";
+    el.parentNode.insertBefore(wrapper, el);
+
+    this._vditors[id] = new Vditor(wrapper, {
+      height: Math.max(400, window.innerHeight * 0.45),
+      mode: "ir",
+      value: content,
+      placeholder: "开始编辑...",
+      toolbar: [
+        "headings", "bold", "italic", "strike", "|",
+        "list", "ordered-list", "check", "|",
+        "quote", "code", "inline-code", "|",
+        "undo", "redo", "|",
+        { name: "save", tip: "保存 (Ctrl+S)", className: "right", icon: '<i class="fa-solid fa-floppy-disk"></i>', click: () => this.saveEditReport() },
+      ],
+      cache: { enable: false },
+      after: () => {
+        wrapper.querySelector(".vditor-reset")?.setAttribute("spellcheck", "false");
+      },
+    });
+  },
+
+  _destroyVditor(id) {
+    if (this._vditors[id]) {
+      try { this._vditors[id].destroy(); } catch(e) {}
+      delete this._vditors[id];
+    }
+    const wrapper = document.getElementById(id + "_vditor");
+    if (wrapper) wrapper.remove();
+    const el = document.getElementById(id);
+    if (el) el.style.display = "";
+  },
+
   switchViewMode(mode) {
+    // 切换视图前销毁编辑器
+    this._destroyVditor("reportEditArea");
+    this._destroyVditor("reviewEditArea");
     this.state.isEditingReport = false;
     this.state.isEditingReview = false;
     this.state.currentViewMode = mode;

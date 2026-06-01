@@ -178,6 +178,20 @@ html, body {
 .mini-btn.remove { color: var(--danger); }
 .mini-btn.remove:hover { background: var(--red-light); }
 
+/* ====== Vditor inline editor ====== */
+.vditor-reset { font-size: 14px; line-height: 1.8; color: var(--text); }
+.vditor-reset h1, .vditor-reset h2, .vditor-reset h3 { margin-top: 1.2em; margin-bottom: .5em; font-weight: 500; border-bottom: none; }
+.vditor-reset h2 { font-size: 17px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+.vditor-reset p { margin: .6em 0; }
+.vditor-reset pre { background: var(--code-bg); border-radius: 10px; border: 1px solid var(--line); }
+.editor-container { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
+.editor-toolbar { display: flex; align-items: center; gap: 4px; padding: 6px 10px; background: var(--hover-bg); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.editor-toolbar button { 
+  background: transparent; border: none; color: var(--subtle); cursor: pointer; 
+  padding: 4px 8px; border-radius: 4px; font-size: 13px; 
+}
+.editor-toolbar button:hover { background: var(--accent-light); color: var(--accent); }
+
 /* ====== Chip ====== */
 .chip { display: inline-flex; align-items: center; gap: 4px; border-radius: 12px; padding: 2px 8px; font-size: 11px; background: var(--hover-bg); color: var(--subtle); }
 .chip.ok { background: var(--green-light); color: var(--success); }
