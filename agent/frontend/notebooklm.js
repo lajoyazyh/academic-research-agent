@@ -713,6 +713,9 @@ const notebooklm = {
     const chatDock = document.querySelector(".chat-dock");
     if (!resizeHandle || !chatDock) return;
 
+    // 默认折叠到底部
+    chatDock.classList.remove("expanded");
+
     let isResizing = false;
     let startY = 0;
     let startHeight = 0;
@@ -723,6 +726,11 @@ const notebooklm = {
       startHeight = chatDock.getBoundingClientRect().height;
       resizeHandle.classList.add("active");
       document.body.style.cursor = "row-resize";
+      if (!chatDock.classList.contains("expanded")) {
+        chatDock.classList.add("expanded");
+        chatDock.style.height = "320px";
+        startHeight = 320;
+      }
       e.preventDefault(); // 防止选中文本
     });
 
@@ -741,6 +749,19 @@ const notebooklm = {
         isResizing = false;
         resizeHandle.classList.remove("active");
         document.body.style.cursor = "";
+      }
+    });
+
+    // 点击拖拽手柄也可展开/折叠
+    resizeHandle.addEventListener("click", () => {
+      const dock = document.querySelector(".chat-dock");
+      if (!dock) return;
+      if (dock.classList.contains("expanded")) {
+        dock.classList.remove("expanded");
+        dock.style.height = "";
+      } else {
+        dock.classList.add("expanded");
+        dock.style.height = "320px";
       }
     });
   },
@@ -1342,16 +1363,14 @@ const notebooklm = {
     const modeIcon = this.state.chatMode === "agent" ? "fa-wand-magic-sparkles" : "fa-comment-dots";
 
     this.els.chatContext.innerHTML = `
-      <span class="chip"><i class="fa-solid ${modeIcon}"></i> ${modeLabel}</span>
+      <span class="chip chat-mode-chip" title="${this.state.chatMode === "agent" ? "切换到对话模式" : "切换到 Agent 模式"}"><i class="fa-solid ${modeIcon}"></i> ${modeLabel}</span>
       <span class="chip"><i class="fa-solid fa-sparkles"></i> ${this.escapeHtml(label)}</span>
     `;
-    if (this.els.chatModeToggle) {
-      this.els.chatModeToggle.innerHTML = this.state.chatMode === "agent"
-        ? '<i class="fa-solid fa-wand-magic-sparkles"></i> Agent 开启'
-        : '<i class="fa-solid fa-comment-dots"></i> 对话模式';
-      this.els.chatModeToggle.classList.toggle("is-active", this.state.chatMode === "agent");
-      this.els.chatModeToggle.setAttribute("aria-pressed", this.state.chatMode === "agent" ? "true" : "false");
-      this.els.chatModeToggle.title = this.state.chatMode === "agent" ? "关闭 Agent 模式" : "开启 Agent 模式";
+
+    // 让模式 chip 可点击切换
+    const modeChip = this.els.chatContext.querySelector(".chat-mode-chip");
+    if (modeChip) {
+      modeChip.addEventListener("click", () => this.toggleChatMode());
     }
   },
 
@@ -2027,6 +2046,13 @@ const notebooklm = {
     if (!this.els.chatInput) return;
     const message = this.els.chatInput.value.trim();
     if (!message) return;
+
+    // 自动展开聊天区
+    const dock = document.querySelector(".chat-dock");
+    if (dock && !dock.classList.contains("expanded")) {
+      dock.classList.add("expanded");
+      dock.style.height = "320px";
+    }
 
     this.appendChatMessage("user", message, this.state.currentViewMode);
     this.els.chatInput.value = "";
