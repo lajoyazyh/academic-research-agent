@@ -915,7 +915,8 @@ const notebooklm = {
     const topic = this.state.currentSession?.topic || "综述";
 
     if (hasDraft) {
-      // 有综述 → 只显示标题，点击跳转到右侧综述视图
+      const outputFile = this.state.currentSessionId;
+      // 有综述 → 显示标题 + 收藏按钮
       this.els.reviewBlock.innerHTML = `
         <div class="panel-block-head">
           <strong>📝 综述</strong>
@@ -925,6 +926,7 @@ const notebooklm = {
           <h4 style="margin:0;font-size:0.95rem;color:var(--accent);">${this.escapeHtml(topic)}</h4>
           <span style="font-size:0.82rem;color:var(--subtle);">点击查看完整综述 →</span>
         </div>
+        <div style="margin-top:8px;" id="favBtnArea"></div>
       `;
       const link = document.getElementById("reviewTitleLink");
       if (link) {
@@ -935,6 +937,8 @@ const notebooklm = {
           this.renderChatContext();
         });
       }
+      // 异步加载收藏状态
+      this._renderFavButton(outputFile, topic);
     } else {
       this.els.reviewBlock.innerHTML = `
         <div class="panel-block-head">
@@ -1227,11 +1231,15 @@ const notebooklm = {
     wrapper.id = id + "_vditor";
     el.parentNode.insertBefore(wrapper, el);
 
+    const isDark = document.body.dataset.theme === "dark";
+
     this._vditors[id] = new Vditor(wrapper, {
       height: Math.max(400, window.innerHeight * 0.45),
       mode: "ir",
       value: content,
       placeholder: "开始编辑...",
+      theme: isDark ? "dark" : "classic",
+      cdn: "https://cdn.jsdelivr.net/npm/vditor@3.10.6",
       toolbar: [
         "headings", "bold", "italic", "strike", "|",
         "list", "ordered-list", "check", "|",
@@ -1242,6 +1250,10 @@ const notebooklm = {
       cache: { enable: false },
       after: () => {
         wrapper.querySelector(".vditor-reset")?.setAttribute("spellcheck", "false");
+        if (document.body.dataset.theme === "dark") {
+          const irEl = wrapper.querySelector(".vditor-ir");
+          if (irEl) irEl.style.color = "var(--text, #e8e8e8)";
+        }
       },
     });
   },
@@ -2252,6 +2264,18 @@ const notebooklm = {
     document.body.dataset.theme = isDark ? "" : "dark";
     localStorage.setItem("notebooklm:theme", isDark ? "light" : "dark");
     this.updateThemeIcon();
+    this._syncVditorTheme();
+  },
+
+  _syncVditorTheme() {
+    const isDark = document.body.dataset.theme === "dark";
+    Object.values(this._vditors || {}).forEach(vd => {
+      try { vd.setTheme(isDark ? "dark" : "classic"); } catch(e) {}
+    });
+    // 补丁：深色模式下 IR 编辑区文字颜色
+    document.querySelectorAll(".vditor-ir").forEach(ir => {
+      ir.style.color = isDark ? "var(--text, #e8e8e8)" : "";
+    });
   },
 
   updateThemeIcon() {

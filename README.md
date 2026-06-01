@@ -53,14 +53,11 @@ planning -> plan_confirmed -> searching -> search_complete
 -> reviewing_notes -> writing -> reviewing_draft -> complete
 ```
 
-### 2. 左侧面板双模块
+### 2. 左侧面板
 
 | 模块 | 本质 | 存储位置 | 用途 |
 |------|------|---------|------|
-| ⭐ **收藏夹** | 用户主动收藏的满意综述 | `agent/favorites.json` | 手动收藏/取消收藏；只展示用户认可的结果；可折叠/展开 |
 | 🔄 **会话管理** | 进行中的交互式调研 | `agent/sessions/` | 新建/恢复/删除会话；编辑关键词；审核笔记 |
-
-> 两模块关系：**会话管理是"做研究的地方"，收藏夹是"满意的研究成果档案室"**。浏览综述时点击 ⭐ 即可加入收藏夹。
 
 ### 3. 关键步骤可见化
 - **关键词审核**（✅ 已实现）：Plan 阶段后展示关键词方案，用户可编辑/删除/新增；可随时通过会话旁的 ✏️ 编辑按钮重新修改
@@ -125,14 +122,6 @@ python web_app.py
 | POST | /api/sessions/{id}/run/notes | 执行提取笔记阶段 |
 | POST | /api/sessions/{id}/run/write | 执行撰写阶段 |
 | POST | /api/keywords/extract | 辅助接口：仅提取关键词，不创建会话 |
-
-## 收藏夹 API
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| `GET` | `/api/favorites` | 获取收藏列表 |
-| `POST` | `/api/favorites` | 加入收藏 `{filename, topic}` |
-| `DELETE` | `/api/favorites/{filename}` | 取消收藏 |
 
 ## Agent 断点执行
 

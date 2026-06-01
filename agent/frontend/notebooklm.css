@@ -191,6 +191,10 @@ html, body {
   padding: 4px 8px; border-radius: 4px; font-size: 13px; 
 }
 .editor-toolbar button:hover { background: var(--accent-light); color: var(--accent); }
+/* 深色模式下 Vditor 文字变白 */
+[data-theme="dark"] .vditor-reset { color: var(--text); }
+[data-theme="dark"] .vditor-ir pre,
+[data-theme="dark"] .vditor-ir code { background: var(--code-bg); color: var(--text); }
 
 /* ====== Chip ====== */
 .chip { display: inline-flex; align-items: center; gap: 4px; border-radius: 12px; padding: 2px 8px; font-size: 11px; background: var(--hover-bg); color: var(--subtle); }
