@@ -704,11 +704,6 @@ const notebooklm = {
     this.els.keywordCancel?.addEventListener("click", () => this.closeKeywordModal());
     this.els.keywordAdd?.addEventListener("click", () => this.addKeywordRow());
 
-    // 深色模式切换按钮
-    if (this.els.themeToggle) {
-      this.els.themeToggle.addEventListener("click", () => this.toggleTheme());
-    }
-
     // 初始化对话助手拖拽缩放
     this.initChatResize();
   },
