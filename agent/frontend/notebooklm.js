@@ -68,6 +68,7 @@ const notebooklm = {
     this.els.viewSummary = document.getElementById("viewSummary");
     this.els.viewReport = document.getElementById("viewReport");
     this.els.viewReview = document.getElementById("viewReview");
+    this.els.viewPDF = document.getElementById("viewPDF");
     this.els.viewTrace = document.getElementById("viewTrace");
     this.els.chatList = document.getElementById("chatList");
     this.els.chatInput = document.getElementById("chatInput");
@@ -690,6 +691,7 @@ const notebooklm = {
     this.els.viewSummary?.addEventListener("click", () => this.switchViewMode("summary"));
     this.els.viewReport?.addEventListener("click", () => this.switchViewMode("report"));
     this.els.viewReview?.addEventListener("click", () => this.switchViewMode("review"));
+    this.els.viewPDF?.addEventListener("click", () => this.switchViewMode("pdf"));
     this.els.viewTrace?.addEventListener("click", () => this.switchViewMode("trace"));
     this.els.chatSend?.addEventListener("click", () => this.sendChatMessage());
     this.els.chatModeToggle?.addEventListener("click", () => this.toggleChatMode());
@@ -978,6 +980,8 @@ const notebooklm = {
       html = this.renderPaperReport(paper, session);
     } else if (this.state.currentViewMode === "trace") {
       html = this.renderTraceView(session);
+    } else if (this.state.currentViewMode === "pdf") {
+      html = this.renderPDFView(paper, session);
     } else {
       html = this.renderReviewView(session);
     }
@@ -1285,6 +1289,7 @@ const notebooklm = {
       report: this.els.viewReport,
       review: this.els.viewReview,
       trace: this.els.viewTrace,
+      pdf: this.els.viewPDF,
     };
     const paper = this.getCurrentPaper();
     const hasNotes = paper ? paper._hasNotes : false;
@@ -1297,17 +1302,54 @@ const notebooklm = {
       el.classList.toggle("active", this.state.currentViewMode === mode);
       
       // 动态禁用逻辑：
-      // - "摘要" 和 "轨迹" 始终可用
-      // - "笔记"（报告）：当前论文有笔记时才可用
-      // - "综述"：有综述草稿时才可用
+      // - "PDF"：选中论文且有 paper_id 时才可用
       if (mode === "summary" || mode === "trace") {
         el.disabled = false;
       } else if (mode === "report") {
         el.disabled = !hasNotes;
       } else if (mode === "review") {
         el.disabled = !hasDraft;
+      } else if (mode === "pdf") {
+        el.disabled = !(paper && paper.paper_id);
       }
     });
+  },
+
+  renderPDFView(paper, session) {
+    if (!paper) {
+      return `
+        <div class="detail-hero">
+          <span class="topic-badge"><i class="fa-solid fa-file-pdf"></i> PDF</span>
+          <h3>PDF 预览</h3>
+          <div class="lead">请先从左侧选择一篇论文查看其 PDF。</div>
+        </div>
+      `;
+    }
+
+    const paperId = paper.paper_id || "";
+    const sessionId = session?.session_id || "";
+    const pdfUrl = sessionId
+      ? `/api/agent/document/${encodeURIComponent(sessionId)}/papers/${encodeURIComponent(paperId)}.pdf`
+      : `/api/agent/document/${encodeURIComponent(paperId)}/papers/${encodeURIComponent(paperId)}.pdf`;
+
+    return `
+      <div class="detail-hero">
+        <span class="topic-badge"><i class="fa-solid fa-file-pdf"></i> PDF</span>
+        <h3>${this.escapeHtml(paper.title || paperId)}</h3>
+        <div class="lead">${this.escapeHtml(paper.authors || "")}</div>
+      </div>
+      <div class="panel-block" style="margin-top:16px; height: calc(100vh - 260px); min-height: 500px;">
+        <embed
+          src="${pdfUrl}"
+          type="application/pdf"
+          style="width: 100%; height: 100%; border: none; border-radius: 8px;"
+        ></embed>
+      </div>
+      <div style="margin-top: 8px; text-align: center; font-size: 12px; color: var(--subtle);">
+        <i class="fa-solid fa-circle-info"></i> 如果 PDF 无法显示，该论文可能尚未下载。请先执行检索阶段。
+        &nbsp;<a href="${pdfUrl}" target="_blank" style="color: var(--accent);">在新窗口打开</a>
+      </div>
+    `;
   },
 
   renderTraceView(session) {
