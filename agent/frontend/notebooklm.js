@@ -2145,6 +2145,10 @@ const notebooklm = {
     this.appendChatMessage("user", message, this.state.currentViewMode);
     this.els.chatInput.value = "";
 
+    // 显示"处理中"状态
+    const loadingMsg = this.appendChatMessage("system", "AI 正在处理你的请求...", "", "⏳ 请稍候");
+    let loadingEl = loadingMsg;
+
     try {
       if (!this.state.currentSessionId) {
         throw new Error("当前没有活跃会话");
@@ -2182,7 +2186,21 @@ const notebooklm = {
       }
 
       this.state.pendingRevision = null;
+
+      // 移除"处理中"消息
+      if (loadingEl && loadingEl.parentNode) loadingEl.remove();
+
       this.appendChatMessage("agent", data.reply || "已收到。", this.state.currentViewMode, data.note || "");
+
+      // 展示 RAG 检索状态
+      if (data.rag_status === "used") {
+        this.appendChatMessage("system", "已检索 " + (data.rag_count || 0) + " 个相关段落", "", "📚 基于论文原文生成本次回答");
+      } else if (data.rag_status === "no_results") {
+        this.appendChatMessage("system", "未找到与问题相关的原文段落", "", "📝 回答基于已有笔记和摘要");
+      } else if (data.rag_status === "not_attempted") {
+        // 静默，不显示
+      }
+
       if (data.action_taken) {
         await this.reloadCurrentSession();
         if (data.session_state) {
@@ -2191,6 +2209,7 @@ const notebooklm = {
       }
       this.renderChatContext();
     } catch (error) {
+      if (loadingEl && loadingEl.parentNode) loadingEl.remove();
       this.appendChatMessage("agent", `操作失败：${error.message}`, this.state.currentViewMode, "请检查当前会话和模式设置。");
       this.setConsoleStatus("error", `聊天发送失败：${error.message}`);
     }
@@ -2198,10 +2217,9 @@ const notebooklm = {
 
   async confirmPendingRevision() {
     const pending = this.state.pendingRevision;
-    if (!pending) {
-      alert("当前没有待确认的修改请求");
-      return;
-    }
+    if (!pending) return;
+    // 更新确认/取消按钮为执行中状态
+    this.renderChatContext();
     await this.executeConfirmedRevision(pending.target, pending.feedback);
   },
 
@@ -2209,6 +2227,8 @@ const notebooklm = {
     this.state.pendingRevision = null;
     this.appendChatMessage("agent", "已取消本次修改请求。", this.state.currentViewMode, "你可以继续提问，或重新发起修改。");
     this.renderChatContext();
+    // 延迟刷新按钮
+    setTimeout(() => this.renderChatContext(), 100);
   },
 
   async executeConfirmedRevision(target, feedback) {
@@ -2252,10 +2272,11 @@ const notebooklm = {
   },
 
   appendChatMessage(role, text, mode, note = "", actions = []) {
-    if (!this.els.chatList) return;
+    if (!this.els.chatList) return null;
     const msg = document.createElement("div");
     msg.className = "chat-msg";
-    const roleLabel = role === "user" ? "你" : "AI";
+    if (role === "system") msg.style.opacity = "0.7";
+    const roleLabel = role === "user" ? "你" : role === "system" ? "" : "AI";
     const noteHtml = note ? `<span style="font-size:11px;color:var(--subtle);display:block">${this.escapeHtml(note)}</span>` : "";
     const body = document.createElement("span");
     body.innerHTML = `${noteHtml}${this.escapeHtml(text)}`;
@@ -2270,7 +2291,11 @@ const notebooklm = {
         button.type = "button";
         button.className = `tiny-btn ${action.variant === "primary" ? "is-active" : ""}`.trim();
         button.textContent = action.label;
-        button.addEventListener("click", action.onClick);
+        button.addEventListener("click", (e) => {
+          const row = e.target.closest(".chat-actions") || button.parentNode;
+          if (row && row.classList.contains("chat-actions")) row.remove();
+          action.onClick();
+        });
         actionRow.appendChild(button);
       });
       msg.appendChild(actionRow);
@@ -2278,6 +2303,7 @@ const notebooklm = {
 
     this.els.chatList.appendChild(msg);
     this.els.chatList.scrollTop = this.els.chatList.scrollHeight;
+    return msg;  // 返回 DOM 元素以便调用方移除
   },
 
   async applyReviewFeedback() {

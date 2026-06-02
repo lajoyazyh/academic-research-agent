@@ -117,3 +117,61 @@ class ArxivDownloadPdfTool(BaseTool):
             return f"❌ 下载失败：HTTP {e.code}。该论文可能没有开放 PDF，或下载链接/arXiv ID 有误。"
         except Exception as e:
             return f"❌ 下载失败：{str(e)}"
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  迭代三 RAG 升级：PDF 全量文本提取器
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+def extract_full_text_from_pdf(pdf_path: str, session_id: str = "", paper_id: str = "") -> list[dict]:
+    """
+    从 PDF 文件中提取全量文本，返回段落块列表。
+    每个块是一个 dict：
+    {
+        "paper_id": 论文 ID,
+        "page": 页码 (1-based),
+        "chunk_idx": 块序号,
+        "text": 段落文本
+    }
+    """
+    try:
+        import fitz
+    except ImportError:
+        return []
+
+    try:
+        doc = fitz.open(pdf_path)
+    except Exception:
+        return []
+
+    blocks = []
+    total_pages = len(doc)
+    for page_num in range(total_pages):
+        text = doc[page_num].get_text("text").strip()
+        if not text:
+            continue
+        # 按段落分块
+        paragraphs = [p.strip() for p in text.split("\n\n") if len(p.strip()) > 40]
+        for chunk_idx, para in enumerate(paragraphs):
+            blocks.append({
+                "paper_id": paper_id,
+                "page": page_num + 1,
+                "chunk_idx": chunk_idx,
+                "text": para,
+            })
+    doc.close()
+    return blocks
+
+
+def extract_all_session_pdfs(session_id: str, papers_dir: str) -> list[dict]:
+    """
+    提取某 Session 中所有 PDF 的全量文本，返回统一的段落块列表。
+    """
+    import glob
+    all_blocks = []
+    pattern = os.path.join(papers_dir, "*.pdf")
+    for pdf_path in glob.glob(pattern):
+        paper_id = os.path.splitext(os.path.basename(pdf_path))[0]
+        blocks = extract_full_text_from_pdf(pdf_path, session_id, paper_id)
+        all_blocks.extend(blocks)
+    return all_blocks

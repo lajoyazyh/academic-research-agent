@@ -909,6 +909,7 @@ def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | Non
         return {
             "reply": f"根据当前综述草稿和 {accepted_count} 篇已选论文（{accepted_names or '暂无'}），请明确要修改的章节或段落，并将修改意见压缩为 3-5 条可执行建议。",
             "note": "综述模式：可直接输入 /修订 + 修改意见 触发综述重写。",
+            "rag_status": "not_attempted",
         }
 
     if view_mode == "report":
@@ -916,12 +917,14 @@ def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | Non
         return {
             "reply": f"收到你对「{current_name}」笔记的修改意见。你可以直接输入 /修订 + 修改意见，让系统基于反馈修订当前笔记。",
             "note": "笔记模式：可直接输入 /修订 + 修改意见 触发笔记修订。",
+            "rag_status": "not_attempted",
         }
 
     current_name = (paper or {}).get("title") or (paper or {}).get("paper_id") or session.get("topic", "当前主题")
     return {
         "reply": f"针对「{current_name}」的摘要内容，我可以继续回答你的问题。若要修改内容，请切换到笔记或综述视图后使用 Agent 模式和 /修订 指令。",
         "note": "当前为摘要模式，仅回答当前论文内容。",
+        "rag_status": "not_attempted",
     }
 
 
@@ -944,11 +947,39 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
         [p.get("title") or p.get("paper_id", "") for p in session.get("papers", []) if p.get("status") == "accepted"]
     )
 
+    # ━━━ 迭代三 RAG 升级：BM25 检索 PDF 原文段落 ━━━
+    rag_context = ""
+    _sid = session.get("session_id", "")
+    if _sid:
+        try:
+            from tools.retriever import search_session_papers
+            _papers_dir = str(SESSIONS_DIR / _sid / "papers")
+            passages = search_session_papers(_sid, _papers_dir, message, top_k=5)
+            if passages:
+                rag_parts = []
+                for p in passages:
+                    paper_id = p.get("paper_id", "")
+                    page = p.get("page", "?")
+                    title = ""
+                    for pp in session.get("papers", []):
+                        if pp.get("paper_id") == paper_id:
+                            title = pp.get("title", "")[:60]
+                            break
+                    source = f"{title or paper_id} (第{page}页)"
+                    rag_parts.append(f"【{source}】\n{p['text']}")
+                rag_context = "\n\n---\n\n".join(rag_parts)
+        except Exception:
+            pass
+    
+    # 检查是否有 PDF 文件
+    has_pdfs = _sid and (SESSIONS_DIR / _sid / "papers").exists() and any((SESSIONS_DIR / _sid / "papers").glob("*.pdf"))
+
     system_prompt = """你是一个严谨、简洁的中文学术助理。
 你的任务是围绕当前论文、笔记或综述草稿，直接回答用户的问题。
 
 要求：
 - 只能基于给定上下文回答，不要编造未提供的信息。
+- 如果有"检索到的原文段落"，优先引用原文内容回答问题，并标注来源（论文标题+页码）。
 - 如果上下文不足，明确说明无法从当前材料判断，并给出下一步建议。
 - 用户是在提问或解释时，优先回答问题本身，不要输出修改入口提示。
 - 回答要自然、直接、简洁，默认 3-6 句；如果用户要求展开，可以适度加长。
@@ -964,20 +995,32 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
 {current_abstract or '无'}
 
 当前研究笔记（如有）：
-{current_notes[:4000] or '无'}
+{current_notes[:2000] or '无'}
 
 当前综述草稿（如有）：
-{current_draft[:4000] or '无'}
+{current_draft[:2000] or '无'}
+
+【从论文 PDF 中检索到的原文段落】
+{rag_context or '（无相关检索结果）'}
 
 用户问题：{message}
 
-请直接回答用户问题。"""
+请基于以上资料（特别是检索到的原文段落）回答问题。如引用原文，请标注来源。"""
 
     try:
         answer = _get_chat_intent_llm().chat(system_prompt, user_prompt, []).strip()
         if answer:
-            note = f"基于当前{'综述' if view_mode == 'review' else '论文'}上下文生成回答。"
-            return {"reply": answer, "note": note}
+            if rag_context:
+                rag_status = "used"
+                rag_count = len(rag_context.split("---"))
+            elif not has_pdfs:
+                rag_status = "no_pdfs"
+                rag_count = 0
+            else:
+                rag_status = "no_results"
+                rag_count = 0
+            note = "基于论文原文生成回答" if rag_context else f"基于当前{'综述' if view_mode == 'review' else '论文'}上下文生成回答"
+            return {"reply": answer, "note": note, "rag_status": rag_status, "rag_count": rag_count}
     except Exception:
         pass
 
@@ -1177,8 +1220,8 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
             "action_taken": True,
             "action": "revise_notes",
             "confirmation_required": False,
-            "session_state": fresh_session.get("state", ""),
-            "session_state_label": STATE_LABELS.get(fresh_session.get("state", ""), fresh_session.get("state", "")),
+            "session_state": fresh_session.get("state", session.get("state", "")),
+            "session_state_label": STATE_LABELS.get(fresh_session.get("state", ""), session.get("state", "")),
             "notes": revise_result.get("notes", ""),
         }
 
@@ -1589,7 +1632,28 @@ def revise_notes_phase(session_id: str, payload: ReviseNotesRequest) -> dict:
     
     from llms.client import LLMClient
     llm = LLMClient()
-    
+
+    rag_context = ""
+    try:
+        from tools.retriever import search_session_papers
+        import os as _os
+        papers_path = _os.path.join(SESSIONS_DIR, session_id, "papers")
+        passages = search_session_papers(session_id, str(papers_path), payload.feedback, top_k=5)
+        if passages:
+            parts = []
+            for p in passages:
+                pid_p = p.get("paper_id", "")
+                pg = p.get("page", "?")
+                tit = ""
+                for pp in session.get("papers", []):
+                    if pp.get("paper_id") == pid_p:
+                        tit = pp.get("title", "")[:60]
+                        break
+                parts.append(f"【{tit or pid_p} (第{pg}页)】\n{p['text']}")
+            rag_context = "\n\n---\n\n".join(parts)
+    except Exception:
+        pass
+
     revise_prompt = f"""你是一名严谨的学术研究员。请根据用户的反馈意见，对现有的研究笔记进行修订。
     
 研究主题：{payload.topic}
