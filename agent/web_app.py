@@ -1345,7 +1345,7 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
     _stop_flag = [False]  # 用列表做可变容器，线程间可共享修改
     
     def _periodic_trace_saver():
-        """每 3 秒将运行中的 traces 保存到 Session"""
+        """每 3 秒将运行中的 traces 同步到 RUNS 内存（不写磁盘，避免覆盖历史数据）"""
         while not _stop_flag[0]:
             _time.sleep(3)
             try:
@@ -1355,7 +1355,10 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
                     with RUN_LOCK:
                         traces = list(RUNS.get(f"session_{session_id}", {}).get("traces", []))
                 if traces:
-                    session_mgr.save_traces(session_id, traces)
+                    # 只更新 RUNS 内存，供前端轮询 /api/sessions/{id}/run/status
+                    with RUN_LOCK:
+                        if f"session_{session_id}" in RUNS:
+                            RUNS[f"session_{session_id}"]["traces"] = traces
             except Exception:
                 pass
     
@@ -1474,8 +1477,23 @@ def cancel_session_run(session_id: str) -> dict:
     run_key = f"session_{session_id}"
     with RUN_LOCK:
         run = RUNS.get(run_key)
+    
     if not run:
-        raise HTTPException(status_code=404, detail="没有正在运行的任务")
+        # RUNS 里没有（可能是服务器重启过），检查磁盘状态
+        session = session_mgr.load_session(session_id)
+        if session and session.get("state") in {"searching", "writing"}:
+            # 卡住状态，直接回退
+            fallback = {"searching": "search_complete", "writing": "reviewing_notes"}
+            new_state = fallback.get(session["state"], "search_complete")
+            try:
+                session_mgr.update_session_state(session_id, new_state)
+            except ValueError:
+                session_dir = SESSIONS_DIR / session_id
+                meta = json.loads((session_dir / "metadata.json").read_text(encoding="utf-8"))
+                meta["state"] = new_state
+                (session_dir / "metadata.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+            return {"status": "fixed", "message": f"卡住状态已修复：{session['state']} → {new_state}"}
+        raise HTTPException(status_code=404, detail="没有正在运行的任务，且状态未卡住")
 
     # 设置停止标志
     stop_flag = run.get("_stop_flag")

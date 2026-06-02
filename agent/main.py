@@ -474,14 +474,13 @@ def run_search_only(
     t1, t2 = ArxivSearchTool(), ArxivFetchTool()
     t3, t4 = SemanticScholarSearchTool(), SemanticScholarFetchTool()
     t5, t6 = CrossrefSearchTool(), CrossrefFetchByDoiTool()
-    t7 = ArxivPdfReaderTool(papers_dir=papers_dir)
     t9 = OpenAlexSearchTool()
-    # 迭代三新增：论文收录一体化工具（替代旧下载工具）
+    # 迭代三新增：论文收录一体化工具
     session_id = os.path.basename(work_dir) if work_dir else ""
     from tools.paper_register import PaperRegisterTool
     t_register = PaperRegisterTool(session_id=session_id, papers_dir=papers_dir)
 
-    researcher_agent = BaseAgent(tools=[t1, t2, t3, t4, t5, t6, t7, t9, t_register], max_loops=max_loops)
+    researcher_agent = BaseAgent(tools=[t1, t2, t3, t4, t5, t6, t9, t_register], max_loops=max_loops)
     if agent_callback:
         agent_callback(researcher_agent, work_dir)
 
@@ -515,7 +514,7 @@ def run_search_only(
 
     notes_content = ""
 
-    # ━━━ 第 1 步：优先从 Session 中获取已登记的论文 ━━━
+    # ━━━ 从 Session 已有的 papers_list 和 Agent 登记的论文汇总 ━━━
     papers_list = []
     if session_id:
         try:
@@ -525,25 +524,6 @@ def run_search_only(
             papers_list = mgr.get_papers(session_id) or []
         except Exception:
             pass
-
-    # ━━━ 第 2 步：事后扫描兜底——已下载 PDF 但未登记的论文 ━━━
-    existing_ids = {p.get("paper_id") for p in papers_list}
-    for fname in sorted(os.listdir(papers_dir)) if os.path.exists(papers_dir) else []:
-        if fname.endswith(".pdf"):
-            pid = fname.replace(".pdf", "")
-            if pid not in existing_ids:
-                papers_list.append({
-                    "paper_id": pid,
-                    "title": f"{pid}（待补全信息）",
-                    "authors": "",
-                    "source": "agent_search",
-                    "source_type": "arxiv",
-                    "status": "pending",
-                    "abstract": "",
-                    "notes": "",
-                    "has_notes": False,
-                    "added_at": datetime.datetime.now().isoformat(),
-                })
 
     return {
         "phase": "search",
