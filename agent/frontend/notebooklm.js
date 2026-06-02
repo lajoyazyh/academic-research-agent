@@ -2291,9 +2291,10 @@ const notebooklm = {
         button.type = "button";
         button.className = `tiny-btn ${action.variant === "primary" ? "is-active" : ""}`.trim();
         button.textContent = action.label;
-        button.addEventListener("click", (e) => {
-          const row = e.target.closest(".chat-actions") || button.parentNode;
-          if (row && row.classList.contains("chat-actions")) row.remove();
+        button.addEventListener("click", function() {
+          // 点任何一个按钮后，整行全部变灰禁用
+          const allBtns = this.parentNode.querySelectorAll("button");
+          allBtns.forEach(b => { b.disabled = true; b.style.opacity = "0.4"; b.style.pointerEvents = "none"; });
           action.onClick();
         });
         actionRow.appendChild(button);
