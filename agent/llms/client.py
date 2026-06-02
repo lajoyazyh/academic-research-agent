@@ -32,3 +32,20 @@ class LLMClient:
             temperature=0.1
         )
         return response.choices[0].message.content
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        """调用智谱 text-embedding API，将文本列表转为向量列表。
+        使用智谱 embedding-2 模型（1536 维）。
+        如果 API 不可用，返回零向量作为降级。
+        """
+        if not texts:
+            return []
+        try:
+            resp = self.client.embeddings.create(
+                model="embedding-2",
+                input=texts,
+            )
+            return [d.embedding for d in resp.data]
+        except Exception as e:
+            print(f"[Embedding] API 调用失败，降级为零向量: {e}")
+            return [[0.0] * 1536 for _ in texts]
