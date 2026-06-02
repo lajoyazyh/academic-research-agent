@@ -1,6 +1,7 @@
 import threading
 import uuid
 import json
+import os
 import datetime
 import re
 from functools import lru_cache
@@ -627,6 +628,33 @@ def update_session_state(session_id: str, payload: UpdateStateRequest) -> dict:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"状态更新失败: {str(e)}")
+
+
+@app.post("/api/sessions/{session_id}/state/auto-fix")
+def auto_fix_session_state(session_id: str) -> dict:
+    """手动修复卡住的 Session 状态（强制回退到上一个稳定状态）"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    state = session.get("state", "planning")
+    if state not in {"searching", "writing"}:
+        return {"status": "skipped", "message": f"状态 '{state}' 不需要修复", "state": state}
+
+    fallback = {"searching": "plan_confirmed", "writing": "reviewing_notes"}
+    new_state = fallback.get(state, "plan_confirmed")
+
+    try:
+        session_mgr.update_session_state(session_id, new_state)
+    except ValueError:
+        # 如果状态机不允许回退，直接改 metadata
+        session_dir = SESSIONS_DIR / session_id
+        meta = json.loads((session_dir / "metadata.json").read_text(encoding="utf-8"))
+        meta["state"] = new_state
+        meta["updated_at"] = datetime.datetime.now().isoformat()
+        (session_dir / "metadata.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return {"status": "fixed", "message": f"状态已从 '{state}' 修复为 '{new_state}'", "state": new_state}
 
 
 @app.put("/api/sessions/{session_id}")
@@ -1269,9 +1297,10 @@ def save_draft(session_id: str, payload: dict) -> dict:
 
 class RunPhaseRequest(BaseModel):
     topic: str
-    start_phase: str = "plan"  # plan / search / write
+    start_phase: str = "plan"
     keywords: Optional[list[dict]] = None
     max_loops: int = 20
+    min_papers: int = 3
 
 
 @app.post("/api/sessions/{session_id}/run/plan")
@@ -1308,11 +1337,11 @@ def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
 def _run_search_in_background(session_id: str, topic: str, keywords: list[dict], max_loops: int) -> None:
     """后台执行搜索阶段，周期性保存 traces 供前端实时轮询"""
     import time as _time
-    _stop_flag = False
+    _stop_flag = [False]  # 用列表做可变容器，线程间可共享修改
     
     def _periodic_trace_saver():
         """每 3 秒将运行中的 traces 保存到 Session"""
-        while not _stop_flag:
+        while not _stop_flag[0]:
             _time.sleep(3)
             try:
                 agent = _agent_holder.get("agent")
@@ -1340,6 +1369,7 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
                 "status": "running",
                 "phase": "searching",
                 "traces": [],
+                "_stop_flag": _stop_flag,  # 暴露终止标志供 cancel API 使用
             }
         
         _saver_thread.start()
@@ -1353,7 +1383,7 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
             agent_callback=lambda agent, wd: _agent_holder.update({"agent": agent}),
         )
         
-        _stop_flag = True
+        _stop_flag[0] = True
 
         # 保存论文列表到 Session
         if result.get("papers"):
@@ -1361,8 +1391,11 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
         # 保存轨迹
         if result.get("traces"):
             session_mgr.save_traces(session_id, result["traces"])
-        # 更新状态
-        session_mgr.update_session_state(session_id, "search_complete")
+        # 如果没有被取消，更新状态
+        try:
+            session_mgr.update_session_state(session_id, "search_complete")
+        except ValueError:
+            pass  # 可能已被取消设置为其他状态
 
         with RUN_LOCK:
             RUNS[f"session_{session_id}"] = {
@@ -1400,6 +1433,10 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     except ValueError:
         pass  # 状态可能已经是 searching
 
+    # 设置最低论文数环境变量（供 Agent 质量门禁使用）
+    if hasattr(payload, 'min_papers') and payload.min_papers:
+        os.environ["AGENT_MIN_PAPERS"] = str(payload.min_papers)
+
     # 后台执行
     worker = threading.Thread(
         target=_run_search_in_background,
@@ -1424,6 +1461,37 @@ def get_session_run_status(session_id: str) -> dict:
     if not run:
         return {"status": "unknown", "message": "无正在运行的任务"}
     return run
+
+
+@app.post("/api/sessions/{session_id}/run/cancel")
+def cancel_session_run(session_id: str) -> dict:
+    """打断正在运行的搜索/撰写任务"""
+    run_key = f"session_{session_id}"
+    with RUN_LOCK:
+        run = RUNS.get(run_key)
+    if not run:
+        raise HTTPException(status_code=404, detail="没有正在运行的任务")
+
+    # 设置停止标志
+    stop_flag = run.get("_stop_flag")
+    if stop_flag and isinstance(stop_flag, list):
+        stop_flag[0] = True
+    
+    # 更新 RUNS 状态
+    with RUN_LOCK:
+        RUNS[run_key]["status"] = "cancelled"
+        RUNS[run_key]["phase"] = "cancelled"
+
+    # 回退 Session 状态
+    try:
+        session_mgr.update_session_state(session_id, "search_complete")
+    except ValueError:
+        try:
+            session_mgr.update_session_state(session_id, "plan_confirmed")
+        except ValueError:
+            pass
+
+    return {"status": "cancelled", "message": "任务已被用户终止"}
 
 
 @app.post("/api/sessions/{session_id}/run/write")

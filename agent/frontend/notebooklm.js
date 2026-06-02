@@ -82,6 +82,7 @@ const notebooklm = {
     this.els.keywordConfirm = document.getElementById("keywordConfirm");
     this.els.keywordCancel = document.getElementById("keywordCancel");
     this.els.themeToggle = document.getElementById("themeToggle");
+    this.els.cancelSearchBtn = document.getElementById("cancelSearchBtn");
   },
 
   async initHome() {
@@ -684,6 +685,7 @@ const notebooklm = {
 
   bindConsoleActions() {
     this.els.searchBtn?.addEventListener("click", () => this.primarySourceAction());
+    this.els.cancelSearchBtn?.addEventListener("click", () => this.cancelSearch());
     this.els.addPaperBtn?.addEventListener("click", () => this.openAddPaperModal());
     this.els.pdfFileInput?.addEventListener("change", (e) => this.handleDropZoneFile(e.target.files[0]));
     this.els.notesBtn?.addEventListener("click", () => this.generateNotesAction());
@@ -1494,20 +1496,30 @@ const notebooklm = {
     const anyNeedNotes = withoutNotes > 0;
     const notesGenerated = effectivePapers.length > 0 && allHaveNotes;
 
-    // AI检索论文 按钮
+    // AI检索论文 / 停止检索 按钮切换
     if (this.els.searchBtn) {
       if (!session.keywords || !session.keywords.length || session.state === "planning") {
         this.els.searchBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> 生成关键词';
         this.els.searchBtn.disabled = false;
+        this.els.searchBtn.style.display = "";
+        if (this.els.cancelSearchBtn) this.els.cancelSearchBtn.style.display = "none";
       } else if (session.state === "plan_confirmed") {
         this.els.searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> AI检索论文';
         this.els.searchBtn.disabled = false;
+        this.els.searchBtn.style.display = "";
+        if (this.els.cancelSearchBtn) this.els.cancelSearchBtn.style.display = "none";
       } else if (session.state === "searching") {
-        this.els.searchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 检索中...';
-        this.els.searchBtn.disabled = true;
+        // 隐藏主按钮，显示红色取消按钮
+        this.els.searchBtn.style.display = "none";
+        if (this.els.cancelSearchBtn) {
+          this.els.cancelSearchBtn.style.display = "";
+          this.els.cancelSearchBtn.disabled = false;
+        }
       } else {
         this.els.searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> 重新检索';
         this.els.searchBtn.disabled = false;
+        this.els.searchBtn.style.display = "";
+        if (this.els.cancelSearchBtn) this.els.cancelSearchBtn.style.display = "none";
       }
     }
 
@@ -1612,6 +1624,37 @@ const notebooklm = {
       return;
     }
     await this.runSearchPhase();
+  },
+
+  async cancelSearch() {
+    if (!this.state.currentSessionId) return;
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/cancel`, {
+        method: "POST",
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "取消失败");
+
+      await this.reloadCurrentSession();
+      this._setSearchButtons("idle");
+      this.setConsoleStatus("search_complete", "检索已被手动终止");
+    } catch (error) {
+      alert("取消检索失败：" + error.message);
+    }
+  },
+
+  _setSearchButtons(state) {
+    // 已集成到 updateActionButtons 中，此函数保留用于显式切换
+    if (this.els.searchBtn) {
+      if (state === "searching") {
+        this.els.searchBtn.style.display = "none";
+      } else {
+        this.els.searchBtn.style.display = "";
+      }
+    }
+    if (this.els.cancelSearchBtn) {
+      this.els.cancelSearchBtn.style.display = state === "searching" ? "" : "none";
+    }
   },
 
   async generateNotesAction() {
@@ -1788,6 +1831,7 @@ const notebooklm = {
 
     try {
       this.setConsoleStatus("searching", "正在检索论文并同步笔记...");
+      this._setSearchButtons("searching");
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1821,12 +1865,14 @@ const notebooklm = {
           if (polled.state === "search_complete") {
             clearInterval(this.state.pollTimer);
             this.state.pollTimer = null;
+            this._setSearchButtons("idle");
             this.switchViewMode("summary");
             this.setConsoleStatus("search_complete", "论文检索完成，可以生成综述");
           }
         } catch (error) {
           clearInterval(this.state.pollTimer);
           this.state.pollTimer = null;
+          this._setSearchButtons("idle");
           this.setConsoleStatus("error", `搜索失败：${error.message}`);
         }
       }, 2200);

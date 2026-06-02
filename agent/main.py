@@ -421,16 +421,13 @@ def _build_research_query(topic: str, initial_plan: str, confirmed_keywords: lis
         "## 🛠 可用工具速览\n"
         "- arxiv_search：arXiv 搜索（返回标题+作者+摘要，最完整）\n"
         "- arxiv_fetch：按 arXiv ID 补全信息（仅信息不足时用）\n"
-        "- **paper_register：下载 PDF + 登记到论文列表（一体化工具）**\n"
-        "  用法：审核搜索返回的摘要 → 判断论文有价值 → 立即调用 paper_register(paper_id, title, authors, abstract)\n"
-        "  这一步会同时完成 PDF 下载和论文列表登记，不需要额外调用下载工具。\n"
+        "- **paper_register：审核摘要 → 收录论文，一步完成（下载 PDF + 登记到论文列表）**\n"
         "- arxiv_pdf_reader：读取已下载 PDF 的内容\n"
         "- openalex_search：OpenAlex 跨学科搜索\n"
         "- crossref_search / crossref_fetch_doi：Crossref 搜索与 DOI 补全\n"
         "- semantic_scholar_search / semantic_scholar_fetch：Semantic Scholar 搜索\n\n"
         "## ⚠️ 关键经验\n"
-        "- arxiv_search 返回结果里每条都有 ID、标题、作者、摘要。**审阅摘要后判断论文相关度，只要值得收录就立即调用 paper_register**，不要先下载再登记。\n"
-        "- paper_register 会自动下载 PDF，不需要再单独调下载工具。\n"
+        "- arxiv_search 返回结果里每条都有 ID、标题、作者、摘要。审核摘要后**必须立即调用 paper_register(paper_id, title, authors, abstract) 来收录论文**。\n"
         "- **不要用 DOI 调用 paper_register！** paper_register 接受 arXiv ID（格式如 2308.11432）。\n"
         "- 中文主题必须在 thought 中翻译为英文关键词后搜索。\n"
         "- crossref_search 传入论文标题/作者名。\n"
@@ -438,7 +435,7 @@ def _build_research_query(topic: str, initial_plan: str, confirmed_keywords: lis
         + keyword_hint +
         "## 🧭 初始计划草案（供参考，可在 thought 中修订）\n"
         f"{initial_plan}\n\n"
-        "现在请开始你的调研。先用 thought 制定检索计划，然后执行。记住：**搜索元数据即可，不要下载 PDF。**"
+        "现在请开始你的调研。先用 thought 制定检索计划，然后执行。"
     )
 
 
@@ -478,14 +475,13 @@ def run_search_only(
     t3, t4 = SemanticScholarSearchTool(), SemanticScholarFetchTool()
     t5, t6 = CrossrefSearchTool(), CrossrefFetchByDoiTool()
     t7 = ArxivPdfReaderTool(papers_dir=papers_dir)
-    t8 = ArxivDownloadPdfTool(papers_dir=papers_dir)
     t9 = OpenAlexSearchTool()
-    # 迭代三新增：论文收录一体化工具
+    # 迭代三新增：论文收录一体化工具（替代旧下载工具）
     session_id = os.path.basename(work_dir) if work_dir else ""
     from tools.paper_register import PaperRegisterTool
     t_register = PaperRegisterTool(session_id=session_id, papers_dir=papers_dir)
 
-    researcher_agent = BaseAgent(tools=[t1, t2, t3, t4, t5, t6, t7, t8, t9, t_register], max_loops=max_loops)
+    researcher_agent = BaseAgent(tools=[t1, t2, t3, t4, t5, t6, t7, t9, t_register], max_loops=max_loops)
     if agent_callback:
         agent_callback(researcher_agent, work_dir)
 

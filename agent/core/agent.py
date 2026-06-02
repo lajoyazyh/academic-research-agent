@@ -136,14 +136,21 @@ class BaseAgent:
             
             # 3. 终局判断（带质量门禁 + Pre-FINISH 自主质检）
             if action.lower() == "finish":
-                # ━━━ 质量门禁：检查是否下载了足够的论文 ━━━
-                download_actions = {"arxiv_download_pdf", "arxiv_fetch"}
-                recorded_count = sum(1 for t in self.traces if t.get("action") in download_actions)
-                if recorded_count < 3:
+                # ━━━ 质量门禁：检查是否收录了足够的论文 ━━━
+                register_actions = {"paper_register", "arxiv_download_pdf"}
+                recorded_count = sum(1 for t in self.traces if t.get("action") in register_actions)
+
+                _min_papers = 3
+                try:
+                    _min_papers = int(os.environ.get("AGENT_MIN_PAPERS", "3"))
+                except Exception:
+                    pass
+
+                if recorded_count < _min_papers:
                     gate_msg = (
-                        f"⚠️ 质量门禁拦截：你目前只下载/记录了 {recorded_count} 篇论文，"
-                        "但需要至少 3 篇。请用 arxiv_download_pdf 下载你觉得好的论文，"
-                        "然后再 FINISH。不要在没下载够的情况下结束。"
+                        f"⚠️ 质量门禁拦截：你目前只收录了 {recorded_count} 篇论文，"
+                        f"但需要至少 {_min_papers} 篇。请用 paper_register 收录论文（自动下载 PDF 并登记），"
+                        "然后再 FINISH。不要在没收录够的情况下结束。"
                     )
                     self.traces.append({
                         "thought": thought,

@@ -113,7 +113,7 @@ class SessionManager:
         return self.load_session(session_id)
 
     def load_session(self, session_id: str) -> Optional[dict]:
-        """从磁盘加载完整 Session 状态"""
+        """从磁盘加载完整 Session 状态，自动修复卡住的运行状态"""
         session_dir = self.root / session_id
         if not session_dir.exists():
             return None
@@ -121,6 +121,34 @@ class SessionManager:
         metadata = self._read_json(session_dir / "metadata.json")
         if not metadata:
             return None
+
+        # ━━━ 自动修复卡住的状态 ━━━
+        state = metadata.get("state", "planning")
+        updated_at_str = metadata.get("updated_at", "")
+        stuck_states = {"searching", "writing", "reviewing_notes"}
+        if state in stuck_states:
+            # 检查是否卡住了：最后更新时间超过 10 分钟
+            should_fix = True
+            if updated_at_str:
+                try:
+                    updated_at = datetime.datetime.fromisoformat(updated_at_str)
+                    delta = datetime.datetime.now() - updated_at
+                    if delta.total_seconds() < 600:  # 10 分钟以内，可能是真的在运行
+                        # 再检查 RUNS 内存是否有活跃任务
+                        should_fix = False  # 默认不修，让前端通过 polling 检查
+                except Exception:
+                    pass
+            if should_fix:
+                # 回退到上一个稳定状态
+                fallback_map = {
+                    "searching": "plan_confirmed",
+                    "writing": "reviewing_notes",
+                    "reviewing_notes": "writing",
+                }
+                new_state = fallback_map.get(state, "plan_confirmed")
+                metadata["state"] = new_state
+                metadata["updated_at"] = datetime.datetime.now().isoformat()
+                self._write_json(session_dir / "metadata.json", metadata)
 
         # 加载关键词
         keywords = self._read_json(session_dir / "plan" / "confirmed_keywords.json") or []

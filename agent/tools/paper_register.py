@@ -61,10 +61,12 @@ class PaperRegisterTool(BaseTool):
         if not title:
             title = paper_id  # 兜底
 
-        # Step 1: 下载 PDF
         clean_id = paper_id.split("v")[0] if "v" in paper_id else paper_id
+
+        # Step 1: 下载 PDF（先下载，失败了就不登记）
         pdf_downloaded = False
         pdf_msg = ""
+        pdf_path = ""
 
         if self.papers_dir:
             os.makedirs(self.papers_dir, exist_ok=True)
@@ -85,18 +87,26 @@ class PaperRegisterTool(BaseTool):
                 pdf_downloaded = True
                 pdf_msg = f"✅ PDF 已下载 ({len(pdf_bytes) / 1024:.0f} KB)"
             except Exception as e:
-                pdf_msg = f"⚠️ PDF 下载失败: {str(e)}"
+                pdf_msg = f"❌ PDF 下载失败: {str(e)}"
 
-        # Step 2: 登记到 papers_list.json
+        # PDF 下载失败 → 不登记，直接返回失败
+        if not pdf_downloaded:
+            return (
+                f"❌ 论文收录失败: {title} (ID: {clean_id})\n"
+                f"   原因: {pdf_msg}\n"
+                f"   建议: 请检查论文 ID 是否正确，或稍后重试。"
+            )
+
+        # Step 2: PDF 下载成功 → 登记到 papers_list.json
         registered = False
         reg_msg = ""
 
         if self.session_id:
             try:
                 from backend.session_manager import SessionManager
-                sessions_root = Path(self.papers_dir).parent.parent if self.papers_dir else ""
+                sessions_root = str(Path(self.papers_dir).parent.parent) if self.papers_dir else ""
                 if sessions_root:
-                    mgr = SessionManager(str(sessions_root))
+                    mgr = SessionManager(sessions_root)
                     paper_entry = {
                         "paper_id": clean_id,
                         "title": title,
@@ -115,8 +125,8 @@ class PaperRegisterTool(BaseTool):
             except Exception as e:
                 reg_msg = f"⚠️ 论文登记失败: {str(e)}"
 
-        summary = f"📄 论文收录: {title} (ID: {clean_id})\n"
-        summary += f"   {pdf_msg}\n" if pdf_msg else ""
+        summary = f"✅ 论文收录成功: {title} (ID: {clean_id})\n"
+        summary += f"   {pdf_msg}\n"
         summary += f"   {reg_msg}" if reg_msg else ""
         summary += f"\n   摘要前 200 字: {abstract[:200]}..." if abstract else ""
         return summary
