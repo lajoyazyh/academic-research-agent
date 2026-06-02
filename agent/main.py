@@ -421,14 +421,17 @@ def _build_research_query(topic: str, initial_plan: str, confirmed_keywords: lis
         "## 🛠 可用工具速览\n"
         "- arxiv_search：arXiv 搜索（返回标题+作者+摘要，最完整）\n"
         "- arxiv_fetch：按 arXiv ID 补全信息（仅信息不足时用）\n"
-        "- arxiv_download_pdf：下载 PDF（仅接受 arXiv ID，不用 DOI 调用）\n"
+        "- **paper_register：下载 PDF + 登记到论文列表（一体化工具）**\n"
+        "  用法：审核搜索返回的摘要 → 判断论文有价值 → 立即调用 paper_register(paper_id, title, authors, abstract)\n"
+        "  这一步会同时完成 PDF 下载和论文列表登记，不需要额外调用下载工具。\n"
         "- arxiv_pdf_reader：读取已下载 PDF 的内容\n"
         "- openalex_search：OpenAlex 跨学科搜索\n"
         "- crossref_search / crossref_fetch_doi：Crossref 搜索与 DOI 补全\n"
         "- semantic_scholar_search / semantic_scholar_fetch：Semantic Scholar 搜索\n\n"
         "## ⚠️ 关键经验\n"
-        "- arxiv_search 结果已包含完整元数据，是最好的来源，拿到后继续搜下一批。\n"
-        "- **不要用 DOI 调用 arxiv_download_pdf！** arxiv_download_pdf 只接受 arXiv ID（格式如 2308.11432）。DOI（如 10.xxxx）不是 arXiv ID。\n"
+        "- arxiv_search 返回结果里每条都有 ID、标题、作者、摘要。**审阅摘要后判断论文相关度，只要值得收录就立即调用 paper_register**，不要先下载再登记。\n"
+        "- paper_register 会自动下载 PDF，不需要再单独调下载工具。\n"
+        "- **不要用 DOI 调用 paper_register！** paper_register 接受 arXiv ID（格式如 2308.11432）。\n"
         "- 中文主题必须在 thought 中翻译为英文关键词后搜索。\n"
         "- crossref_search 传入论文标题/作者名。\n"
         "- HTTP 429 立即换数据库。\n"
@@ -477,8 +480,12 @@ def run_search_only(
     t7 = ArxivPdfReaderTool(papers_dir=papers_dir)
     t8 = ArxivDownloadPdfTool(papers_dir=papers_dir)
     t9 = OpenAlexSearchTool()
+    # 迭代三新增：论文收录一体化工具
+    session_id = os.path.basename(work_dir) if work_dir else ""
+    from tools.paper_register import PaperRegisterTool
+    t_register = PaperRegisterTool(session_id=session_id, papers_dir=papers_dir)
 
-    researcher_agent = BaseAgent(tools=[t1, t2, t3, t4, t5, t6, t7, t8, t9], max_loops=max_loops)
+    researcher_agent = BaseAgent(tools=[t1, t2, t3, t4, t5, t6, t7, t8, t9, t_register], max_loops=max_loops)
     if agent_callback:
         agent_callback(researcher_agent, work_dir)
 
@@ -512,87 +519,23 @@ def run_search_only(
 
     notes_content = ""
 
-    # ━━━ 从 traces 中提取每篇论文的完整元数据 ━━━
+    # ━━━ 第 1 步：优先从 Session 中获取已登记的论文 ━━━
     papers_list = []
-    seen_ids = set()
-    
-    # 第 1 步：收集所有下载成功的 arXiv ID
+    if session_id:
+        try:
+            from backend.session_manager import SessionManager
+            sessions_root = os.path.join(os.path.dirname(os.path.dirname(papers_dir)))
+            mgr = SessionManager(sessions_root)
+            papers_list = mgr.get_papers(session_id) or []
+        except Exception:
+            pass
+
+    # ━━━ 第 2 步：事后扫描兜底——已下载 PDF 但未登记的论文 ━━━
+    existing_ids = {p.get("paper_id") for p in papers_list}
     for fname in sorted(os.listdir(papers_dir)) if os.path.exists(papers_dir) else []:
         if fname.endswith(".pdf"):
             pid = fname.replace(".pdf", "")
-            seen_ids.add(pid)
-
-    # 第 2 步：从 traces 中提取完整元数据（标题、作者、摘要）
-    for step in researcher_agent.traces:
-        obs = str(step.get("observation", ""))
-        action = str(step.get("action", ""))
-        if action in ("arxiv_search", "openalex_search"):
-            # 扫描观察内容中的论文块
-            blocks = re.split(r'\n---\n', obs)
-            for block in blocks:
-                # 提取 arXiv ID
-                id_match = re.search(r'ID:\s*(\d{4}\.\d{4,5})(?:v\d+)?', block)
-                if not id_match:
-                    continue
-                pid = id_match.group(1)
-                if pid not in seen_ids:
-                    continue  # 没下载到的不收录
-                
-                # 提取标题
-                title_match = re.search(r'Title:\s*(.+?)(?:\n(?:Authors|Published|Summary|$))', block)
-                title = title_match.group(1).strip() if title_match else pid
-                
-                # 提取作者
-                authors_match = re.search(r'Authors?:\s*(.+?)(?:\n(?:Published|Summary|$))', block)
-                authors = authors_match.group(1).strip() if authors_match else ""
-                
-                # 提取摘要 —— 从 Summary: 开始到下一个 --- 或下一个 ID: 或文末
-                summary_match = re.search(r'Summary:\s*([\s\S]+?)(?=\n---\n|\nID:|\Z)', block)
-                abstract = summary_match.group(1).strip()[:1200] if summary_match else ""
-                
-                papers_list.append({
-                    "paper_id": pid,
-                    "title": title,
-                    "authors": authors,
-                    "source": "agent_search",
-                    "source_type": "arxiv",
-                    "status": "pending",
-                    "abstract": abstract,
-                    "notes": "",
-                    "has_notes": False,
-                    "added_at": datetime.datetime.now().isoformat(),
-                })
-                seen_ids.discard(pid)  # 已处理
-        
-        elif action == "crossref_search":
-            # 对 Crossref 结果也做类似提取，但没有 arXiv ID 的 DOI 论文可能无 PDF
-            for doi_match in re.finditer(r'DOI:\s*(10\.\d{4,}/[^\s\n]+)', obs):
-                doi = doi_match.group(1).strip()
-                doi_clean = doi.replace("https://doi.org/", "").replace("/", "_").replace(".", "_")
-                if doi_clean not in seen_ids:
-                    continue
-                # 简单提取
-                title_m = re.search(r'Title:\s*(.+?)(?:\n|$)', obs)
-                authors_m = re.search(r'Authors?:\s*(.+?)(?:\n|$)', obs)
-                papers_list.append({
-                    "paper_id": doi_clean,
-                    "title": title_m.group(1).strip() if title_m else doi_clean,
-                    "authors": authors_m.group(1).strip() if authors_m else "",
-                    "source": "agent_search",
-                    "source_type": "crossref",
-                    "status": "pending",
-                    "abstract": "",
-                    "notes": "",
-                    "has_notes": False,
-                    "added_at": datetime.datetime.now().isoformat(),
-                })
-                seen_ids.discard(doi_clean)
-
-    # 第 3 步：补漏——已下载 PDF 但没在 traces 中找到元数据的
-    for fname in sorted(os.listdir(papers_dir)) if os.path.exists(papers_dir) else []:
-        if fname.endswith(".pdf"):
-            pid = fname.replace(".pdf", "")
-            if pid not in [p["paper_id"] for p in papers_list]:
+            if pid not in existing_ids:
                 papers_list.append({
                     "paper_id": pid,
                     "title": f"{pid}（待补全信息）",
