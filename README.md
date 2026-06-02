@@ -16,7 +16,14 @@ agent/
 │   ├── session_manager.py  # Session 会话状态管理（8 阶段状态机）
 │   └── api.py              # 独立 API（备用）
 ├── core/                   # Agent 核心（ReAct 循环、工具调度）
-├── tools/                  # 学术检索工具
+├── tools/
+│   ├── arxiv_tools.py      # arXiv 搜索/获取
+│   ├── crossref_tools.py   # Crossref 搜索/DOI
+│   ├── openalex_tools.py   # OpenAlex 搜索
+│   ├── pdf_tools.py        # PDF 下载/解析/全量提取
+│   ├── paper_register.py   # 下载+收录一体化工具
+│   ├── retriever.py        # BM25 检索器（对话 RAG）
+│   └── rag_note_generator.py  # Embedding RAG 笔记生成器
 ├── llms/                   # LLM 客户端（智谱 API）
 ├── config/                 # 配置管理
 ├── utils/                  # 辅助工具与解析器
@@ -46,34 +53,30 @@ docs/                       # 文档相关目录
 ## 迭代三核心创新
 
 ### 1. Session 会话模型
-每个学术调研任务是一个持久化的 Session，中间可暂停/修改/继续。
-
 ```
-planning -> plan_confirmed -> searching -> search_complete
--> reviewing_notes -> writing -> reviewing_draft -> complete
+planning → plan_confirmed → searching → search_complete
+→ reviewing_notes → writing → reviewing_draft → complete
 ```
+任意状态可跳回 `searching`（追加调研）。
 
-### 2. 左侧面板
+### 2. Agent 检索三阶段
 
-| 模块 | 本质 | 存储位置 | 用途 |
-|------|------|---------|------|
-| 🔄 **会话管理** | 进行中的交互式调研 | `agent/sessions/` | 新建/恢复/删除会话；编辑关键词；审核笔记 |
+| 阶段 | 功能 | 核心工具 |
+|------|------|---------|
+| **Plan** | LLM 生成关键词方案，用户可编辑确认 | `_build_initial_plan` |
+| **Search** | Agent 搜索 → 审核摘要 → `paper_register` 下载+登记 | `paper_register`, `arxiv_search` |
+| **Notes** | RAG 生成深度笔记：PDF 全文 → Embedding → 逐节 LLM | `RAGNoteGenerator` |
 
-### 3. 关键步骤可见化
-- **关键词审核**（✅ 已实现）：Plan 阶段后展示关键词方案，用户可编辑/删除/新增；可随时通过会话旁的 ✏️ 编辑按钮重新修改
-- **论文管理**（✅ 已实现）：混合 Agent 搜索 + 用户上传，支持审查模式、删除及状态更新
-- **笔记编辑**（✅ 已实现）：在线 Markdown 分屏编辑器，支持查看、编辑修改研究笔记
-- **综述反馈**（✅ 已实现）：提交综述修改审核意见并在历史记录跟踪草稿版本
-- **统一聊天**（✅ 已实现）：普通对话直接生成回答；隐式修改意图先由 AI 判定，再在聊天中确认后执行；显式 `/修订` 保留为直通入口
+### 3. RAG 检索增强架构
 
-## 当前实现进度
+| 场景 | 方案 |
+|------|------|
+| **AI 对话栏** | BM25 检索 PDF 段落 → 注入问答/修订 prompt |
+| **首次生成笔记** | Embedding 向量检索 → Top-K 原文段落 → LLM 逐节生成 |
 
-| 波次 | 状态 | 已实现 |
-|------|:----:|------|
-| 第一波：Session 管理 + 关键词确认 | 完成 | SessionManager、状态机、关键词确认 UI、折叠/删除 |
-| 第二波：论文管理 + 混合来源 | 完成 | 支持多选删除论文、改变论文状态、上传本地PDF论文及自定义元数据加入文献库 |
-| 第三波：笔记编辑 + 综述重写 | 完成 | 在线 Markdown 编辑器编辑研究笔记、提供反馈并重写综述 |
-| 第四波：统一聊天 + AI 判意修订 | 完成 | 普通问答、AI 隐式修改判定、对话内确认执行、显式 `/修订` 直通 |
+### 4. 前端功能
+- 🔍 关键词审核/编辑 · 📄 论文管理 · ✏️ Vditor 编辑器 · 📝 AI 判意修订
+- 🛑 检索打断 · 📊 轨迹视图（时间戳+目录+追加调研分隔）
 
 ## 环境安装
 
@@ -118,26 +121,22 @@ python web_app.py
 | GET | /api/sessions/state-machine | 获取状态机定义 |
 | POST | /api/sessions/{id}/run/plan | 执行规划阶段 |
 | POST | /api/sessions/{id}/run/search | 执行搜索阶段 |
-| GET  | /api/sessions/{id}/run/status | 轮询执行状态 |
-| POST | /api/sessions/{id}/run/notes | 执行提取笔记阶段 |
-| POST | /api/sessions/{id}/run/write | 执行撰写阶段 |
-| POST | /api/keywords/extract | 辅助接口：仅提取关键词，不创建会话 |
+| POST | /api/sessions/{id}/run/search | 执行搜索（后台+轮询） |
+| POST | /api/sessions/{id}/run/cancel | 打断搜索 |
+| GET | /api/sessions/{id}/run/status | 轮询执行状态 |
+| POST | /api/sessions/{id}/run/notes | RAG 深度笔记生成 |
+| POST | /api/sessions/{id}/run/write | 撰写综述 |
+| POST | /api/sessions/{id}/chat | 统一聊天入口 |
+| POST | /api/sessions/{id}/state/auto-fix | 修复卡住状态 |
 
 ## Agent 断点执行
 
-`main.py` 新增三个独立阶段函数：
-
 ```python
-run_plan_only(topic)                           # 阶段 1：仅规划
-run_search_only(topic, plan, keywords)         # 阶段 2：搜索并记录笔记
-run_write_from_notes(topic, notes, feedback)   # 阶段 3：撰写/反馈重写
+run_plan_only(topic)
+run_search_only(topic, plan, keywords)
+run_write_from_notes(topic, notes, feedback)
+run_agent_pipeline_session(session_id, ...)   # Session 感知统一入口
 ```
 
-## GitLab CI
-
-CI 配置在仓库根目录 `.gitlab-ci.yml`，每次 push 自动安装依赖并运行 `pytest tests/`。
-
 ## 进一步规划
-- 第二波：论文混合来源（标题/DOI/PDF 上传）+ 智能审查模式
-- 第三波：在线笔记编辑器 + 综述反馈重写
 - 迭代四：多用户协作、自动化评测集成、模板预设
