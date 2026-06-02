@@ -162,7 +162,7 @@ def test_chat_message_uses_ai_answer_for_normal_question(monkeypatch):
     assert result["action"] == "chat"
     assert result["confirmation_required"] is False
     assert "系统综述了多智能体深度强化学习中的通信方法" in result["reply"]
-    assert result["note"] == "基于当前论文上下文生成回答。"
+    assert result["note"] == "基于当前论文上下文生成回答"
     assert len(fake_llm.calls) == 2
 
 
