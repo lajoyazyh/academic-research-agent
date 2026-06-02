@@ -308,6 +308,23 @@ html, body {
 .detail-hero .lead { color: var(--subtle); font-size: 14px; }
 .topic-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-size: 12px; background: var(--accent-light); color: var(--accent); }
 
+/* ====== Trace View ====== */
+.trace-toc { padding: 8px 16px; margin-bottom: 12px; background: var(--hover-bg); border-radius: 10px; font-size: 13px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.trace-toc strong { font-size: 12px; color: var(--subtle); }
+.toc-link { color: var(--accent); text-decoration: none; cursor: pointer; padding: 2px 8px; border-radius: 6px; background: var(--accent-light); font-size: 12px; }
+.toc-link:hover { background: var(--accent); color: #fff; }
+.trace-section-header { 
+  font-size: 14px; font-weight: 600; padding: 10px 16px; margin: 8px 0; 
+  background: var(--accent-light); border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0; color: var(--accent);
+}
+.trace-step { border: 1px solid var(--line); }
+.trace-body { padding: 8px 14px 4px; }
+.trace-section { margin-bottom: 10px; }
+.trace-label { font-weight: 600; font-size: 12px; color: var(--subtle); margin-bottom: 2px; }
+.trace-text { font-size: 13px; line-height: 1.6; margin-bottom: 8px; white-space: pre-wrap; }
+.trace-pre { font-size: 12px; line-height: 1.5; white-space: pre-wrap; max-height: 200px; overflow-y: auto; background: var(--code-bg); padding: 8px; border-radius: 6px; margin: 0; }
+
 /* ====== Markdown ====== */
 .markdown, .plain-text { line-height: 1.85; color: var(--text); font-size: 14px; }
 .markdown h1, .markdown h2, .markdown h3 { margin-top: 1.2em; margin-bottom: .5em; font-weight: 500; }

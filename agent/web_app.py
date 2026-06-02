@@ -1393,9 +1393,9 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
         # 保存论文列表到 Session
         if result.get("papers"):
             session_mgr.save_papers_list(session_id, result["papers"])
-        # 保存轨迹
+        # 保存轨迹（追加模式：不覆盖之前的轨迹）
         if result.get("traces"):
-            session_mgr.save_traces(session_id, result["traces"])
+            session_mgr.save_traces(session_id, result["traces"], append=True)
         # 如果没有被取消，更新状态
         try:
             session_mgr.update_session_state(session_id, "search_complete")

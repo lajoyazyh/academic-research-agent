@@ -1358,14 +1358,32 @@ const notebooklm = {
     const traces = session?.traces || [];
     const topic = session?.topic || "当前会话";
 
+    // 收集 SECTION markers 做目录
+    const sections = [];
+    traces.forEach((step, idx) => {
+      if (step.action === "SECTION") {
+        sections.push({ idx, label: (step.observation || "").replace(/^##\s*📌\s*/, "") });
+      }
+    });
+
     let html = `
       <div class="detail-hero">
         <span class="topic-badge"><i class="fa-solid fa-route"></i> 执行轨迹</span>
         <h3>${this.escapeHtml(topic)}</h3>
-        <div class="lead">共 ${traces.length} 步 · 当前状态：${session.state_label || session.state || "未知"}</div>
+        <div class="lead">共 ${traces.length} 步 · ${sections.length > 0 ? sections.length + ' 个调研阶段 · ' : ''}当前状态：${session.state_label || session.state || "未知"}</div>
       </div>
-      <div class="detail-blocks" style="margin-top:16px;">
     `;
+
+    // 目录导航
+    if (sections.length > 0) {
+      html += `<div class="trace-toc"><strong>📑 调研目录：</strong>`;
+      sections.forEach((sec) => {
+        html += `<a class="toc-link" href="#" onclick="document.getElementById('trace-step-${sec.idx}').scrollIntoView({behavior:'smooth'});return false;">${this.escapeHtml(sec.label)}</a>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `<div class="detail-blocks" style="margin-top:16px;">`;
 
     if (!traces || traces.length === 0) {
       html += `
@@ -1376,6 +1394,16 @@ const notebooklm = {
       `;
     } else {
       traces.forEach((step, idx) => {
+        // SECTION 条目特殊渲染
+        if (step.action === "SECTION") {
+          html += `
+            <div class="trace-section-header" id="trace-step-${idx}">
+              <i class="fa-solid fa-bookmark"></i> ${this.escapeHtml(step.observation || "").replace(/^##\s*📌\s*/, "📌 ")}
+            </div>
+          `;
+          return;
+        }
+
         const action = step.action || "执行";
         const thought = step.thought || "";
         const observation = step.observation || "";
@@ -1383,17 +1411,24 @@ const notebooklm = {
         const inputObj = step.input || step.action_input || {};
         const inputStr = typeof inputObj === "string" ? inputObj : JSON.stringify(inputObj, null, 2);
 
+        // 时间戳
+        const ts = step.timestamp || "";
+        const timeStr = ts ? new Date(ts).toLocaleTimeString("zh-CN") : "";
+
         let statusChip = "";
-        if (errorType) {
+        if (errorType && errorType !== "section") {
           statusChip = `<span class="chip err" title="错误类型: ${this.escapeHtml(errorType)}"><i class="fa-solid fa-triangle-exclamation"></i> 失败</span>`;
+        } else if (action === "FINISH_BLOCKED") {
+          statusChip = `<span class="chip warn"><i class="fa-solid fa-lock"></i> 拦截</span>`;
         } else {
           statusChip = `<span class="chip ok"><i class="fa-solid fa-circle-check"></i> 成功</span>`;
         }
 
         html += `
-          <div class="panel-block trace-step">
+          <div class="panel-block trace-step" id="trace-step-${idx}">
             <div class="panel-block-head">
               <strong>第 ${idx + 1} 轮 · ${this.escapeHtml(action)}</strong>
+              ${timeStr ? `<span class="chip" style="font-size:10px;"><i class="fa-regular fa-clock"></i> ${timeStr}</span>` : ""}
               ${statusChip}
             </div>
             <div class="trace-body">

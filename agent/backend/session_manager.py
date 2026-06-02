@@ -36,10 +36,10 @@ VALID_TRANSITIONS = {
     SessionState.PLAN_CONFIRMED: [SessionState.SEARCHING, SessionState.PLANNING],
     SessionState.SEARCHING: [SessionState.SEARCH_COMPLETE],
     SessionState.SEARCH_COMPLETE: [SessionState.REVIEWING_NOTES, SessionState.SEARCHING],
-    SessionState.REVIEWING_NOTES: [SessionState.WRITING],
-    SessionState.WRITING: [SessionState.REVIEWING_DRAFT],
-    SessionState.REVIEWING_DRAFT: [SessionState.WRITING, SessionState.COMPLETE],
-    SessionState.COMPLETE: [],
+    SessionState.REVIEWING_NOTES: [SessionState.WRITING, SessionState.SEARCHING],
+    SessionState.WRITING: [SessionState.REVIEWING_DRAFT, SessionState.SEARCHING],
+    SessionState.REVIEWING_DRAFT: [SessionState.WRITING, SessionState.COMPLETE, SessionState.SEARCHING],
+    SessionState.COMPLETE: [SessionState.SEARCHING],
 }
 
 # 状态中文标签
@@ -615,12 +615,37 @@ class SessionManager:
 
     # ━━━━━ 轨迹管理 ━━━━━
 
-    def save_traces(self, session_id: str, traces: list[dict]) -> None:
-        """保存 Agent 运行轨迹"""
+    def save_traces(self, session_id: str, traces: list[dict], append: bool = False) -> None:
+        """保存 Agent 运行轨迹，自动为缺失时间戳的条目补上
+        Args:
+            append: 如果为 True，追加到已有轨迹后面（用于追加调研场景）
+        """
         session_dir = self.root / session_id
         if not session_dir.exists():
             raise ValueError(f"Session {session_id} 不存在")
-        self._write_json(session_dir / "traces" / "run_traces.json", traces)
+        
+        # 自动补充时间戳
+        from datetime import datetime as _dt
+        now = _dt.now().isoformat()
+        for t in traces:
+            if not t.get("timestamp"):
+                t["timestamp"] = now
+        
+        if append:
+            existing = self._read_json(session_dir / "traces" / "run_traces.json") or []
+            section_header = {
+                "timestamp": now,
+                "thought": "",
+                "action": "SECTION",
+                "input": {},
+                "observation": f"## 📌 追加调研 — {_dt.now().strftime('%Y-%m-%d %H:%M')}",
+                "error_type": "section",
+            }
+            existing.append(section_header)
+            existing.extend(traces)
+            self._write_json(session_dir / "traces" / "run_traces.json", existing)
+        else:
+            self._write_json(session_dir / "traces" / "run_traces.json", traces)
 
     # ━━━━━ 工具方法 ━━━━━
 

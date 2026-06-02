@@ -5,6 +5,7 @@ from typing import List, Dict, Any
 from core.tools import BaseTool
 from utils.parser import extract_json
 from llms.client import LLMClient
+from datetime import datetime
 
 class BaseAgent:
     def __init__(self, tools: List[BaseTool], max_loops: int = 5):
@@ -15,6 +16,17 @@ class BaseAgent:
         self.error_history = []  # 记录连续同类错误，供给构化 Reflexion 使用
         self._critique_round = False  # Pre-FINISH 自主质检标记
         self._paper_filter_round = False  # Pre-FINISH 论文筛选标记
+
+    def _add_trace(self, thought="", action="", input_data=None, observation="", error_type=""):
+        """添加带时间戳的 trace 条目"""
+        self.traces.append({
+            "timestamp": datetime.now().isoformat(),
+            "thought": thought,
+            "action": action,
+            "input": input_data or {},
+            "observation": observation,
+            "error_type": error_type,
+        })
 
     def _generate_plan(self, user_query: str) -> str:
         """Plan-and-Execute 规划阶段：在 ReAct 循环前，让 LLM 自主产出一个显式的研究计划。"""
