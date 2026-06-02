@@ -2136,15 +2136,15 @@ const notebooklm = {
 
   async removePaper(paperId) {
     if (!this.state.currentSessionId) return;
-    if (!confirm("确定移除这篇论文吗？")) return;
+    if (!confirm("确定移除这篇论文吗？（同时删除 PDF 和元数据）")) return;
 
     try {
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/papers/${encodeURIComponent(paperId)}`, {
         method: "DELETE",
       });
-      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.detail || "删除失败");
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.detail || `删除失败 (HTTP ${response.status})`);
       }
 
       if (this.state.currentPaperId === paperId) {

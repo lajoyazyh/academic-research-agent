@@ -80,6 +80,10 @@ app = FastAPI(title="Academic Agent Web", version="1.0.0")
 RUNS: Dict[str, Dict[str, Any]] = {}
 RUN_LOCK = threading.Lock()
 
+# 配置 Starlette 不对 %2F 解码（保留编码的斜杠）
+import uvicorn
+from starlette.routing import Route
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -294,7 +298,7 @@ def remove_favorite(filename: str) -> dict:
     return {"status": "unfavorited", "count": len(favs)}
 
 
-@app.get("/api/agent/document/{filename}/papers/{pdf_name}")
+@app.get("/api/agent/document/{filename}/papers/{pdf_name:path}")
 def get_pdf(filename: str, pdf_name: str) -> FileResponse:
     if "/" in filename or "\\" in filename or "/" in pdf_name or "\\" in pdf_name:
         raise HTTPException(status_code=400, detail="Invalid filename")
@@ -694,9 +698,10 @@ def get_papers(session_id: str) -> list[dict]:
     return session.get("papers", [])
 
 
-@app.delete("/api/sessions/{session_id}/papers/{paper_id}")
+@app.delete("/api/sessions/{session_id}/papers/{paper_id:path}")
 def delete_paper(session_id: str, paper_id: str) -> dict:
     """删除单篇论文"""
+    # paper_id:path 允许 ID 中包含斜杠（如 DOI: 10.2139/ssrn.xxx）
     try:
         return session_mgr.delete_paper(session_id, paper_id)
     except ValueError as e:
@@ -716,7 +721,7 @@ class UpdatePaperStatusRequest(BaseModel):
     status: str = "pending"
 
 
-@app.put("/api/sessions/{session_id}/papers/{paper_id}/status")
+@app.put("/api/sessions/{session_id}/papers/{paper_id:path}/status")
 def update_paper_status(session_id: str, paper_id: str, payload: UpdatePaperStatusRequest) -> dict:
     """更新论文审查状态"""
     try:
