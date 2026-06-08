@@ -107,9 +107,10 @@ html, body {
 .sources-head { padding: 16px 20px 10px; flex-shrink: 0; }
 .sources-head h2 { margin: 0; font-size: 16px; font-weight: 500; }
 
-.sources-toolbar { display: flex; gap: 8px; padding: 0 16px 8px; flex-shrink: 0; }
+.sources-toolbar { display: flex; gap: 8px; padding: 0 16px 8px; flex-shrink: 0; flex-wrap: wrap; }
 .sources-toolbar .primary-btn { flex: 1; justify-content: center; }
 .sources-toolbar .secondary-btn { flex: 1; justify-content: center; }
+.sources-toolbar .accent-btn { flex: 1; justify-content: center; }
 
 .sources-section { padding: 0 16px 8px; display: flex; flex-direction: column; }
 .sources-section:nth-child(3) { flex: 1; min-height: 0; overflow: hidden; }
@@ -144,7 +145,7 @@ html, body {
 .paper-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; flex-shrink: 0; }
 
 /* ====== 按钮 ====== */
-.primary-btn, .secondary-btn, .tiny-btn, .view-btn {
+.primary-btn, .secondary-btn, .accent-btn, .tiny-btn, .view-btn {
   display: inline-flex; align-items: center; gap: 6px;
   border-radius: 20px; font-size: 13px; font-weight: 500;
   cursor: pointer; border: none; padding: 8px 16px;
@@ -159,6 +160,10 @@ html, body {
 .secondary-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
 .secondary-btn:disabled { opacity: .45; cursor: default; }
 .secondary-btn:disabled:hover { background: var(--panel); }
+
+.accent-btn { background: linear-gradient(135deg, var(--accent), #7c3aed); color: var(--on-primary); }
+.accent-btn:hover { background: linear-gradient(135deg, var(--accent-hover), #6d28d9); }
+.accent-btn:disabled { opacity: .45; cursor: default; }
 
 .tiny-btn { padding: 4px 10px; font-size: 12px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); }
 .tiny-btn:hover { background: var(--hover-bg); }

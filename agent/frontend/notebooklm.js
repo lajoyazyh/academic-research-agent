@@ -15,6 +15,8 @@ const notebooklm = {
     reportEditText: "",
     isEditingReview: false,
     reviewEditText: "",
+    _autoRunning: false,
+    _autoPollTimer: null,
   },
 
   els: {},
@@ -83,6 +85,7 @@ const notebooklm = {
     this.els.keywordCancel = document.getElementById("keywordCancel");
     this.els.themeToggle = document.getElementById("themeToggle");
     this.els.cancelSearchBtn = document.getElementById("cancelSearchBtn");
+    this.els.autoRunBtn = document.getElementById("autoRunBtn");
   },
 
   async initHome() {
@@ -686,6 +689,7 @@ const notebooklm = {
   bindConsoleActions() {
     this.els.searchBtn?.addEventListener("click", () => this.primarySourceAction());
     this.els.cancelSearchBtn?.addEventListener("click", () => this.cancelSearch());
+    this.els.autoRunBtn?.addEventListener("click", () => this.startAutoRun());
     this.els.addPaperBtn?.addEventListener("click", () => this.openAddPaperModal());
     this.els.pdfFileInput?.addEventListener("change", (e) => this.handleDropZoneFile(e.target.files[0]));
     this.els.notesBtn?.addEventListener("click", () => this.generateNotesAction());
@@ -1563,6 +1567,24 @@ const notebooklm = {
       this.els.addPaperBtn.disabled = false;
     }
 
+    // 「自动进行」按钮
+    // 规则：以 _autoRunning 标志为唯一运行中判断依据，不依赖 session.state
+    if (this.els.autoRunBtn) {
+      if (this.state._autoRunning) {
+        this.els.autoRunBtn.disabled = true;
+        this.els.autoRunBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 自动进行中...';
+        this.els.autoRunBtn.style.display = "";
+      } else if (session.state === "complete") {
+        this.els.autoRunBtn.disabled = true;
+        this.els.autoRunBtn.innerHTML = '<i class="fa-solid fa-check-circle"></i> 已完成';
+        this.els.autoRunBtn.style.display = "";
+      } else {
+        this.els.autoRunBtn.disabled = false;
+        this.els.autoRunBtn.innerHTML = '<i class="fa-solid fa-forward-step"></i> 自动进行';
+        this.els.autoRunBtn.style.display = "";
+      }
+    }
+
     // 生成笔记 按钮
     // 规则：有效选中论文中，有未生成笔记的 → 亮；全都有 → 灰（不能重新生成）
     if (this.els.notesBtn) {
@@ -1662,6 +1684,15 @@ const notebooklm = {
   },
 
   async cancelSearch() {
+    // 同时取消自动模式
+    if (this.state._autoRunning) {
+      this.state._autoRunning = false;
+      if (this.state._autoPollTimer) {
+        clearInterval(this.state._autoPollTimer);
+        this.state._autoPollTimer = null;
+      }
+    }
+
     if (!this.state.currentSessionId) return;
     try {
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/cancel`, {
@@ -1676,6 +1707,164 @@ const notebooklm = {
     } catch (error) {
       alert("取消检索失败：" + error.message);
     }
+  },
+
+  async startAutoRun() {
+    const session = this.state.currentSession;
+    const sessionId = this.state.currentSessionId;
+    if (!session || !sessionId) {
+      alert("当前没有活跃的会话");
+      return;
+    }
+
+    const topic = session.topic || "";
+    if (!topic.trim()) {
+      alert("主题不能为空");
+      return;
+    }
+
+    // 如果还在 planning 阶段且无关键词，先自动生成关键词再启动
+    if (!session.keywords || !session.keywords.length || session.state === "planning") {
+      this.setConsoleStatus("planning", "正在生成关键词规划...");
+      try {
+        const planResp = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/run/plan`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic, start_phase: "plan" }),
+        });
+        const planData = await planResp.json();
+        if (!planResp.ok) throw new Error(planData.detail || "规划失败");
+
+        // 收集关键词并确认
+        const seed = sessionStorage.getItem(`notebooklm:seedKeywords:${sessionId}`) || "";
+        sessionStorage.removeItem(`notebooklm:seedKeywords:${sessionId}`);
+        let keywords = Array.isArray(planData.keywords) ? planData.keywords.slice() : [];
+        if (seed) {
+          const lines = seed.split(/[，,\n;]/).map((item) => item.trim()).filter(Boolean);
+          lines.forEach((line) => keywords.push({ original: line, english: "", synonyms: "" }));
+        }
+
+        // 保存关键词并确认
+        await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/keywords`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ keywords }),
+        });
+        await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/state`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ state: "plan_confirmed" }),
+        });
+      } catch (error) {
+        this.setConsoleStatus("error", `自动规划失败：${error.message}`);
+        return;
+      }
+    }
+
+    // 启动自动流水线
+    this.state._autoRunning = true;
+    this.setConsoleStatus("searching", "🚀 自动模式已启动，正在全自动执行...");
+    this.updateActionButtons();
+
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/run/auto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic, max_loops: 20, min_papers: 3 }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "启动失败");
+    } catch (error) {
+      this.state._autoRunning = false;
+      this.setConsoleStatus("error", `自动模式启动失败：${error.message}`);
+      this.updateActionButtons();
+      return;
+    }
+
+    // 轮询进度
+    if (this.state._autoPollTimer) {
+      clearInterval(this.state._autoPollTimer);
+    }
+
+    this.state._autoPollTimer = setInterval(async () => {
+      try {
+        // 获取运行状态（优先使用 RUNS 内存状态，它更实时）
+        const statusResp = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/run/status`);
+        const status = await statusResp.json();
+
+        const phase = status.phase || "unknown";
+        const runStatus = status.status || "unknown";
+        const message = status.message || "";
+
+        // 只在自动模式下不调用 reloadCurrentSession，避免磁盘状态覆盖 RUNS 实时状态
+        // 改为手动更新必要的 UI 部分
+        const sessionResp = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`);
+        const session = await sessionResp.json();
+        if (sessionResp.ok) {
+          this.state.currentSession = session;
+          if (session.papers?.length && !this.state.currentPaperId) {
+            this.state.currentPaperId = session.papers[0].paper_id;
+          }
+          // 只更新内容面板，不更新状态栏（状态栏由 RUNS 驱动）
+          this.renderPaperList();
+          this.renderNotesBlock();
+          this.renderReviewBlock();
+          this.renderDetailPanel();
+          this.renderChatContext();
+          this.renderViewButtons();
+        }
+
+        // 更新顶部状态（以 RUNS 内存状态为准，避免与磁盘状态冲突导致闪烁）
+        if (message) {
+          this.setConsoleStatus(phase, message);
+        } else {
+          // 无 message 时用 phase 自身作为标签
+          const phaseLabels = {
+            planning: "正在规划关键词...",
+            searching: "正在检索论文...",
+            search_complete: "搜索完成，即将生成笔记...",
+            reviewing_notes: "正在生成笔记...",
+            writing: "正在撰写综述草稿...",
+            reviewing_draft: "正在评审草稿...",
+            complete: "流程完成",
+            failed: "流程出错",
+          };
+          this.setConsoleStatus(phase, phaseLabels[phase] || phase);
+        }
+
+        // 根据阶段切换视图
+        if (phase === "search_complete") {
+          this.switchViewMode("summary");
+        } else if (phase === "reviewing_notes" || phase === "writing") {
+          // 保持当前视图
+        } else if (phase === "complete" && runStatus === "done") {
+          this.switchViewMode("review");
+        }
+
+        // 更新按钮状态
+        this.updateActionButtons();
+
+        // 检查是否完成
+        if (runStatus === "done" || runStatus === "error" || runStatus === "cancelled") {
+          clearInterval(this.state._autoPollTimer);
+          this.state._autoPollTimer = null;
+          this.state._autoRunning = false;
+
+          // 先刷新 session 再更新按钮，确保 session.state 已同步为最新
+          await this.reloadCurrentSession();
+
+          if (runStatus === "done") {
+            this.setConsoleStatus("complete", "🎉 自动流程全部完成！");
+          } else if (runStatus === "error") {
+            this.setConsoleStatus("error", `自动流程失败：${status.error || "未知错误"}`);
+          }
+          this.updateActionButtons();
+        }
+      } catch (error) {
+        // 轮询出错不中断，继续尝试
+        console.warn("自动模式轮询出错：", error);
+      }
+    }, 2500);
   },
 
   _setSearchButtons(state) {

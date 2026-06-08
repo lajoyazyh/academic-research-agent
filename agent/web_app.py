@@ -1723,6 +1723,253 @@ def revise_notes_phase(session_id: str, payload: ReviseNotesRequest) -> dict:
         raise HTTPException(status_code=500, detail=f"笔记修订执行失败: {str(e)}")
 
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  迭代三新增：「自动进行」模式 API
+#  一键触发 规划→搜索→笔记→综述 全流程自动执行
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class AutoRunRequest(BaseModel):
+    topic: str
+    max_loops: int = 20
+    min_papers: int = 3
+
+
+def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int, min_papers: int) -> None:
+    """后台自动执行完整流水线：规划 → 搜索 → 笔记 → 综述"""
+    import time as _time
+
+    run_key = f"session_{session_id}"
+    _stop_flag = [False]
+
+    def _update_run_status(phase: str, status: str, **kwargs):
+        with RUN_LOCK:
+            if run_key in RUNS:
+                entry = RUNS[run_key]
+                entry["phase"] = phase
+                entry["status"] = status
+                entry.update(kwargs)
+
+    try:
+        # ━━ 阶段 1：规划 ━━
+        _update_run_status("planning", "running", message="正在生成关键词规划...")
+
+        if _stop_flag[0]:
+            return
+
+        plan_result = run_agent_pipeline_session(
+            session_id=session_id,
+            user_topic=topic,
+            start_phase="plan",
+        )
+        if plan_result.get("initial_plan"):
+            session_mgr.save_initial_plan(session_id, plan_result["initial_plan"])
+        if plan_result.get("keywords"):
+            session_mgr.save_keywords(session_id, plan_result["keywords"])
+        if plan_result.get("traces"):
+            session_mgr.save_traces(session_id, plan_result["traces"])
+
+        keywords = plan_result.get("keywords", [])
+        _update_run_status("planning", "running",
+                          message=f"关键词规划完成，共 {len(keywords)} 个候选项，即将开始搜索...",
+                          keywords=keywords)
+
+        if _stop_flag[0]:
+            return
+
+        # ━━ 阶段 2：搜索 ━━
+        try:
+            session_mgr.update_session_state(session_id, "searching")
+        except ValueError:
+            pass
+
+        _update_run_status("searching", "running", message="正在检索论文并收集元数据...")
+
+        # 设置最低论文数
+        os.environ["AGENT_MIN_PAPERS"] = str(min_papers)
+
+        _agent_holder = {}
+
+        search_result = run_agent_pipeline_session(
+            session_id=session_id,
+            user_topic=topic,
+            start_phase="search",
+            user_keywords=keywords,
+            max_loops=max_loops,
+            agent_callback=lambda agent, wd: _agent_holder.update({"agent": agent}),
+        )
+
+        if _stop_flag[0]:
+            return
+
+        if search_result.get("papers"):
+            session_mgr.save_papers_list(session_id, search_result["papers"])
+        if search_result.get("traces"):
+            session_mgr.save_traces(session_id, search_result["traces"], append=True)
+        try:
+            session_mgr.update_session_state(session_id, "search_complete")
+        except ValueError:
+            pass
+
+        papers = search_result.get("papers", [])
+        _update_run_status("search_complete", "running",
+                          message=f"搜索完成，找到 {len(papers)} 篇论文，即将生成笔记...",
+                          papers=papers)
+
+        if _stop_flag[0]:
+            return
+
+        # ━━ 阶段 3：生成笔记 ━━
+        try:
+            session_mgr.update_session_state(session_id, "reviewing_notes")
+        except ValueError:
+            pass
+
+        _update_run_status("reviewing_notes", "running",
+                          message=f"正在为 {len(papers)} 篇论文生成深度笔记...")
+
+        if papers:
+            from llms.client import LLMClient
+            from tools.rag_note_generator import RAGNoteGenerator
+            llm = LLMClient()
+            rag = RAGNoteGenerator()
+            notes_map = {}
+
+            for idx, paper in enumerate(papers):
+                if _stop_flag[0]:
+                    break
+                pid = paper.get("paper_id", "")
+                title = paper.get("title", pid)
+                abstract = paper.get("abstract", "")
+                source_info = paper.get("source", "")
+
+                _update_run_status("reviewing_notes", "running",
+                                  message=f"正在生成笔记 ({idx+1}/{len(papers)})：{title[:50]}...")
+
+                try:
+                    paper_path = None
+                    if source_info == "agent_search":
+                        paper_path = session_mgr.get_agent_search_paper_path(session_id, pid)
+                    elif source_info == "user_custom":
+                        paper_path = session_mgr.get_user_custom_paper_path(session_id, pid)
+                    elif source_info == "user_upload":
+                        paper_path = session_mgr.get_user_upload_paper_path(session_id, title)
+
+                    note_text = rag.generate(
+                        pdf_path=str(paper_path) if paper_path else "",
+                        paper_title=title,
+                        abstract=abstract,
+                        topic=topic,
+                    )
+                    notes_map[pid] = note_text
+                except Exception as exc:
+                    notes_map[pid] = f"## 论文笔记：{title}\n\n生成笔记时出错：{str(exc)}"
+
+            if notes_map:
+                session_mgr.batch_update_paper_notes(session_id, notes_map)
+
+        _update_run_status("reviewing_notes", "running",
+                          message=f"笔记生成完成，共 {len(notes_map) if papers else 0} 篇，即将撰写综述...")
+
+        if _stop_flag[0]:
+            return
+
+        # ━━ 阶段 4：撰写综述 ━━
+        try:
+            session_mgr.update_session_state(session_id, "writing")
+        except ValueError:
+            pass
+
+        _update_run_status("writing", "running", message="正在撰写综述草稿...")
+
+        # 重新加载 session 获取最新笔记
+        session = session_mgr.load_session(session_id)
+        notes = session.get("notes", "")
+        if not notes.strip():
+            papers_data = session.get("papers", [])
+            aggregated = []
+            for p in papers_data:
+                pn = (p.get("notes") or "").strip()
+                if pn:
+                    aggregated.append(f"## {p.get('title', p.get('paper_id', ''))}\n\n{pn}")
+            notes = "\n\n---\n\n".join(aggregated)
+
+        if notes.strip():
+            from main import run_write_from_notes
+            write_result = run_write_from_notes(
+                user_topic=topic,
+                notes_content=notes,
+            )
+            if write_result.get("draft"):
+                session_mgr.save_draft(session_id, write_result["draft"])
+            # 状态机要求 writing → reviewing_draft → complete，不能直接跳
+            try:
+                session_mgr.update_session_state(session_id, "reviewing_draft")
+            except ValueError:
+                pass
+            try:
+                session_mgr.update_session_state(session_id, "complete")
+            except ValueError:
+                pass
+
+        # ━━ 完成 ━━
+        _update_run_status("complete", "done",
+                          message="🎉 自动流程全部完成！综述已生成，可在右侧查看。",
+                          result={"phase": "complete"})
+
+    except Exception as exc:
+        _update_run_status("failed", "error",
+                          message=f"自动流程失败：{str(exc)}",
+                          error=str(exc))
+        try:
+            session_mgr.update_session_state(session_id, "search_complete")
+        except ValueError:
+            pass
+
+
+@app.post("/api/sessions/{session_id}/run/auto")
+def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
+    """【自动模式】一键触发 规划→搜索→笔记→综述 全流程自动执行"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    topic = payload.topic.strip()
+    if not topic:
+        raise HTTPException(status_code=400, detail="主题不能为空")
+
+    run_key = f"session_{session_id}"
+
+    # 检查是否已有任务在运行
+    with RUN_LOCK:
+        existing = RUNS.get(run_key)
+        if existing and existing.get("status") == "running":
+            raise HTTPException(status_code=409, detail="该 Session 已有正在运行的任务，请等待完成或取消后再试")
+
+    # 初始化运行状态
+    _stop_flag = [False]
+    with RUN_LOCK:
+        RUNS[run_key] = {
+            "status": "running",
+            "phase": "queued",
+            "message": "自动流程已启动...",
+            "_stop_flag": _stop_flag,
+        }
+
+    # 后台执行
+    worker = threading.Thread(
+        target=_run_auto_pipeline_in_background,
+        args=(session_id, topic, payload.max_loops, payload.min_papers),
+        daemon=True,
+    )
+    worker.start()
+
+    return {
+        "session_id": session_id,
+        "status": "started",
+        "message": "自动流程已启动，请通过 GET /api/sessions/{session_id}/run/status 轮询进度",
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
 
