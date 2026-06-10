@@ -183,6 +183,10 @@ class SessionManager:
         # 加载轨迹
         traces = self._read_json(session_dir / "traces" / "run_traces.json") or []
 
+        # 加载聊天历史（多会话模式，自动迁移旧版）
+        self._migrate_legacy_chat(session_id)
+        conversations = self.list_conversations(session_id)
+
         return {
             "session_id": metadata.get("session_id", session_id),
             "topic": metadata.get("topic", ""),
@@ -197,6 +201,7 @@ class SessionManager:
             "draft": draft,
             "draft_version": draft_version,
             "traces": traces,
+            "conversations": conversations,
         }
 
     def list_sessions(self) -> list[dict]:
@@ -646,6 +651,100 @@ class SessionManager:
             self._write_json(session_dir / "traces" / "run_traces.json", existing)
         else:
             self._write_json(session_dir / "traces" / "run_traces.json", traces)
+
+    # ━━━━━ 多会话聊天管理 ━━━━━
+    # 每个 Session 可包含多个独立的聊天会话（Conversation）
+    # 存储结构：sessions/{id}/chats/_index.json + conv_{uuid}.json
+
+    def _conv_dir(self, session_id: str) -> Path:
+        d = self.root / session_id / "chats"
+        d.mkdir(parents=True, exist_ok=True)
+        return d
+
+    def _conv_path(self, session_id: str, conv_id: str) -> Path:
+        return self._conv_dir(session_id) / f"{conv_id}.json"
+
+    def _conv_index_path(self, session_id: str) -> Path:
+        return self._conv_dir(session_id) / "_index.json"
+
+    def create_conversation(self, session_id: str, title: str = "") -> dict:
+        """在 Session 下创建一个新的聊天会话"""
+        import uuid as _uuid
+        conv_id = f"conv_{_uuid.uuid4().hex[:8]}"
+        now = datetime.datetime.now().isoformat()
+        conv = {
+            "conv_id": conv_id,
+            "title": title or f"对话 {now[:16]}",
+            "created_at": now,
+            "message_count": 0,
+        }
+        # 保存空的会话消息文件
+        self._write_json(self._conv_path(session_id, conv_id), [])
+        # 更新索引
+        index = self._read_json(self._conv_index_path(session_id)) or []
+        index.append(conv)
+        self._write_json(self._conv_index_path(session_id), index)
+        self._touch_metadata(self.root / session_id)
+        return conv
+
+    def list_conversations(self, session_id: str) -> list[dict]:
+        """列出 Session 下的所有聊天会话"""
+        return self._read_json(self._conv_index_path(session_id)) or []
+
+    def get_conversation_messages(self, session_id: str, conv_id: str) -> list[dict]:
+        """获取某个聊天会话的所有消息"""
+        return self._read_json(self._conv_path(session_id, conv_id)) or []
+
+    def append_conversation_messages(self, session_id: str, conv_id: str, messages: list[dict]) -> None:
+        """向聊天会话追加消息"""
+        path = self._conv_path(session_id, conv_id)
+        history = self._read_json(path) or []
+        from datetime import datetime as _dt
+        for msg in messages:
+            if not msg.get("timestamp"):
+                msg["timestamp"] = _dt.now().isoformat()
+        history.extend(messages)
+        self._write_json(path, history)
+
+        # 更新索引中的 message_count
+        index = self._read_json(self._conv_index_path(session_id)) or []
+        for c in index:
+            if c.get("conv_id") == conv_id:
+                c["message_count"] = len(history)
+                c["updated_at"] = datetime.datetime.now().isoformat()
+                break
+        self._write_json(self._conv_index_path(session_id), index)
+        self._touch_metadata(self.root / session_id)
+
+    def delete_conversation(self, session_id: str, conv_id: str) -> bool:
+        """删除聊天会话"""
+        path = self._conv_path(session_id, conv_id)
+        if path.exists():
+            path.unlink()
+        index = self._read_json(self._conv_index_path(session_id)) or []
+        new_index = [c for c in index if c.get("conv_id") != conv_id]
+        self._write_json(self._conv_index_path(session_id), new_index)
+        self._touch_metadata(self.root / session_id)
+        return True
+
+    # ━━━━━ 兼容旧版聊天的迁移 ━━━━━
+
+    def _migrate_legacy_chat(self, session_id: str) -> str | None:
+        """迁移旧版 chat_history.json → 新版 chats/ 多会话模式，返回默认 conv_id"""
+        old_path = self.root / session_id / "chat_history.json"
+        if not old_path.exists():
+            return None
+
+        old_messages = self._read_json(old_path) or []
+        conv = self.create_conversation(session_id, "历史对话")
+        if old_messages:
+            self.append_conversation_messages(session_id, conv["conv_id"], old_messages)
+        # 删除旧文件
+        try:
+            old_path.unlink()
+        except Exception:
+            pass
+        return conv["conv_id"]
 
     # ━━━━━ 工具方法 ━━━━━
 

@@ -8,6 +8,8 @@ const notebooklm = {
     chatMode: "normal",
     pendingRevision: null,
     chatMessages: [],
+    currentConvId: null,
+    conversations: [],
     pollTimer: null,
     pendingSeedKeywords: "",
     lastReviewFeedback: "",
@@ -763,6 +765,19 @@ const notebooklm = {
       this.state.currentSessionId = sessionId;
       this.state.currentSession = session;
       
+      // 初始化多会话聊天
+      this.state.conversations = session.conversations || [];
+      // 如果没有会话则自动创建一个默认的
+      if (!this.state.conversations.length) {
+        await this.createConversation("默认对话");
+      }
+      // 恢复或设置当前会话
+      if (!this.state.currentConvId || !this.state.conversations.find(c => c.conv_id === this.state.currentConvId)) {
+        this.state.currentConvId = this.state.conversations[0]?.conv_id || null;
+      }
+      // 加载当前会话的聊天历史
+      await this.loadCurrentConversation();
+
       // Preserve the currentPaperId if it still exists in the refreshed session's papers
       const prevPaperId = this.state.currentPaperId;
       const paperExists = prevPaperId && session.papers?.some(p => p.paper_id === prevPaperId);
@@ -805,6 +820,7 @@ const notebooklm = {
     this.renderNotesBlock();
     this.renderReviewBlock();
     this.renderDetailPanel();
+    this.renderChatTabs();
     this.renderChatContext();
     this.updateChatPlaceholder();
     this.updateActionButtons();
@@ -1516,6 +1532,144 @@ const notebooklm = {
     this.els.chatInput.placeholder = this.state.chatMode === "agent"
       ? "输入问题；或使用 /修订 修改意见 来修订笔记/综述"
       : "输入问题，按回车发送";
+  },
+
+  // ━━━ 多会话聊天管理 ━━━
+
+  async loadCurrentConversation() {
+    if (!this.state.currentSessionId || !this.state.currentConvId) return;
+    try {
+      const response = await fetch(
+        `/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/conversations/${encodeURIComponent(this.state.currentConvId)}/messages`
+      );
+      if (!response.ok) return;
+      const data = await response.json();
+      this.state.chatMessages = data.messages || [];
+      this.renderChatMessages();
+    } catch (e) {
+      this.renderChatMessages();
+    }
+  },
+
+  renderChatTabs() {
+    const tabsEl = document.getElementById("chatTabs");
+    if (!tabsEl) return;
+    
+    const convs = this.state.conversations;
+    tabsEl.innerHTML = "";
+
+    convs.forEach((conv) => {
+      const tab = document.createElement("span");
+      tab.className = `chat-tab${conv.conv_id === this.state.currentConvId ? " active" : ""}`;
+      tab.title = conv.title || conv.conv_id;
+
+      const label = document.createElement("span");
+      label.textContent = conv.title || conv.conv_id;
+      label.addEventListener("click", () => this.switchConversation(conv.conv_id));
+      tab.appendChild(label);
+
+      // 删除按钮（至少保留一个）
+      if (convs.length > 1) {
+        const close = document.createElement("span");
+        close.className = "tab-close";
+        close.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        close.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.deleteConversation(conv.conv_id);
+        });
+        tab.appendChild(close);
+      }
+
+      tabsEl.appendChild(tab);
+    });
+
+    // + 新建按钮
+    const addBtn = document.createElement("span");
+    addBtn.className = "chat-tab-add";
+    addBtn.title = "新建对话";
+    addBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
+    addBtn.addEventListener("click", () => this.createConversation());
+    tabsEl.appendChild(addBtn);
+  },
+
+  async switchConversation(convId) {
+    if (convId === this.state.currentConvId) return;
+    this.state.currentConvId = convId;
+    this.renderChatTabs();
+    await this.loadCurrentConversation();
+  },
+
+  async createConversation(title = "") {
+    if (!this.state.currentSessionId) return;
+    try {
+      const response = await fetch(
+        `/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/conversations`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: title || `对话 ${new Date().toLocaleTimeString()}` }),
+        }
+      );
+      if (!response.ok) return;
+      const conv = await response.json();
+      this.state.conversations.push(conv);
+      this.state.currentConvId = conv.conv_id;
+      this.state.chatMessages = [];
+      this.renderChatTabs();
+      this.renderChatMessages();
+    } catch (e) { /* ignore */ }
+  },
+
+  async deleteConversation(convId) {
+    if (!this.state.currentSessionId) return;
+    if (this.state.conversations.length <= 1) {
+      alert("至少保留一个聊天会话");
+      return;
+    }
+    try {
+      const response = await fetch(
+        `/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/conversations/${encodeURIComponent(convId)}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        alert(data.detail || "删除失败");
+        return;
+      }
+      this.state.conversations = this.state.conversations.filter(c => c.conv_id !== convId);
+      if (this.state.currentConvId === convId) {
+        this.state.currentConvId = this.state.conversations[0]?.conv_id || null;
+        await this.loadCurrentConversation();
+      }
+      this.renderChatTabs();
+    } catch (e) {
+      alert("删除失败：" + e.message);
+    }
+  },
+
+  renderChatMessages() {
+    if (!this.els.chatList) return;
+    this.els.chatList.innerHTML = "";
+
+    const messages = this.state.chatMessages;
+    if (!messages || messages.length === 0) {
+      this.els.chatList.innerHTML = `
+        <div class="chat-msg">
+          <span class="chat-role">AI</span>
+          <span>选择论文后可在下方提问。笔记模式和综述模式下可请求修改。</span>
+        </div>`;
+      return;
+    }
+
+    messages.forEach((msg) => {
+      this._renderChatMsgDOM(
+        msg.role,
+        msg.text || "",
+        msg.view_mode || "",
+        msg.note || "",
+        [],
+      );
+    });
   },
 
   updateActionButtons() {
@@ -2432,6 +2586,7 @@ const notebooklm = {
           view_mode: this.state.currentViewMode,
           chat_mode: this.state.chatMode,
           current_paper_id: this.state.currentPaperId,
+          conv_id: this.state.currentConvId,
         }),
       });
       const data = await response.json().catch(() => ({}));
@@ -2516,6 +2671,7 @@ const notebooklm = {
           view_mode: this.state.currentViewMode,
           chat_mode: "agent",
           current_paper_id: this.state.currentPaperId,
+          conv_id: this.state.currentConvId,
           confirmed_revision: true,
           revision_target: target,
           revision_feedback: feedback,
@@ -2543,6 +2699,20 @@ const notebooklm = {
 
   appendChatMessage(role, text, mode, note = "", actions = []) {
     if (!this.els.chatList) return null;
+
+    // 存入 chatMessages 数组以持久化
+    if (role !== "system") {
+      this.state.chatMessages.push({
+        role, text, view_mode: mode, note,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    return this._renderChatMsgDOM(role, text, mode, note, actions);
+  },
+
+  _renderChatMsgDOM(role, text, mode, note = "", actions = []) {
+    if (!this.els.chatList) return null;
     const msg = document.createElement("div");
     msg.className = "chat-msg";
     if (role === "system") msg.style.opacity = "0.7";
@@ -2562,7 +2732,6 @@ const notebooklm = {
         button.className = `tiny-btn ${action.variant === "primary" ? "is-active" : ""}`.trim();
         button.textContent = action.label;
         button.addEventListener("click", function() {
-          // 点任何一个按钮后，整行全部变灰禁用
           const allBtns = this.parentNode.querySelectorAll("button");
           allBtns.forEach(b => { b.disabled = true; b.style.opacity = "0.4"; b.style.pointerEvents = "none"; });
           action.onClick();
@@ -2574,7 +2743,7 @@ const notebooklm = {
 
     this.els.chatList.appendChild(msg);
     this.els.chatList.scrollTop = this.els.chatList.scrollHeight;
-    return msg;  // 返回 DOM 元素以便调用方移除
+    return msg;
   },
 
   async applyReviewFeedback() {

@@ -457,6 +457,7 @@ class ChatMessageRequest(BaseModel):
     view_mode: str = "summary"
     chat_mode: str = "normal"
     current_paper_id: str | None = None
+    conv_id: str | None = None       # 多会话：指定对话 ID
     confirmed_revision: bool = False
     revision_target: str | None = None
     revision_feedback: str | None = None
@@ -1155,6 +1156,17 @@ JSON 格式如下：
     return None
 
 
+def _save_chat_exchange(session_id: str, user_msg: str, reply: str, note: str, view_mode: str, conv_id: str = "default") -> None:
+    """保存一轮对话（用户消息 + AI 回复）到指定的聊天会话"""
+    try:
+        session_mgr.append_conversation_messages(session_id, conv_id, [
+            {"role": "user", "text": user_msg, "view_mode": view_mode},
+            {"role": "agent", "text": reply, "note": note, "view_mode": view_mode},
+        ])
+    except Exception:
+        pass  # 聊天记录保存失败不应阻断回复
+
+
 @app.post("/api/sessions/{session_id}/chat")
 def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
     """统一聊天入口：普通对话与 Agent 修订动作共用一个接口。"""
@@ -1165,6 +1177,13 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
     message = payload.message.strip()
     if not message:
         raise HTTPException(status_code=400, detail="message 不能为空")
+
+    # 确定当前对话 ID：如果没传或不存在则自动创建/获取默认
+    conv_id = payload.conv_id or "default"
+    conversations = session.get("conversations", [])
+    if not any(c.get("conv_id") == conv_id for c in conversations):
+        conv_id = (conversations[0]["conv_id"] if conversations
+                   else session_mgr.create_conversation(session_id, "默认对话")["conv_id"])
 
     revision = None
     if payload.chat_mode == "agent":
@@ -1182,9 +1201,13 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
                 revision = _infer_chat_revision_ai(session, message, payload.view_mode, payload.current_paper_id)
 
     if revision and revision.get("intent") == "clarify":
+        reply = "我还不能确定你是不是在请求修改内容。你可以直接说出要改哪里，或者用 /修订 + 修改意见 明确告诉我。"
+        note = revision.get("reason", "需要你进一步澄清修改意图。")
+        _save_chat_exchange(session_id, message, reply, note, payload.view_mode, conv_id)
         return {
-            "reply": "我还不能确定你是不是在请求修改内容。你可以直接说出要改哪里，或者用 /修订 + 修改意见 明确告诉我。",
-            "note": revision.get("reason", "需要你进一步澄清修改意图。"),
+            "conv_id": conv_id,
+            "reply": reply,
+            "note": note,
             "action_taken": False,
             "action": "clarify_revision",
             "confirmation_required": False,
@@ -1198,9 +1221,13 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
         source = revision.get("source", "explicit")
 
         if source == "semantic" or source == "ai":
+            reply = "我判断你这条消息像是在请求修改内容。请在对话里确认后再执行，我会按你的确认内容进行修订。"
+            note = "已识别到修改意图，等待你确认后执行。"
+            _save_chat_exchange(session_id, message, reply, note, payload.view_mode, conv_id)
             return {
-                "reply": "我判断你这条消息像是在请求修改内容。请在对话里确认后再执行，我会按你的确认内容进行修订。",
-                "note": "已识别到修改意图，等待你确认后执行。",
+                "conv_id": conv_id,
+                "reply": reply,
+                "note": note,
                 "action_taken": False,
                 "action": "confirm_revision",
                 "confirmation_required": True,
@@ -1223,9 +1250,13 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
                 ),
             )
             fresh_session = session_mgr.load_session(session_id) or session
+            reply = "综述已根据你的反馈重新生成。"
+            note = "综述修订已完成。"
+            _save_chat_exchange(session_id, message, reply, note, payload.view_mode, conv_id)
             return {
-                "reply": "综述已根据你的反馈重新生成。",
-                "note": "综述修订已完成。",
+                "conv_id": conv_id,
+                "reply": reply,
+                "note": note,
                 "action_taken": True,
                 "action": "revise_review",
                 "confirmation_required": False,
@@ -1247,9 +1278,13 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
         except ValueError:
             pass
         fresh_session = session_mgr.load_session(session_id) or session
+        reply = "笔记已根据你的反馈修订。"
+        note = "笔记修订已完成。"
+        _save_chat_exchange(session_id, message, reply, note, payload.view_mode, conv_id)
         return {
-            "reply": "笔记已根据你的反馈修订。",
-            "note": "笔记修订已完成。",
+            "conv_id": conv_id,
+            "reply": reply,
+            "note": note,
             "action_taken": True,
             "action": "revise_notes",
             "confirmation_required": False,
@@ -1259,9 +1294,15 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
         }
 
     reply_data = _build_chat_answer(session, message, payload.view_mode, payload.current_paper_id)
+    reply = reply_data["reply"]
+    note = reply_data.get("note", "")
+
+    _save_chat_exchange(session_id, message, reply, note, payload.view_mode, conv_id)
+
     return {
-        "reply": reply_data["reply"],
-        "note": reply_data.get("note", ""),
+        "conv_id": conv_id,
+        "reply": reply,
+        "note": note,
         "action_taken": False,
         "action": "chat",
         "confirmation_required": False,
@@ -1270,6 +1311,50 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
     }
 
 
+# ━━━━━ 多会话聊天管理 API ━━━━━
+
+@app.get("/api/sessions/{session_id}/conversations")
+def list_conversations(session_id: str) -> dict:
+    """列出 Session 下所有聊天会话"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    conversations = session_mgr.list_conversations(session_id)
+    return {"session_id": session_id, "conversations": conversations}
+
+
+@app.post("/api/sessions/{session_id}/conversations")
+def create_conversation(session_id: str, payload: dict = None) -> dict:
+    """创建新的聊天会话"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    title = (payload or {}).get("title", "")
+    conv = session_mgr.create_conversation(session_id, title)
+    return conv
+
+
+@app.get("/api/sessions/{session_id}/conversations/{conv_id}/messages")
+def get_conversation_messages(session_id: str, conv_id: str) -> dict:
+    """获取某个聊天会话的所有消息"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    messages = session_mgr.get_conversation_messages(session_id, conv_id)
+    return {"session_id": session_id, "conv_id": conv_id, "messages": messages}
+
+
+@app.delete("/api/sessions/{session_id}/conversations/{conv_id}")
+def delete_conversation(session_id: str, conv_id: str) -> dict:
+    """删除聊天会话"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    conversations = session_mgr.list_conversations(session_id)
+    if len(conversations) <= 1:
+        raise HTTPException(status_code=400, detail="至少保留一个聊天会话")
+    session_mgr.delete_conversation(session_id, conv_id)
+    return {"message": "已删除"}
 # ━━━━━ 草稿管理（第一波基础接口，完整功能在第三波）━━━━━
 
 @app.get("/api/sessions/{session_id}/draft")

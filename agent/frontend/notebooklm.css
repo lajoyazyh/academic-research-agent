@@ -288,6 +288,74 @@ html, body {
   background: var(--chat-bg);
   display: flex; flex-direction: column;
 }
+
+/* 会话标签栏 */
+.chat-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.chat-tab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--subtle);
+  transition: all 0.15s;
+}
+.chat-tab:hover {
+  background: var(--hover-bg);
+  color: var(--text);
+}
+.chat-tab.active {
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 600;
+  border-color: var(--accent);
+}
+.chat-tab .tab-close {
+  opacity: 0;
+  font-size: 10px;
+  margin-left: 2px;
+  padding: 1px 3px;
+  border-radius: 3px;
+}
+.chat-tab:hover .tab-close {
+  opacity: 0.6;
+}
+.chat-tab .tab-close:hover {
+  opacity: 1;
+  background: var(--danger);
+  color: #fff;
+}
+.chat-tab-add {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px dashed var(--muted);
+  color: var(--subtle);
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.chat-tab-add:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
 .chat-messages {
   flex: 1;
   min-height: 0;
