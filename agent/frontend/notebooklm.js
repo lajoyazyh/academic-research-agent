@@ -2719,7 +2719,8 @@ const notebooklm = {
     const roleLabel = role === "user" ? "你" : role === "system" ? "" : "AI";
     const noteHtml = note ? `<span style="font-size:11px;color:var(--subtle);display:block">${this.escapeHtml(note)}</span>` : "";
     const body = document.createElement("span");
-    body.innerHTML = `${noteHtml}${this.escapeHtml(text)}`;
+    body.className = "markdown";
+    body.innerHTML = `${noteHtml}${marked.parse(text)}`;
     msg.innerHTML = `<span class="chat-role">${roleLabel}</span>`;
     msg.appendChild(body);
 

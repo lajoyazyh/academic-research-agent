@@ -623,7 +623,8 @@ const app = {
         
         const contentDiv = document.createElement('div');
         contentDiv.className = `message-content ${role}`;
-        contentDiv.textContent = text;
+        contentDiv.classList.add("markdown");
+        contentDiv.innerHTML = marked.parse(text);
         
         messageDiv.appendChild(avatarDiv);
         messageDiv.appendChild(contentDiv);
