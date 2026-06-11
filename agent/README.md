@@ -202,10 +202,13 @@ agent/
 ├── backend/
 │   ├── api.py              # 独立 API（备用）
 │   └── session_manager.py  # Session 会话状态管理（8 阶段状态机 + 自动修复）
-├── config/                 # 配置管理
+├── config/
+│   ├── __init__.py         # 配置模块
+│   └── tools.json          # 工具注册中心配置文件
 ├── core/
 │   ├── agent.py            # Agent 主循环（Plan+ReAct+Reflexion+质量门禁）
 │   ├── tools.py            # 工具基类
+│   ├── tool_registry.py    # 工具注册中心（启用/禁用 + 参数管理）
 │   └── memory.py           # 短期记忆
 ├── tools/
 │   ├── arxiv_tools.py      # arXiv 搜索/获取
@@ -226,7 +229,10 @@ agent/
 │       ├── papers/         # 论文 PDF + 元数据
 │       ├── notes/          # 笔记草稿 + 编辑历史
 │       ├── draft/          # 综述草稿多版本
-│       └── traces/         # 执行轨迹
+│       ├── traces/         # 执行轨迹
+│       └── chats/          # 多会话聊天记录
+│           ├── _index.json # 会话索引
+│           └── conv_*.json # 消息历史
 ├── prompts/                # Prompt 模板
 ├── utils/
 │   └── parser.py           # JSON 解析器
@@ -306,7 +312,18 @@ agent/
 | POST | `/api/sessions/{id}/chat` | 统一聊天入口（普通问答 + Agent 模式修订） |
 | GET | `/api/sessions/{id}/conversations` | 获取聊天会话列表 |
 | POST | `/api/sessions/{id}/conversations` | 创建新聊天会话 |
+| GET | `/api/sessions/{id}/conversations/{conv_id}/messages` | 获取指定会话的消息历史 |
 | DELETE | `/api/sessions/{id}/conversations/{conv_id}` | 删除聊天会话 |
+
+### 工具管理
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/tools` | 获取所有工具元数据（含启用状态和配置） |
+| PUT | `/api/tools/{name}/toggle` | 切换工具的启用/禁用状态 |
+| PUT | `/api/tools/{name}/config` | 更新工具配置参数 |
+| PUT | `/api/tools/batch-toggle` | 批量切换工具启用状态 |
+| POST | `/api/tools/reset` | 重置为默认配置 |
 
 ### 其他
 
@@ -349,13 +366,162 @@ from main import (
 
 ---
 
+## 工具注册中心（Tool Registry）
+
+系统内置了一个**工具注册中心**（`core/tool_registry.py`），支持动态管理 Agent 可用工具的启用/禁用状态和配置参数。
+
+### 架构
+
+```
+config/tools.json          ← 持久化配置文件（启用状态 + 参数）
+       ↕
+core/tool_registry.py      ← 注册中心（ToolRegistry 类）
+       ↕
+main.py                    ← CLI 模式从注册中心加载已启用工具
+web_app.py                 ← Web 模式通过 API 管理工具
+```
+
+### 内置工具清单（11 个）
+
+| 工具名 | 类别 | 默认状态 | 说明 |
+|--------|------|---------|------|
+| `arxiv_search` | search | ✅ 启用 | arXiv 搜索 |
+| `arxiv_fetch` | search | ✅ 启用 | arXiv 按 ID 获取详情 |
+| `arxiv_pdf_reader` | pdf | ✅ 启用 | 下载并解析 PDF 全文 |
+| `arxiv_download_pdf` | pdf | ✅ 启用 | 仅下载 PDF（轻量快速） |
+| `semantic_scholar_search` | search | ❌ 禁用 | Semantic Scholar 搜索（限流严格） |
+| `semantic_scholar_fetch` | search | ❌ 禁用 | Semantic Scholar 按 ID 获取 |
+| `crossref_search` | search | ❌ 禁用 | Crossref 关键词检索 |
+| `crossref_fetch_doi` | search | ✅ 启用 | Crossref DOI 补全元数据 |
+| `openalex_search` | search | ✅ 启用 | OpenAlex 跨学科搜索 |
+| `clear_notes` | file | ✅ 启用 | 清空研究笔记（CLI） |
+| `append_note` | file | ✅ 启用 | 追加结构化笔记（CLI） |
+
+### 管理方式
+
+**方式一：直接编辑配置文件**
+
+编辑 `config/tools.json`，修改 `enabled` 字段和 `config` 参数：
+
+```json
+{
+  "arxiv_search": {
+    "enabled": true,
+    "config": { "max_results": 10 }
+  },
+  "semantic_scholar_search": {
+    "enabled": false,
+    "config": { "limit": 5 }
+  }
+}
+```
+
+**方式二：通过 Python API**
+
+```python
+from core.tool_registry import get_registry
+
+registry = get_registry("config/tools.json")
+
+# 启用/禁用工具
+registry.set_enabled("semantic_scholar_search", True)
+
+# 调整配置参数
+registry.set_config("arxiv_search", "max_results", 10)
+
+# 批量设置
+registry.batch_set_enabled({"crossref_search": True, "openalex_search": False})
+
+# 重置为默认
+registry.reset_to_defaults()
+
+# 查看所有已启用工具
+for tool in registry.get_enabled():
+    print(f"{tool.name}: {tool.description}")
+```
+
+**方式三：CLI 模式自动加载**
+
+CLI 模式（`python main.py`）会自动从 `config/tools.json` 读取已启用的工具，仅将启用的工具注入 Agent。Web 模式的搜索阶段目前使用固定工具列表（`run_search_only`），后续将统一接入注册中心。
+
+### 工具配置参数
+
+| 工具 | 可调参数 | 默认值 | 说明 |
+|------|---------|--------|------|
+| `arxiv_search` | `max_results` | 5 | 单次搜索最大返回数 |
+| `arxiv_pdf_reader` | `read_full_default` | false | 是否默认读取全文 |
+| `semantic_scholar_search` | `limit` | 5 | 单次搜索最大返回数 |
+| `crossref_search` | `rows` | 5 | 单次搜索最大返回数 |
+| `openalex_search` | `limit` | 5 | 单次搜索最大返回数 |
+
+---
+
+## 对话系统
+
+### 多会话聊天管理
+
+每个 Session 支持**多个独立的聊天会话**（Conversation），数据存储在 `sessions/{id}/chats/` 下：
+
+```
+chats/
+├── _index.json          # 会话索引（标题、消息数、时间戳）
+├── conv_{uuid}.json     # 消息历史（role + text + timestamp）
+└── ...
+```
+
+**功能**：
+- 创建/删除聊天会话（至少保留一个）
+- 自动保存每轮对话（用户消息 + AI 回复）
+- 旧版 `chat_history.json` 自动迁移到新版多会话模式
+- 支持切换不同会话上下文
+
+### 统一聊天入口
+
+底部对话区同时承担**普通问答**和**修订协同**两种功能，共用 `POST /api/sessions/{id}/chat` 端点：
+
+```
+用户消息
+  ├── 普通模式：直接 LLM 问答（含 RAG 检索增强）
+  └── Agent 模式：
+        ├── 显式 /修订 指令 → 直接执行修订
+        ├── AI 意图判定（隐式修改）→ 确认后执行
+        └── 意图不明确 → 要求用户澄清
+```
+
+### RAG 检索增强对话
+
+对话栏集成了 **BM25 检索器**（`tools/retriever.py`），回答用户问题时自动：
+
+1. 从当前 Session 的所有已下载 PDF 中检索相关段落
+2. 将 Top-5 原文段落注入 LLM prompt
+3. 回答中标注来源（论文标题 + 页码）
+
+响应中会包含 `rag_status` 字段：`"used"`（使用了检索结果）/ `"no_results"`（未检索到）/ `"no_pdfs"`（无 PDF 文件）。
+
+### AI 判意修订流程
+
+当用户在 Agent 模式下发送消息时，系统先调用 LLM 进行意图分类：
+
+| 判定结果 | 行为 |
+|---------|------|
+| `intent=chat` | 正常问答，不触发修订 |
+| `intent=revise`（confidence >= 0.6） | 返回确认提示，用户确认后执行修订 |
+| `intent=clarify` | 提示用户明确意图 |
+
+修订支持两种目标：
+- **笔记修订**（`target=report`）：修改单篇论文的研究笔记
+- **综述修订**（`target=review`）：根据反馈重写综述草稿
+
+---
+
 ## 如何添加新工具
 
-1. 在 `tools/` 下新建 Python 文件
-2. 继承 `core.tools.BaseTool`，设置 `name`、`description`、`parameters`
-3. 实现 `execute(**kwargs)` 方法
-4. 在 `main.py` 的 `run_search_only()` 中导入并注册到工具列表
+1. 在 `tools/` 下新建 Python 文件，继承 `core.tools.BaseTool`
+2. 设置 `name`、`description`、`parameters`，实现 `execute(**kwargs)` 方法
+3. 在 `core/tool_registry.py` 的 `BUILTIN_TOOLS` 字典中注册元数据
+4. 在 `main.py` 的 `_tool_factories` 字典中注册工厂函数
 5. 在 `main.py` 的 `_build_research_query()` 中添加工具说明
+6. 新工具默认启用，可在 `config/tools.json` 中管理
 
 ---
 
@@ -366,3 +532,4 @@ from main import (
 - arXiv `id_list` 端点限流比 `search_query` 严格得多，已通过全局限流器和退避策略缓解
 - 对话区的普通问答与修订动作共用 `/api/sessions/{session_id}/chat`；修订不会直接执行，Agent 模式会先做 AI 意图判定并要求用户二次确认
 - 自动模式的笔记生成阶段依赖 `RAGNoteGenerator`，需要 Embedding 模型支持
+- Web 搜索阶段（`run_search_only`）目前使用固定工具列表，尚未接入 ToolRegistry；CLI 模式已接入
