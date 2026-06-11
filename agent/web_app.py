@@ -16,6 +16,7 @@ from pydantic import BaseModel
 
 from main import run_agent_pipeline, run_agent_pipeline_session
 from backend.session_manager import SessionManager, SessionState, STATE_LABELS, VALID_TRANSITIONS
+from backend.knowledge_base import GlobalKnowledgeBase
 from core.tool_registry import get_registry
 from llms.client import LLMClient
 from utils.parser import extract_json
@@ -28,6 +29,9 @@ SESSIONS_DIR = BASE_DIR / "sessions"
 
 # 初始化全局 SessionManager
 session_mgr = SessionManager(str(SESSIONS_DIR))
+
+# 初始化全局知识库
+global_kb = GlobalKnowledgeBase(str(SESSIONS_DIR))
 
 # ━━━ 收藏夹存储 ━━━
 FAVORITES_FILE = BASE_DIR / "favorites.json"
@@ -2413,6 +2417,110 @@ def reset_tools() -> dict:
     """重置工具配置为默认值"""
     _tool_registry.reset_to_defaults()
     return {"message": "已重置为默认配置", "tools": [t.to_dict() for t in _tool_registry.get_all()]}
+
+
+# ═══════════════════════════════════════════
+#  全局知识库 API（跨 Session 知识共享）
+# ═══════════════════════════════════════════
+
+@app.get("/api/knowledge/stats")
+def get_knowledge_stats() -> dict:
+    """获取全局知识库统计信息"""
+    return global_kb.get_stats()
+
+
+@app.get("/api/knowledge/sessions")
+def get_knowledge_sessions() -> dict:
+    """获取所有 Session 摘要（供 Copilot 上下文选择）"""
+    summaries = global_kb.get_session_summaries()
+    return {"sessions": summaries, "count": len(summaries)}
+
+
+@app.post("/api/knowledge/search")
+def search_knowledge(payload: dict) -> dict:
+    """跨 Session 全局检索"""
+    query = (payload.get("query") or "").strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="query 不能为空")
+    top_k = int(payload.get("top_k", 8))
+    results = global_kb.search(query, top_k=min(top_k, 20))
+    return {
+        "query": query,
+        "results": results,
+        "count": len(results),
+    }
+
+
+@app.post("/api/knowledge/chat")
+def global_chat(payload: dict) -> dict:
+    """全局 Copilot 对话：跨 Session 知识问答"""
+    message = (payload.get("message") or "").strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="message 不能为空")
+
+    # 1. 全局检索
+    search_results = global_kb.search(message, top_k=8)
+
+    # 2. 构建 RAG 上下文
+    rag_context = ""
+    if search_results:
+        parts = []
+        for r in search_results:
+            rtype = r.get("type", "")
+            label = {"paper_abstract": "📄", "note": "📝", "draft": "📋"}.get(rtype, "📌")
+            parts.append(
+                f"{label} [{r.get('topic', '')}] {r.get('text', '')[:800]}"
+            )
+        rag_context = "\n\n---\n\n".join(parts)
+
+    # 3. 获取统计信息作为补充上下文
+    stats = global_kb.get_stats()
+
+    system_prompt = """你是一个学术研究 Copilot 助手，帮助用户了解和管理他们的所有研究项目。
+
+你的能力：
+- 基于所有 Session 的论文、笔记、综述草稿回答用户问题
+- 帮助用户发现不同项目之间的关联
+- 提供研究进度概览和建议
+
+要求：
+- 基于检索到的资料回答，标注信息来源（Session 主题 + 内容类型）
+- 如果用户问的是全局概况，结合统计信息回答
+- 回答简洁、有条理，默认 3-6 句
+- 如果资料不足以回答，诚实说明并给出建议
+"""
+
+    user_prompt = f"""全局知识库统计：
+- 总 Session 数：{stats.get('session_count', 0)}
+- 总论文数：{stats.get('total_papers', 0)}
+- 总笔记字数：{stats.get('total_notes_chars', 0)}
+- 总综述草稿数：{stats.get('total_drafts', 0)}
+
+【跨 Session 检索到的相关资料】
+{rag_context or '（未找到相关资料）'}
+
+用户问题：{message}
+
+请基于以上资料回答。如引用资料，请标注来源（如"[Session主题] 的笔记中提到..."）。"""
+
+    try:
+        llm = _get_chat_intent_llm()
+        reply = llm.chat(system_prompt, user_prompt, []).strip()
+    except Exception as e:
+        reply = f"抱歉，生成回答时出错：{str(e)}"
+
+    return {
+        "reply": reply,
+        "search_count": len(search_results),
+        "has_rag": bool(rag_context),
+    }
+
+
+@app.post("/api/knowledge/rebuild")
+def rebuild_knowledge() -> dict:
+    """强制重建全局知识库索引"""
+    stats = global_kb.build_index(force=True)
+    return {"message": "索引已重建", "stats": stats}
 
 
 if __name__ == "__main__":

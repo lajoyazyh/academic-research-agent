@@ -2970,10 +2970,240 @@
 
 };
 
+/* ═══════════════════════════════════════════
+   全局 Copilot 侧边栏交互逻辑
+   ═══════════════════════════════════════════ */
+
+var GlobalCopilot = {
+  _open: false,
+  _loading: false,
+  _messages: [],
+  _els: {},
+
+  init: function () {
+    var self = this;
+    // 缓存 DOM 元素
+    this._els = {
+      sidebar: document.getElementById("copilotSidebar"),
+      toggle: document.getElementById("copilotToggle"),
+      close: document.getElementById("copilotClose"),
+      messages: document.getElementById("copilotMessages"),
+      input: document.getElementById("copilotInput"),
+      send: document.getElementById("copilotSend"),
+      rebuild: document.getElementById("copilotRebuild"),
+      sessionCount: document.getElementById("copilotSessionCount"),
+      paperCount: document.getElementById("copilotPaperCount"),
+      draftCount: document.getElementById("copilotDraftCount"),
+    };
+
+    if (!this._els.sidebar) return; // 非首页不初始化
+
+    // 绑定事件
+    if (this._els.toggle) {
+      this._els.toggle.addEventListener("click", function () { self.toggle(); });
+    }
+    if (this._els.close) {
+      this._els.close.addEventListener("click", function () { self.close(); });
+    }
+    if (this._els.send) {
+      this._els.send.addEventListener("click", function () { self.send(); });
+    }
+    if (this._els.input) {
+      this._els.input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          self.send();
+        }
+      });
+      // 自动调整高度
+      this._els.input.addEventListener("input", function () {
+        this.style.height = "auto";
+        this.style.height = Math.min(this.scrollHeight, 100) + "px";
+      });
+    }
+    if (this._els.rebuild) {
+      this._els.rebuild.addEventListener("click", function () { self.rebuildIndex(); });
+    }
+
+    // 绑定建议问题点击
+    var suggestions = document.querySelectorAll(".copilot-suggestion");
+    for (var i = 0; i < suggestions.length; i++) {
+      suggestions[i].addEventListener("click", function () {
+        var query = this.getAttribute("data-query");
+        if (query) {
+          self._els.input.value = query;
+          self.send();
+        }
+      });
+    }
+
+    // 点击遮罩关闭
+    var overlay = document.getElementById("copilotOverlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.className = "copilot-overlay";
+      overlay.id = "copilotOverlay";
+      document.body.appendChild(overlay);
+      overlay.addEventListener("click", function () { self.close(); });
+    }
+
+    // 加载统计信息
+    this._loadStats();
+  },
+
+  toggle: function () {
+    if (this._open) {
+      this.close();
+    } else {
+      this.open();
+    }
+  },
+
+  open: function () {
+    this._open = true;
+    this._els.sidebar.classList.add("open");
+    this._els.sidebar.setAttribute("aria-hidden", "false");
+    var overlay = document.getElementById("copilotOverlay");
+    if (overlay) overlay.classList.add("active");
+    this._loadStats();
+    // 聚焦输入框
+    setTimeout(function () {
+      var inp = document.getElementById("copilotInput");
+      if (inp) inp.focus();
+    }, 300);
+  },
+
+  close: function () {
+    this._open = false;
+    this._els.sidebar.classList.remove("open");
+    this._els.sidebar.setAttribute("aria-hidden", "true");
+    var overlay = document.getElementById("copilotOverlay");
+    if (overlay) overlay.classList.remove("active");
+  },
+
+  _loadStats: function () {
+    var self = this;
+    fetch("/api/knowledge/stats")
+      .then(function (r) { return r.json(); })
+      .then(function (stats) {
+        if (self._els.sessionCount) self._els.sessionCount.textContent = stats.session_count || 0;
+        if (self._els.paperCount) self._els.paperCount.textContent = stats.total_papers || 0;
+        if (self._els.draftCount) self._els.draftCount.textContent = stats.total_drafts || 0;
+      })
+      .catch(function () {
+        // 静默失败
+      });
+  },
+
+  send: function () {
+    var self = this;
+    var message = (this._els.input.value || "").trim();
+    if (!message || this._loading) return;
+
+    this._loading = true;
+    this._els.input.value = "";
+    this._els.input.style.height = "auto";
+    this._els.send.disabled = true;
+
+    // 添加用户消息
+    this._addMessage("user", message);
+    // 显示打字动画
+    this._showTyping();
+
+    fetch("/api/knowledge/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: message }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        self._hideTyping();
+        var reply = data.reply || "抱歉，无法生成回答。";
+        var meta = "";
+        if (data.has_rag) {
+          meta = "基于 " + data.search_count + " 条跨项目资料";
+        }
+        self._addMessage("agent", reply, meta);
+        self._loading = false;
+        self._els.send.disabled = false;
+        self._els.input.focus();
+      })
+      .catch(function (err) {
+        self._hideTyping();
+        self._addMessage("agent", "抱歉，请求失败：" + err.message);
+        self._loading = false;
+        self._els.send.disabled = false;
+      });
+  },
+
+  _addMessage: function (role, text, meta) {
+    var msgDiv = document.createElement("div");
+    msgDiv.className = "copilot-msg copilot-msg--" + role;
+    msgDiv.textContent = text;
+
+    if (meta) {
+      var metaDiv = document.createElement("div");
+      metaDiv.className = "copilot-msg-meta";
+      var badge = document.createElement("span");
+      badge.className = "copilot-msg-rag-badge";
+      badge.textContent = "📚 " + meta;
+      metaDiv.appendChild(badge);
+      msgDiv.appendChild(metaDiv);
+    }
+
+    // 隐藏欢迎消息
+    var welcome = this._els.messages.querySelector(".copilot-welcome");
+    if (welcome) welcome.style.display = "none";
+
+    this._els.messages.appendChild(msgDiv);
+    this._els.messages.scrollTop = this._els.messages.scrollHeight;
+  },
+
+  _showTyping: function () {
+    var typing = document.createElement("div");
+    typing.className = "copilot-typing";
+    typing.id = "copilotTyping";
+    typing.innerHTML = "<span></span><span></span><span></span>";
+    var welcome = this._els.messages.querySelector(".copilot-welcome");
+    if (welcome) welcome.style.display = "none";
+    this._els.messages.appendChild(typing);
+    this._els.messages.scrollTop = this._els.messages.scrollHeight;
+  },
+
+  _hideTyping: function () {
+    var typing = document.getElementById("copilotTyping");
+    if (typing) typing.remove();
+  },
+
+  rebuildIndex: function () {
+    var self = this;
+    if (!confirm("确定要重建全局知识库索引吗？这可能需要几秒钟。")) return;
+    var btn = this._els.rebuild;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 重建中...';
+    fetch("/api/knowledge/rebuild", { method: "POST" })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> 刷新索引';
+        self._loadStats();
+        // 添加系统消息
+        self._addMessage("agent", "✅ 知识库索引已重建完成。共索引 " + (data.stats && data.stats.session_count || "?") + " 个 Session。");
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> 刷新索引';
+        self._addMessage("agent", "❌ 索引重建失败：" + err.message);
+      });
+  },
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   notebooklm.init();
+  GlobalCopilot.init();
 });
 
 window.notebooklm = notebooklm;
+window.GlobalCopilot = GlobalCopilot;
 
 
