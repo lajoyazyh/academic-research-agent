@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from main import run_agent_pipeline, run_agent_pipeline_session
 from backend.session_manager import SessionManager, SessionState, STATE_LABELS, VALID_TRANSITIONS
 from backend.knowledge_base import GlobalKnowledgeBase
+from backend.copilot_session_manager import get_copilot_manager
 from core.tool_registry import get_registry
 from llms.client import LLMClient
 from utils.parser import extract_json
@@ -2453,10 +2454,12 @@ def search_knowledge(payload: dict) -> dict:
 
 @app.post("/api/knowledge/chat")
 def global_chat(payload: dict) -> dict:
-    """全局 Copilot 对话：跨 Session 知识问答"""
+    """全局 Copilot 对话：跨 Session 知识问答，支持多会话历史"""
     message = (payload.get("message") or "").strip()
     if not message:
         raise HTTPException(status_code=400, detail="message 不能为空")
+
+    copilot_session_id = (payload.get("copilot_session_id") or "").strip()
 
     # 1. 全局检索
     search_results = global_kb.search(message, top_k=8)
@@ -2509,10 +2512,20 @@ def global_chat(payload: dict) -> dict:
     except Exception as e:
         reply = f"抱歉，生成回答时出错：{str(e)}"
 
+    # 4. 保存到 Copilot 会话历史
+    if copilot_session_id:
+        try:
+            copilot_mgr.add_message(copilot_session_id, "user", message)
+            copilot_mgr.add_message(copilot_session_id, "assistant", reply,
+                                    meta={"search_count": len(search_results), "has_rag": bool(rag_context)})
+        except Exception:
+            pass  # 历史记录保存失败不阻断回复
+
     return {
         "reply": reply,
         "search_count": len(search_results),
         "has_rag": bool(rag_context),
+        "copilot_session_id": copilot_session_id or None,
     }
 
 
@@ -2521,6 +2534,64 @@ def rebuild_knowledge() -> dict:
     """强制重建全局知识库索引"""
     stats = global_kb.build_index(force=True)
     return {"message": "索引已重建", "stats": stats}
+
+
+# ═══════════════════════════════════════════
+#  Copilot 会话管理 API（多会话历史记录）
+# ═══════════════════════════════════════════
+
+# 初始化 Copilot 会话管理器
+copilot_mgr = get_copilot_manager(str(SESSIONS_DIR))
+
+
+@app.get("/api/copilot/sessions")
+def list_copilot_sessions() -> dict:
+    """列出所有 Copilot 会话"""
+    sessions = copilot_mgr.list_sessions()
+    return {"sessions": sessions, "count": len(sessions)}
+
+
+@app.post("/api/copilot/sessions")
+def create_copilot_session(payload: dict = None) -> dict:
+    """创建新的 Copilot 会话"""
+    title = (payload or {}).get("title", "新对话")
+    session = copilot_mgr.create_session(title)
+    return session
+
+
+@app.get("/api/copilot/sessions/{copilot_session_id}")
+def get_copilot_session(copilot_session_id: str) -> dict:
+    """获取 Copilot 会话完整数据（含消息历史）"""
+    session = copilot_mgr.get_session(copilot_session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Copilot 会话 {copilot_session_id} 不存在")
+    return session
+
+
+@app.delete("/api/copilot/sessions/{copilot_session_id}")
+def delete_copilot_session(copilot_session_id: str) -> dict:
+    """删除 Copilot 会话"""
+    if not copilot_mgr.delete_session(copilot_session_id):
+        raise HTTPException(status_code=404, detail=f"Copilot 会话 {copilot_session_id} 不存在")
+    return {"status": "deleted", "session_id": copilot_session_id}
+
+
+@app.put("/api/copilot/sessions/{copilot_session_id}/title")
+def rename_copilot_session(copilot_session_id: str, payload: dict) -> dict:
+    """重命名 Copilot 会话"""
+    title = (payload or {}).get("title", "").strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="title 不能为空")
+    if not copilot_mgr.rename_session(copilot_session_id, title):
+        raise HTTPException(status_code=404, detail=f"Copilot 会话 {copilot_session_id} 不存在")
+    return {"status": "renamed", "session_id": copilot_session_id, "title": title}
+
+
+@app.get("/api/copilot/sessions/{copilot_session_id}/messages")
+def get_copilot_messages(copilot_session_id: str) -> dict:
+    """获取 Copilot 会话的所有消息"""
+    messages = copilot_mgr.get_messages(copilot_session_id)
+    return {"session_id": copilot_session_id, "messages": messages, "count": len(messages)}
 
 
 if __name__ == "__main__":

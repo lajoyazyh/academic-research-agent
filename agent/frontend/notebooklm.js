@@ -2978,6 +2978,8 @@ var GlobalCopilot = {
   _open: false,
   _loading: false,
   _messages: [],
+  _currentSessionId: null,
+  _sessions: [],
   _els: {},
 
   init: function () {
@@ -2991,6 +2993,8 @@ var GlobalCopilot = {
       input: document.getElementById("copilotInput"),
       send: document.getElementById("copilotSend"),
       rebuild: document.getElementById("copilotRebuild"),
+      newChat: document.getElementById("copilotNewChat"),
+      sessionsList: document.getElementById("copilotSessionsList"),
       sessionCount: document.getElementById("copilotSessionCount"),
       paperCount: document.getElementById("copilotPaperCount"),
       draftCount: document.getElementById("copilotDraftCount"),
@@ -3023,6 +3027,11 @@ var GlobalCopilot = {
     }
     if (this._els.rebuild) {
       this._els.rebuild.addEventListener("click", function () { self.rebuildIndex(); });
+    }
+
+    // 绑定新会话按钮
+    if (this._els.newChat) {
+      this._els.newChat.addEventListener("click", function () { self.createNewSession(); });
     }
 
     // 绑定建议问题点击
@@ -3066,6 +3075,7 @@ var GlobalCopilot = {
     var overlay = document.getElementById("copilotOverlay");
     if (overlay) overlay.classList.add("active");
     this._loadStats();
+    this.loadSessions();
     // 聚焦输入框
     setTimeout(function () {
       var inp = document.getElementById("copilotInput");
@@ -3113,7 +3123,7 @@ var GlobalCopilot = {
     fetch("/api/knowledge/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: message }),
+      body: JSON.stringify({ message: message, copilot_session_id: self._currentSessionId || "" }),
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {
@@ -3195,6 +3205,162 @@ var GlobalCopilot = {
         btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> 刷新索引';
         self._addMessage("agent", "❌ 索引重建失败：" + err.message);
       });
+  },
+
+  // ═══════════════════════════════════════════
+  //  会话管理
+  // ═══════════════════════════════════════════
+
+  loadSessions: function () {
+    var self = this;
+    fetch("/api/copilot/sessions")
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        self._sessions = data.sessions || [];
+        self._renderSessions();
+      })
+      .catch(function (err) {
+        console.error("加载会话列表失败:", err);
+      });
+  },
+
+  switchSession: function (sessionId) {
+    var self = this;
+    this._currentSessionId = sessionId;
+    this._renderSessions();
+
+    // 加载会话消息
+    if (sessionId) {
+      fetch("/api/copilot/sessions/" + sessionId + "/messages")
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          // 清空当前消息
+          self._els.messages.innerHTML = '<div class="copilot-welcome"><div class="copilot-welcome-icon"><i class="fa-solid fa-lightbulb"></i></div><p>你好！我是全局 Copilot，可以基于你所有研究项目的论文、笔记和综述来回答问题。</p><p class="copilot-welcome-hint">试试问我：</p><div class="copilot-suggestions"><button class="copilot-suggestion" data-query="我目前有哪些研究项目？">我目前有哪些研究项目？</button><button class="copilot-suggestion" data-query="帮我总结一下所有项目的共同主题">帮我总结一下所有项目的共同主题</button><button class="copilot-suggestion" data-query="有哪些论文被多个项目引用？">有哪些论文被多个项目引用？</button></div></div>';
+          // 重新绑定建议问题
+          var suggestions = self._els.messages.querySelectorAll(".copilot-suggestion");
+          for (var i = 0; i < suggestions.length; i++) {
+            suggestions[i].addEventListener("click", function () {
+              var query = this.getAttribute("data-query");
+              if (query) {
+                self._els.input.value = query;
+                self.send();
+              }
+            });
+          }
+          // 添加历史消息
+          if (data.messages && data.messages.length > 0) {
+            var welcome = self._els.messages.querySelector(".copilot-welcome");
+            if (welcome) welcome.style.display = "none";
+            for (var j = 0; j < data.messages.length; j++) {
+              var msg = data.messages[j];
+              self._addMessage(msg.role, msg.content);
+            }
+          }
+        })
+        .catch(function (err) {
+          console.error("加载会话消息失败:", err);
+        });
+    } else {
+      // 清空消息显示欢迎
+      self._els.messages.innerHTML = '<div class="copilot-welcome"><div class="copilot-welcome-icon"><i class="fa-solid fa-lightbulb"></i></div><p>你好！我是全局 Copilot，可以基于你所有研究项目的论文、笔记和综述来回答问题。</p><p class="copilot-welcome-hint">试试问我：</p><div class="copilot-suggestions"><button class="copilot-suggestion" data-query="我目前有哪些研究项目？">我目前有哪些研究项目？</button><button class="copilot-suggestion" data-query="帮我总结一下所有项目的共同主题">帮我总结一下所有项目的共同主题</button><button class="copilot-suggestion" data-query="有哪些论文被多个项目引用？">有哪些论文被多个项目引用？</button></div></div>';
+      // 重新绑定建议问题
+      var suggestions = self._els.messages.querySelectorAll(".copilot-suggestion");
+      for (var i = 0; i < suggestions.length; i++) {
+        suggestions[i].addEventListener("click", function () {
+          var query = this.getAttribute("data-query");
+          if (query) {
+            self._els.input.value = query;
+            self.send();
+          }
+        });
+      }
+    }
+  },
+
+  createNewSession: function () {
+    var self = this;
+    var title = "新对话 " + new Date().toLocaleTimeString();
+    fetch("/api/copilot/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: title })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        self._sessions.push(data);
+        self.switchSession(data.session_id);
+        self._renderSessions();
+      })
+      .catch(function (err) {
+        alert("创建会话失败：" + err.message);
+      });
+  },
+
+  deleteSession: function (sessionId, event) {
+    if (event) event.stopPropagation();
+    var self = this;
+    if (!confirm("确定删除这个对话吗？")) return;
+
+    fetch("/api/copilot/sessions/" + sessionId, { method: "DELETE" })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        self._sessions = self._sessions.filter(function (s) { return s.session_id !== sessionId; });
+        if (self._currentSessionId === sessionId) {
+          self._currentSessionId = null;
+          self.switchSession(null);
+        }
+        self._renderSessions();
+      })
+      .catch(function (err) {
+        alert("删除会话失败：" + err.message);
+      });
+  },
+
+  _renderSessions: function () {
+    var self = this;
+    if (!this._els.sessionsList) return;
+    
+    var sessions = this._sessions || [];
+    if (sessions.length === 0) {
+      this._els.sessionsList.innerHTML = '<div class="copilot-sessions-empty">暂无对话记录</div>';
+      return;
+    }
+
+    this._els.sessionsList.innerHTML = "";
+    for (var i = 0; i < sessions.length; i++) {
+      var session = sessions[i];
+      var item = document.createElement("div");
+      item.className = "copilot-session-item" + (session.session_id === this._currentSessionId ? " active" : "");
+      item.innerHTML = '<span class="copilot-session-item-title">' + this._escapeHtml(session.title || "未命名") + '</span>';
+      
+      var deleteBtn = document.createElement("button");
+      deleteBtn.className = "copilot-session-item-delete";
+      deleteBtn.title = "删除";
+      deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      deleteBtn.addEventListener("click", function (sid) {
+        return function (e) { self.deleteSession(sid, e); };
+      }(session.session_id));
+      
+      item.appendChild(deleteBtn);
+      item.addEventListener("click", function (sid) {
+        return function () { self.switchSession(sid); };
+      }(session.session_id));
+      
+      this._els.sessionsList.appendChild(item);
+    }
+  },
+
+  _escapeHtml: function (text) {
+    if (typeof notebooklm !== "undefined" && notebooklm.escapeHtml) {
+      return notebooklm.escapeHtml(text);
+    }
+    var s = String(text || "");
+    s = s.split("&").join("&" + "amp;");
+    s = s.split("<").join("&" + "lt;");
+    s = s.split(">").join("&" + "gt;");
+    s = s.split('"').join("&" + "quot;");
+    s = s.split("'").join("&" + "#39;");
+    return s;
   },
 };
 

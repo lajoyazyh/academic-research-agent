@@ -1316,6 +1316,94 @@ html, body {
   color: var(--text);
 }
 
+/* Copilot Session List */
+.copilot-sessions {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.copilot-sessions-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--subtle);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.copilot-new-chat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--accent);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.copilot-new-chat-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+.copilot-sessions-list {
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 0 12px 8px;
+}
+.copilot-sessions-empty {
+  text-align: center;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.copilot-session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .15s;
+  font-size: 13px;
+  color: var(--text);
+}
+.copilot-session-item:hover {
+  background: var(--hover-bg);
+}
+.copilot-session-item.active {
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 600;
+}
+.copilot-session-item-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.copilot-session-item-delete {
+  display: none;
+  padding: 2px 6px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 11px;
+  transition: all .15s;
+}
+.copilot-session-item:hover .copilot-session-item-delete {
+  display: block;
+}
+.copilot-session-item-delete:hover {
+  color: var(--danger);
+  background: var(--red-light);
+}
+
 /* Copilot Messages Area */
 .copilot-messages {
   flex: 1;
