@@ -126,6 +126,9 @@ class ArxivDownloadPdfTool(BaseTool):
 def extract_full_text_from_pdf(pdf_path: str, session_id: str = "", paper_id: str = "") -> list[dict]:
     """
     从 PDF 文件中提取全量文本，返回段落块列表。
+    使用滑动窗口分块策略：chunk_size=500 字符，overlap=100 字符，
+    确保公式、算法描述等关键信息不会因硬切分而丢失。
+    
     每个块是一个 dict：
     {
         "paper_id": 论文 ID,
@@ -144,21 +147,45 @@ def extract_full_text_from_pdf(pdf_path: str, session_id: str = "", paper_id: st
     except Exception:
         return []
 
+    CHUNK_SIZE = 500   # 每块最大字符数
+    CHUNK_OVERLAP = 100  # 块之间重叠字符数
+
     blocks = []
     total_pages = len(doc)
     for page_num in range(total_pages):
         text = doc[page_num].get_text("text").strip()
         if not text:
             continue
-        # 按段落分块
-        paragraphs = [p.strip() for p in text.split("\n\n") if len(p.strip()) > 40]
-        for chunk_idx, para in enumerate(paragraphs):
-            blocks.append({
-                "paper_id": paper_id,
-                "page": page_num + 1,
-                "chunk_idx": chunk_idx,
-                "text": para,
-            })
+        
+        # 先按自然段落粗分，再对过长段落做滑动窗口切分
+        paragraphs = [p.strip() for p in text.split("\n\n") if len(p.strip()) > 0]
+        chunk_idx = 0
+        for para in paragraphs:
+            if len(para) <= CHUNK_SIZE:
+                blocks.append({
+                    "paper_id": paper_id,
+                    "page": page_num + 1,
+                    "chunk_idx": chunk_idx,
+                    "text": para,
+                })
+                chunk_idx += 1
+            else:
+                # 滑动窗口切分长段落
+                start = 0
+                while start < len(para):
+                    end = min(start + CHUNK_SIZE, len(para))
+                    chunk_text = para[start:end].strip()
+                    if chunk_text:
+                        blocks.append({
+                            "paper_id": paper_id,
+                            "page": page_num + 1,
+                            "chunk_idx": chunk_idx,
+                            "text": chunk_text,
+                        })
+                        chunk_idx += 1
+                    if end >= len(para):
+                        break
+                    start = end - CHUNK_OVERLAP
     doc.close()
     return blocks
 

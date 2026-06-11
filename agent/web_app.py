@@ -1037,14 +1037,14 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
         [p.get("title") or p.get("paper_id", "") for p in session.get("papers", []) if p.get("status") == "accepted"]
     )
 
-    # ━━━ 迭代三 RAG 升级：BM25 检索 PDF 原文段落 ━━━
+    # ━━━ 迭代三 RAG 升级：迭代式混合检索 PDF 原文段落 ━━━
     rag_context = ""
     _sid = session.get("session_id", "")
     if _sid:
         try:
-            from tools.retriever import search_session_papers
+            from tools.retriever import iterative_search
             _papers_dir = str(SESSIONS_DIR / _sid / "papers")
-            passages = search_session_papers(_sid, _papers_dir, message, top_k=5)
+            passages = iterative_search(_sid, _papers_dir, message, top_k=10, max_rounds=2)
             if passages:
                 rag_parts = []
                 for p in passages:
@@ -1489,9 +1489,10 @@ async def chat_message_stream(session_id: str, payload: ChatMessageRequest):
     _sid = session.get("session_id", "")
     if _sid:
         try:
-            from tools.retriever import search_session_papers
+            from tools.retriever import HybridRetriever
             _papers_dir = str(SESSIONS_DIR / _sid / "papers")
-            passages = search_session_papers(_sid, _papers_dir, message, top_k=5)
+            retriever = HybridRetriever(_sid, _papers_dir)
+            passages = retriever.iterative_retrieve(message, top_k=10)
             if passages:
                 rag_parts = []
                 for i, p in enumerate(passages):
@@ -2064,10 +2065,11 @@ def revise_notes_phase(session_id: str, payload: ReviseNotesRequest) -> dict:
 
     rag_context = ""
     try:
-        from tools.retriever import search_session_papers
+        from tools.retriever import HybridRetriever
         import os as _os
         papers_path = _os.path.join(SESSIONS_DIR, session_id, "papers")
-        passages = search_session_papers(session_id, str(papers_path), payload.feedback, top_k=5)
+        retriever = HybridRetriever(session_id, str(papers_path))
+        passages = retriever.iterative_retrieve(payload.feedback, top_k=10)
         if passages:
             parts = []
             for p in passages:

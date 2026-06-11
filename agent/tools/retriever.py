@@ -257,3 +257,85 @@ def search_session_papers(session_id: str, papers_dir: str, query: str, top_k: i
     """
     retriever = get_retriever_for_session(session_id, papers_dir)
     return retriever.search(query, top_k)
+
+
+def iterative_search(
+    session_id: str,
+    papers_dir: str,
+    query: str,
+    top_k: int = 10,
+    max_rounds: int = 2,
+) -> list[dict]:
+    """
+    迭代式混合检索：首次检索后，若结果不足或 LLM 判断需要补充，
+    自动生成追问 query 进行第二轮检索，合并去重后返回。
+
+    参数：
+        session_id: 会话 ID
+        papers_dir: PDF 目录路径
+        query: 用户原始问题
+        top_k: 每轮检索返回数量
+        max_rounds: 最大检索轮数（默认 2 轮）
+    
+    返回：合并去重后的段落列表，按混合分数排序。
+    """
+    retriever = get_retriever_for_session(session_id, papers_dir)
+    if not retriever.bm25.chunks:
+        return []
+
+    # 第一轮：直接用原始 query 检索
+    first_results = retriever.search(query, top_k=top_k)
+    if not first_results or max_rounds <= 1:
+        return first_results
+
+    # 判断是否需要第二轮检索
+    # 条件：结果数量少于 top_k 的一半，或者最高分低于阈值
+    need_second_round = False
+    if len(first_results) < max(3, top_k // 2):
+        need_second_round = True
+    elif first_results and first_results[0].get("score", 0) < 0.1:
+        need_second_round = True
+
+    if not need_second_round:
+        return first_results
+
+    # 第二轮：用 LLM 生成追问 query（换一个角度）
+    try:
+        from llms.client import LLMClient
+        llm = LLMClient()
+        # 取第一轮结果的前 3 个作为上下文
+        context_snippets = "\n".join([
+            f"- {r.get('text', '')[:200]}" for r in first_results[:3]
+        ]) if first_results else "（无）"
+        
+        expansion_prompt = f"""你是一个学术检索助手。用户提出了一个问题，但初次检索结果不够理想。
+请基于用户的问题和已有检索片段，生成 1-2 个不同角度的检索查询（用英文关键词组合），
+帮助从论文全文中找到更相关的内容。
+
+用户问题：{query}
+
+已有检索片段：
+{context_snippets}
+
+请直接输出检索查询，每行一个，不要加序号或解释。每个查询 5-15 个英文单词。"""
+        
+        raw = llm.chat("你是一个学术检索查询生成器。只输出检索查询，每行一个。", expansion_prompt, [])
+        expanded_queries = [q.strip() for q in raw.strip().split("\n") if q.strip() and len(q.strip()) > 3]
+        
+        # 合并去重：用 text 前 80 字符做 key
+        seen_keys = {r.get("text", "")[:80] for r in first_results}
+        merged = list(first_results)
+        
+        for eq in expanded_queries[:2]:  # 最多 2 个扩展查询
+            extra = retriever.search(eq, top_k=max(3, top_k // 2))
+            for r in extra:
+                key = r.get("text", "")[:80]
+                if key not in seen_keys:
+                    seen_keys.add(key)
+                    merged.append(r)
+        
+        # 按分数重新排序
+        merged.sort(key=lambda x: x.get("score", 0), reverse=True)
+        return merged[:top_k]
+    except Exception:
+        return first_results
