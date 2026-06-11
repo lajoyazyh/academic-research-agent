@@ -1,0 +1,56 @@
+{
+  "arxiv_search": {
+    "enabled": true,
+    "config": {
+      "max_results": 5
+    }
+  },
+  "arxiv_fetch": {
+    "enabled": true,
+    "config": {}
+  },
+  "arxiv_pdf_reader": {
+    "enabled": true,
+    "config": {
+      "read_full_default": false
+    }
+  },
+  "arxiv_download_pdf": {
+    "enabled": true,
+    "config": {}
+  },
+  "semantic_scholar_search": {
+    "enabled": false,
+    "config": {
+      "limit": 5
+    }
+  },
+  "semantic_scholar_fetch": {
+    "enabled": false,
+    "config": {}
+  },
+  "crossref_search": {
+    "enabled": false,
+    "config": {
+      "rows": 5
+    }
+  },
+  "crossref_fetch_doi": {
+    "enabled": true,
+    "config": {}
+  },
+  "openalex_search": {
+    "enabled": true,
+    "config": {
+      "limit": 5
+    }
+  },
+  "clear_notes": {
+    "enabled": true,
+    "config": {}
+  },
+  "append_note": {
+    "enabled": true,
+    "config": {}
+  }
+}

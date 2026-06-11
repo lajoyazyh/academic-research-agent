@@ -16,6 +16,7 @@ from pydantic import BaseModel
 
 from main import run_agent_pipeline, run_agent_pipeline_session
 from backend.session_manager import SessionManager, SessionState, STATE_LABELS, VALID_TRANSITIONS
+from core.tool_registry import get_registry
 from llms.client import LLMClient
 from utils.parser import extract_json
 
@@ -2053,6 +2054,64 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
         "status": "started",
         "message": "自动流程已启动，请通过 GET /api/sessions/{session_id}/run/status 轮询进度",
     }
+
+
+# ═══════════════════════════════════════════
+#  工具管理 API
+# ═══════════════════════════════════════════
+
+# 初始化工具注册中心（持久化到 config/tools.json）
+TOOLS_CONFIG_PATH = str(BASE_DIR / "config" / "tools.json")
+_tool_registry = get_registry(TOOLS_CONFIG_PATH)
+
+
+@app.get("/api/tools")
+def list_tools() -> dict:
+    """获取所有工具列表（含启用/禁用状态和配置）"""
+    all_tools = _tool_registry.get_all()
+    return {
+        "tools": [t.to_dict() for t in all_tools],
+        "enabled_count": len(_tool_registry.get_enabled()),
+        "total_count": len(all_tools),
+    }
+
+
+@app.put("/api/tools/{tool_name}/toggle")
+def toggle_tool(tool_name: str, payload: dict) -> dict:
+    """启用或禁用某个工具"""
+    enabled = payload.get("enabled", True)
+    success = _tool_registry.set_enabled(tool_name, enabled)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"工具 '{tool_name}' 不存在")
+    return {"tool_name": tool_name, "enabled": enabled, "message": "已更新"}
+
+
+@app.put("/api/tools/batch-toggle")
+def batch_toggle_tools(payload: dict) -> dict:
+    """批量启用/禁用工具"""
+    enabled_map = payload.get("tools", {})
+    result = _tool_registry.batch_set_enabled(enabled_map)
+    return {"result": result, "message": "批量更新完成"}
+
+
+@app.put("/api/tools/{tool_name}/config")
+def update_tool_config(tool_name: str, payload: dict) -> dict:
+    """更新工具的配置参数"""
+    key = payload.get("key")
+    value = payload.get("value")
+    if not key:
+        raise HTTPException(status_code=400, detail="缺少 'key' 参数")
+    success = _tool_registry.set_config(tool_name, key, value)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"工具 '{tool_name}' 不存在")
+    return {"tool_name": tool_name, "key": key, "value": value, "message": "配置已更新"}
+
+
+@app.post("/api/tools/reset")
+def reset_tools() -> dict:
+    """重置工具配置为默认值"""
+    _tool_registry.reset_to_defaults()
+    return {"message": "已重置为默认配置", "tools": [t.to_dict() for t in _tool_registry.get_all()]}
 
 
 if __name__ == "__main__":

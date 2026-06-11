@@ -4,6 +4,7 @@ import datetime
 import re
 from dotenv import load_dotenv, find_dotenv
 from core.agent import BaseAgent
+from core.tool_registry import get_registry
 from tools.arxiv_tools import ArxivSearchTool, ArxivFetchTool
 from tools.semantic_scholar_tools import SemanticScholarSearchTool, SemanticScholarFetchTool
 from tools.crossref_tools import CrossrefSearchTool, CrossrefFetchByDoiTool
@@ -172,16 +173,34 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
     with open(os.path.join(work_dir, "plan.md"), "w", encoding="utf-8") as f:
         f.write(initial_plan)
 
-    t1, t2 = ArxivSearchTool(), ArxivFetchTool()
-    t3, t4 = SemanticScholarSearchTool(), SemanticScholarFetchTool()
-    t5, t6 = CrossrefSearchTool(), CrossrefFetchByDoiTool()
-    t7 = ArxivPdfReaderTool(papers_dir=papers_dir)
-    t8 = ArxivDownloadPdfTool(papers_dir=papers_dir)
-    t9 = ClearNoteTool(work_dir=work_dir)
-    t10 = AppendNoteTool(work_dir=work_dir)
-    t11 = OpenAlexSearchTool()
+    # ━━━ 从工具注册中心加载已启用的工具 ━━━
+    tool_config_path = os.path.join(os.path.dirname(__file__), "config", "tools.json")
+    registry = get_registry(tool_config_path)
+    enabled_meta = registry.get_enabled()
+    enabled_names = {m.name for m in enabled_meta}
 
-    researcher_agent = BaseAgent(tools=[t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11], max_loops=max_loops)
+    # 工具名 → 实例的工厂映射
+    _tool_factories = {
+        "arxiv_search": ArxivSearchTool,
+        "arxiv_fetch": ArxivFetchTool,
+        "arxiv_pdf_reader": lambda: ArxivPdfReaderTool(papers_dir=papers_dir),
+        "arxiv_download_pdf": lambda: ArxivDownloadPdfTool(papers_dir=papers_dir),
+        "semantic_scholar_search": SemanticScholarSearchTool,
+        "semantic_scholar_fetch": SemanticScholarFetchTool,
+        "crossref_search": CrossrefSearchTool,
+        "crossref_fetch_doi": CrossrefFetchByDoiTool,
+        "openalex_search": OpenAlexSearchTool,
+        "clear_notes": lambda: ClearNoteTool(work_dir=work_dir),
+        "append_note": lambda: AppendNoteTool(work_dir=work_dir),
+    }
+
+    active_tools = []
+    for name in enabled_names:
+        factory = _tool_factories.get(name)
+        if factory:
+            active_tools.append(factory())
+
+    researcher_agent = BaseAgent(tools=active_tools, max_loops=max_loops)
     if agent_callback:
         agent_callback(researcher_agent, work_dir)
 

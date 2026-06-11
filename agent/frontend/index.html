@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/static/notebooklm.css?v=20260602">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vditor@3.10.6/dist/index.css">
   <script src="https://cdn.jsdelivr.net/npm/vditor@3.10.6/dist/index.min.js"></script>
-  <script src="/static/notebooklm.js?v=20260602e"></script>
+  <script src="/static/notebooklm.js?v=20260611a"></script>
 </head>
 <body data-page="console">
   <header class="topbar">
@@ -17,6 +17,7 @@
       <strong id="consoleTopic">Notebook 研究控制台</strong>
     </div>
     <div class="topbar-right">
+      <button class="ghost-btn" id="toolManagerBtn" title="管理 Agent 工具"><i class="fa-solid fa-toolbox"></i> 工具管理</button>
       <button class="ghost-btn" id="themeToggle" title="切换深色模式"><i class="fa-solid fa-moon"></i></button>
       <span class="state-pill"><span id="consoleStateDot" class="status-dot"></span><span id="consoleState">就绪</span></span>
       <button class="ghost-btn" onclick="window.location.href='/'"><i class="fa-solid fa-arrow-left"></i> 返回首页</button>
@@ -145,6 +146,29 @@
       <div class="modal-foot">
         <button class="secondary-btn" id="addPaperClose">取消</button>
         <button class="primary-btn" id="addPaperSubmitBtn"><i class="fa-solid fa-plus"></i> 添加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 工具管理弹窗 -->
+  <div class="modal-overlay" id="toolManagerModal" style="display:none;">
+    <div class="modal-box" style="max-width:700px; max-height:85vh; overflow-y:auto;">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-toolbox"></i> Agent 工具管理</h3>
+        <button class="ghost-btn" id="toolManagerClose"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="modal-hint">启用或禁用 Agent 可用的工具。禁用后 Agent 在调研时将无法调用该工具。</p>
+      <div class="tool-manager-stats" style="display:flex; gap:16px; margin-bottom:16px;">
+        <span class="chip" id="toolEnabledCount">已启用: 0</span>
+        <span class="chip" id="toolDisabledCount">已禁用: 0</span>
+        <button class="secondary-btn" id="toolResetBtn" style="margin-left:auto;"><i class="fa-solid fa-rotate-left"></i> 恢复默认</button>
+      </div>
+      <div id="toolManagerList">
+        <div class="empty-state">加载工具列表中...</div>
+      </div>
+      <div class="modal-foot" style="margin-top:16px;">
+        <button class="primary-btn" id="toolManagerSave"><i class="fa-solid fa-check"></i> 保存配置</button>
+        <button class="secondary-btn" id="toolManagerClose2">关闭</button>
       </div>
     </div>
   </div>

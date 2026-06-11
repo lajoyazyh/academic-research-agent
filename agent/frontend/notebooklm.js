@@ -1,4 +1,4 @@
-const notebooklm = {
+﻿const notebooklm = {
   state: {
     sessions: [],
     currentSessionId: null,
@@ -88,6 +88,16 @@ const notebooklm = {
     this.els.themeToggle = document.getElementById("themeToggle");
     this.els.cancelSearchBtn = document.getElementById("cancelSearchBtn");
     this.els.autoRunBtn = document.getElementById("autoRunBtn");
+    // 工具管理
+    this.els.toolManagerBtn = document.getElementById("toolManagerBtn");
+    this.els.toolManagerModal = document.getElementById("toolManagerModal");
+    this.els.toolManagerList = document.getElementById("toolManagerList");
+    this.els.toolManagerClose = document.getElementById("toolManagerClose");
+    this.els.toolManagerClose2 = document.getElementById("toolManagerClose2");
+    this.els.toolManagerSave = document.getElementById("toolManagerSave");
+    this.els.toolResetBtn = document.getElementById("toolResetBtn");
+    this.els.toolEnabledCount = document.getElementById("toolEnabledCount");
+    this.els.toolDisabledCount = document.getElementById("toolDisabledCount");
   },
 
   async initHome() {
@@ -713,6 +723,13 @@ const notebooklm = {
     this.els.keywordConfirm?.addEventListener("click", () => this.confirmKeywords());
     this.els.keywordCancel?.addEventListener("click", () => this.closeKeywordModal());
     this.els.keywordAdd?.addEventListener("click", () => this.addKeywordRow());
+
+    // 工具管理
+    this.els.toolManagerBtn?.addEventListener("click", () => this.openToolManager());
+    this.els.toolManagerClose?.addEventListener("click", () => this.closeToolManager());
+    this.els.toolManagerClose2?.addEventListener("click", () => this.closeToolManager());
+    this.els.toolManagerSave?.addEventListener("click", () => this.saveToolConfig());
+    this.els.toolResetBtn?.addEventListener("click", () => this.resetToolConfig());
 
     // 初始化对话助手拖拽缩放
     this.initChatResize();
@@ -2822,6 +2839,135 @@ const notebooklm = {
     if (Number.isNaN(date.getTime())) return value;
     return date.toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
   },
+
+  // ═══════════════════════════════════════════
+  //  工具管理
+  // ═══════════════════════════════════════════
+
+  async openToolManager() {
+    if (!this.els.toolManagerModal) return;
+    this.els.toolManagerModal.style.display = "flex";
+    await this.loadToolList();
+  },
+
+  closeToolManager() {
+    if (this.els.toolManagerModal) {
+      this.els.toolManagerModal.style.display = "none";
+    }
+  },
+
+  async loadToolList() {
+    if (!this.els.toolManagerList) return;
+    this.els.toolManagerList.innerHTML = '<div class="empty-state">加载中...</div>';
+    try {
+      const response = await fetch("/api/tools");
+      const data = await response.json();
+      if (!response.ok) throw new Error("加载失败");
+      this._toolData = data.tools;
+      this._renderToolList(data.tools);
+      if (this.els.toolEnabledCount) {
+        this.els.toolEnabledCount.textContent = "已启用: " + data.enabled_count;
+      }
+      if (this.els.toolDisabledCount) {
+        this.els.toolDisabledCount.textContent = "已禁用: " + (data.total_count - data.enabled_count);
+      }
+    } catch (error) {
+      this.els.toolManagerList.innerHTML = '<div class="empty-state">加载失败: ' + error.message + '</div>';
+    }
+  },
+
+  _renderToolList(tools) {
+    if (!this.els.toolManagerList) return;
+    var categoryLabels = { search: "学术搜索", pdf: "PDF 处理", file: "文件操作" };
+    var categoryIcons = { search: "fa-magnifying-glass", pdf: "fa-file-pdf", file: "fa-file-lines" };
+    var categoryIconClass = { search: "tool-icon-search", pdf: "tool-icon-pdf", file: "tool-icon-file" };
+
+    var html = "";
+    for (var i = 0; i < tools.length; i++) {
+      var tool = tools[i];
+      var cat = tool.category || "search";
+      var icon = categoryIcons[cat] || "fa-wrench";
+      var iconCls = categoryIconClass[cat] || "tool-icon-search";
+      var catLabel = categoryLabels[cat] || cat;
+      var checkedAttr = tool.enabled ? " checked" : "";
+      html += '<div class="tool-manager-item">' +
+        '<div class="tool-icon ' + iconCls + '"><i class="fa-solid ' + icon + '"></i></div>' +
+        '<div class="tool-info">' +
+          '<div class="tool-name">' + this.escapeHtml(tool.name) + '</div>' +
+          '<div class="tool-desc">' + this.escapeHtml(tool.description) + '</div>' +
+          '<div class="tool-category">' + catLabel + '</div>' +
+        '</div>' +
+        '<label class="tool-toggle">' +
+          '<input type="checkbox" data-tool="' + tool.name + '"' + checkedAttr + ' onchange="notebooklm._onToolToggle(this)">' +
+          '<span class="slider"></span>' +
+        '</label>' +
+      '</div>';
+    }
+    this.els.toolManagerList.innerHTML = html;
+  },
+
+  _onToolToggle(checkbox) {
+    var toolName = checkbox.dataset.tool;
+    if (this._toolData) {
+      for (var i = 0; i < this._toolData.length; i++) {
+        if (this._toolData[i].name === toolName) {
+          this._toolData[i].enabled = checkbox.checked;
+          break;
+        }
+      }
+    }
+    if (this._toolData && this.els.toolEnabledCount && this.els.toolDisabledCount) {
+      var enabled = 0;
+      for (var j = 0; j < this._toolData.length; j++) {
+        if (this._toolData[j].enabled) enabled++;
+      }
+      this.els.toolEnabledCount.textContent = "已启用: " + enabled;
+      this.els.toolDisabledCount.textContent = "已禁用: " + (this._toolData.length - enabled);
+    }
+  },
+
+  async saveToolConfig() {
+    if (!this._toolData) return;
+    var toolsMap = {};
+    for (var i = 0; i < this._toolData.length; i++) {
+      toolsMap[this._toolData[i].name] = this._toolData[i].enabled;
+    }
+    try {
+      var response = await fetch("/api/tools/batch-toggle", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tools: toolsMap }),
+      });
+      if (!response.ok) throw new Error("保存失败");
+      this.closeToolManager();
+      this.setConsoleStatus("search_complete", "工具配置已保存，下次调研将使用新配置");
+    } catch (error) {
+      alert("保存工具配置失败: " + error.message);
+    }
+  },
+
+  async resetToolConfig() {
+    if (!confirm("确定恢复所有工具为默认配置吗？")) return;
+    try {
+      var response = await fetch("/api/tools/reset", { method: "POST" });
+      if (!response.ok) throw new Error("重置失败");
+      var data = await response.json();
+      this._toolData = data.tools;
+      this._renderToolList(data.tools);
+      if (this.els.toolEnabledCount) {
+        var en = 0;
+        for (var i = 0; i < data.tools.length; i++) { if (data.tools[i].enabled) en++; }
+        this.els.toolEnabledCount.textContent = "已启用: " + en;
+      }
+      if (this.els.toolDisabledCount) {
+        this.els.toolDisabledCount.textContent = "已禁用: " + (data.tools.length - en);
+      }
+      this.setConsoleStatus("search_complete", "工具配置已恢复默认");
+    } catch (error) {
+      alert("重置失败: " + error.message);
+    }
+  },
+
 };
 
 document.addEventListener("DOMContentLoaded", () => {
