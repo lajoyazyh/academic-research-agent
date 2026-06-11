@@ -1955,6 +1955,10 @@ const notebooklm = {
         const sessionResp = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`);
         const session = await sessionResp.json();
         if (sessionResp.ok) {
+          // 将 RUNS 中的实时 traces 注入 session，确保轨迹视图能实时更新
+          if (status.traces && status.traces.length > 0) {
+            session.traces = status.traces;
+          }
           this.state.currentSession = session;
           if (session.papers?.length && !this.state.currentPaperId) {
             this.state.currentPaperId = session.papers[0].paper_id;
@@ -2236,6 +2240,15 @@ const notebooklm = {
           if (!pollResponse.ok) {
             throw new Error(polled.detail || "状态查询失败");
           }
+
+          // 同时获取 RUNS 内存中的实时 traces（搜索进行中时磁盘尚未写入）
+          try {
+            const runStatusResp = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/status`);
+            const runStatus = await runStatusResp.json();
+            if (runStatus.traces && runStatus.traces.length > 0) {
+              polled.traces = runStatus.traces;
+            }
+          } catch (e) { /* 忽略，使用磁盘数据兜底 */ }
 
           this.state.currentSession = polled;
           this.renderConsoleSession();
