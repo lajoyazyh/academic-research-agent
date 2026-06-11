@@ -33,6 +33,22 @@ class LLMClient:
         )
         return response.choices[0].message.content
 
+    def chat_stream(self, system_prompt: str, user_query: str, history: list):
+        """流式对话，逐 token yield 返回内容。"""
+        messages = [{'role': 'system', 'content': system_prompt}]
+        messages.extend(history)
+        if user_query:
+            messages.append({'role': 'user', 'content': user_query})
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            temperature=0.1,
+            stream=True,
+        )
+        for chunk in response:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
+
     def embed(self, texts: list[str]) -> list[list[float]]:
         """调用智谱 text-embedding API，将文本列表转为向量列表。
         使用智谱 embedding-2 模型（1536 维）。

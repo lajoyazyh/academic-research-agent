@@ -118,6 +118,12 @@ class _FakeSessionManager:
         self.session["state"] = state
         return self.session
 
+    def create_conversation(self, session_id: str, title: str = ""):
+        return {"conv_id": "default"}
+
+    def get_conversation_messages(self, session_id: str, conv_id: str):
+        return []
+
 
 class _FakeChatLLM:
     def __init__(self, responses: list[str]):
@@ -148,7 +154,6 @@ def test_chat_message_uses_ai_answer_for_normal_question(monkeypatch):
         "draft": "## 引言\n...",
     }
     fake_llm = _FakeChatLLM([
-        '{"intent":"chat","target":"none","confidence":0.98,"reason":"用户是在提问","feedback":""}',
         '这篇论文系统综述了多智能体深度强化学习中的通信方法。',
     ])
     monkeypatch.setattr("web_app.session_mgr", _FakeSessionManager(session))
@@ -163,7 +168,7 @@ def test_chat_message_uses_ai_answer_for_normal_question(monkeypatch):
     assert result["confirmation_required"] is False
     assert "系统综述了多智能体深度强化学习中的通信方法" in result["reply"]
     assert result["note"] == "基于当前论文上下文生成回答"
-    assert len(fake_llm.calls) == 2
+    assert len(fake_llm.calls) == 1
 
 
 def test_chat_message_ai_revision_returns_confirmation(monkeypatch):
