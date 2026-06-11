@@ -14,7 +14,7 @@ class ToolMeta:
     """工具的元数据描述"""
     name: str
     description: str
-    category: str  # "search" | "pdf" | "file"
+    category: str  # "search" | "pdf" | "file" | "chat" | "notes" | "register"
     parameters: Dict[str, str] = field(default_factory=dict)
     enabled: bool = True
     config: Dict[str, Any] = field(default_factory=dict)  # 工具级可调参数
@@ -109,6 +109,30 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         description="记录单篇论文的深度阅读笔记（结构化 Markdown）",
         category="file",
         parameters={"content": "结构化 Markdown 笔记，需包含论文id、标题、作者等"},
+        enabled=True,
+    ),
+    # ━━━ 新增：对话检索 / 笔记生成 / 收录管理工具 ━━━
+    "retriever": ToolMeta(
+        name="retriever",
+        description="BM25 检索器：从已下载的 PDF 全文中检索与查询最相关的段落（用于对话 RAG）",
+        category="chat",
+        parameters={"query": "检索查询文本", "top_k": "返回段落数，默认5（可选）"},
+        enabled=True,
+        config={"top_k": 5},
+    ),
+    "rag_note_generator": ToolMeta(
+        name="rag_note_generator",
+        description="基于 Embedding 向量检索生成 6 段式深度学术笔记（研究背景、核心方法、实验设置、关键结果、消融与分析、亮点与不足）",
+        category="notes",
+        parameters={"pdf_path": "PDF 文件路径", "paper_title": "论文标题", "abstract": "论文摘要", "topic": "研究主题"},
+        enabled=True,
+        config={"embedding_top_k": 5},
+    ),
+    "paper_register": ToolMeta(
+        name="paper_register",
+        description="审核论文摘要并收录（下载 PDF + 登记到论文列表），一步完成",
+        category="register",
+        parameters={"paper_id": "arXiv ID", "title": "论文标题", "authors": "作者列表", "abstract": "论文摘要"},
         enabled=True,
     ),
 }

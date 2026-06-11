@@ -2878,9 +2878,9 @@
 
   _renderToolList(tools) {
     if (!this.els.toolManagerList) return;
-    var categoryLabels = { search: "学术搜索", pdf: "PDF 处理", file: "文件操作" };
-    var categoryIcons = { search: "fa-magnifying-glass", pdf: "fa-file-pdf", file: "fa-file-lines" };
-    var categoryIconClass = { search: "tool-icon-search", pdf: "tool-icon-pdf", file: "tool-icon-file" };
+    var categoryLabels = { search: "学术搜索", pdf: "PDF 处理", file: "文件操作", chat: "对话检索", notes: "笔记生成", register: "收录管理" };
+    var categoryIcons = { search: "fa-magnifying-glass", pdf: "fa-file-pdf", file: "fa-file-lines", chat: "fa-comments", notes: "fa-pen-fancy", register: "fa-clipboard-check" };
+    var categoryIconClass = { search: "tool-icon-search", pdf: "tool-icon-pdf", file: "tool-icon-file", chat: "tool-icon-chat", notes: "tool-icon-notes", register: "tool-icon-register" };
 
     var html = "";
     for (var i = 0; i < tools.length; i++) {
@@ -2982,6 +2982,9 @@ var GlobalCopilot = {
   _sessions: [],
   _els: {},
 
+  _toolList: [],
+  _selectedTools: [],
+
   init: function () {
     var self = this;
     // 缓存 DOM 元素
@@ -2995,6 +2998,10 @@ var GlobalCopilot = {
       rebuild: document.getElementById("copilotRebuild"),
       newChat: document.getElementById("copilotNewChat"),
       sessionsList: document.getElementById("copilotSessionsList"),
+      toolsSection: document.getElementById("copilotToolsSection"),
+      toolsHead: document.getElementById("copilotToolsHead"),
+      toolsList: document.getElementById("copilotToolsList"),
+      toolsToggle: document.getElementById("copilotToolsToggle"),
       sessionCount: document.getElementById("copilotSessionCount"),
       paperCount: document.getElementById("copilotPaperCount"),
       draftCount: document.getElementById("copilotDraftCount"),
@@ -3027,6 +3034,13 @@ var GlobalCopilot = {
     }
     if (this._els.rebuild) {
       this._els.rebuild.addEventListener("click", function () { self.rebuildIndex(); });
+    }
+
+    // 绑定工具面板的展开/收起
+    if (this._els.toolsHead) {
+      this._els.toolsHead.addEventListener("click", function () {
+        self.toggleTools();
+      });
     }
 
     // 绑定新会话按钮
@@ -3076,6 +3090,7 @@ var GlobalCopilot = {
     if (overlay) overlay.classList.add("active");
     this._loadStats();
     this.loadSessions();
+    this.loadTools();
     // 聚焦输入框
     setTimeout(function () {
       var inp = document.getElementById("copilotInput");
@@ -3347,6 +3362,91 @@ var GlobalCopilot = {
       }(session.session_id));
       
       this._els.sessionsList.appendChild(item);
+    }
+  },
+
+  // ═══════════════════════════════════════════
+  //  工具管理（Copilot 内集成的工具勾选）
+  // ═══════════════════════════════════════════
+
+  toggleTools: function () {
+    var list = this._els.toolsList;
+    var toggle = this._els.toolsToggle;
+    if (!list) return;
+    if (list.classList.contains("collapsed")) {
+      list.classList.remove("collapsed");
+      if (toggle) toggle.textContent = "收起";
+    } else {
+      list.classList.add("collapsed");
+      if (toggle) toggle.textContent = "展开";
+    }
+  },
+
+  loadTools: function () {
+    var self = this;
+    fetch("/api/tools")
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        self._toolList = data.tools || [];
+        // 如果 selectedTools 为空，默认选中所有
+        if (!self._selectedTools || self._selectedTools.length === 0) {
+          self._selectedTools = self._toolList.map(function (t) { return t.name; });
+        }
+        self._renderTools();
+      })
+      .catch(function (err) {
+        console.error("加载工具列表失败:", err);
+      });
+  },
+
+  _renderTools: function () {
+    var self = this;
+    if (!this._els.toolsList) return;
+
+    var tools = this._toolList || [];
+    if (tools.length === 0) {
+      this._els.toolsList.innerHTML = '<div class="copilot-tools-empty">暂无可用工具</div>';
+      return;
+    }
+
+    var catLabels = { search: "搜索", pdf: "PDF", file: "文件", chat: "对话", notes: "笔记", register: "收录" };
+
+    this._els.toolsList.innerHTML = "";
+    for (var i = 0; i < tools.length; i++) {
+      var tool = tools[i];
+      var checked = (this._selectedTools || []).indexOf(tool.name) >= 0;
+      var cat = catLabels[tool.category] || tool.category;
+
+      var row = document.createElement("label");
+      row.className = "copilot-tool-check";
+
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.dataset.tool = tool.name;
+      cb.checked = checked;
+      cb.addEventListener("change", function (toolName) {
+        return function () {
+          var idx = self._selectedTools.indexOf(toolName);
+          if (idx >= 0) {
+            self._selectedTools.splice(idx, 1);
+          } else {
+            self._selectedTools.push(toolName);
+          }
+        };
+      }(tool.name));
+
+      var label = document.createElement("span");
+      label.className = "copilot-tool-check-label";
+      label.textContent = tool.name;
+
+      var catSpan = document.createElement("span");
+      catSpan.className = "copilot-tool-check-cat";
+      catSpan.textContent = cat;
+
+      row.appendChild(cb);
+      row.appendChild(label);
+      row.appendChild(catSpan);
+      this._els.toolsList.appendChild(row);
     }
   },
 

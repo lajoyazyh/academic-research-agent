@@ -52,5 +52,21 @@
   "append_note": {
     "enabled": true,
     "config": {}
+  },
+  "retriever": {
+    "enabled": true,
+    "config": {
+      "top_k": 5
+    }
+  },
+  "rag_note_generator": {
+    "enabled": true,
+    "config": {
+      "embedding_top_k": 5
+    }
+  },
+  "paper_register": {
+    "enabled": true,
+    "config": {}
   }
 }
