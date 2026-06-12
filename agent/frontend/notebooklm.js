@@ -76,6 +76,7 @@
     this.els.viewReview = document.getElementById("viewReview");
     this.els.viewPDF = document.getElementById("viewPDF");
     this.els.viewTrace = document.getElementById("viewTrace");
+    this.els.viewAnalysis = document.getElementById("viewAnalysis");
     this.els.chatList = document.getElementById("chatList");
     this.els.chatInput = document.getElementById("chatInput");
     this.els.chatSend = document.getElementById("chatSend");
@@ -715,6 +716,7 @@
     this.els.viewReport?.addEventListener("click", () => this.switchViewMode("report"));
     this.els.viewReview?.addEventListener("click", () => this.switchViewMode("review"));
     this.els.viewPDF?.addEventListener("click", () => this.switchViewMode("pdf"));
+    this.els.viewAnalysis?.addEventListener("click", () => this.switchViewMode("analysis"));
     this.els.viewTrace?.addEventListener("click", () => this.switchViewMode("trace"));
     this.els.chatSend?.addEventListener("click", () => this.sendChatMessage());
     this.els.chatModeToggle?.addEventListener("click", () => this.toggleChatMode());
@@ -1000,7 +1002,7 @@
     const session = this.state.currentSession;
     const paper = this.getCurrentPaper();
     const paperCount = session.papers?.length || 0;
-    const isPerSession = this.state.currentViewMode === "review" || this.state.currentViewMode === "trace";
+    const isPerSession = this.state.currentViewMode === "review" || this.state.currentViewMode === "trace" || this.state.currentViewMode === "analysis";
     const selectedLabel = isPerSession
       ? (session.topic || "未命名主题")
       : (paper ? paper.title || paper.paper_id : "未选择论文");
@@ -1026,6 +1028,8 @@
       html = this.renderTraceView(session);
     } else if (this.state.currentViewMode === "pdf") {
       html = this.renderPDFView(paper, session);
+    } else if (this.state.currentViewMode === "analysis") {
+      html = this.renderAnalysisView(session);
     } else {
       html = this.renderReviewView(session);
     }
@@ -1334,6 +1338,7 @@
       review: this.els.viewReview,
       trace: this.els.viewTrace,
       pdf: this.els.viewPDF,
+      analysis: this.els.viewAnalysis,
     };
     const paper = this.getCurrentPaper();
     const hasNotes = paper ? paper._hasNotes : false;
@@ -1355,6 +1360,8 @@
         el.disabled = !hasDraft;
       } else if (mode === "pdf") {
         el.disabled = !(paper && paper.paper_id);
+      } else if (mode === "analysis") {
+        el.disabled = false;
       }
     });
   },
@@ -1826,6 +1833,7 @@
       report: "报告",
       review: "综述",
       trace: "轨迹",
+      analysis: "分析",
     }[mode] || "摘要";
   },
 
@@ -2107,6 +2115,110 @@
     } catch (error) {
       this.setConsoleStatus("error", `生成笔记失败：${error.message}`);
     }
+  },
+
+  async generateAnalysisAction() {
+    const session = this.state.currentSession;
+    if (!session || !this.state.currentSessionId) return;
+
+    try {
+      this.setConsoleStatus("writing", "正在生成深度分析报告...");
+      const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: session.topic, analysis_type: "all" }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "分析失败");
+      }
+
+      if (!this.state.currentSession._analysis) this.state.currentSession._analysis = {};
+      if (data.compare) this.state.currentSession._analysis.compare = data.compare;
+      if (data.lineage) this.state.currentSession._analysis.lineage = data.lineage;
+      if (data.gaps) this.state.currentSession._analysis.gaps = data.gaps;
+
+      this.switchViewMode("analysis");
+      this.setConsoleStatus("complete", "深度分析报告已生成");
+    } catch (error) {
+      this.setConsoleStatus("error", `分析失败：${error.message}`);
+    }
+  },
+
+  renderAnalysisView(session) {
+    const analysis = session?._analysis || {};
+    const hasData = analysis.compare || analysis.lineage || analysis.gaps;
+
+    if (!hasData) {
+      return `
+        <div class="detail-hero">
+          <span class="topic-badge"><i class="fa-solid fa-magnifying-glass-chart"></i> 深度分析</span>
+          <h3>${this.escapeHtml(session?.topic || "当前主题")}</h3>
+          <div class="lead">基于已有笔记和论文，生成文献对比、研究脉络和空白发现三份深度分析报告。</div>
+        </div>
+        <div class="detail-blocks" style="margin-top:16px;">
+          <div class="panel-block" style="text-align:center;padding:40px;">
+            <div class="empty-state" style="margin-bottom:16px;">尚未生成分析报告</div>
+            <button class="primary-btn" onclick="notebooklm.generateAnalysisAction()" style="font-size:14px;">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> 生成深度分析报告
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    let html = `
+      <div class="detail-hero">
+        <span class="topic-badge"><i class="fa-solid fa-magnifying-glass-chart"></i> 深度分析</span>
+        <h3>${this.escapeHtml(session?.topic || "当前主题")}</h3>
+        <div class="lead">文献对比 · 研究脉络 · 空白发现</div>
+      </div>
+      <div class="detail-blocks" style="margin-top:16px;">
+    `;
+
+    if (analysis.compare) {
+      html += `
+        <div class="panel-block">
+          <div class="panel-block-head">
+            <strong><i class="fa-solid fa-table-columns"></i> 文献对比分析</strong>
+          </div>
+          <div class="markdown">${marked.parse(analysis.compare)}</div>
+        </div>
+      `;
+    }
+
+    if (analysis.lineage) {
+      html += `
+        <div class="panel-block">
+          <div class="panel-block-head">
+            <strong><i class="fa-solid fa-timeline"></i> 研究脉络梳理</strong>
+          </div>
+          <div class="markdown">${marked.parse(analysis.lineage)}</div>
+        </div>
+      `;
+    }
+
+    if (analysis.gaps) {
+      html += `
+        <div class="panel-block">
+          <div class="panel-block-head">
+            <strong><i class="fa-solid fa-lightbulb"></i> 研究空白发现</strong>
+          </div>
+          <div class="markdown">${marked.parse(analysis.gaps)}</div>
+        </div>
+      `;
+    }
+
+    html += `
+        <div class="panel-block" style="text-align:center;padding:12px;">
+          <button class="secondary-btn" onclick="notebooklm.generateAnalysisAction()" style="font-size:13px;">
+            <i class="fa-solid fa-rotate"></i> 重新生成分析报告
+          </button>
+        </div>
+      </div>
+    `;
+
+    return html;
   },
 
   async generateReviewAction() {
