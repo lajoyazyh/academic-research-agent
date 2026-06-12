@@ -779,11 +779,9 @@ def add_custom_paper(session_id: str, payload: AddCustomPaperRequest):
     reader = ArxivPdfReaderTool(papers_dir=papers_dir)
     
     res_text = reader.execute(paper_id=paper_id, read_full=True)
-    if "发生错误" in res_text or "解析失败" in res_text or "下载失败" in res_text:
-        raise HTTPException(status_code=400, detail=res_text)
+    pdf_ok = not ("发生错误" in res_text or "解析失败" in res_text)
 
     session_papers = session.get("papers", [])
-    paper_title = f"User Upload: {paper_id}"
     
     clean_id = paper_id
     if paper_id.startswith("http"):
@@ -795,14 +793,71 @@ def add_custom_paper(session_id: str, payload: AddCustomPaperRequest):
     if any(p.get("paper_id") == clean_id for p in session_papers):
         return {"message": "Success", "notes": session.get("notes", ""), "draft": session.get("draft", ""), "exists": True}
 
+    # ━━━ 获取论文元数据（标题、作者、摘要）━━━
+    paper_title = f"{paper_id}"
+    paper_authors = ""
+    paper_abstract = ""
+    paper_url = f"https://arxiv.org/abs/{clean_id}"
+
+    # 优先尝试用 arxiv_fetch 获取元数据
+    from tools.arxiv_tools import ArxivFetchTool
+    try:
+        fetch_tool = ArxivFetchTool()
+        fetch_result = fetch_tool.execute(paper_id=clean_id)
+        if fetch_result and "发生错误" not in fetch_result and "失败" not in fetch_result:
+            # 尝试从 arxiv_fetch 的返回中提取元数据
+            import re as _re
+            title_match = _re.search(r'(?:Title|标题)[：:]\s*(.+?)(?:\n|$)', fetch_result, _re.IGNORECASE)
+            if title_match:
+                paper_title = title_match.group(1).strip()
+            authors_match = _re.search(r'(?:Authors?|作者)[：:]\s*(.+?)(?:\n|$)', fetch_result, _re.IGNORECASE)
+            if authors_match:
+                paper_authors = authors_match.group(1).strip()
+            abstract_match = _re.search(r'(?:Abstract|摘要)[：:]\s*(.+?)(?:\n\w|$)', fetch_result, _re.IGNORECASE | _re.DOTALL)
+            if abstract_match:
+                paper_abstract = abstract_match.group(1).strip()[:500]
+    except Exception:
+        pass  # 如果 fetch 失败，用默认值兜底
+
+    # 如果元数据仍为空且 PDF 下载成功，用 LLM 从 PDF 文本中提取
+    if (not paper_title or paper_title == clean_id) and pdf_ok:
+        try:
+            from llms.client import LLMClient
+            llm = LLMClient()
+            extract_prompt = f"""从以下论文文本中提取标题和作者。只输出 JSON，不要其他内容。
+
+论文文本片段：
+{res_text[:2000]}
+
+请输出：
+{{"title": "论文标题", "authors": "作者列表"}}
+"""
+            raw = llm.chat("你是精确的元数据提取工具。只输出JSON。", extract_prompt, [])
+            import re as _re
+            jmatch = _re.search(r'\{[\s\S]*\}', raw)
+            if jmatch:
+                import json as _json
+                meta = _json.loads(jmatch.group())
+                if meta.get("title"):
+                    paper_title = meta["title"]
+                if meta.get("authors"):
+                    paper_authors = meta["authors"]
+        except Exception:
+            pass
+
     # 从删除列表中移除，允许重新添加
     session_mgr.undelete_paper(session_id, clean_id)
 
     session_papers.append({
         "paper_id": clean_id,
         "title": paper_title,
+        "authors": paper_authors,
+        "abstract": paper_abstract,
+        "url": paper_url,
         "source": "user_custom",
-        "status": "accepted"
+        "source_type": "arxiv",
+        "status": "accepted",
+        "added_at": datetime.datetime.now().isoformat(),
     })
     session_mgr.save_papers_list(session_id, session_papers)
 
@@ -874,9 +929,35 @@ async def upload_paper(session_id: str, file: UploadFile = File(...)):
 
     session_papers = session.get("papers", [])
     paper_title = f"{safe_filename}"
+    paper_authors = ""
 
     if any(p.get("paper_id") == clean_id for p in session_papers):
         return {"message": "Success", "notes": session.get("notes", ""), "draft": session.get("draft", ""), "exists": True, "paper_id": clean_id}
+
+    # ━━━ 从 PDF 文本中提取元数据（标题、作者）━━━
+    try:
+        from llms.client import LLMClient
+        llm = LLMClient()
+        extract_prompt = f"""从以下 PDF 论文文本中提取标题和作者。只输出 JSON，不要其他内容。
+
+PDF 文本片段（前 5 页）：
+{res_text[:2000]}
+
+请输出：
+{{"title": "论文标题", "authors": "作者列表"}}
+"""
+        raw = llm.chat("你是精确的元数据提取工具。只输出JSON。", extract_prompt, [])
+        import re as _re
+        jmatch = _re.search(r'\{[\s\S]*\}', raw)
+        if jmatch:
+            import json as _json
+            meta = _json.loads(jmatch.group())
+            if meta.get("title"):
+                paper_title = meta["title"]
+            if meta.get("authors"):
+                paper_authors = meta["authors"]
+    except Exception:
+        pass  # 如果 LLM 提取失败，用文件名兜底
 
     # 从删除列表中移除，允许重新添加
     session_mgr.undelete_paper(session_id, clean_id)
@@ -884,8 +965,11 @@ async def upload_paper(session_id: str, file: UploadFile = File(...)):
     session_papers.append({
         "paper_id": clean_id,
         "title": paper_title,
+        "authors": paper_authors,
         "source": "user_upload",
-        "status": "accepted"
+        "source_type": "pdf",
+        "status": "accepted",
+        "added_at": datetime.datetime.now().isoformat(),
     })
     session_mgr.save_papers_list(session_id, session_papers)
 
