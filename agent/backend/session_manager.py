@@ -68,9 +68,10 @@ class SessionManager:
 
     # ━━━━━ 基础 CRUD ━━━━━
 
-    def create_session(self, topic: str, keywords: list = None) -> dict:
+    def create_session(self, topic: str, keywords: list = None, skills: dict = None) -> dict:
         """创建新 Session，生成唯一 ID 和完整目录结构
         keywords: 可选的初始关键词列表（字符串或已结构化数组）
+        skills: 可选的自定义 Skill 配置 {"search": "skill_xxx", "notes": null, "write": null}
         """
         session_id = f"sess_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
         session_dir = self.root / session_id
@@ -91,6 +92,7 @@ class SessionManager:
             "created_at": now,
             "updated_at": now,
             "rewrite_count": 0,
+            "skills": skills or {},
         }
         self._write_json(session_dir / "metadata.json", metadata)
 
@@ -194,6 +196,7 @@ class SessionManager:
             "created_at": metadata.get("created_at", ""),
             "updated_at": metadata.get("updated_at", ""),
             "rewrite_count": metadata.get("rewrite_count", 0),
+            "skills": metadata.get("skills", {}),
             "initial_plan": initial_plan,
             "keywords": keywords,
             "papers": papers,

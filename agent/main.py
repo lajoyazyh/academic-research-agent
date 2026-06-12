@@ -2,6 +2,7 @@ import json
 import os
 import datetime
 import re
+from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
 from core.agent import BaseAgent
 from core.tool_registry import get_registry
@@ -12,6 +13,42 @@ from tools.openalex_tools import OpenAlexSearchTool
 from tools.pdf_tools import ArxivPdfReaderTool, ArxivDownloadPdfTool
 from tools.file_tools import ClearNoteTool, AppendNoteTool
 from llms.client import LLMClient
+
+
+def _load_skill_content(session_id: str = None, skill_id: str = None) -> str:
+    """从 Session metadata 或直接 skill_id 加载 Skill 内容。
+    返回 skill.md 的 Markdown 文本，失败时返回空字符串。
+    """
+    if not skill_id:
+        return ""
+    try:
+        base_dir = os.path.dirname(__file__)
+        skill_path = os.path.join(base_dir, "sessions", ".skills", f"{skill_id}.json")
+        if not os.path.exists(skill_path):
+            return ""
+        with open(skill_path, "r", encoding="utf-8") as f:
+            skill = json.loads(f.read())
+        if skill.get("deleted"):
+            return ""
+        return str(skill.get("content", ""))
+    except Exception:
+        return ""
+
+
+def _get_skills_for_session(session_id: str = None) -> dict:
+    """从 Session metadata 读取 skills 配置，返回 {"search": skill_id, ...}"""
+    if not session_id:
+        return {}
+    try:
+        base_dir = os.path.dirname(__file__)
+        meta_path = os.path.join(base_dir, "sessions", session_id, "metadata.json")
+        if not os.path.exists(meta_path):
+            return {}
+        with open(meta_path, "r", encoding="utf-8") as f:
+            meta = json.loads(f.read())
+        return meta.get("skills", {})
+    except Exception:
+        return {}
 
 
 WRITER_SECTION_TITLES = [
@@ -44,13 +81,14 @@ def _build_initial_plan(llm: LLMClient, topic: str) -> str:
     return plan
 
 
-def _build_writer_outline(llm: LLMClient, topic: str, notes_content: str) -> str:
+def _build_writer_outline(llm: LLMClient, topic: str, notes_content: str, skill_prefix: str = "") -> str:
     outline_prompt = f"""你是学术综述写作规划师。请基于给定调研笔记，为主题《{topic}》生成一份中文 Markdown 大纲。
 要求：
 1. 必须包含以下四个二级标题：{', '.join(WRITER_SECTION_TITLES)}。
 2. 每个二级标题下至少给出 3 条要点，突出方法、实验、指标与对比结论。
 3. 输出仅包含大纲本身，不要写正文段落。
 
+{skill_prefix}
 【调研笔记】
 {notes_content}
 """
@@ -62,11 +100,21 @@ def _build_writer_outline(llm: LLMClient, topic: str, notes_content: str) -> str
     return outline
 
 
-def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, outline: str) -> str:
+def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, outline: str, skill_content: str = "") -> str:
+    # 构建写作风格注入前缀
+    writing_skill_prefix = ""
+    if skill_content:
+        writing_skill_prefix = (
+            "## 🎯 用户自定义写作风格要求\n"
+            "请在写作中严格遵循以下风格和内容要求：\n\n"
+            f"{skill_content}\n\n"
+            "---\n\n"
+        )
+
     section_texts = []
     for idx, section_title in enumerate(WRITER_SECTION_TITLES, start=1):
         previous_text = "\n\n".join(section_texts)
-        section_prompt = f"""你是学术综述写作者。请只撰写《{topic}》综述的第 {idx} 节：{section_title}。
+        section_prompt = f"""{writing_skill_prefix}你是学术综述写作者。请只撰写《{topic}》综述的第 {idx} 节：{section_title}。
 写作要求：
 1. 使用 Markdown 二级标题，标题必须是：## {section_title}。
 2. 内容要具体引用笔记中的模型、方法、实验指标和对比结论，不要空话。
@@ -90,10 +138,24 @@ def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, 
     return "\n\n".join(section_texts)
 
 
-def compose_review_from_notes(topic: str, notes_content: str) -> tuple[str, str]:
+def compose_review_from_notes(topic: str, notes_content: str, write_skill_content: str = "") -> tuple[str, str]:
     llm = LLMClient()
-    outline = _build_writer_outline(llm, topic, notes_content)
-    body = _compose_review_by_sections(llm, topic, notes_content, outline)
+
+    # ━━━ Skill 注入：write 类型的自定义提示词 ━━━
+    if write_skill_content:
+        # 将 skill 内容注入到 outline prompt 中作为写作策略指导
+        outline_skill_prefix = (
+            "## 🎯 用户自定义写作策略\n"
+            "请严格遵循以下用户定义的综述写作策略：\n\n"
+            f"{write_skill_content}\n\n"
+            "---\n\n"
+            "## 📋 基本大纲要求\n"
+        )
+    else:
+        outline_skill_prefix = ""
+
+    outline = _build_writer_outline(llm, topic, notes_content, outline_skill_prefix)
+    body = _compose_review_by_sections(llm, topic, notes_content, outline, write_skill_content)
     review = f"## 综述大纲\n\n{outline}\n\n---\n\n{body}"
     return outline, review
 
@@ -504,6 +566,24 @@ def run_search_only(
         agent_callback(researcher_agent, work_dir)
 
     research_query = _build_research_query(user_topic, initial_plan, confirmed_keywords)
+
+    # ━━━ Skill 注入：加载 search 类型的自定义提示词 ━━━
+    skill_injected = ""
+    if session_id:
+        skills = _get_skills_for_session(session_id)
+        search_skill_id = skills.get("search")
+        if search_skill_id:
+            skill_content = _load_skill_content(skill_id=search_skill_id)
+            if skill_content:
+                skill_injected = (
+                    "## 🎯 用户自定义 Skill（替代默认搜索策略）\n"
+                    "请严格遵循以下用户定义的策略进行文献搜索：\n\n"
+                    f"{skill_content}\n\n"
+                    "---\n\n"
+                )
+                research_query = skill_injected + research_query
+                print(f"📌 [Skill] 已注入搜索 Skill: {search_skill_id}")
+
     final_answer = researcher_agent.run(research_query)
 
     # PDF 自动下载
@@ -560,6 +640,7 @@ def run_write_from_notes(
     user_feedback: str = "",
     rewrite_count: int = 0,
     max_rewrites: int = 100,
+    session_id: str = None,
 ) -> dict:
     """
     【阶段 3：撰写综述】基于笔记内容生成/重写综述初稿。
@@ -571,6 +652,7 @@ def run_write_from_notes(
         user_feedback: 用户反馈意见（重写时传入）
         rewrite_count: 当前重写次数
         max_rewrites: 最大重写次数
+        session_id: Session ID（用于加载 write Skill）
     """
     load_dotenv(find_dotenv(usecwd=True))
 
@@ -585,9 +667,24 @@ def run_write_from_notes(
 
     llm = LLMClient()
 
+    # ━━━ Skill 注入：加载 write 类型的自定义提示词 ━━━
+    write_skill_content = ""
+    if session_id:
+        skills_config = _get_skills_for_session(session_id)
+        write_skill_id = skills_config.get("write")
+        if write_skill_id:
+            write_skill_content = _load_skill_content(skill_id=write_skill_id)
+            if write_skill_content:
+                print(f"📌 [Skill] 已注入写作 Skill: {write_skill_id}")
+
     if user_feedback and previous_draft:
         # 带反馈的重写
-        feedback_prompt = f"""你是学术综述修改专家。请根据用户反馈修改综述。
+        # Skill 注入到反馈修订 system prompt
+        skill_prefix = ""
+        if write_skill_content:
+            skill_prefix = f"请遵循以下写作风格要求：\n\n{write_skill_content}\n\n---\n\n"
+
+        feedback_prompt = f"""{skill_prefix}你是学术综述修改专家。请根据用户反馈修改综述。
 
 【用户反馈】
 {user_feedback}
@@ -608,7 +705,7 @@ def run_write_from_notes(
             new_draft = previous_draft
     else:
         # 首次撰写
-        outline, review = compose_review_from_notes(user_topic, notes_content)
+        outline, review = compose_review_from_notes(user_topic, notes_content, write_skill_content)
         new_draft = review
 
     return {
@@ -697,6 +794,7 @@ def run_agent_pipeline_session(
         result = run_write_from_notes(
             user_topic=user_topic,
             notes_content=notes_content,
+            session_id=session_id,
         )
         result["session_id"] = session_id
         return result

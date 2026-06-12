@@ -94,6 +94,7 @@ class RAGNoteGenerator:
         paper_title: str,
         abstract: str,
         topic: str,
+        skill_content: str = "",
     ) -> str:
         """
         主入口：为一篇论文生成完整学术笔记。
@@ -103,6 +104,7 @@ class RAGNoteGenerator:
             paper_title: 论文标题
             abstract: 论文摘要
             topic: 研究主题
+            skill_content: 用户自定义 notes Skill 内容（注入为系统提示词前缀）
 
         Returns:
             Markdown 格式的完整学术笔记
@@ -129,7 +131,7 @@ class RAGNoteGenerator:
         sections_output = []
         for section in self.SECTIONS:
             section_text = self._generate_section(
-                section, blocks, embeddings, paper_title, abstract, topic
+                section, blocks, embeddings, paper_title, abstract, topic, skill_content
             )
             sections_output.append(f"- **{section['name']}**：{section_text}")
 
@@ -144,6 +146,7 @@ class RAGNoteGenerator:
         paper_title: str,
         abstract: str,
         topic: str,
+        skill_content: str = "",
     ) -> str:
         """为单个维度检索 + 生成笔记"""
         # 构建查询
@@ -171,7 +174,10 @@ class RAGNoteGenerator:
             rag_text = abstract or "（无法检索原文）"
 
         # LLM 生成
-        prompt = f"""你是严谨的学术研究员。请为以下论文撰写「{section['name']}」部分的笔记。
+        skill_prefix = ""
+        if skill_content:
+            skill_prefix = f"请遵循以下笔记写作风格要求：\n\n{skill_content}\n\n---\n\n"
+        prompt = f"""{skill_prefix}你是严谨的学术研究员。请为以下论文撰写「{section['name']}」部分的笔记。
 
 研究主题：{topic}
 论文标题：{paper_title}

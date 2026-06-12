@@ -31,9 +31,15 @@
       <div class="home-bottom-row">
         <div class="home-bottom-col">
           <div class="home-section-head">
-            <h2>使用指南</h2>
+            <h2>快捷入口</h2>
           </div>
           <div class="home-grid" id="guideRail">
+            <article class="home-card home-card--ghost" role="button" tabindex="0" onclick="window.location.href='/app/skills'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='/app/skills';}">
+              <div class="home-card-inner">
+                <span class="home-card-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                <span class="home-card-label">Skills</span>
+              </div>
+            </article>
             <article class="home-card home-card--ghost" role="button" tabindex="0" onclick="window.location.href='/app/help'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='/app/help';}">
               <div class="home-card-inner">
                 <span class="home-card-icon"><i class="fa-solid fa-circle-info"></i></span>
@@ -85,6 +91,37 @@
         </div>
         <div id="homeKeywordList" class="keyword-plan-list">
           <div class="keyword-plan-empty">输入主题后点击“生成规划”，系统会先给出可编辑的关键词建议。</div>
+        </div>
+      </div>
+      <!-- Skill 调用选择器 -->
+      <div class="planning-block" id="skillSelectBlock">
+        <div class="planning-block-head">
+          <strong><i class="fa-solid fa-wand-magic-sparkles"></i> Skill 调用（可选）</strong>
+          <a href="/app/skills" target="_blank" class="skill-new-link" title="创建新 Skill">创建新 Skill <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+        </div>
+        <div class="skill-select-row">
+          <div class="skill-select-col">
+            <label class="skill-select-label">AI 检索论文</label>
+            <select id="skillSelectSearch" class="skill-select">
+              <option value="">— 默认提示词 —</option>
+            </select>
+          </div>
+          <div class="skill-select-col">
+            <label class="skill-select-label">笔记生成</label>
+            <select id="skillSelectNotes" class="skill-select">
+              <option value="">— 默认提示词 —</option>
+            </select>
+          </div>
+          <div class="skill-select-col">
+            <label class="skill-select-label">综述生成</label>
+            <select id="skillSelectWrite" class="skill-select">
+              <option value="">— 默认提示词 —</option>
+            </select>
+          </div>
+        </div>
+        <div class="skill-select-hint">
+          <i class="fa-solid fa-circle-info"></i>
+          选择 Skill 后，对应阶段的 AI 行为将按你定义的策略执行。留空则使用默认行为。
         </div>
       </div>
       <div class="modal-actions">

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills — 智能学术综述助手</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/notebooklm.css">
+</head>
+<body data-page="skills">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+      <strong>Skills 管理</strong>
+    </div>
+    <div class="topbar-right">
+      <button class="ghost-btn" id="themeToggle" title="切换深色模式"><i class="fa-solid fa-moon"></i></button>
+      <button class="ghost-btn" onclick="window.location.href='/'"><i class="fa-solid fa-arrow-left"></i> 返回首页</button>
+    </div>
+  </header>
+
+  <main style="max-width:1200px;margin:0 auto;padding:30px 20px;overflow-y:auto;height:calc(100vh - 52px);">
+
+    <!-- 上部：AI检索论文 Skills -->
+    <section class="home-section" style="margin-bottom:48px;">
+      <div class="home-section-head" style="display:flex;align-items:center;justify-content:space-between;">
+        <h2>AI 检索论文 <span style="font-size:14px;color:var(--subtle);font-weight:400;">（搜索阶段）</span></h2>
+        <button class="primary-btn" onclick="notebooklm.openCreateModal('search')">
+          <i class="fa-solid fa-plus"></i> 创建 Skill
+        </button>
+      </div>
+      <div class="home-grid" id="skillsGridSearch">
+        <div class="empty-state">📭 暂无 AI 检索论文 Skill，点击右上角「创建 Skill」按钮添加第一个</div>
+      </div>
+    </section>
+
+    <!-- 中部：笔记生成 Skills -->
+    <section class="home-section" style="margin-bottom:48px;">
+      <div class="home-section-head" style="display:flex;align-items:center;justify-content:space-between;">
+        <h2>笔记生成 <span style="font-size:14px;color:var(--subtle);font-weight:400;">（笔记阶段）</span></h2>
+        <button class="primary-btn" onclick="notebooklm.openCreateModal('notes')">
+          <i class="fa-solid fa-plus"></i> 创建 Skill
+        </button>
+      </div>
+      <div class="home-grid" id="skillsGridNotes">
+        <div class="empty-state">📭 暂无笔记生成 Skill，点击右上角「创建 Skill」按钮添加第一个</div>
+      </div>
+    </section>
+
+    <!-- 下部：综述生成 Skills -->
+    <section class="home-section" style="margin-bottom:48px;">
+      <div class="home-section-head" style="display:flex;align-items:center;justify-content:space-between;">
+        <h2>综述生成 <span style="font-size:14px;color:var(--subtle);font-weight:400;">（综述阶段）</span></h2>
+        <button class="primary-btn" onclick="notebooklm.openCreateModal('write')">
+          <i class="fa-solid fa-plus"></i> 创建 Skill
+        </button>
+      </div>
+      <div class="home-grid" id="skillsGridWrite">
+        <div class="empty-state">📭 暂无综述生成 Skill，点击右上角「创建 Skill」按钮添加第一个</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 创建/编辑 Skill 弹窗 -->
+  <div class="modal" id="skillModal" aria-hidden="true">
+    <div class="modal-card" style="max-width:640px;">
+      <h3 id="skillModalTitle">创建 Skill</h3>
+      <p id="skillModalDesc">自定义提示词模板，控制 Agent 在特定阶段的行为策略。</p>
+
+      <div class="field-grid">
+        <label>
+          类型 <span style="color:var(--danger);">*</span>
+          <select id="skillTypeSelect" class="skill-form-select">
+            <option value="search">AI 检索论文（搜索阶段）</option>
+            <option value="notes">笔记生成（笔记阶段）</option>
+            <option value="write">综述生成（综述阶段）</option>
+          </select>
+        </label>
+        <label>
+          标题 <span style="color:var(--danger);">*</span>
+          <input id="skillTitleInput" type="text" placeholder="为 Skill 起一个易于区分的名称" maxlength="100" />
+        </label>
+        <label>
+          内容 (Markdown) <span style="color:var(--danger);">*</span>
+          <span id="skillCharCount" style="float:right;font-size:11px;color:var(--muted);">0 / 16384</span>
+          <textarea id="skillContentInput" placeholder="# 你的自定义提示词&#10;&#10;在这里编写 Agent 的行为策略..." rows="12" style="min-height:220px;font-family:'Cascadia Code','Fira Code',monospace;font-size:13px;"></textarea>
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button class="ghost-btn" id="skillDeleteBtn" style="display:none;color:var(--danger);margin-right:auto;" onclick="notebooklm.openSkillDeleteConfirm(notebooklm._skillsState.currentSkillId)">
+          <i class="fa-solid fa-trash"></i> 删除此 Skill
+        </button>
+        <button class="secondary-btn" id="skillCancelBtn">取消</button>
+        <button class="primary-btn" id="skillSaveBtn"><i class="fa-solid fa-check"></i> 保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认弹窗 -->
+  <div class="modal" id="skillDeleteModal" aria-hidden="true">
+    <div class="modal-card" style="max-width:420px;">
+      <h3>删除 Skill</h3>
+      <p id="skillDeleteMsg">确定要删除此 Skill 吗？</p>
+      <p id="skillDeleteUsage" style="font-size:12px;color:var(--subtle);"></p>
+      <div class="modal-actions">
+        <button class="secondary-btn" id="skillDeleteCancelBtn">取消</button>
+        <button class="primary-btn" id="skillDeleteConfirmBtn" style="background:var(--danger);">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/notebooklm.js?v=2"></script>
+</body>
+</html>

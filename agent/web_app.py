@@ -18,6 +18,7 @@ from main import run_agent_pipeline, run_agent_pipeline_session
 from backend.session_manager import SessionManager, SessionState, STATE_LABELS, VALID_TRANSITIONS
 from backend.knowledge_base import GlobalKnowledgeBase
 from backend.copilot_session_manager import get_copilot_manager
+from backend.skill_manager import get_skill_manager
 from core.tool_registry import get_registry
 from llms.client import LLMClient
 from utils.parser import extract_json
@@ -137,6 +138,13 @@ def help_page():
     if not help_file.exists():
         raise HTTPException(status_code=404, detail="Help page not found")
     return HTMLResponse(help_file.read_text(encoding="utf-8"))
+
+@app.get("/app/skills")
+def skills_page():
+    skills_file = FRONTEND_DIR / "skills.html"
+    if not skills_file.exists():
+        raise HTTPException(status_code=404, detail="Skills page not found")
+    return HTMLResponse(skills_file.read_text(encoding="utf-8"))
 
 @app.get("/api/health")
 def health() -> Dict[str, str]:
@@ -506,13 +514,14 @@ def _get_chat_intent_llm() -> LLMClient:
 
 @app.post("/api/sessions/create")
 def create_session(payload: dict) -> dict:
-    """创建新 Session，支持可选的 keywords 字段（字符串或数组）。"""
+    """创建新 Session，支持可选的 keywords 字段（字符串或数组）和 skills 字段。"""
     topic = str(payload.get("topic", "")).strip()
     if not topic:
         raise HTTPException(status_code=400, detail="主题不能为空")
     keywords = payload.get("keywords")
+    skills = payload.get("skills")  # {"search": "skill_xxx", "notes": null, "write": "skill_yyy"}
     try:
-        return session_mgr.create_session(topic, keywords=keywords)
+        return session_mgr.create_session(topic, keywords=keywords, skills=skills)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Session 创建失败: {str(e)}")
 
@@ -1941,6 +1950,7 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
             previous_draft=previous_draft,
             user_feedback=feedback,
             rewrite_count=rewrite_count,
+            session_id=session_id,
         )
 
         # 保存草稿
@@ -1998,6 +2008,20 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
     llm = LLMClient()
     rag = RAGNoteGenerator()
     topic = payload.topic.strip()
+
+    # ━━━ Skill 注入：加载 notes 类型的自定义提示词 ━━━
+    notes_skill_content = ""
+    skills_config = session.get("skills", {})
+    notes_skill_id = skills_config.get("notes")
+    if notes_skill_id:
+        try:
+            notes_skill = skill_mgr.get_skill(notes_skill_id)
+            if notes_skill and not notes_skill.get("deleted"):
+                notes_skill_content = str(notes_skill.get("content", ""))
+                print(f"📌 [Skill] 已注入笔记 Skill: {notes_skill_id}")
+        except Exception:
+            pass
+
     notes_map = {}
 
     for paper in papers:
@@ -2022,6 +2046,7 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
                 paper_title=title,
                 abstract=abstract,
                 topic=topic,
+                skill_content=notes_skill_content,
             )
             notes_map[pid] = note_text
         except Exception:
@@ -2290,6 +2315,7 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
             write_result = run_write_from_notes(
                 user_topic=topic,
                 notes_content=notes,
+                session_id=session_id,
             )
             if write_result.get("draft"):
                 session_mgr.save_draft(session_id, write_result["draft"])
@@ -2543,6 +2569,9 @@ def rebuild_knowledge() -> dict:
 # 初始化 Copilot 会话管理器
 copilot_mgr = get_copilot_manager(str(SESSIONS_DIR))
 
+# 初始化 Skills 管理器
+skill_mgr = get_skill_manager(str(SESSIONS_DIR))
+
 
 @app.get("/api/copilot/sessions")
 def list_copilot_sessions() -> dict:
@@ -2592,6 +2621,84 @@ def get_copilot_messages(copilot_session_id: str) -> dict:
     """获取 Copilot 会话的所有消息"""
     messages = copilot_mgr.get_messages(copilot_session_id)
     return {"session_id": copilot_session_id, "messages": messages, "count": len(messages)}
+
+
+# ═══════════════════════════════════════════
+#  Skills 管理 API（迭代三扩展：用户自定义 Agent 行为策略）
+# ═══════════════════════════════════════════
+
+@app.get("/api/skills")
+def list_skills(skill_type: str = None) -> dict:
+    """获取 Skills 列表，支持 ?type=search|notes|write 过滤"""
+    if skill_type and skill_type not in {"search", "notes", "write"}:
+        raise HTTPException(status_code=400, detail=f"无效的 type 参数: {skill_type}")
+    skills = skill_mgr.list_skills(skill_type=skill_type)
+    return {"skills": skills, "count": len(skills)}
+
+
+@app.post("/api/skills")
+def create_skill(payload: dict) -> dict:
+    """创建新 Skill"""
+    title = str(payload.get("title", "")).strip()
+    skill_type = str(payload.get("type", "")).strip()
+    content = str(payload.get("content", "")).strip()
+
+    if not title:
+        raise HTTPException(status_code=400, detail="标题不能为空")
+    if skill_type not in {"search", "notes", "write"}:
+        raise HTTPException(status_code=400, detail=f"无效的 skill 类型: {skill_type}")
+    if not content:
+        raise HTTPException(status_code=400, detail="Skill 内容不能为空")
+
+    try:
+        skill = skill_mgr.create_skill(title, skill_type, content)
+        return skill
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"创建 Skill 失败: {str(e)}")
+
+
+@app.get("/api/skills/{skill_id}")
+def get_skill(skill_id: str) -> dict:
+    """获取单个 Skill 完整数据"""
+    skill = skill_mgr.get_skill(skill_id)
+    if not skill or skill.get("deleted"):
+        raise HTTPException(status_code=404, detail=f"Skill {skill_id} 不存在")
+    return skill
+
+
+@app.put("/api/skills/{skill_id}")
+def update_skill(skill_id: str, payload: dict) -> dict:
+    """更新 Skill 标题或内容"""
+    title = payload.get("title")
+    content = payload.get("content")
+
+    try:
+        skill = skill_mgr.update_skill(skill_id, title=title, content=content)
+        return skill
+    except ValueError as e:
+        raise HTTPException(status_code=400 if "不存在" in str(e) else 409, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"更新 Skill 失败: {str(e)}")
+
+
+@app.delete("/api/skills/{skill_id}")
+def delete_skill(skill_id: str, hard: bool = False) -> dict:
+    """删除 Skill（默认软删除）"""
+    if not skill_mgr.delete_skill(skill_id, soft=not hard):
+        raise HTTPException(status_code=404, detail=f"Skill {skill_id} 不存在")
+    return {"status": "deleted", "skill_id": skill_id}
+
+
+@app.get("/api/skills/{skill_id}/usage")
+def get_skill_usage(skill_id: str) -> dict:
+    """获取引用该 Skill 的 Session 列表"""
+    skill = skill_mgr.get_skill(skill_id)
+    if not skill or skill.get("deleted"):
+        raise HTTPException(status_code=404, detail=f"Skill {skill_id} 不存在")
+    sessions = skill_mgr.get_skill_usage(skill_id)
+    return {"skill_id": skill_id, "sessions": sessions, "count": len(sessions)}
 
 
 if __name__ == "__main__":

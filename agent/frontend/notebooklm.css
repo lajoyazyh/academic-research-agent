@@ -1729,3 +1729,77 @@ html, body {
     right: -100vw;
   }
 }
+
+/* ====== Skills 管理页面 ====== */
+.skill-select-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+.skill-select-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.skill-select-label {
+  font-size: 12px;
+  color: var(--subtle);
+  font-weight: 500;
+}
+.skill-select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  background: var(--input-bg);
+  color: var(--text);
+  appearance: auto;
+}
+.skill-select:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-light);
+}
+.skill-select-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.skill-new-link {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.skill-new-link:hover {
+  text-decoration: underline;
+}
+.skill-form-select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+  margin-top: 4px;
+  background: var(--input-bg);
+  color: var(--text);
+  appearance: auto;
+}
+.skill-form-select:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-light);
+}
+
+/* Skills 编辑卡片内联样式 */
+.skill-card-editing {
+  border-color: var(--accent) !important;
+  box-shadow: 0 4px 16px rgba(11,87,208,.12) !important;
+}
