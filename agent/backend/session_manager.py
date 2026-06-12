@@ -197,6 +197,7 @@ class SessionManager:
             "updated_at": metadata.get("updated_at", ""),
             "rewrite_count": metadata.get("rewrite_count", 0),
             "skills": metadata.get("skills", {}),
+            "review_referenced_papers": metadata.get("review_referenced_papers", []),
             "initial_plan": initial_plan,
             "keywords": keywords,
             "papers": papers,
@@ -570,8 +571,12 @@ class SessionManager:
                 return ""
         return ""
 
-    def save_draft(self, session_id: str, content: str, version: int = None) -> dict:
-        """保存综述草稿"""
+    def save_draft(self, session_id: str, content: str, version: int = None, referenced_papers: list[str] = None) -> dict:
+        """保存综述草稿
+        
+        Args:
+            referenced_papers: 本次撰写实际引用的论文 paper_id 列表
+        """
         session_dir = self.root / session_id
         if not session_dir.exists():
             raise ValueError(f"Session {session_id} 不存在")
@@ -599,6 +604,9 @@ class SessionManager:
         metadata["rewrite_count"] = version - 1
         # 记录当前草稿版本，便于外部接口快速获取
         metadata["draft_version"] = version
+        # 记录本次撰写实际引用的论文列表
+        if referenced_papers is not None:
+            metadata["review_referenced_papers"] = referenced_papers
         metadata["updated_at"] = datetime.datetime.now().isoformat()
         self._write_json(session_dir / "metadata.json", metadata)
 

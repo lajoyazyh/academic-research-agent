@@ -59,6 +59,22 @@ WRITER_SECTION_TITLES = [
 ]
 
 
+def _merge_referenced_papers(notes_content: str, papers_list: list[dict] = None) -> list[str]:
+    """从笔记内容中提取被实际引用的论文 paper_id 列表"""
+    if not papers_list:
+        return []
+    referenced = []
+    notes_lower = notes_content.lower()
+    for p in papers_list:
+        pid = p.get("paper_id", "")
+        title = p.get("title", "")
+        if pid and pid.lower() in notes_lower:
+            referenced.append(pid)
+        elif title and len(title) > 10 and title.lower()[:40] in notes_lower:
+            referenced.append(pid)
+    return referenced
+
+
 def _build_initial_plan(llm: LLMClient, topic: str) -> str:
     plan_prompt = f"""你是调研规划师。请为主题《{topic}》产出一个“可执行的检索计划”，仅用 Markdown 要点列出：
 1) 关键词拆分（中英对照）

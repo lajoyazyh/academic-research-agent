@@ -2049,9 +2049,11 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
             session_id=session_id,
         )
 
-        # 保存草稿
+        # 保存草稿，并记录本次撰写引用了哪些论文
         if result.get("draft"):
-            session_mgr.save_draft(session_id, result["draft"])
+            from main import _merge_referenced_papers
+            referenced_papers = _merge_referenced_papers(notes, papers)
+            session_mgr.save_draft(session_id, result["draft"], referenced_papers=referenced_papers)
 
         # 更新状态
         new_state = "reviewing_draft" if result.get("can_rewrite", True) else "complete"
