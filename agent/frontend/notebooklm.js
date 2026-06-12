@@ -896,7 +896,7 @@
     papers.forEach((paper) => {
       // 直接使用后端 per-paper 字段
       paper._hasNotes = paper.has_notes === true || Boolean((paper.notes || "").trim());
-      paper._hasReview = Boolean(draft.trim());
+      paper._hasReview = paper._hasNotes && Boolean(draft.trim());
 
       const row = document.createElement("article");
       row.className = `paper-row ${paper.paper_id === this.state.currentPaperId ? "active" : ""}`;
