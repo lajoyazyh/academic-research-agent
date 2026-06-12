@@ -136,7 +136,62 @@ class RAGNoteGenerator:
                 result = self._self_repair_notes(result, skill_content)
             return result
 
-        # 3. 逐节检索 + 生成
+        # 3. 逐节检索 — 收集所有相关段落
+        all_rag_text = ""
+        if skill_content:
+            # 有 Skill 时：收集所有 RAG 段落，一次性生成整篇笔记（follow Skill 结构）
+            all_passages = []
+            for section in self.SECTIONS:
+                keywords = " ".join(section["query_keywords"])
+                query = f"{paper_title} {abstract[:300]} {topic} {keywords}"
+                try:
+                    query_vecs = self.llm.embed([query[:1000]])
+                    query_emb = np.array(query_vecs, dtype=np.float32)
+                    scores = _cosine_similarity(embeddings, query_emb[0]).flatten()
+                    top_k = min(3, len(blocks))
+                    top_indices = np.argsort(scores)[::-1][:top_k]
+                    for idx in top_indices:
+                        if float(scores[idx]) > 0.3:
+                            b = blocks[idx]
+                            all_passages.append(f"【第{b['page']}页·{section['name']}相关】{b['text'][:500]}")
+                except Exception:
+                    pass
+            if all_passages:
+                all_rag_text = "\n\n".join(all_passages[:20])
+            else:
+                all_rag_text = abstract
+
+            # 一次性生成整篇笔记，完全按照 Skill 结构
+            full_prompt = f"""你是严谨的学术研究员。请为以下论文生成完整的学术笔记。
+
+论文标题：{paper_title}
+研究主题：{topic}
+
+{skill_content}
+
+【论文原文段落（多维度检索结果）】
+{all_rag_text}
+
+核心要求：
+- 严格按照上述 Skill 定义的格式和结构输出笔记
+- 如果 Skill 指定了具体章节名，必须完全使用这些章节名
+- 信息不足处标注"未提及"，不编造内容
+- 只输出笔记本身，不要加额外说明"""
+            try:
+                result = self.llm.chat(
+                    "你是严谨的学术研究员。严格按照Skill格式输出完整笔记，不添加额外说明。",
+                    full_prompt, []
+                ).strip()
+                if result:
+                    # 自检自修
+                    result = self._self_repair_notes(result, skill_content)
+                    return f"## 论文笔记：{paper_title}\n\n{result}"
+            except Exception:
+                pass
+            # 自生成失败时，回退到下面逐节生成
+            print(f"[NotesSkill] Full generation failed, falling back to section-by-section")
+
+        # 无 Skill 或自生成回退：逐节检索 + 生成（原有逻辑）
         sections_output = []
         for section in self.SECTIONS:
             section_text = self._generate_section(
@@ -229,7 +284,11 @@ class RAGNoteGenerator:
             return f"（生成失败）"
 
     def _self_repair_notes(self, raw_notes: str, skill_content: str) -> str:
-        """后生成自我修复：当使用了 Skill 时，检查并修复笔记格式是否符合 Skill 要求。
+        """后生成自我修复：当使用了 Skill 时，根据 Skill 要求完全重写笔记格式。
+
+        采用混合策略：
+        1. 先用 Skill 要求完全重写笔记（不考虑原结构）
+        2. 再检验是否符合要求，不符合则二次修正
 
         Args:
             raw_notes: 原始生成的笔记
@@ -238,26 +297,64 @@ class RAGNoteGenerator:
         Returns:
             修复后的笔记（修复失败时返回原文）
         """
-        repair_prompt = f"""You are a formatting repair assistant. The following notes were generated but may not follow the required formatting. Please reformat the notes to STRICTLY follow the formatting requirements below. Keep ALL the academic content, only fix the formatting and structure.
+        # ━━━ 第一轮：基于 Skill 要求完全重写 ━━━
+        rewrite_prompt = f"""You are a strict formatting enforcer.
 
-【Formatting Requirements (Skill)】
+Your task: COMPLETELY REWRITE the notes below according to the formatting requirements. Do NOT just adjust the existing format — rewrite from scratch following the EXACT structure specified in the requirements.
+
+CRITICAL RULES:
+1. The skill requirements OVERRIDE any existing structure in the notes
+2. Output structure MUST match the skill requirements EXACTLY — section names, heading levels, bullet style, everything
+3. Preserve ALL academic facts from the original notes (methods, data, results)
+4. If a required section has no data, write "未提及" (not mentioned) — do NOT invent content
+5. Output ONLY the final formatted notes — no explanations, no markdown code blocks, no commentary
+
+【FORMATTING REQUIREMENTS — THIS IS THE ONLY ALLOWED STRUCTURE】
 {skill_content}
 
-【Raw Notes to Repair】
+【ORIGINAL NOTES — EXTRACT ALL FACTS FROM HERE】
 {raw_notes}
 
-Output the full repaired notes, preserving all academic content."""
-
+CRITICAL: Output ONLY the fully rewritten notes. The output must be the final notes text directly."""
         try:
-            repaired = self.llm.chat(
-                "You are a formatting repair assistant. Only output the repaired content.",
-                repair_prompt, []
+            result = self.llm.chat(
+                "You are a strict formatting enforcer. Completely rewrite the notes following the required structure exactly. Output ONLY the final notes text.",
+                rewrite_prompt, []
             ).strip()
-            if repaired:
-                return repaired
+            if result:
+                repaired = result
+            else:
+                repaired = raw_notes
+        except Exception:
+            repaired = raw_notes
+
+        # ━━━ 第二轮：逐项验证和修正 ━━━
+        verify_prompt = f"""You are a strict quality checker.
+
+CHECK the notes below against EVERY requirement in the skill. For each formatting requirement, verify compliance. If anything is wrong, fix it.
+
+【REQUIREMENTS】
+{skill_content}
+
+【NOTES TO VERIFY】
+{repaired}
+
+IMPORTANT:
+- If section names don't match the requirements, rename them
+- If bullet style is wrong, fix it
+- If required sections are missing, add them with "未提及"
+- Output ONLY the verified/fixed notes text"""
+        try:
+            result = self.llm.chat(
+                "You are a quality checker. Output ONLY the corrected notes text — no explanations.",
+                verify_prompt, []
+            ).strip()
+            if result:
+                repaired = result
         except Exception:
             pass
-        return raw_notes
+
+        return repaired
 
     def _fallback(self, paper_title: str, abstract: str, topic: str, skill_content: str = "") -> str:
         """PDF 不可用时的降级"""

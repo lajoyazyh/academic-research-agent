@@ -166,7 +166,9 @@ def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, 
 
 
 def _self_repair_review(raw_review: str, skill_content: str) -> str:
-    """后生成自我修复：当使用了 Skill 时，检查并修复综述格式和结构。
+    """后生成自我修复：当使用了 Skill 时，根据 Skill 要求完全重写综述格式。
+
+    采用"完全重写"策略：不是修补格式，而是按照 Skill 的结构重新组织整个综述。
 
     Args:
         raw_review: 原始生成的综述
@@ -176,26 +178,67 @@ def _self_repair_review(raw_review: str, skill_content: str) -> str:
         修复后的综述（修复失败时返回原文）
     """
     llm = LLMClient()
-    repair_prompt = f"""You are a formatting repair assistant. The following literature review was generated but may have structural issues. Please repair the review to STRICTLY follow the formatting requirements below. Fix any duplicate sections, ensure consistent heading hierarchy, and apply the formatting rules. Keep ALL academic content.
 
-【Formatting Requirements (Skill)】
+    # ━━━ 基于 Skill 要求完全重写综述 ━━━
+    rewrite_prompt = f"""You are a strict formatting enforcer.
+
+Your task: COMPLETELY REWRITE the literature review below according to the formatting requirements. Do NOT adjust the existing format — rewrite following the EXACT structure specified in the requirements.
+
+CRITICAL RULES:
+1. The skill requirements OVERRIDE the existing structure completely
+2. Section names, heading levels, organization — all from the skill requirements
+3. Fix any duplicate content by merging repeated sections
+4. Remove the outline blockquote section entirely — output only the review body
+5. Preserve ALL academic facts (methods, data, results, comparisons)
+6. Output ONLY the final review — no explanations or code blocks
+
+【FORMATTING REQUIREMENTS — THIS IS THE ONLY ALLOWED STRUCTURE】
 {skill_content}
 
-【Raw Review to Repair】
+【ORIGINAL REVIEW — EXTRACT ALL FACTS FROM HERE】
 {raw_review}
 
-Output the full repaired review, preserving all academic content."""
-
+CRITICAL: Output ONLY the fully rewritten review. The output must be the final review text directly."""
     try:
-        repaired = llm.chat(
-            "You are a formatting repair assistant. Only output the repaired content.",
-            repair_prompt, []
+        result = llm.chat(
+            "You are a strict formatting enforcer. Completely rewrite the review following the required structure. Output ONLY the final review text.",
+            rewrite_prompt, []
         ).strip()
-        if repaired:
-            return repaired
+        if result:
+            repaired = result
+        else:
+            repaired = raw_review
+    except Exception:
+        repaired = raw_review
+
+    # ━━━ 验证和修正 ━━━
+    verify_prompt = f"""You are a strict quality checker.
+
+CHECK the review below for:
+1. Section structure matching the requirements
+2. Any duplicate content
+3. Any markdown code blocks or explanations that should not be there
+
+If anything is wrong, fix it. Output ONLY the corrected review text.
+
+【REQUIREMENTS】
+{skill_content}
+
+【REVIEW TO VERIFY】
+{repaired}
+
+Output ONLY the verified/fixed review text."""
+    try:
+        result = llm.chat(
+            "You are a quality checker. Output ONLY the corrected review text.",
+            verify_prompt, []
+        ).strip()
+        if result:
+            repaired = result
     except Exception:
         pass
-    return raw_review
+
+    return repaired
 
 
 def compose_review_from_notes(topic: str, notes_content: str, write_skill_content: str = "") -> tuple[str, str]:
