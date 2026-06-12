@@ -112,7 +112,10 @@ class RAGNoteGenerator:
         # 1. 全量提取段落
         blocks = extract_full_text_from_pdf(pdf_path)
         if not blocks:
-            return self._fallback(paper_title, abstract, topic, skill_content)
+            result = self._fallback(paper_title, abstract, topic, skill_content)
+            if skill_content:
+                result = self._self_repair_notes(result, skill_content)
+            return result
 
         # 2. 用 Embedding API 向量化
         texts = [b["text"][:800] for b in blocks]  # 截断过长的段落
@@ -120,12 +123,18 @@ class RAGNoteGenerator:
             vecs = self.llm.embed(texts)
         except Exception:
             # 降级：用 BM25
-            return self._fallback_bm25(pdf_path, paper_title, abstract, topic, skill_content)
+            result = self._fallback_bm25(pdf_path, paper_title, abstract, topic, skill_content)
+            if skill_content:
+                result = self._self_repair_notes(result, skill_content)
+            return result
 
         embeddings = np.array(vecs, dtype=np.float32)
         if embeddings.shape[1] < 10:
             # 零向量降级 → 用 BM25
-            return self._fallback_bm25(pdf_path, paper_title, abstract, topic, skill_content)
+            result = self._fallback_bm25(pdf_path, paper_title, abstract, topic, skill_content)
+            if skill_content:
+                result = self._self_repair_notes(result, skill_content)
+            return result
 
         # 3. 逐节检索 + 生成
         sections_output = []
@@ -136,6 +145,11 @@ class RAGNoteGenerator:
             sections_output.append(f"- **{section['name']}**：{section_text}")
 
         body = "\n\n".join(sections_output)
+
+        # 自我修复：当有 Skill 时，调用 LLM 检查并修复笔记格式
+        if skill_content:
+            body = self._self_repair_notes(body, skill_content)
+
         return f"## 论文笔记：{paper_title}\n\n{body}"
 
     def _generate_section(
@@ -176,6 +190,7 @@ class RAGNoteGenerator:
         # LLM 生成 — 双通道：有 Skill 时替换默认格式要求，无 Skill 时使用完整默认
         if skill_content:
             # 通道 A：Skill 优先 — 用 Skill 内容替换默认写作要求，仅保留最小核心约束
+            channel = "A"
             prompt = f"""你是严谨的学术研究员。请为以下论文撰写「{section['name']}」部分的笔记。
 
 研究主题：{topic}
@@ -189,8 +204,8 @@ class RAGNoteGenerator:
 核心要求：至少 {section['min_words']} 字，只输出笔记内容本身，不要加标题前缀或解释。"""
         else:
             # 通道 B：默认兜底 — 使用完整的默认格式要求（现有逻辑不变）
+            channel = "B"
             prompt = f"""你是严谨的学术研究员。请为以下论文撰写「{section['name']}」部分的笔记。
-
 研究主题：{topic}
 论文标题：{paper_title}
 
@@ -202,6 +217,7 @@ class RAGNoteGenerator:
 - 引述原文中的具体方法名、数据、实验指标
 - 至少 {section['min_words']} 字
 - 只输出笔记内容本身，不要加标题前缀或解释"""
+        print(f"[NotesSkill] {section['name']}: Channel {channel} | skill_len={len(skill_content) if skill_content else 0}")
 
         try:
             result = self.llm.chat(
@@ -211,6 +227,37 @@ class RAGNoteGenerator:
             return result
         except Exception:
             return f"（生成失败）"
+
+    def _self_repair_notes(self, raw_notes: str, skill_content: str) -> str:
+        """后生成自我修复：当使用了 Skill 时，检查并修复笔记格式是否符合 Skill 要求。
+
+        Args:
+            raw_notes: 原始生成的笔记
+            skill_content: Skill 的格式化要求
+
+        Returns:
+            修复后的笔记（修复失败时返回原文）
+        """
+        repair_prompt = f"""You are a formatting repair assistant. The following notes were generated but may not follow the required formatting. Please reformat the notes to STRICTLY follow the formatting requirements below. Keep ALL the academic content, only fix the formatting and structure.
+
+【Formatting Requirements (Skill)】
+{skill_content}
+
+【Raw Notes to Repair】
+{raw_notes}
+
+Output the full repaired notes, preserving all academic content."""
+
+        try:
+            repaired = self.llm.chat(
+                "You are a formatting repair assistant. Only output the repaired content.",
+                repair_prompt, []
+            ).strip()
+            if repaired:
+                return repaired
+        except Exception:
+            pass
+        return raw_notes
 
     def _fallback(self, paper_title: str, abstract: str, topic: str, skill_content: str = "") -> str:
         """PDF 不可用时的降级"""

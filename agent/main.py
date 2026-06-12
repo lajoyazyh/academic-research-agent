@@ -165,16 +165,56 @@ def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, 
     return "\n\n".join(section_texts)
 
 
+def _self_repair_review(raw_review: str, skill_content: str) -> str:
+    """后生成自我修复：当使用了 Skill 时，检查并修复综述格式和结构。
+
+    Args:
+        raw_review: 原始生成的综述
+        skill_content: Skill 的格式化要求
+
+    Returns:
+        修复后的综述（修复失败时返回原文）
+    """
+    llm = LLMClient()
+    repair_prompt = f"""You are a formatting repair assistant. The following literature review was generated but may have structural issues. Please repair the review to STRICTLY follow the formatting requirements below. Fix any duplicate sections, ensure consistent heading hierarchy, and apply the formatting rules. Keep ALL academic content.
+
+【Formatting Requirements (Skill)】
+{skill_content}
+
+【Raw Review to Repair】
+{raw_review}
+
+Output the full repaired review, preserving all academic content."""
+
+    try:
+        repaired = llm.chat(
+            "You are a formatting repair assistant. Only output the repaired content.",
+            repair_prompt, []
+        ).strip()
+        if repaired:
+            return repaired
+    except Exception:
+        pass
+    return raw_review
+
+
 def compose_review_from_notes(topic: str, notes_content: str, write_skill_content: str = "") -> tuple[str, str]:
     llm = LLMClient()
 
-    # 双通道 Skill 注入：有 Skill 时替换大纲固定标题，无 Skill 时使用默认四标题
+    # 双通道：大纲 + 逐节正文
+    # 修复：body 已包含完整 ## 标题，不再在前面重复 prepend outline
     if write_skill_content:
         outline = _build_writer_outline(llm, topic, notes_content, write_skill_content)
     else:
         outline = _build_writer_outline(llm, topic, notes_content)
     body = _compose_review_by_sections(llm, topic, notes_content, outline, write_skill_content)
-    review = f"## 综述大纲\n\n{outline}\n\n---\n\n{body}"
+    # outline 作为前置目录，使用引用格式（>）避免与 body 中的 ## 标题重复
+    review = f"> **综述大纲**（由 AI 规划，仅供参考）\n>\n" + "\n".join(f"> {line}" for line in outline.split("\n")) + f"\n\n---\n\n{body}"
+
+    # 自我修复：当有 Skill 时，调用 LLM 检查并修复综述格式和结构
+    if write_skill_content:
+        review = _self_repair_review(review, write_skill_content)
+
     return outline, review
 
 

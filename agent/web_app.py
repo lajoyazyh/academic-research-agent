@@ -2030,13 +2030,18 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
             notes_skill = skill_mgr.get_skill(notes_skill_id)
             if notes_skill and not notes_skill.get("deleted"):
                 notes_skill_content = str(notes_skill.get("content", ""))
-                print(f"[Skill] Injected notes skill: {notes_skill_id}")
+                if notes_skill_content:
+                    print(f"[NotesSkill] Loaded skill {notes_skill_id}: len={len(notes_skill_content)}, title={notes_skill.get('title','?')}")
+                else:
+                    print(f"[NotesSkill] Skill {notes_skill_id} has empty content, falling back to default")
             else:
                 # Skill 已删除或无效 → 自动回退默认通道
-                print(f"[Skill Fallback] Notes skill {notes_skill_id} is deleted/invalid, using default")
-        except Exception:
+                print(f"[NotesSkill] Skill {notes_skill_id} is deleted/invalid, using default")
+        except Exception as e:
             # Skill 加载异常 → 静默回退默认通道
-            pass
+            print(f"[NotesSkill] Failed to load skill {notes_skill_id}: {e}")
+    else:
+        print(f"[NotesSkill] No notes skill configured for this session, using default")
 
     notes_map = {}
 
@@ -2278,8 +2283,16 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
                         _auto_notes_data = skill_mgr.get_skill(_auto_notes_id)
                         if _auto_notes_data and not _auto_notes_data.get("deleted"):
                             _auto_notes_skill = str(_auto_notes_data.get("content", ""))
-                    except Exception:
-                        pass
+                            if _auto_notes_skill:
+                                print(f"[NotesSkill] Auto-pipeline loaded skill {_auto_notes_id}: len={len(_auto_notes_skill)}")
+                            else:
+                                print(f"[NotesSkill] Auto-pipeline skill {_auto_notes_id} has empty content, using default")
+                        else:
+                            print(f"[NotesSkill] Auto-pipeline skill {_auto_notes_id} deleted/invalid, using default")
+                    except Exception as e:
+                        print(f"[NotesSkill] Auto-pipeline failed to load skill {_auto_notes_id}: {e}")
+            else:
+                print(f"[NotesSkill] Auto-pipeline: no notes skill configured, using default")
 
             for idx, paper in enumerate(papers):
                 if _stop_flag[0]:
