@@ -2166,6 +2166,61 @@ def revise_notes_phase(session_id: str, payload: ReviseNotesRequest) -> dict:
 #  一键触发 规划→搜索→笔记→综述 全流程自动执行
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+class AnalysisRequest(BaseModel):
+    topic: str
+    analysis_type: str = "all"
+
+
+@app.post("/api/sessions/{session_id}/run/analyze")
+def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    topic = payload.topic.strip()
+    if not topic:
+        raise HTTPException(status_code=400, detail="topic 不能为空")
+
+    notes = session.get("notes", "")
+    papers = session.get("papers", [])
+
+    if not notes.strip() and papers:
+        parts = []
+        for paper in papers:
+            paper_notes = (paper.get("notes") or "").strip()
+            if paper_notes:
+                title = paper.get("title") or paper.get("paper_id") or "Unknown"
+                parts.append(f"## {title}\n\n{paper_notes}")
+        notes = "\n\n---\n\n".join(parts)
+
+    try:
+        from tools.analysis_tools import compare_papers, trace_lineage, find_gaps
+
+        analysis_type = payload.analysis_type
+        if analysis_type not in {"compare", "lineage", "gaps", "all"}:
+            raise HTTPException(status_code=400, detail="analysis_type 必须是 compare、lineage、gaps 或 all")
+
+        result = {"phase": "analysis", "session_id": session_id}
+        if analysis_type in ("compare", "all"):
+            result["compare"] = compare_papers(topic, notes, papers)
+        if analysis_type in ("lineage", "all"):
+            result["lineage"] = trace_lineage(topic, notes, papers)
+        if analysis_type in ("gaps", "all"):
+            result["gaps"] = find_gaps(topic, notes, papers)
+
+        analysis_dir = SESSIONS_DIR / session_id / "analysis"
+        os.makedirs(analysis_dir, exist_ok=True)
+        (analysis_dir / "analysis_results.json").write_text(
+            json.dumps(result, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"分析阶段执行失败: {str(e)}")
+
+
 class AutoRunRequest(BaseModel):
     topic: str
     max_loops: int = 20
