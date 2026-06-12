@@ -1,3 +1,4 @@
+import sys
 import threading
 import uuid
 import json
@@ -7,6 +8,15 @@ import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+# Force UTF-8 encoding on Windows to avoid GBK errors with emoji characters
+os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
@@ -1814,12 +1824,14 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
             }
 
     except Exception as exc:
+        import traceback
         _stop_flag = True
         with RUN_LOCK:
             RUNS[f"session_{session_id}"] = {
                 "status": "error",
                 "phase": "failed",
                 "error": str(exc),
+                "_traceback": traceback.format_exc(),
             }
 
 
@@ -2018,7 +2030,7 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
             notes_skill = skill_mgr.get_skill(notes_skill_id)
             if notes_skill and not notes_skill.get("deleted"):
                 notes_skill_content = str(notes_skill.get("content", ""))
-                print(f"📌 [Skill] 已注入笔记 Skill: {notes_skill_id}")
+                print(f"[Skill] Injected notes skill: {notes_skill_id}")
         except Exception:
             pass
 

@@ -99,7 +99,7 @@ class BaseAgent:
 
         for loop_count in range(self.max_loops):
             if loop_count > 0 and loop_delay_seconds > 0:
-                print(f"\n⏳ [API 请求限流保护] 冷却 {loop_delay_seconds:g} 秒以防触发 429 Rate Limit...")
+                print(f"\n[Rate Limit] Cooling {loop_delay_seconds:g}s to avoid 429...")
                 time.sleep(loop_delay_seconds)
                 
             # 1. 呼叫大模型，获得原始文本响应

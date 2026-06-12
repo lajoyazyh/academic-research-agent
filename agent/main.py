@@ -582,7 +582,7 @@ def run_search_only(
                     "---\n\n"
                 )
                 research_query = skill_injected + research_query
-                print(f"📌 [Skill] 已注入搜索 Skill: {search_skill_id}")
+                print(f"[Skill] Injected search skill: {search_skill_id}")
 
     final_answer = researcher_agent.run(research_query)
 
@@ -675,7 +675,7 @@ def run_write_from_notes(
         if write_skill_id:
             write_skill_content = _load_skill_content(skill_id=write_skill_id)
             if write_skill_content:
-                print(f"📌 [Skill] 已注入写作 Skill: {write_skill_id}")
+                print(f"[Skill] Injected write skill: {write_skill_id}")
 
     if user_feedback and previous_draft:
         # 带反馈的重写
