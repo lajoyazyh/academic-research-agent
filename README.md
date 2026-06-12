@@ -77,6 +77,25 @@ planning → plan_confirmed → searching → search_complete
 ### 4. 前端功能
 - 🔍 关键词审核/编辑 · 📄 论文管理 · ✏️ Vditor 编辑器 · 📝 AI 判意修订
 - 🛑 检索打断 · 📊 轨迹视图（时间戳+目录+追加调研分隔）
+- 🛠 工具管理 · 💬 全局 Copilot 侧边栏
+
+### 5. 工具管理（16 个工具，6 个分类）
+
+所有工具通过 `core/tool_registry.py` 统一管理，支持启用/禁用，配置持久化到 `config/tools.json`。
+
+| 分类 | 工具 | 使用阶段 |
+|------|------|---------|
+| 🔍 学术搜索 | `arxiv_search`、`arxiv_fetch`、`semantic_scholar_search`、`semantic_scholar_fetch`、`crossref_search`、`crossref_fetch_doi`、`openalex_search` | 搜索阶段 |
+| 📄 PDF 处理 | `arxiv_pdf_reader`、`arxiv_download_pdf` | 搜索/笔记阶段 |
+| ✏️ 文件操作 | `clear_notes`、`append_note` | 笔记阶段 |
+| 💬 对话检索 | `retriever`（BM25 检索器） | 对话阶段 |
+| 📝 笔记生成 | `rag_note_generator`（Embedding RAG） | 笔记阶段 |
+| 📋 收录管理 | `paper_register` | 搜索阶段 |
+
+### 6. 全局 Copilot 助手
+- 首页侧边栏：跨 Session 全局知识问答
+- 多轮对话历史管理
+- 内嵌工具勾选面板（可选择参考哪些工具来源）
 
 ## 环境安装
 
