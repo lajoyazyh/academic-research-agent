@@ -2251,6 +2251,20 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
             rag = RAGNoteGenerator()
             notes_map = {}
 
+            # ━━━ Skill 注入：加载 notes 类型的自定义提示词 ━━━
+            _auto_notes_skill = ""
+            _auto_session = session_mgr.load_session(session_id)
+            if _auto_session:
+                _auto_skills = _auto_session.get("skills", {})
+                _auto_notes_id = _auto_skills.get("notes")
+                if _auto_notes_id:
+                    try:
+                        _auto_notes_data = skill_mgr.get_skill(_auto_notes_id)
+                        if _auto_notes_data and not _auto_notes_data.get("deleted"):
+                            _auto_notes_skill = str(_auto_notes_data.get("content", ""))
+                    except Exception:
+                        pass
+
             for idx, paper in enumerate(papers):
                 if _stop_flag[0]:
                     break
@@ -2276,6 +2290,7 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
                         paper_title=title,
                         abstract=abstract,
                         topic=topic,
+                        skill_content=_auto_notes_skill,
                     )
                     notes_map[pid] = note_text
                 except Exception as exc:
@@ -2704,6 +2719,6 @@ def get_skill_usage(skill_id: str) -> dict:
 if __name__ == "__main__":
     import uvicorn
 
-    print("\n🚀 Academic Agent Web 服务即将启动...")
-    print("👉 请在浏览器中打开: http://127.0.0.1:8000\n")
+    print("\n>>> Academic Agent Web 服务即将启动...")
+    print(">>> 请在浏览器中打开: http://127.0.0.1:8000\n")
     uvicorn.run("web_app:app", host="127.0.0.1", port=8000, reload=True)

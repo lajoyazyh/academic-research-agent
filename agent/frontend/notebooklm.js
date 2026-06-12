@@ -2974,6 +2974,241 @@
     }
   },
 
+  // ════════════ Skills 页面逻辑 ════════════
+  _skillsState: {
+    currentSkillId: null,
+    skills: [],
+  },
+
+  async initSkills() {
+    // 弹窗按钮绑定
+    document.getElementById("skillCancelBtn")?.addEventListener("click", () => this.closeSkillModal());
+    document.getElementById("skillSaveBtn")?.addEventListener("click", () => this.saveSkill());
+    document.getElementById("skillDeleteCancelBtn")?.addEventListener("click", () => this.closeSkillDeleteModal());
+    document.getElementById("skillDeleteConfirmBtn")?.addEventListener("click", () => this.confirmDeleteSkill());
+    this._initSkillCharCounter();
+    await this.loadAllSkills();
+  },
+
+  async loadAllSkills() {
+    try {
+      const resp = await fetch("/api/skills");
+      const data = await resp.json();
+      this._skillsState.skills = data.skills || [];
+    } catch (e) {
+      this._skillsState.skills = [];
+    }
+    this.renderSkillsByType("search");
+    this.renderSkillsByType("notes");
+    this.renderSkillsByType("write");
+  },
+
+  renderSkillsByType(type) {
+    const grid = document.getElementById("skillsGrid" + type.charAt(0).toUpperCase() + type.slice(1));
+    if (!grid) return;
+    const skills = this._skillsState.skills.filter(function(s) { return s.type === type; });
+    grid.innerHTML = "";
+
+    if (skills.length === 0) {
+      var labels = { search: "AI 检索论文", notes: "笔记生成", write: "综述生成" };
+      grid.innerHTML = '<div class="empty-state">(x) 暂无 ' + (labels[type] || type) + ' Skill，点击右上角「创建 Skill」按钮添加第一个</div>';
+      return;
+    }
+
+    var self = this;
+    skills.forEach(function(skill) {
+      var card = document.createElement("article");
+      card.className = "home-card";
+      card.innerHTML = '<div><h3 title="' + self.escapeHtml(skill.title) + '">' + self.escapeHtml(skill.title) + '</h3><small>' + self.formatDate(skill.updated_at || skill.created_at) + '</small></div>';
+      card.addEventListener("click", function() { self.openEditSkillModal(skill.skill_id); });
+
+      var delBtn = document.createElement("button");
+      delBtn.className = "home-card-delete";
+      delBtn.title = "删除";
+      delBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      delBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        self.openSkillDeleteConfirm(skill.skill_id);
+      });
+      card.appendChild(delBtn);
+      grid.appendChild(card);
+    });
+  },
+
+  openCreateModal: function(type) {
+    this._skillsState.currentSkillId = null;
+    document.getElementById("skillModalTitle").textContent = "创建 Skill";
+    document.getElementById("skillModalDesc").textContent = "自定义提示词模板，控制 Agent 在特定阶段的行为策略。";
+    document.getElementById("skillTypeSelect").value = type || "search";
+    document.getElementById("skillTypeSelect").disabled = false;
+    document.getElementById("skillTitleInput").value = "";
+    document.getElementById("skillContentInput").value = "";
+    document.getElementById("skillCharCount").textContent = "0 / 16384";
+    document.getElementById("skillDeleteBtn").style.display = "none";
+    document.getElementById("skillModal").classList.add("active");
+    var self = this;
+    setTimeout(function() { document.getElementById("skillTitleInput").focus(); }, 100);
+  },
+
+  openEditSkillModal: async function(skillId) {
+    try {
+      var resp = await fetch("/api/skills/" + encodeURIComponent(skillId));
+      if (!resp.ok) throw new Error("Skill 不存在");
+      var skill = await resp.json();
+      this._skillsState.currentSkillId = skillId;
+      document.getElementById("skillModalTitle").textContent = "编辑 Skill";
+      document.getElementById("skillModalDesc").textContent = "";
+      document.getElementById("skillTypeSelect").value = skill.type;
+      document.getElementById("skillTypeSelect").disabled = true;
+      document.getElementById("skillTitleInput").value = skill.title;
+      document.getElementById("skillContentInput").value = skill.content;
+      document.getElementById("skillCharCount").textContent = skill.content.length + " / 16384";
+      document.getElementById("skillDeleteBtn").style.display = "inline-flex";
+      document.getElementById("skillModal").classList.add("active");
+    } catch (e) {
+      alert("加载 Skill 失败：" + e.message);
+    }
+  },
+
+  closeSkillModal: function() {
+    document.getElementById("skillModal").classList.remove("active");
+    this._skillsState.currentSkillId = null;
+  },
+
+  saveSkill: async function() {
+    var type = document.getElementById("skillTypeSelect").value;
+    var title = document.getElementById("skillTitleInput").value.trim();
+    var content = document.getElementById("skillContentInput").value.trim();
+
+    if (!title) { alert("标题不能为空"); return; }
+    if (!content) { alert("Skill 内容不能为空"); return; }
+    if (content.length > 16384) { alert("内容不能超过 16384 字符"); return; }
+
+    var skillId = this._skillsState.currentSkillId;
+    var saveBtn = document.getElementById("skillSaveBtn");
+    saveBtn.disabled = true;
+    saveBtn.textContent = "保存中...";
+    var self = this;
+
+    try {
+      if (skillId) {
+        var resp1 = await fetch("/api/skills/" + encodeURIComponent(skillId), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: title, content: content }),
+        });
+        if (!resp1.ok) {
+          var err1 = await resp1.json();
+          throw new Error(err1.detail || "更新失败");
+        }
+      } else {
+        var resp2 = await fetch("/api/skills", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: title, type: type, content: content }),
+        });
+        if (!resp2.ok) {
+          var err2 = await resp2.json();
+          throw new Error(err2.detail || "创建失败");
+        }
+      }
+      self.closeSkillModal();
+      await self.loadAllSkills();
+    } catch (e) {
+      alert("保存失败：" + e.message);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> 保存';
+    }
+  },
+
+  openSkillDeleteConfirm: async function(skillId) {
+    this._skillsState._deleteTargetId = skillId;
+    var usageEl = document.getElementById("skillDeleteUsage");
+    usageEl.textContent = "加载中...";
+    try {
+      var resp = await fetch("/api/skills/" + encodeURIComponent(skillId) + "/usage");
+      var data = await resp.json();
+      if (data.count > 0) {
+        usageEl.textContent = "该 Skill 被 " + data.count + " 个 Session 引用，删除后这些 Session 将回退到默认提示词。";
+      } else {
+        usageEl.textContent = "";
+      }
+    } catch (e) {
+      usageEl.textContent = "";
+    }
+    document.getElementById("skillDeleteModal").classList.add("active");
+  },
+
+  closeSkillDeleteModal: function() {
+    document.getElementById("skillDeleteModal").classList.remove("active");
+    this._skillsState._deleteTargetId = null;
+  },
+
+  confirmDeleteSkill: async function() {
+    var skillId = this._skillsState._deleteTargetId;
+    if (!skillId) return;
+    try {
+      var resp = await fetch("/api/skills/" + encodeURIComponent(skillId), { method: "DELETE" });
+      if (!resp.ok) throw new Error("删除失败");
+      this.closeSkillDeleteModal();
+      if (this._skillsState.currentSkillId === skillId) {
+        this.closeSkillModal();
+      }
+      await this.loadAllSkills();
+    } catch (e) {
+      alert("删除失败：" + e.message);
+    }
+  },
+
+  _initSkillCharCounter: function() {
+    var textarea = document.getElementById("skillContentInput");
+    var counter = document.getElementById("skillCharCount");
+    if (textarea && counter) {
+      textarea.addEventListener("input", function() {
+        counter.textContent = textarea.value.length + " / 16384";
+        if (textarea.value.length > 16384) {
+          counter.style.color = "var(--danger)";
+        } else {
+          counter.style.color = "var(--muted)";
+        }
+      });
+    }
+  },
+
+  loadHomeSkillSelectors: async function() {
+    try {
+      var resp = await fetch("/api/skills");
+      var data = await resp.json();
+      var skills = data.skills || [];
+      var types = ["search", "notes", "write"];
+      types.forEach(function(type) {
+        var select = document.getElementById("skillSelect" + type.charAt(0).toUpperCase() + type.slice(1));
+        if (!select) return;
+        select.innerHTML = '<option value="">— 默认提示词 —</option>';
+        skills.filter(function(s) { return s.type === type; }).forEach(function(s) {
+          var opt = document.createElement("option");
+          opt.value = s.skill_id;
+          opt.textContent = s.title;
+          select.appendChild(opt);
+        });
+      });
+    } catch (e) {
+      // ignore
+    }
+  },
+
+  collectSelectedSkills: function() {
+    var skills = {};
+    var types = ["search", "notes", "write"];
+    types.forEach(function(type) {
+      var select = document.getElementById("skillSelect" + type.charAt(0).toUpperCase() + type.slice(1));
+      skills[type] = select && select.value ? select.value : null;
+    });
+    return skills;
+  },
+
 };
 
 /* ═══════════════════════════════════════════
@@ -3473,251 +3708,6 @@ var GlobalCopilot = {
     s = s.split('"').join("&" + "quot;");
     s = s.split("'").join("&" + "#39;");
     return s;
-  },
-
-  // ════════════ Skills 页面逻辑 ════════════
-  _skillsState: {
-    currentSkillId: null,
-    skills: [],
-  },
-
-  async initSkills() {
-    // 弹窗按钮绑定
-    document.getElementById("skillCancelBtn")?.addEventListener("click", () => this.closeSkillModal());
-    document.getElementById("skillSaveBtn")?.addEventListener("click", () => this.saveSkill());
-    document.getElementById("skillDeleteCancelBtn")?.addEventListener("click", () => this.closeSkillDeleteModal());
-    document.getElementById("skillDeleteConfirmBtn")?.addEventListener("click", () => this.confirmDeleteSkill());
-    this._initSkillCharCounter();
-    await this.loadAllSkills();
-  },
-
-  async loadAllSkills() {
-    try {
-      const resp = await fetch("/api/skills");
-      const data = await resp.json();
-      this._skillsState.skills = data.skills || [];
-    } catch (e) {
-      this._skillsState.skills = [];
-    }
-    this.renderSkillsByType("search");
-    this.renderSkillsByType("notes");
-    this.renderSkillsByType("write");
-  },
-
-  renderSkillsByType(type) {
-    const grid = document.getElementById(`skillsGrid${type.charAt(0).toUpperCase() + type.slice(1)}`);
-    if (!grid) return;
-    const skills = this._skillsState.skills.filter(s => s.type === type);
-    grid.innerHTML = "";
-
-    if (skills.length === 0) {
-      const labels = { search: "AI 检索论文", notes: "笔记生成", write: "综述生成" };
-      grid.innerHTML = `<div class="empty-state">📭 暂无 ${labels[type] || type} Skill，点击右上角「创建 Skill」按钮添加第一个</div>`;
-      return;
-    }
-
-    skills.forEach(skill => {
-      const card = document.createElement("article");
-      card.className = "home-card";
-      card.innerHTML = `
-        <div>
-          <h3 title="${this.escapeHtml(skill.title)}">${this.escapeHtml(skill.title)}</h3>
-          <small>${this.formatDate(skill.updated_at || skill.created_at)}</small>
-        </div>
-      `;
-      card.addEventListener("click", () => this.openEditSkillModal(skill.skill_id));
-
-      const delBtn = document.createElement("button");
-      delBtn.className = "home-card-delete";
-      delBtn.title = "删除";
-      delBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
-      delBtn.addEventListener("click", async (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        await this.openSkillDeleteConfirm(skill.skill_id);
-      });
-      card.appendChild(delBtn);
-
-      grid.appendChild(card);
-    });
-  },
-
-  openCreateModal(type) {
-    this._skillsState.currentSkillId = null;
-    document.getElementById("skillModalTitle").textContent = "创建 Skill";
-    document.getElementById("skillModalDesc").textContent = "自定义提示词模板，控制 Agent 在特定阶段的行为策略。";
-    document.getElementById("skillTypeSelect").value = type || "search";
-    document.getElementById("skillTypeSelect").disabled = false;
-    document.getElementById("skillTitleInput").value = "";
-    document.getElementById("skillContentInput").value = "";
-    document.getElementById("skillCharCount").textContent = "0 / 16384";
-    document.getElementById("skillDeleteBtn").style.display = "none";
-    document.getElementById("skillModal").classList.add("active");
-
-    // 自动聚焦标题
-    setTimeout(() => document.getElementById("skillTitleInput").focus(), 100);
-  },
-
-  async openEditSkillModal(skillId) {
-    try {
-      const resp = await fetch(`/api/skills/${encodeURIComponent(skillId)}`);
-      if (!resp.ok) throw new Error("Skill 不存在");
-      const skill = await resp.json();
-      this._skillsState.currentSkillId = skillId;
-      document.getElementById("skillModalTitle").textContent = "编辑 Skill";
-      document.getElementById("skillModalDesc").textContent = "";
-      document.getElementById("skillTypeSelect").value = skill.type;
-      document.getElementById("skillTypeSelect").disabled = true;
-      document.getElementById("skillTitleInput").value = skill.title;
-      document.getElementById("skillContentInput").value = skill.content;
-      document.getElementById("skillCharCount").textContent = `${skill.content.length} / 16384`;
-      document.getElementById("skillDeleteBtn").style.display = "inline-flex";
-      document.getElementById("skillModal").classList.add("active");
-    } catch (e) {
-      alert(`加载 Skill 失败：${e.message}`);
-    }
-  },
-
-  closeSkillModal() {
-    document.getElementById("skillModal").classList.remove("active");
-    this._skillsState.currentSkillId = null;
-  },
-
-  async saveSkill() {
-    const type = document.getElementById("skillTypeSelect").value;
-    const title = document.getElementById("skillTitleInput").value.trim();
-    const content = document.getElementById("skillContentInput").value.trim();
-
-    if (!title) { alert("标题不能为空"); return; }
-    if (!content) { alert("Skill 内容不能为空"); return; }
-    if (content.length > 16384) { alert("内容不能超过 16384 字符"); return; }
-
-    const skillId = this._skillsState.currentSkillId;
-    const saveBtn = document.getElementById("skillSaveBtn");
-    saveBtn.disabled = true;
-    saveBtn.textContent = "保存中...";
-
-    try {
-      if (skillId) {
-        const resp = await fetch(`/api/skills/${encodeURIComponent(skillId)}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, content }),
-        });
-        if (!resp.ok) {
-          const err = await resp.json();
-          throw new Error(err.detail || "更新失败");
-        }
-      } else {
-        const resp = await fetch("/api/skills", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, type, content }),
-        });
-        if (!resp.ok) {
-          const err = await resp.json();
-          throw new Error(err.detail || "创建失败");
-        }
-      }
-      this.closeSkillModal();
-      await this.loadAllSkills();
-    } catch (e) {
-      alert(`保存失败：${e.message}`);
-    } finally {
-      saveBtn.disabled = false;
-      saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> 保存';
-    }
-  },
-
-  async openSkillDeleteConfirm(skillId) {
-    this._skillsState._deleteTargetId = skillId;
-
-    // 加载引用信息
-    const usageEl = document.getElementById("skillDeleteUsage");
-    usageEl.textContent = "加载中...";
-    try {
-      const resp = await fetch(`/api/skills/${encodeURIComponent(skillId)}/usage`);
-      const data = await resp.json();
-      if (data.count > 0) {
-        usageEl.textContent = `该 Skill 被 ${data.count} 个 Session 引用，删除后这些 Session 将回退到默认提示词。`;
-      } else {
-        usageEl.textContent = "";
-      }
-    } catch (e) {
-      usageEl.textContent = "";
-    }
-
-    document.getElementById("skillDeleteModal").classList.add("active");
-  },
-
-  closeSkillDeleteModal() {
-    document.getElementById("skillDeleteModal").classList.remove("active");
-    this._skillsState._deleteTargetId = null;
-  },
-
-  async confirmDeleteSkill() {
-    const skillId = this._skillsState._deleteTargetId;
-    if (!skillId) return;
-    try {
-      const resp = await fetch(`/api/skills/${encodeURIComponent(skillId)}`, { method: "DELETE" });
-      if (!resp.ok) throw new Error("删除失败");
-      this.closeSkillDeleteModal();
-      if (this._skillsState.currentSkillId === skillId) {
-        this.closeSkillModal();
-      }
-      await this.loadAllSkills();
-    } catch (e) {
-      alert(`删除失败：${e.message}`);
-    }
-  },
-
-  // Skills 表单字符计数
-  _initSkillCharCounter() {
-    const textarea = document.getElementById("skillContentInput");
-    const counter = document.getElementById("skillCharCount");
-    if (textarea && counter) {
-      textarea.addEventListener("input", () => {
-        counter.textContent = `${textarea.value.length} / 16384`;
-        if (textarea.value.length > 16384) {
-          counter.style.color = "var(--danger)";
-        } else {
-          counter.style.color = "var(--muted)";
-        }
-      });
-    }
-  },
-
-  // ━━━ 首页 Skill 选择器 ━━━
-  async loadHomeSkillSelectors() {
-    try {
-      const resp = await fetch("/api/skills");
-      const data = await resp.json();
-      const skills = data.skills || [];
-
-      ["search", "notes", "write"].forEach(type => {
-        const select = document.getElementById(`skillSelect${type.charAt(0).toUpperCase() + type.slice(1)}`);
-        if (!select) return;
-        // 保留第一个 "默认提示词" 选项
-        select.innerHTML = '<option value="">— 默认提示词 —</option>';
-        skills.filter(s => s.type === type).forEach(s => {
-          const opt = document.createElement("option");
-          opt.value = s.skill_id;
-          opt.textContent = s.title;
-          select.appendChild(opt);
-        });
-      });
-    } catch (e) {
-      // 加载失败时不阻断流程
-    }
-  },
-
-  collectSelectedSkills() {
-    const skills = {};
-    ["search", "notes", "write"].forEach(type => {
-      const select = document.getElementById(`skillSelect${type.charAt(0).toUpperCase() + type.slice(1)}`);
-      skills[type] = select?.value || null;
-    });
-    return skills;
   },
 };
 
