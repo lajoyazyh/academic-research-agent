@@ -2890,12 +2890,13 @@
       var iconCls = categoryIconClass[cat] || "tool-icon-search";
       var catLabel = categoryLabels[cat] || cat;
       var checkedAttr = tool.enabled ? " checked" : "";
+      var pipelineTag = tool.pipeline ? '<span class="tool-pipeline">⏱ ' + this.escapeHtml(tool.pipeline) + '</span>' : '';
       html += '<div class="tool-manager-item">' +
         '<div class="tool-icon ' + iconCls + '"><i class="fa-solid ' + icon + '"></i></div>' +
         '<div class="tool-info">' +
           '<div class="tool-name">' + this.escapeHtml(tool.name) + '</div>' +
           '<div class="tool-desc">' + this.escapeHtml(tool.description) + '</div>' +
-          '<div class="tool-category">' + catLabel + '</div>' +
+          '<div class="tool-category">' + catLabel + pipelineTag + '</div>' +
         '</div>' +
         '<label class="tool-toggle">' +
           '<input type="checkbox" data-tool="' + tool.name + '"' + checkedAttr + ' onchange="notebooklm._onToolToggle(this)">' +
@@ -3416,6 +3417,7 @@ var GlobalCopilot = {
       var tool = tools[i];
       var checked = (this._selectedTools || []).indexOf(tool.name) >= 0;
       var cat = catLabels[tool.category] || tool.category;
+      var pipeline = tool.pipeline || "";
 
       var row = document.createElement("label");
       row.className = "copilot-tool-check";
@@ -3439,12 +3441,17 @@ var GlobalCopilot = {
       label.className = "copilot-tool-check-label";
       label.textContent = tool.name;
 
+      var pipelineSpan = document.createElement("span");
+      pipelineSpan.className = "copilot-tool-check-pipeline";
+      pipelineSpan.textContent = pipeline ? "⏱ " + pipeline : "";
+
       var catSpan = document.createElement("span");
       catSpan.className = "copilot-tool-check-cat";
       catSpan.textContent = cat;
 
       row.appendChild(cb);
       row.appendChild(label);
+      row.appendChild(pipelineSpan);
       row.appendChild(catSpan);
       this._els.toolsList.appendChild(row);
     }

@@ -1085,6 +1085,17 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.tool-pipeline {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 500;
+  background: var(--accent-light);
+  color: var(--accent);
+  vertical-align: middle;
+}
 .tool-manager-item .tool-category {
   font-size: 11px;
   color: var(--muted);
@@ -1479,6 +1490,12 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.copilot-tool-check-pipeline {
+  font-size: 10px;
+  color: var(--accent);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .copilot-tool-check-cat {
   font-size: 10px;

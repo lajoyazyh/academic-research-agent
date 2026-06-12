@@ -15,6 +15,7 @@ class ToolMeta:
     name: str
     description: str
     category: str  # "search" | "pdf" | "file" | "chat" | "notes" | "register"
+    pipeline: str = ""  # 使用阶段标注，如 "搜索阶段" "笔记阶段" "对话阶段"
     parameters: Dict[str, str] = field(default_factory=dict)
     enabled: bool = True
     config: Dict[str, Any] = field(default_factory=dict)  # 工具级可调参数
@@ -24,7 +25,7 @@ class ToolMeta:
 
     @classmethod
     def from_dict(cls, d: dict) -> "ToolMeta":
-        return cls(**{k: d.get(k) for k in ["name", "description", "category", "parameters", "enabled", "config"]})
+        return cls(**{k: d.get(k) for k in ["name", "description", "category", "pipeline", "parameters", "enabled", "config"]})
 
 
 # ━━━ 内置工具注册表（单一数据源）━━━
@@ -33,6 +34,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="arxiv_search",
         description="在 arXiv 上搜索学术论文，返回论文 ID、标题和发布时间",
         category="search",
+        pipeline="搜索阶段",
         parameters={"query": "搜索关键词", "max_results": "最大返回数，默认5（可选）"},
         enabled=True,
         config={"max_results": 5},
@@ -41,6 +43,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="arxiv_fetch",
         description="根据 arXiv ID 获取论文的详细元数据（标题、作者、摘要等）",
         category="search",
+        pipeline="搜索阶段",
         parameters={"paper_id": "arXiv 论文 ID"},
         enabled=True,
     ),
@@ -48,6 +51,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="arxiv_pdf_reader",
         description="下载并解析 arXiv PDF 全文内容",
         category="pdf",
+        pipeline="搜索阶段 / 笔记阶段",
         parameters={"paper_id": "arXiv 论文 ID", "read_full": "是否读取更多页，默认 false"},
         enabled=True,
         config={"read_full_default": False},
@@ -56,6 +60,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="arxiv_download_pdf",
         description="仅下载 PDF 原文到 papers/ 目录（不解析，轻量快速）",
         category="pdf",
+        pipeline="搜索阶段",
         parameters={"paper_id": "arXiv ID 或 PDF 链接"},
         enabled=True,
     ),
@@ -63,6 +68,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="semantic_scholar_search",
         description="在 Semantic Scholar 上搜索论文，返回标题、作者、摘要和引用数",
         category="search",
+        pipeline="搜索阶段",
         parameters={"query": "搜索关键词", "limit": "最大返回数，默认5（可选）"},
         enabled=True,
         config={"limit": 5},
@@ -71,6 +77,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="semantic_scholar_fetch",
         description="根据 Semantic Scholar Paper ID 获取论文详细信息",
         category="search",
+        pipeline="搜索阶段",
         parameters={"paper_id": "Semantic Scholar Paper ID"},
         enabled=True,
     ),
@@ -78,6 +85,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="crossref_search",
         description="在 Crossref 中按关键词检索文献元数据，返回 DOI、题目、作者等",
         category="search",
+        pipeline="搜索阶段",
         parameters={"query": "检索关键词", "rows": "最大返回数，默认5（可选）"},
         enabled=True,
         config={"rows": 5},
@@ -86,6 +94,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="crossref_fetch_doi",
         description="通过 DOI 从 Crossref 获取论文完整元数据",
         category="search",
+        pipeline="搜索阶段",
         parameters={"doi": "论文 DOI"},
         enabled=True,
     ),
@@ -93,6 +102,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="openalex_search",
         description="在 OpenAlex 上检索综合领域论文（含社科、医学等），返回标题、摘要、引用数",
         category="search",
+        pipeline="搜索阶段",
         parameters={"query": "搜索关键词", "limit": "最大返回数，默认5（可选）"},
         enabled=True,
         config={"limit": 5},
@@ -101,6 +111,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="clear_notes",
         description="清空临时研究笔记文件",
         category="file",
+        pipeline="笔记阶段",
         parameters={},
         enabled=True,
     ),
@@ -108,6 +119,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="append_note",
         description="记录单篇论文的深度阅读笔记（结构化 Markdown）",
         category="file",
+        pipeline="笔记阶段",
         parameters={"content": "结构化 Markdown 笔记，需包含论文id、标题、作者等"},
         enabled=True,
     ),
@@ -116,6 +128,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="retriever",
         description="BM25 检索器：从已下载的 PDF 全文中检索与查询最相关的段落（用于对话 RAG）",
         category="chat",
+        pipeline="对话阶段",
         parameters={"query": "检索查询文本", "top_k": "返回段落数，默认5（可选）"},
         enabled=True,
         config={"top_k": 5},
@@ -124,6 +137,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="rag_note_generator",
         description="基于 Embedding 向量检索生成 6 段式深度学术笔记（研究背景、核心方法、实验设置、关键结果、消融与分析、亮点与不足）",
         category="notes",
+        pipeline="笔记阶段",
         parameters={"pdf_path": "PDF 文件路径", "paper_title": "论文标题", "abstract": "论文摘要", "topic": "研究主题"},
         enabled=True,
         config={"embedding_top_k": 5},
@@ -132,6 +146,7 @@ BUILTIN_TOOLS: Dict[str, ToolMeta] = {
         name="paper_register",
         description="审核论文摘要并收录（下载 PDF + 登记到论文列表），一步完成",
         category="register",
+        pipeline="搜索阶段",
         parameters={"paper_id": "arXiv ID", "title": "论文标题", "authors": "作者列表", "abstract": "论文摘要"},
         enabled=True,
     ),
