@@ -6,8 +6,101 @@
   <title>Skills — 智能学术综述助手</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/static/notebooklm.css">
+  <style>
+    .skills-page { overflow-y:auto; height:100vh; }
+    .skills-main { max-width:960px; margin:0 auto; padding:24px 20px 40px; }
+
+    .skills-section { margin-bottom:24px; }
+    .skills-section-head {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:12px; padding-bottom:10px;
+      border-bottom:1px solid var(--line);
+    }
+    .skills-section-head h2 {
+      margin:0; font-size:16px; font-weight:500; color:var(--text);
+      display:flex; align-items:center; gap:8px;
+    }
+    .stage-icon {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:28px; height:28px; border-radius:8px; font-size:13px;
+    }
+    .stage-icon.search { background:#eef2ff; color:#4f46e5; }
+    .stage-icon.notes { background:#fef3c7; color:#d97706; }
+    .stage-icon.write { background:#ecfdf5; color:#059669; }
+    .stage-badge { font-size:12px; color:var(--subtle); font-weight:400; }
+
+    .skills-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+      gap:10px;
+    }
+    .skill-card {
+      background:var(--panel); border:1px solid var(--line);
+      border-radius:12px; padding:14px 16px;
+      cursor:pointer; transition:box-shadow .15s, border-color .15s;
+      display:flex; align-items:center; gap:12px;
+      position:relative;
+    }
+    .skill-card:hover { box-shadow:0 2px 8px rgba(0,0,0,.06); border-color:var(--accent); }
+    .skill-card-icon {
+      width:36px; height:36px; border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:15px; flex-shrink:0;
+    }
+    .skill-card-icon.search { background:#eef2ff; color:#4f46e5; }
+    .skill-card-icon.notes { background:#fef3c7; color:#d97706; }
+    .skill-card-icon.write { background:#ecfdf5; color:#059669; }
+    .skill-card-body { flex:1; min-width:0; }
+    .skill-card-body h4 {
+      margin:0 0 2px; font-size:13px; font-weight:500; color:var(--text);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .skill-card-body .skill-card-meta {
+      font-size:11px; color:var(--subtle);
+      display:flex; align-items:center; gap:6px;
+    }
+    .skill-card-body .skill-card-preview {
+      font-size:11px; color:var(--muted);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      max-width:200px; margin-top:2px;
+    }
+    .skill-card-delete {
+      position:absolute; top:6px; right:6px;
+      width:22px; height:22px; border-radius:6px; border:none;
+      background:transparent; color:var(--muted); cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      font-size:11px; opacity:0; transition:opacity .15s, background .15s;
+    }
+    .skill-card:hover .skill-card-delete { opacity:1; }
+    .skill-card-delete:hover { background:#fef2f2; color:var(--danger); }
+
+    .skills-empty {
+      grid-column:1 / -1;
+      padding:28px 16px; text-align:center;
+      color:var(--muted); font-size:13px;
+      border:1px dashed var(--line); border-radius:12px;
+      background:var(--bg);
+    }
+    .skills-empty i { margin-right:6px; }
+
+    .skill-form-select, .skill-form-input, .skill-form-textarea {
+      width:100%; border:1px solid var(--line); border-radius:10px;
+      padding:8px 12px; font-size:13px; background:var(--bg); color:var(--text);
+      outline:none; transition:border-color .15s;
+      font-family:inherit;
+    }
+    .skill-form-select:focus, .skill-form-input:focus, .skill-form-textarea:focus {
+      border-color:var(--accent);
+    }
+    .skill-form-textarea {
+      resize:vertical; min-height:180px;
+      font-family:'Cascadia Code','Fira Code',monospace; font-size:12px;
+      line-height:1.6;
+    }
+    .skill-char-count { float:right; font-size:11px; color:var(--muted); margin-top:2px; }
+  </style>
 </head>
-<body data-page="skills">
+<body data-page="skills" class="skills-page">
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
@@ -19,78 +112,80 @@
     </div>
   </header>
 
-  <main style="max-width:1200px;margin:0 auto;padding:30px 20px;overflow-y:auto;height:calc(100vh - 52px);">
+  <main class="skills-main">
 
-    <!-- 上部：AI检索论文 Skills -->
-    <section class="home-section" style="margin-bottom:48px;">
-      <div class="home-section-head" style="display:flex;align-items:center;justify-content:space-between;">
-        <h2>AI 检索论文 <span style="font-size:14px;color:var(--subtle);font-weight:400;">（搜索阶段）</span></h2>
-        <button class="primary-btn" onclick="notebooklm.openCreateModal('search')">
-          <i class="fa-solid fa-plus"></i> 创建 Skill
+    <section class="skills-section">
+      <div class="skills-section-head">
+        <h2>
+          <span class="stage-icon search"><i class="fa-solid fa-magnifying-glass"></i></span>
+          AI 检索论文
+          <span class="stage-badge">搜索阶段</span>
+        </h2>
+        <button class="primary-btn" onclick="notebooklm.openCreateModal('search')" style="font-size:12px;padding:6px 14px;">
+          <i class="fa-solid fa-plus"></i> 创建
         </button>
       </div>
-      <div class="home-grid" id="skillsGridSearch">
-        <div class="empty-state">暂无 AI 检索论文 Skill，点击右上角「创建 Skill」按钮添加第一个</div>
-      </div>
+      <div class="skills-grid" id="skillsGridSearch"></div>
     </section>
 
-    <!-- 中部：笔记生成 Skills -->
-    <section class="home-section" style="margin-bottom:48px;">
-      <div class="home-section-head" style="display:flex;align-items:center;justify-content:space-between;">
-        <h2>笔记生成 <span style="font-size:14px;color:var(--subtle);font-weight:400;">（笔记阶段）</span></h2>
-        <button class="primary-btn" onclick="notebooklm.openCreateModal('notes')">
-          <i class="fa-solid fa-plus"></i> 创建 Skill
+    <section class="skills-section">
+      <div class="skills-section-head">
+        <h2>
+          <span class="stage-icon notes"><i class="fa-solid fa-note-sticky"></i></span>
+          笔记生成
+          <span class="stage-badge">笔记阶段</span>
+        </h2>
+        <button class="primary-btn" onclick="notebooklm.openCreateModal('notes')" style="font-size:12px;padding:6px 14px;">
+          <i class="fa-solid fa-plus"></i> 创建
         </button>
       </div>
-      <div class="home-grid" id="skillsGridNotes">
-        <div class="empty-state">暂无笔记生成 Skill，点击右上角「创建 Skill」按钮添加第一个</div>
-      </div>
+      <div class="skills-grid" id="skillsGridNotes"></div>
     </section>
 
-    <!-- 下部：综述生成 Skills -->
-    <section class="home-section" style="margin-bottom:48px;">
-      <div class="home-section-head" style="display:flex;align-items:center;justify-content:space-between;">
-        <h2>综述生成 <span style="font-size:14px;color:var(--subtle);font-weight:400;">（综述阶段）</span></h2>
-        <button class="primary-btn" onclick="notebooklm.openCreateModal('write')">
-          <i class="fa-solid fa-plus"></i> 创建 Skill
+    <section class="skills-section">
+      <div class="skills-section-head">
+        <h2>
+          <span class="stage-icon write"><i class="fa-solid fa-pen-to-square"></i></span>
+          综述生成
+          <span class="stage-badge">综述阶段</span>
+        </h2>
+        <button class="primary-btn" onclick="notebooklm.openCreateModal('write')" style="font-size:12px;padding:6px 14px;">
+          <i class="fa-solid fa-plus"></i> 创建
         </button>
       </div>
-      <div class="home-grid" id="skillsGridWrite">
-        <div class="empty-state">暂无综述生成 Skill，点击右上角「创建 Skill」按钮添加第一个</div>
-      </div>
+      <div class="skills-grid" id="skillsGridWrite"></div>
     </section>
 
   </main>
 
-  <!-- 创建/编辑 Skill 弹窗 -->
   <div class="modal" id="skillModal" aria-hidden="true">
-    <div class="modal-card" style="max-width:640px;">
+    <div class="modal-card" style="max-width:560px;">
       <h3 id="skillModalTitle">创建 Skill</h3>
-      <p id="skillModalDesc">自定义提示词模板，控制 Agent 在特定阶段的行为策略。</p>
+      <p id="skillModalDesc" style="font-size:13px;color:var(--subtle);margin-bottom:16px;">自定义提示词模板，控制 Agent 在特定阶段的行为策略。</p>
 
-      <div class="field-grid">
-        <label>
-          类型 <span style="color:var(--danger);">*</span>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500;">
+          类型 <span style="color:var(--danger);font-weight:400;">*</span>
           <select id="skillTypeSelect" class="skill-form-select">
             <option value="search">AI 检索论文（搜索阶段）</option>
             <option value="notes">笔记生成（笔记阶段）</option>
             <option value="write">综述生成（综述阶段）</option>
           </select>
         </label>
-        <label>
-          标题 <span style="color:var(--danger);">*</span>
-          <input id="skillTitleInput" type="text" placeholder="为 Skill 起一个易于区分的名称" maxlength="100" />
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500;">
+          标题 <span style="color:var(--danger);font-weight:400;">*</span>
+          <input id="skillTitleInput" class="skill-form-input" type="text" placeholder="为 Skill 起一个易于区分的名称" maxlength="100" />
         </label>
-        <label>
-          内容 (Markdown) <span style="color:var(--danger);">*</span>
-          <span id="skillCharCount" style="float:right;font-size:11px;color:var(--muted);">0 / 16384</span>
-          <textarea id="skillContentInput" placeholder="# 你的自定义提示词&#10;&#10;在这里编写 Agent 的行为策略..." rows="12" style="min-height:220px;font-family:'Cascadia Code','Fira Code',monospace;font-size:13px;"></textarea>
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500;">
+          内容 (Markdown) <span style="color:var(--danger);font-weight:400;">*</span>
+          <span id="skillCharCount" class="skill-char-count">0 / 16384</span>
+          <textarea id="skillContentInput" class="skill-form-textarea" placeholder="# 你的自定义提示词&#10;&#10;在这里编写 Agent 的行为策略..."></textarea>
         </label>
       </div>
 
-      <div class="modal-actions">
+      <div class="modal-actions" style="margin-top:18px;">
         <button class="ghost-btn" id="skillDeleteBtn" style="display:none;color:var(--danger);margin-right:auto;" onclick="notebooklm.openSkillDeleteConfirm(notebooklm._skillsState.currentSkillId)">
-          <i class="fa-solid fa-trash"></i> 删除此 Skill
+          <i class="fa-solid fa-trash"></i> 删除
         </button>
         <button class="secondary-btn" id="skillCancelBtn">取消</button>
         <button class="primary-btn" id="skillSaveBtn"><i class="fa-solid fa-check"></i> 保存</button>
@@ -98,11 +193,10 @@
     </div>
   </div>
 
-  <!-- 删除确认弹窗 -->
   <div class="modal" id="skillDeleteModal" aria-hidden="true">
-    <div class="modal-card" style="max-width:420px;">
+    <div class="modal-card" style="max-width:400px;">
       <h3>删除 Skill</h3>
-      <p id="skillDeleteMsg">确定要删除此 Skill 吗？</p>
+      <p id="skillDeleteMsg">确定要删除此 Skill 吗？此操作不可撤销。</p>
       <p id="skillDeleteUsage" style="font-size:12px;color:var(--subtle);"></p>
       <div class="modal-actions">
         <button class="secondary-btn" id="skillDeleteCancelBtn">取消</button>

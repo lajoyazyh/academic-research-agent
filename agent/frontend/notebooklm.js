@@ -3011,19 +3011,28 @@
 
     if (skills.length === 0) {
       var labels = { search: "AI 检索论文", notes: "笔记生成", write: "综述生成" };
-      grid.innerHTML = '<div class="empty-state">(x) 暂无 ' + (labels[type] || type) + ' Skill，点击右上角「创建 Skill」按钮添加第一个</div>';
+      var icons = { search: "fa-magnifying-glass", notes: "fa-note-sticky", write: "fa-pen-to-square" };
+      grid.innerHTML = '<div class="skills-empty"><i class="fa-solid ' + (icons[type] || 'fa-file') + '"></i>暂无 ' + (labels[type] || type) + ' Skill，点击「创建」按钮添加</div>';
       return;
     }
 
     var self = this;
+    var iconMap = { search: "fa-magnifying-glass", notes: "fa-note-sticky", write: "fa-pen-to-square" };
     skills.forEach(function(skill) {
       var card = document.createElement("article");
-      card.className = "home-card";
-      card.innerHTML = '<div><h3 title="' + self.escapeHtml(skill.title) + '">' + self.escapeHtml(skill.title) + '</h3><small>' + self.formatDate(skill.updated_at || skill.created_at) + '</small></div>';
+      card.className = "skill-card";
+      var preview = (skill.content || "").replace(/^#+\s*/gm, "").replace(/\n/g, " ").trim().slice(0, 60);
+      card.innerHTML =
+        '<div class="skill-card-icon ' + type + '"><i class="fa-solid ' + (iconMap[type] || 'fa-file') + '"></i></div>' +
+        '<div class="skill-card-body">' +
+          '<h4 title="' + self.escapeHtml(skill.title) + '">' + self.escapeHtml(skill.title) + '</h4>' +
+          '<div class="skill-card-meta"><span>' + self.formatDate(skill.updated_at || skill.created_at) + '</span></div>' +
+          (preview ? '<div class="skill-card-preview">' + self.escapeHtml(preview) + '</div>' : '') +
+        '</div>';
       card.addEventListener("click", function() { self.openEditSkillModal(skill.skill_id); });
 
       var delBtn = document.createElement("button");
-      delBtn.className = "home-card-delete";
+      delBtn.className = "skill-card-delete";
       delBtn.title = "删除";
       delBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
       delBtn.addEventListener("click", function(e) {
