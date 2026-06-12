@@ -2227,6 +2227,23 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
 
         _agent_holder = {}
 
+        # 启动周期性 trace 同步线程，将 Agent 实时 traces 同步到 RUNS 供前端轮询
+        def _auto_trace_saver():
+            while not _stop_flag[0]:
+                _time.sleep(3)
+                try:
+                    agent = _agent_holder.get("agent")
+                    traces = list(agent.traces) if agent else []
+                    if traces:
+                        with RUN_LOCK:
+                            if run_key in RUNS:
+                                RUNS[run_key]["traces"] = traces
+                except Exception:
+                    pass
+
+        _auto_saver_thread = threading.Thread(target=_auto_trace_saver, daemon=True)
+        _auto_saver_thread.start()
+
         search_result = run_agent_pipeline_session(
             session_id=session_id,
             user_topic=topic,
