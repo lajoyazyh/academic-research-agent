@@ -112,7 +112,7 @@ class RAGNoteGenerator:
         # 1. 全量提取段落
         blocks = extract_full_text_from_pdf(pdf_path)
         if not blocks:
-            return self._fallback(paper_title, abstract, topic)
+            return self._fallback(paper_title, abstract, topic, skill_content)
 
         # 2. 用 Embedding API 向量化
         texts = [b["text"][:800] for b in blocks]  # 截断过长的段落
@@ -120,12 +120,12 @@ class RAGNoteGenerator:
             vecs = self.llm.embed(texts)
         except Exception:
             # 降级：用 BM25
-            return self._fallback_bm25(pdf_path, paper_title, abstract, topic)
+            return self._fallback_bm25(pdf_path, paper_title, abstract, topic, skill_content)
 
         embeddings = np.array(vecs, dtype=np.float32)
         if embeddings.shape[1] < 10:
             # 零向量降级 → 用 BM25
-            return self._fallback_bm25(pdf_path, paper_title, abstract, topic)
+            return self._fallback_bm25(pdf_path, paper_title, abstract, topic, skill_content)
 
         # 3. 逐节检索 + 生成
         sections_output = []
@@ -173,11 +173,23 @@ class RAGNoteGenerator:
         except Exception:
             rag_text = abstract or "（无法检索原文）"
 
-        # LLM 生成
-        skill_prefix = ""
+        # LLM 生成 — 双通道：有 Skill 时替换默认格式要求，无 Skill 时使用完整默认
         if skill_content:
-            skill_prefix = f"请遵循以下笔记写作风格要求：\n\n{skill_content}\n\n---\n\n"
-        prompt = f"""{skill_prefix}你是严谨的学术研究员。请为以下论文撰写「{section['name']}」部分的笔记。
+            # 通道 A：Skill 优先 — 用 Skill 内容替换默认写作要求，仅保留最小核心约束
+            prompt = f"""你是严谨的学术研究员。请为以下论文撰写「{section['name']}」部分的笔记。
+
+研究主题：{topic}
+论文标题：{paper_title}
+
+{skill_content}
+
+【检索到的论文原文段落】
+{rag_text}
+
+核心要求：至少 {section['min_words']} 字，只输出笔记内容本身，不要加标题前缀或解释。"""
+        else:
+            # 通道 B：默认兜底 — 使用完整的默认格式要求（现有逻辑不变）
+            prompt = f"""你是严谨的学术研究员。请为以下论文撰写「{section['name']}」部分的笔记。
 
 研究主题：{topic}
 论文标题：{paper_title}
@@ -200,9 +212,22 @@ class RAGNoteGenerator:
         except Exception:
             return f"（生成失败）"
 
-    def _fallback(self, paper_title: str, abstract: str, topic: str) -> str:
+    def _fallback(self, paper_title: str, abstract: str, topic: str, skill_content: str = "") -> str:
         """PDF 不可用时的降级"""
-        prompt = f"""你是严谨的学术研究员。请基于论文的摘要信息，撰写简要学术笔记。
+        if skill_content:
+            # 通道 A：Skill 优先 — 仅给 Skill + 摘要，不附加默认格式
+            prompt = f"""你是严谨的学术研究员。请基于论文的摘要信息，撰写学术笔记。
+
+研究主题：{topic}
+论文标题：{paper_title}
+摘要：{abstract or '无'}
+
+{skill_content}
+
+核心要求：基于摘要内容如实撰写，不确定处用"据摘要显示"。直接输出笔记。"""
+        else:
+            # 通道 B：默认兜底 — 使用完整的默认格式
+            prompt = f"""你是严谨的学术研究员。请基于论文的摘要信息，撰写简要学术笔记。
 
 研究主题：{topic}
 论文标题：{paper_title}
@@ -225,7 +250,7 @@ class RAGNoteGenerator:
             return f"## 论文笔记：{paper_title}\n\n- **核心方法**：（暂无详细信息）\n- **关键发现**：{abstract or '暂无摘要'}"
 
     def _fallback_bm25(
-        self, pdf_path: str, paper_title: str, abstract: str, topic: str
+        self, pdf_path: str, paper_title: str, abstract: str, topic: str, skill_content: str = ""
     ) -> str:
         """Embedding 不可用时降级为 BM25"""
         from tools.retriever import BM25Retriever
@@ -233,7 +258,7 @@ class RAGNoteGenerator:
 
         blocks = extract_full_text_from_pdf(pdf_path)
         if not blocks:
-            return self._fallback(paper_title, abstract, topic)
+            return self._fallback(paper_title, abstract, topic, skill_content)
 
         retriever = BM25Retriever()
         retriever.index(blocks)
@@ -246,7 +271,21 @@ class RAGNoteGenerator:
                 f"【第{p['page']}页】{p['text'][:400]}" for p in passages
             ) if passages else abstract
 
-            prompt = f"""你是学术研究员。请为论文《{paper_title}》撰写「{section['name']}」笔记。
+            if skill_content:
+                # 通道 A：Skill 优先 — 替换默认写作要求
+                prompt = f"""你是学术研究员。请为论文《{paper_title}》撰写「{section['name']}」笔记。
+
+研究主题：{topic}
+
+{skill_content}
+
+【原文段落】
+{rag_text}
+
+核心要求：至少 {section['min_words']} 字，只输出笔记内容。"""
+            else:
+                # 通道 B：默认兜底
+                prompt = f"""你是学术研究员。请为论文《{paper_title}》撰写「{section['name']}」笔记。
 
 研究主题：{topic}
 

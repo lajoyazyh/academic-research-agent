@@ -81,14 +81,25 @@ def _build_initial_plan(llm: LLMClient, topic: str) -> str:
     return plan
 
 
-def _build_writer_outline(llm: LLMClient, topic: str, notes_content: str, skill_prefix: str = "") -> str:
-    outline_prompt = f"""你是学术综述写作规划师。请基于给定调研笔记，为主题《{topic}》生成一份中文 Markdown 大纲。
+def _build_writer_outline(llm: LLMClient, topic: str, notes_content: str, skill_content: str = "") -> str:
+    if skill_content:
+        # 通道 A：Skill 优先 — 用 Skill 策略替换固定四标题要求
+        outline_prompt = f"""你是学术综述写作规划师。请基于给定调研笔记，为主题《{topic}》生成一份中文 Markdown 大纲。
+
+{skill_content}
+
+【调研笔记】
+{notes_content}
+
+输出仅包含大纲本身，不要写正文段落。"""
+    else:
+        # 通道 B：默认兜底 — 固定四个二级标题
+        outline_prompt = f"""你是学术综述写作规划师。请基于给定调研笔记，为主题《{topic}》生成一份中文 Markdown 大纲。
 要求：
 1. 必须包含以下四个二级标题：{', '.join(WRITER_SECTION_TITLES)}。
 2. 每个二级标题下至少给出 3 条要点，突出方法、实验、指标与对比结论。
 3. 输出仅包含大纲本身，不要写正文段落。
 
-{skill_prefix}
 【调研笔记】
 {notes_content}
 """
@@ -101,20 +112,36 @@ def _build_writer_outline(llm: LLMClient, topic: str, notes_content: str, skill_
 
 
 def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, outline: str, skill_content: str = "") -> str:
-    # 构建写作风格注入前缀
-    writing_skill_prefix = ""
-    if skill_content:
-        writing_skill_prefix = (
-            "## 🎯 用户自定义写作风格要求\n"
-            "请在写作中严格遵循以下风格和内容要求：\n\n"
-            f"{skill_content}\n\n"
-            "---\n\n"
-        )
-
     section_texts = []
-    for idx, section_title in enumerate(WRITER_SECTION_TITLES, start=1):
+    # 如果有 Skill，从 Skill 生成的大纲中提取章节标题；否则使用默认四标题
+    if skill_content and outline:
+        import re as _re
+        _extracted = _re.findall(r'^## (.+)$', outline, _re.MULTILINE)
+        _section_titles = _extracted if _extracted else WRITER_SECTION_TITLES
+    else:
+        _section_titles = WRITER_SECTION_TITLES
+
+    for idx, section_title in enumerate(_section_titles, start=1):
         previous_text = "\n\n".join(section_texts)
-        section_prompt = f"""{writing_skill_prefix}你是学术综述写作者。请只撰写《{topic}》综述的第 {idx} 节：{section_title}。
+        if skill_content:
+            # 通道 A：Skill 优先 — 替换默认写作要求
+            section_prompt = f"""你是学术综述写作者。请只撰写《{topic}》综述的第 {idx} 节：{section_title}。
+
+{skill_content}
+
+【整体大纲】
+{outline}
+
+【已完成章节】
+{previous_text if previous_text else '（无）'}
+
+【调研笔记】
+{notes_content}
+
+使用 Markdown 二级标题 ## {section_title}，输出只包含本节内容，与已完成章节保持衔接。"""
+        else:
+            # 通道 B：默认兜底
+            section_prompt = f"""你是学术综述写作者。请只撰写《{topic}》综述的第 {idx} 节：{section_title}。
 写作要求：
 1. 使用 Markdown 二级标题，标题必须是：## {section_title}。
 2. 内容要具体引用笔记中的模型、方法、实验指标和对比结论，不要空话。
@@ -141,20 +168,11 @@ def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, 
 def compose_review_from_notes(topic: str, notes_content: str, write_skill_content: str = "") -> tuple[str, str]:
     llm = LLMClient()
 
-    # ━━━ Skill 注入：write 类型的自定义提示词 ━━━
+    # 双通道 Skill 注入：有 Skill 时替换大纲固定标题，无 Skill 时使用默认四标题
     if write_skill_content:
-        # 将 skill 内容注入到 outline prompt 中作为写作策略指导
-        outline_skill_prefix = (
-            "## 🎯 用户自定义写作策略\n"
-            "请严格遵循以下用户定义的综述写作策略：\n\n"
-            f"{write_skill_content}\n\n"
-            "---\n\n"
-            "## 📋 基本大纲要求\n"
-        )
+        outline = _build_writer_outline(llm, topic, notes_content, write_skill_content)
     else:
-        outline_skill_prefix = ""
-
-    outline = _build_writer_outline(llm, topic, notes_content, outline_skill_prefix)
+        outline = _build_writer_outline(llm, topic, notes_content)
     body = _compose_review_by_sections(llm, topic, notes_content, outline, write_skill_content)
     review = f"## 综述大纲\n\n{outline}\n\n---\n\n{body}"
     return outline, review
@@ -567,22 +585,39 @@ def run_search_only(
 
     research_query = _build_research_query(user_topic, initial_plan, confirmed_keywords)
 
-    # ━━━ Skill 注入：加载 search 类型的自定义提示词 ━━━
-    skill_injected = ""
+    # ━━━ 双通道 Skill 注入：搜索阶段 ━━━
     if session_id:
         skills = _get_skills_for_session(session_id)
         search_skill_id = skills.get("search")
         if search_skill_id:
             skill_content = _load_skill_content(skill_id=search_skill_id)
             if skill_content:
-                skill_injected = (
-                    "## 🎯 用户自定义 Skill（替代默认搜索策略）\n"
-                    "请严格遵循以下用户定义的策略进行文献搜索：\n\n"
+                # 通道 A：Skill 优先 — 用 Skill 内容替换默认搜索策略，
+                # 仅保留最小核心约束（工具列表 + JSON 格式 + 质量门禁）
+                _MIN_SEARCH_RULES = (
+                    "## 核心硬约束（必须遵守，不可绕过）\n"
+                    "1. 必须严格按照 JSON 格式输出 thought/action/action_input。\n"
+                    "2. 只能调用上面列出的可用工具，不能调用不存在的工具。\n"
+                    "3. 完成搜索后，必须以 action: finish 结束。\n"
+                    "4. 遇到 HTTP 429 立即换数据库，不要反复重试同一目标。\n"
+                )
+                research_query = (
+                    "## 用户自定义搜索策略（请严格遵循以下策略进行文献搜索）\n\n"
                     f"{skill_content}\n\n"
                     "---\n\n"
+                    f"{_MIN_SEARCH_RULES}\n"
+                    f"\n研究主题：{user_topic}\n"
                 )
-                research_query = skill_injected + research_query
                 print(f"[Skill] Injected search skill: {search_skill_id}")
+                # 记录 Skill 状态到 Agent traces
+                researcher_agent.traces.append({
+                    "timestamp": datetime.datetime.now().isoformat(),
+                    "thought": "",
+                    "action": "SKILL_STATUS",
+                    "input": {"skill_id": search_skill_id, "skill_type": "search"},
+                    "observation": "skill_active: search | skill_content_loaded: true | mode: channel_a",
+                    "error_type": "skill_info",
+                })
 
     final_answer = researcher_agent.run(research_query)
 
@@ -678,13 +713,24 @@ def run_write_from_notes(
                 print(f"[Skill] Injected write skill: {write_skill_id}")
 
     if user_feedback and previous_draft:
-        # 带反馈的重写
-        # Skill 注入到反馈修订 system prompt
-        skill_prefix = ""
+        # 带反馈的重写 — 双通道：有 Skill 时替换默认要求
         if write_skill_content:
-            skill_prefix = f"请遵循以下写作风格要求：\n\n{write_skill_content}\n\n---\n\n"
+            feedback_prompt = f"""你是学术综述修改专家。请根据用户反馈修改综述。
 
-        feedback_prompt = f"""{skill_prefix}你是学术综述修改专家。请根据用户反馈修改综述。
+{write_skill_content}
+
+【用户反馈】
+{user_feedback}
+
+【上一版草稿】
+{previous_draft}
+
+【调研笔记（参考）】
+{notes_content}
+
+请直接输出完整的修改后综述（Markdown格式）。"""
+        else:
+            feedback_prompt = f"""你是学术综述修改专家。请根据用户反馈修改综述。
 
 【用户反馈】
 {user_feedback}

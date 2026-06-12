@@ -2021,7 +2021,7 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
     rag = RAGNoteGenerator()
     topic = payload.topic.strip()
 
-    # ━━━ Skill 注入：加载 notes 类型的自定义提示词 ━━━
+    # ━━━ 双通道 Skill 注入：笔记阶段 ━━━
     notes_skill_content = ""
     skills_config = session.get("skills", {})
     notes_skill_id = skills_config.get("notes")
@@ -2031,7 +2031,11 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
             if notes_skill and not notes_skill.get("deleted"):
                 notes_skill_content = str(notes_skill.get("content", ""))
                 print(f"[Skill] Injected notes skill: {notes_skill_id}")
+            else:
+                # Skill 已删除或无效 → 自动回退默认通道
+                print(f"[Skill Fallback] Notes skill {notes_skill_id} is deleted/invalid, using default")
         except Exception:
+            # Skill 加载异常 → 静默回退默认通道
             pass
 
     notes_map = {}
