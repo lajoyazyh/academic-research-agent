@@ -654,4 +654,78 @@ overall:           0.80  → 0.80  (累计 持平)
 
 | 版本 | 日期 | 作者 | 改动 |
 |------|------|------|------|
+| v2.0 | 2026-06-13 | - | 第五波：Web 应用解耦 + 上下文窗口管理 |
 | v1.0 | 2026-06-12 | - | 初稿，按四波优化顺序记录，包含 5 次评估数据 |
+
+---
+
+## 第五波：Web 应用解耦与上下文管理 (2026-06-13)
+
+### 5.1 Web 应用模块化解耦
+
+**问题**：web_app.py 膨胀至 ~2600 行，包含所有路由、模型、业务逻辑，难以维护。
+
+**方案**：按功能模块拆分为独立路由文件。
+
+**架构**：
+`
+web_app.py (90 行)              ← 精简入口
+backend/routes/
+├── deps.py                     ← 共享依赖（延迟注入避免循环引用）
+├── models.py                   ← 20+ Pydantic 模型集中管理
+├── pages.py                    ← 页面路由、收藏夹、历史、PDF
+├── session.py                  ← Session/论文/笔记 (prefix=/api/sessions)
+├── chat.py                     ← 聊天系统 + 上下文窗口 + 压缩
+├── conversation.py             ← 多会话聊天管理
+├── draft.py                    ← 综述草稿
+├── agent.py                    ← Agent 执行端点
+└── admin.py                    ← 工具/知识库/Copilot/Skills
+`
+
+**关键设计决策**：
+- 每个路由模块使用 APIRouter(prefix=...) 独立管理路径
+- deps.py 通过 init_deps() 延迟注入全局管理器
+- 固定路径路由（如 /api/skills/defaults）必须在参数路由（/{skill_id}）之前注册
+- 内联 Pydantic 模型从路由文件中移除，统一使用 models.py
+
+### 5.2 上下文窗口管理系统
+
+**问题**：长对话导致 LLM 上下文超限，缺乏可视化和压缩机制。
+
+**实现**：
+
+**后端 API**：
+- GET /api/sessions/{id}/context/stats — 返回消息数、轮次数、估算 token、使用百分比
+- POST /api/sessions/{id}/context/compress — LLM 将早期消息摘要为 ≤300 字上下文，保留最近 4 轮
+
+**前端用量条**：
+- 在聊天标签栏右侧实时显示 token 使用进度条
+- 颜色渐变：绿 → 黄 (>60%) → 红 (>80%)
+- 对话 ≥6 轮时显示压缩按钮
+- 使用内联样式确保高度不被 CSS 覆盖
+
+**上下文窗口管理**（_manage_context_window）：
+- 优先级配额：用户消息 > RAG检索 > 对话历史 > 笔记/草稿
+- _truncate_text() 按字符数截断，保留首尾各半
+- 对话历史窗口：取最近 6 轮（12 条），排除当前轮
+
+**Embedding 批处理优化**：
+- llms/client.py 的 embed() 改为分批处理（每批 ≤64 条）
+- RAGNoteGenerator 新增 _embedding_failed 标志，首次失败后跳过所有后续 Embedding 调用，直接走 BM25 回退
+
+### 5.3 评估
+
+| 指标 | 优化前 | 优化后 |
+|------|--------|--------|
+| web_app.py 行数 | ~2600 | 90 |
+| 路由模块数 | 1 | 8 |
+| API 端点 | 50+ | 80+ |
+| 上下文可视化 | 无 | 实时用量条 + 压缩按钮 |
+| Embedding 失败日志 | 每篇 14 条 | 每篇 1 条 |
+
+### 5.4 经验教训
+
+- **FastAPI 路由顺序敏感**：固定路径必须在参数路径之前注册，否则会被参数路由误匹配
+- **内联样式 > CSS 类**：在复杂 flex 布局中，进度条高度可能被父级 lign-items 覆盖，内联 height: 8px 优先级最高
+- **JS 重复加载是隐蔽 bug**：<script> 标签重复引用导致所有 DOM 操作执行两次，排查困难
+- **状态机校验是双刃剑**：writing → complete 的直接跳转被 VALID_TRANSITIONS 拦截，需走 writing → reviewing_draft → complete
