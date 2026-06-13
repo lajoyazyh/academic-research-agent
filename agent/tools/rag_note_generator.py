@@ -87,6 +87,22 @@ class RAGNoteGenerator:
 
     def __init__(self):
         self.llm = LLMClient()
+        self._embedding_failed = False  # 标记 Embedding API 是否已不可用
+
+    def _try_embed(self, texts: list[str]) -> np.ndarray | None:
+        """尝试调用 Embedding API，失败时返回 None 并标记不可用"""
+        if self._embedding_failed:
+            return None
+        try:
+            vecs = self.llm.embed(texts)
+            emb = np.array(vecs, dtype=np.float32)
+            if emb.shape[1] < 10:
+                self._embedding_failed = True
+                return None
+            return emb
+        except Exception:
+            self._embedding_failed = True
+            return None
 
     def generate(
         self,
@@ -119,18 +135,8 @@ class RAGNoteGenerator:
 
         # 2. 用 Embedding API 向量化
         texts = [b["text"][:800] for b in blocks]  # 截断过长的段落
-        try:
-            vecs = self.llm.embed(texts)
-        except Exception:
-            # 降级：用 BM25
-            result = self._fallback_bm25(pdf_path, paper_title, abstract, topic, skill_content)
-            if skill_content:
-                result = self._self_repair_notes(result, skill_content)
-            return result
-
-        embeddings = np.array(vecs, dtype=np.float32)
-        if embeddings.shape[1] < 10:
-            # 零向量降级 → 用 BM25
+        embeddings = self._try_embed(texts)
+        if embeddings is None:
             result = self._fallback_bm25(pdf_path, paper_title, abstract, topic, skill_content)
             if skill_content:
                 result = self._self_repair_notes(result, skill_content)
@@ -145,8 +151,9 @@ class RAGNoteGenerator:
                 keywords = " ".join(section["query_keywords"])
                 query = f"{paper_title} {abstract[:300]} {topic} {keywords}"
                 try:
-                    query_vecs = self.llm.embed([query[:1000]])
-                    query_emb = np.array(query_vecs, dtype=np.float32)
+                    query_emb = self._try_embed([query[:1000]])
+                    if query_emb is None:
+                        break
                     scores = _cosine_similarity(embeddings, query_emb[0]).flatten()
                     top_k = min(3, len(blocks))
                     top_indices = np.argsort(scores)[::-1][:top_k]
@@ -227,21 +234,23 @@ class RAGNoteGenerator:
 
         # 向量检索 Top-5
         try:
-            query_vecs = self.llm.embed([query[:1000]])
-            query_emb = np.array(query_vecs, dtype=np.float32)
-            scores = _cosine_similarity(embeddings, query_emb[0]).flatten()
-            top_k = min(5, len(blocks))
-            top_indices = np.argsort(scores)[::-1][:top_k]
+            query_emb = self._try_embed([query[:1000]])
+            if query_emb is None:
+                rag_text = abstract or "（无法检索原文）"
+            else:
+                scores = _cosine_similarity(embeddings, query_emb[0]).flatten()
+                top_k = min(5, len(blocks))
+                top_indices = np.argsort(scores)[::-1][:top_k]
 
-            # 收集原文段落
-            passages = []
-            for idx in top_indices:
-                if float(scores[idx]) > 0.3:
-                    b = blocks[idx]
-                    passages.append(
-                        f"【第{b['page']}页】{b['text'][:500]}"
-                    )
-            rag_text = "\n\n".join(passages) if passages else abstract
+                # 收集原文段落
+                passages = []
+                for idx in top_indices:
+                    if float(scores[idx]) > 0.3:
+                        b = blocks[idx]
+                        passages.append(
+                            f"【第{b['page']}页】{b['text'][:500]}"
+                        )
+                rag_text = "\n\n".join(passages) if passages else abstract
         except Exception:
             rag_text = abstract or "（无法检索原文）"
 

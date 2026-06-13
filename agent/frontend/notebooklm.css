@@ -297,8 +297,9 @@ html, body {
   padding: 4px 12px;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
-  overflow-x: auto;
+  overflow: visible;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 .chat-tab {
   display: flex;
@@ -371,6 +372,41 @@ html, body {
 .chat-bar { padding: 10px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .chat-ctx { font-size: 12px; color: var(--subtle); }
 .chat-input-row { display: flex; flex: 1; gap: 8px; }
+
+/* 上下文用量条 — 内联在 chat-tabs 右侧 */
+.chat-context-inline {
+  display: flex; align-items: center; gap: 8px;
+  margin-left: auto; padding: 2px 8px;
+  flex-shrink: 0;
+}
+.chat-context-inline .context-label-text {
+  font-size: 11px; color: var(--subtle); white-space: nowrap;
+}
+.chat-context-inline .context-stats {
+  font-size: 11px; color: var(--muted); white-space: nowrap;
+}
+.chat-context-inline .context-compress-btn {
+  font-size: 11px; padding: 3px 10px; border-radius: 12px;
+  white-space: nowrap; border: 1px solid var(--line);
+  background: var(--panel); color: var(--text); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.chat-context-inline .context-compress-btn:hover {
+  background: var(--hover-bg); border-color: var(--accent);
+}
+
+/* 进度条 — 独立类名确保高度不被覆盖 */
+.context-meter {
+  width: 120px; height: 8px; flex-shrink: 0;
+  background: var(--line); border-radius: 4px; overflow: hidden;
+}
+.context-meter-fill {
+  display: block; height: 8px; border-radius: 4px;
+  background: var(--accent);
+  transition: width .3s, background .3s;
+}
+.context-meter-fill.warn { background: var(--warning, #f59e0b); }
+.context-meter-fill.danger { background: var(--danger); }
 .chat-input { flex: 1; min-width: 0; height: 40px; border: 1px solid var(--line); border-radius: 20px; padding: 0 16px; font-size: 13px; outline: none; background: var(--input-bg); color: var(--text); }
 .chat-input:focus { border-color: var(--accent); }
 .chat-send { height: 40px; padding: 0 20px; }

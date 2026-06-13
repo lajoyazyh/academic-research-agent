@@ -20,6 +20,7 @@ import threading
 from functools import lru_cache
 from llms.client import LLMClient
 from utils.parser import extract_json
+from backend.session_manager import STATE_LABELS
 from .models import (
     ChatMessageRequest, ChatMessageResponse, RunPhaseRequest,
     ReviseNotesRequest, SaveFeedbackRequest,
@@ -680,4 +681,104 @@ async def chat_message_stream(session_id: str, payload: ChatMessageRequest):
             "X-Accel-Buffering": "no",
         },
     )
+
+
+# ━━━ 上下文窗口统计与压缩 ━━━
+
+@router.get("/api/sessions/{session_id}/context/stats")
+def get_context_stats(session_id: str, conv_id: str = "default") -> dict:
+    """获取当前对话的上下文窗口使用统计"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    messages = session_mgr.get_conversation_messages(session_id, conv_id) or []
+    total_chars = sum(len(m.get("text", "")) for m in messages)
+    # 粗略估算 token 数（中文约 1.5 字符/token，英文约 4 字符/token）
+    estimated_tokens = int(total_chars / 2.5)
+    message_count = len(messages)
+    round_count = message_count // 2  # 每轮 = 用户 + AI
+
+    # 各组件占用估算
+    notes_chars = len(session.get("notes", "") or "")
+    draft_chars = len(session.get("draft", "") or "")
+
+    return {
+        "session_id": session_id,
+        "conv_id": conv_id,
+        "message_count": message_count,
+        "round_count": round_count,
+        "total_chars": total_chars,
+        "estimated_tokens": estimated_tokens,
+        "max_tokens": MAX_CONTEXT_CHARS // 2,  # 约 40K tokens
+        "usage_percent": min(100, round(estimated_tokens / (MAX_CONTEXT_CHARS // 2) * 100, 1)),
+        "notes_chars": notes_chars,
+        "draft_chars": draft_chars,
+        "rag_limit": MAX_RAG_CHARS,
+        "history_limit": MAX_HISTORY_CHARS,
+    }
+
+
+@router.post("/api/sessions/{session_id}/context/compress")
+def compress_context(session_id: str, conv_id: str = "default") -> dict:
+    """压缩对话历史：用 LLM 将早期消息摘要为一段简短上下文"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    messages = session_mgr.get_conversation_messages(session_id, conv_id) or []
+    if len(messages) <= 6:  # 少于 3 轮不压缩
+        return {"status": "skipped", "message": "对话轮次太少，无需压缩", "message_count": len(messages)}
+
+    # 保留最近 4 轮（8 条），压缩更早的消息
+    recent = messages[-8:]
+    to_compress = messages[:-8]
+    if not to_compress:
+        return {"status": "skipped", "message": "无需压缩", "message_count": len(messages)}
+
+    # 构建压缩 prompt
+    history_text = "\n".join(
+        f"{'用户' if m.get('role') == 'user' else 'AI'}：{m.get('text', '')[:300]}"
+        for m in to_compress
+    )
+
+    compress_prompt = f"""请将以下对话历史压缩为一段简洁的摘要（不超过 300 字），保留关键信息和上下文：
+
+{history_text}
+
+只输出摘要文本，不要加任何前缀或解释。"""
+
+    try:
+        llm = _get_chat_intent_llm()
+        summary = llm.chat("你是简洁的对话摘要助手。", compress_prompt, []).strip()
+    except Exception as e:
+        return {"status": "error", "message": f"压缩失败: {str(e)}"}
+
+    # 构建新的消息列表：摘要消息 + 最近 4 轮
+    compressed = [
+        {"role": "system", "text": f"[对话历史摘要] {summary}", "timestamp": datetime.datetime.now().isoformat()},
+    ] + recent
+
+    # 保存压缩后的消息
+    conv_path = SESSIONS_DIR / session_id / "chats" / f"{conv_id}.json"
+    try:
+        conv_path.write_text(json.dumps(compressed, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+    # 更新索引
+    from backend.session_manager import SessionManager
+    mgr = SessionManager(str(SESSIONS_DIR))
+    try:
+        mgr._update_conv_index(session_id, conv_id, len(compressed))
+    except Exception:
+        pass
+
+    return {
+        "status": "compressed",
+        "original_count": len(messages),
+        "compressed_count": len(compressed),
+        "summary": summary[:200],
+        "message": f"已将 {len(to_compress)} 条消息压缩为摘要，保留最近 4 轮对话",
+    }
 

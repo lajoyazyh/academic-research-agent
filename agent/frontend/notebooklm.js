@@ -808,6 +808,8 @@
       this.state.currentPaperId = paperExists ? prevPaperId : (session.papers?.[0]?.paper_id || null);
 
       this.renderConsoleSession();
+      // 确保用量条在首次加载时更新
+      setTimeout(() => this.updateContextMeter(), 300);
 
       if (session.state === "planning" && (!session.keywords || session.keywords.length === 0)) {
         await this.runPlanPhase();
@@ -1549,6 +1551,71 @@
     if (modeChip) {
       modeChip.addEventListener("click", () => this.toggleChatMode());
     }
+
+    // 更新上下文用量条
+    this.updateContextMeter();
+  },
+
+  async updateContextMeter() {
+    const fill = document.getElementById("contextMeterFill");
+    const stats = document.getElementById("contextStats");
+    const compressBtn = document.getElementById("contextCompressBtn");
+    if (!fill || !stats) return;
+
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId) { fill.style.width = "0%"; stats.textContent = ""; return; }
+
+    try {
+      const convId = this.state.currentConvId || "default";
+      const resp = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/context/stats?conv_id=${encodeURIComponent(convId)}`);
+      const data = resp.ok ? await resp.json() : null;
+
+      if (data) {
+        const pct = Math.max(data.usage_percent || 0, 0.5);
+        fill.style.width = pct + "%";
+        // 内联背景色：>80% 红色，>60% 黄色，否则默认蓝色
+        if (pct > 80) fill.style.background = "var(--danger)";
+        else if (pct > 60) fill.style.background = "var(--warning, #f59e0b)";
+        else fill.style.background = "var(--accent)";
+        stats.textContent = `${data.estimated_tokens || 0} / ${data.max_tokens || 40000} tokens · ${data.round_count || 0} 轮`;
+        if (compressBtn) {
+          compressBtn.style.display = data.round_count >= 6 ? "" : "none";
+          compressBtn.onclick = () => this.compressContext();
+        }
+      } else {
+        fill.style.width = "0%";
+        stats.textContent = "统计暂不可用";
+        if (compressBtn) compressBtn.style.display = "none";
+      }
+    } catch (e) {
+      fill.style.width = "0%";
+      stats.textContent = "统计暂不可用";
+      if (compressBtn) compressBtn.style.display = "none";
+    }
+  },
+
+  async compressContext() {
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId) return;
+    const compressBtn = document.getElementById("contextCompressBtn");
+    if (compressBtn) { compressBtn.disabled = true; compressBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 压缩中...'; }
+
+    try {
+      const convId = this.state.currentConvId || "default";
+      const resp = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/context/compress?conv_id=${encodeURIComponent(convId)}`, { method: "POST" });
+      const data = await resp.json();
+      if (data.status === "compressed") {
+        // 刷新聊天记录
+        if (typeof this.loadConversationMessages === "function") {
+          await this.loadConversationMessages(convId);
+        }
+      }
+      await this.updateContextMeter();
+    } catch (e) {
+      console.warn("压缩失败：", e);
+    } finally {
+      if (compressBtn) { compressBtn.disabled = false; compressBtn.innerHTML = '<i class="fa-solid fa-compress"></i> 压缩'; }
+    }
   },
 
   toggleChatMode(forceMode = null) {
@@ -1621,6 +1688,26 @@
     addBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
     addBtn.addEventListener("click", () => this.createConversation());
     tabsEl.appendChild(addBtn);
+
+    // 用量条（与标签同一行右侧）— 使用内联样式确保高度不被覆盖
+    const meter = document.createElement("div");
+    meter.id = "chatContextBar";
+    meter.style.cssText = "display:flex;align-items:center;gap:8px;margin-left:auto;padding:2px 8px;flex-shrink:0;";
+    meter.innerHTML = `
+      <span style="font-size:11px;color:var(--subtle);white-space:nowrap;">上下文</span>
+      <div id="contextMeterOuter" style="width:120px;height:8px;background:var(--line);border-radius:4px;overflow:hidden;flex-shrink:0;">
+        <div id="contextMeterFill" style="display:block;width:0%;height:8px;background:var(--accent);border-radius:4px;transition:width .3s,background .3s;"></div>
+      </div>
+      <span id="contextStats" style="font-size:11px;color:var(--muted);white-space:nowrap;">加载中...</span>
+      <button id="contextCompressBtn" title="压缩早期对话为摘要"
+        style="display:none;font-size:11px;padding:3px 10px;border-radius:12px;white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;">
+        <i class="fa-solid fa-compress"></i> 压缩
+      </button>
+    `;
+    tabsEl.appendChild(meter);
+
+    // 更新用量条数据
+    setTimeout(() => this.updateContextMeter(), 100);
   },
 
   async switchConversation(convId) {
@@ -2782,6 +2869,7 @@
         }
       }
       this.renderChatContext();
+      this.updateContextMeter();
     } catch (error) {
       if (loadingEl && loadingEl.parentNode) loadingEl.remove();
       this.appendChatMessage("agent", `操作失败：${error.message}`, this.state.currentViewMode, "请检查当前会话和模式设置。");
