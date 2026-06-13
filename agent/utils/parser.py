@@ -24,7 +24,16 @@ def extract_json(text: str) -> dict:
             else:
                 # 场景3：干干净净的 JSON
                 json_str = text
-                
+
+        # 修复：LLM 输出的 JSON 可能包含 LaTeX 命令（如 \\uparrow、\\downarrow），
+        # 其 \\u 前缀会被 json.loads 误解析为 Unicode 转义序列导致 ParseError。
+        # 这里将不构成合法 Unicode 转义的 \\u 序列自动转义为字面量 \\\\u。
+        json_str = re.sub(
+            r'\\u(?![\da-fA-F]{4})',
+            r'\\\\u',
+            json_str
+        )
+
         return json.loads(json_str)
     except json.JSONDecodeError as e:
         # 如果依然无法解析，主动抛出异常供外部 Reflexion 反思拦截
