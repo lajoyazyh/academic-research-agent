@@ -24,8 +24,12 @@ from .models import (
     ChatMessageRequest, ChatMessageResponse, RunPhaseRequest,
     ReviseNotesRequest, SaveFeedbackRequest,
 )
-from llms.client import LLMClient
-from utils.parser import extract_json
+
+
+@lru_cache(maxsize=1)
+def _get_chat_intent_llm() -> LLMClient:
+    return LLMClient()
+
 
 router = APIRouter(tags=["chat"])
 

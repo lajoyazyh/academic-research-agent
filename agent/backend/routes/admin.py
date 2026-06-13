@@ -15,6 +15,13 @@ from .deps import (
     RUNS, RUN_LOCK, SESSIONS_DIR, DOCS_DIR, FRONTEND_DIR,
     FAVORITES_FILE,
 )
+from functools import lru_cache
+from llms.client import LLMClient
+
+
+@lru_cache(maxsize=1)
+def _get_chat_intent_llm() -> LLMClient:
+    return LLMClient()
 
 
 router = APIRouter(tags=["admin"])
