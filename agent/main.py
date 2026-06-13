@@ -355,6 +355,48 @@ Output ONLY the verified/fixed review text."""
     return repaired
 
 
+def _self_critique_review(topic: str, raw_review: str) -> str:
+    """后生成通用自审：检查综述完备性、一致性和重复性。
+
+    无论是否使用 Skill，生成后对综述进行三维修查：
+    1. 是否覆盖了所有预期章节
+    2. 是否引用了具体论文的方法/数据/指标
+    3. 是否有明显重复段落
+    """
+    llm = LLMClient()
+    critique_prompt = f"""你是严格的学术综述质检员。请检查以下综述草稿的质量。
+
+研究主题：{topic}
+
+【质量检查清单】
+1. ✅ 是否包含了引言与背景 / 核心方法对比 / 实验结果分析 / 局限性与未来方向？
+2. ✅ 核心方法对比部分是否引用了具体论文的方法名、模型名（不是空泛的"有研究提出"）？
+3. ✅ 实验结果分析部分是否列出了具体数值指标（准确率、F1 等）？
+4. ✅ 是否有明显的段落重复或内容冗余？
+
+【待检查综述】
+{raw_review}
+
+如果发现问题，在原文基础上**直接修复并输出完整综述**。
+如果质量合格，**原样输出综述，不做任何修改**。
+
+修复规则：
+- 缺失章节：补充基本框架，标注"需进一步调研"
+- 空泛引用：用已有笔记中的具体方法名/数据替代
+- 重复段落：合并或删除
+- 不要添加额外解释，只输出最终综述"""
+    try:
+        result = llm.chat(
+            "你是严格的学术综述质检员。直接输出质检后的完整综述，不做额外说明。",
+            critique_prompt, []
+        ).strip()
+        if result and len(result) > 200:
+            return result
+    except Exception:
+        pass
+    return raw_review
+
+
 def compose_review_from_notes(topic: str, notes_content: str, write_skill_content: str = "") -> tuple[str, str]:
     llm = LLMClient()
 
@@ -371,6 +413,9 @@ def compose_review_from_notes(topic: str, notes_content: str, write_skill_conten
     # 自我修复：当有 Skill 时，调用 LLM 检查并修复综述格式和结构
     if write_skill_content:
         review = _self_repair_review(review, write_skill_content)
+
+    # ━━━ 通用自审 (Self-Critique)：检查完备性与一致性 ━━━
+    review = _self_critique_review(topic, review)
 
     return outline, review
 

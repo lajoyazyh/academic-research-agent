@@ -205,6 +205,9 @@ class RAGNoteGenerator:
         if skill_content:
             body = self._self_repair_notes(body, skill_content)
 
+        # ━━━ 通用自审 (Self-Critique) ━━━
+        body = self._self_critique(paper_title, topic, body)
+
         return f"## 论文笔记：{paper_title}\n\n{body}"
 
     def _generate_section(
@@ -355,6 +358,51 @@ IMPORTANT:
             pass
 
         return repaired
+
+    def _self_critique(self, paper_title: str, topic: str, raw_notes: str) -> str:
+        """后生成通用自审 (Self-Critique)：检查笔记完备性与一致性，自动修复缺失。
+
+        无论是否使用 Skill，生成后都对笔记进行四维审查：
+        1. 六个维度（背景/方法/实验/结果/消融/亮点）是否齐全
+        2. 是否引用了具体方法名、数据、指标（不是空泛描述）
+        3. 是否与论文标题和研究主题一致
+        4. 是否有明显重复段落
+
+        发现不合格项时自动调用 LLM 补全/修复，最多 1 轮自审。
+        """
+        critique_prompt = f"""你是严格的学术笔记质检员。请检查以下笔记的质量。
+
+论文标题：{paper_title}
+研究主题：{topic}
+
+【质量检查清单】
+1. ✅ 是否覆盖了 6 个维度（研究背景/核心方法/实验设置/关键结果/消融分析/亮点不足）？
+2. ✅ 核心方法部分是否引用了具体的模型名、算法名、框架名（不是空泛的"提出了一种方法"）？
+3. ✅ 关键结果部分是否列出了具体的数值指标（如准确率、F1、BLEU 等）？
+4. ✅ 内容是否与论文标题「{paper_title}」切合（不是通用模板填充）？
+5. ✅ 是否有明显的段落重复？
+
+【待检查笔记】
+{raw_notes}
+
+如果发现问题，请在原文基础上**直接修复并输出完整笔记**。
+如果质量合格，请**原样输出笔记，不做任何修改**。
+
+修复规则：
+- 缺失维度：根据上下文合理补充，不确定处标注"据已有信息推断"
+- 空泛描述：用更具体的表述替代，或标注"原文未提供详情"
+- 重复段落：合并或删除
+- 不要添加额外解释，只输出最终笔记"""
+        try:
+            result = self.llm.chat(
+                "你是严格的学术笔记质检员。直接输出质检后的完整笔记，不做额外说明。",
+                critique_prompt, []
+            ).strip()
+            if result and len(result) > 100:
+                return result
+        except Exception:
+            pass
+        return raw_notes
 
     def _fallback(self, paper_title: str, abstract: str, topic: str, skill_content: str = "") -> str:
         """PDF 不可用时的降级"""
