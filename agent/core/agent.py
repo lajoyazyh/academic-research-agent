@@ -97,6 +97,7 @@ class BaseAgent:
         else:
             current_query = user_query
 
+        _last_paper_round = -1  # 追踪上一次收录论文的轮次（-1 表示从未收录）
         for loop_count in range(self.max_loops):
             if loop_count > 0 and loop_delay_seconds > 0:
                 print(f"\n[Rate Limit] Cooling {loop_delay_seconds:g}s to avoid 429...")
@@ -158,7 +159,26 @@ class BaseAgent:
                 except Exception:
                     pass
 
-                if recorded_count < _min_papers:
+                _should_allow = False
+                _finish_tag = ""
+
+                # 规则 1: 20 轮内零篇 → 允许退出 (no_results)
+                if recorded_count == 0 and loop_count >= self.max_loops:
+                    _should_allow = True
+                    _finish_tag = "no_results"
+
+                # 规则 2: 找到过论文，但最近 8 轮未找到新论文 → 允许退出 (search_exhausted)
+                elif recorded_count > 0 and _last_paper_round >= 0:
+                    idle_rounds = loop_count - _last_paper_round
+                    if idle_rounds >= 8:
+                        _should_allow = True
+                        _finish_tag = "search_exhausted"
+
+                if recorded_count >= _min_papers:
+                    _should_allow = True
+                    _finish_tag = ""
+
+                if not _should_allow:
                     gate_msg = (
                         f"⚠️ 质量门禁拦截：你目前只收录了 {recorded_count} 篇论文，"
                         f"但需要至少 {_min_papers} 篇。请用 paper_register 收录论文（自动下载 PDF 并登记），"
@@ -174,14 +194,14 @@ class BaseAgent:
                     current_query = gate_msg
                     continue
 
-                # 质检已通过，允许 FINISH
+                # 质检通过，允许 FINISH
                 self._critique_round = False
                 self.traces.append({
                     "thought": thought,
                     "action": "FINISH",
                     "input": action_input,
-                    "observation": final_answer,
-                    "error_type": "",
+                    "observation": f"{_finish_tag}\n{final_answer}" if _finish_tag else final_answer,
+                    "error_type": _finish_tag if _finish_tag else "",
                 })
                 return final_answer
                 
@@ -205,7 +225,10 @@ class BaseAgent:
                     observation = f"目标工具 '{action}' 在执行输入 \n{action_input}\n 时产生了一个异常报错: {str(ex)}。\n请使用 thought 字段反思参数为什么抛出该错误，调整你的算法和参数值并在下一次回答中重试。"
                     error_type = "tool_runtime_error"
 
-                # 自动后处理：如果刚刚 append_note 成功，则尝试自动下载对应的 arXiv PDF
+                # 如果 paper_register 成功收录，更新上次收录轮次
+                if action in register_actions and ("成功" in observation or "✅" in observation):
+                    _last_paper_round = loop_count
+
             # 记录本轮轨迹，给前台的可视化呈现使用
             self.traces.append({
                 "thought": thought,

@@ -63,6 +63,32 @@ class PaperRegisterTool(BaseTool):
 
         clean_id = paper_id.split("v")[0] if "v" in paper_id else paper_id
 
+        # ━━━ 主题相关性审核 ━━━
+        if abstract and self.session_id:
+            try:
+                from backend.session_manager import SessionManager
+                sessions_root = os.path.join(
+                    os.path.dirname(os.path.dirname(__file__)), "sessions"
+                )
+                mgr = SessionManager(sessions_root)
+                session = mgr.load_session(self.session_id)
+                topic = session.get("topic", "") if session else ""
+                if topic:
+                    from llms.client import LLMClient
+                    llm = LLMClient()
+                    answer = llm.chat(
+                        "你只回答 yes 或 no。",
+                        f"研究主题：{topic}\n论文标题：{title[:150]}\n摘要前 300 字：{abstract[:300]}\n\n这篇论文与上述研究主题相关吗？",
+                        []
+                    ).strip().lower()
+                    if answer.startswith("no"):
+                        return (
+                            f"❌ 审核未通过：摘要与当前研究主题「{topic}」不相关。"
+                            "请继续搜索与主题匹配的论文，不要收录无关论文充数。"
+                        )
+            except Exception:
+                pass  # 审核失败不阻断，保持原有行为
+
         # Step 1: 下载 PDF（先下载，失败了就不登记）
         pdf_downloaded = False
         pdf_msg = ""
