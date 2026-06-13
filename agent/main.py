@@ -97,6 +97,101 @@ def _build_initial_plan(llm: LLMClient, topic: str) -> str:
     return plan
 
 
+# ━━━ Writer RAG：从笔记中提取与当前章节最相关的段落 ━━━
+
+# 每个章节的关键词映射，用于从笔记中检索相关段落
+SECTION_KEYWORDS = {
+    "引言与背景": [
+        "背景", "引言", "introduction", "background", "problem", "challenge",
+        "limitation", "issue", "gap", "motivation", "研究背景", "问题定义",
+        "related work", "相关工作", "概述",
+    ],
+    "核心论文方法对比": [
+        "方法", "method", "approach", "proposed", "architecture", "model",
+        "framework", "algorithm", "模型", "框架", "架构", "算法", "技术",
+        "核心方法", "设计", "实现",
+    ],
+    "实验结果与工程实践分析": [
+        "实验", "experiment", "result", "performance", "evaluation", "benchmark",
+        "dataset", "accuracy", "数据", "指标", "baseline", "训练", "training",
+        "测试", "比较", "对比", "效果",
+    ],
+    "局限性与未来研究方向": [
+        "局限", "limitation", "future", "未来", "不足", "展望", "challenge",
+        "drawback", "改进", "后续", "开放问题", "问题", "待解决",
+    ],
+}
+
+# 通用关键词：当章节不在映射表中时使用
+_DEFAULT_KEYWORDS = [
+    "method", "result", "contribution", "approach", "model", "实验", "方法", "结果",
+]
+
+
+def _extract_relevant_paragraphs(
+    notes_content: str, section_title: str, max_paragraphs: int = 6
+) -> str:
+    """从笔记内容中提取与当前章节最相关的段落。
+
+    策略：用章节标题 + 映射关键词在笔记中做段落级匹配，
+    返回得分最高的 max_paragraphs 个段落。
+    """
+    if not notes_content or not notes_content.strip():
+        return ""
+
+    # 以 ## 标题或 --- 分隔符将笔记拆分为段落
+    paragraphs = []
+    current = []
+    for line in notes_content.split("\n"):
+        # 段落边界：新的 Markdown 标题或分隔符
+        stripped = line.strip()
+        if stripped.startswith("## ") or stripped.startswith("---"):
+            if current:
+                paragraphs.append("\n".join(current).strip())
+            current = [line]
+        else:
+            current.append(line)
+    if current:
+        paragraphs.append("\n".join(current).strip())
+
+    # 过滤过短的段落
+    paragraphs = [p for p in paragraphs if len(p) > 60]
+
+    if not paragraphs:
+        return notes_content[:5000]
+
+    # 获取该章节的关键词列表
+    keywords = SECTION_KEYWORDS.get(section_title, _DEFAULT_KEYWORDS)
+
+    # 计算每段的得分（关键词命中次数 + 关键词密度）
+    scored = []
+    for para in paragraphs:
+        para_lower = para.lower()
+        # 命中计数
+        hits = sum(1 for kw in keywords if kw.lower() in para_lower)
+        # 标题精确匹配加 3 分
+        title_bonus = 0
+        if any(
+            kw.lower() in para_lower.split("\n")[0].lower()
+            for kw in keywords
+        ):
+            title_bonus = 3
+        # 密度加分（命中数 / 段落长度 * 1000，避免短段落占便宜）
+        density_score = (hits / max(1, len(para))) * 1000
+        scored.append((hits + title_bonus + density_score, para))
+
+    # 按得分降序排列，取 Top-N
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    top_paragraphs = [p for _, p in scored[:max_paragraphs] if _ > 0]
+
+    if not top_paragraphs:
+        # 如果关键词全部没命中，回退到笔记前 5000 字符
+        return notes_content[:5000]
+
+    return "\n\n---\n\n".join(top_paragraphs)
+
+
 def _build_writer_outline(llm: LLMClient, topic: str, notes_content: str, skill_content: str = "") -> str:
     if skill_content:
         # 通道 A：Skill 优先 — 用 Skill 策略替换固定四标题要求
@@ -139,6 +234,9 @@ def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, 
 
     for idx, section_title in enumerate(_section_titles, start=1):
         previous_text = "\n\n".join(section_texts)
+        # ━━━ Writer RAG：提取与当前章节相关的段落 ━━━
+        relevant_notes = _extract_relevant_paragraphs(notes_content, section_title)
+
         if skill_content:
             # 通道 A：Skill 优先 — 替换默认写作要求
             section_prompt = f"""你是学术综述写作者。请只撰写《{topic}》综述的第 {idx} 节：{section_title}。
@@ -151,8 +249,8 @@ def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, 
 【已完成章节】
 {previous_text if previous_text else '（无）'}
 
-【调研笔记】
-{notes_content}
+【调研笔记（自动筛选相关段落）】
+{relevant_notes}
 
 使用 Markdown 二级标题 ## {section_title}，输出只包含本节内容，与已完成章节保持衔接。"""
         else:
@@ -170,8 +268,8 @@ def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, 
 【已完成章节】
 {previous_text if previous_text else '（无）'}
 
-【调研笔记】
-{notes_content}
+【调研笔记（自动筛选相关段落）】
+{relevant_notes}
 """
         section = llm.chat("你是严谨、老练的学术综述作者。", section_prompt, []).strip()
         if not section.startswith("##"):

@@ -896,7 +896,8 @@
     papers.forEach((paper) => {
       // 直接使用后端 per-paper 字段
       paper._hasNotes = paper.has_notes === true || Boolean((paper.notes || "").trim());
-      var referencedPapers = session.review_referenced_papers || [];
+      var sessionRef = this.state.currentSession || {};
+      var referencedPapers = sessionRef.review_referenced_papers || [];
       paper._hasReview = referencedPapers.indexOf(paper.paper_id) >= 0;
 
       const row = document.createElement("article");
