@@ -2861,6 +2861,14 @@ def create_skill(payload: dict) -> dict:
         raise HTTPException(status_code=500, detail=f"创建 Skill 失败: {str(e)}")
 
 
+# ━━━ 固定路径路由必须在 {skill_id} 之前注册，避免 FastAPI 将 "defaults"/"usage" 当作 skill_id ━━━
+
+@app.get("/api/skills/defaults")
+def get_default_skills() -> dict:
+    """获取各阶段的默认 Skill 内容（留空时使用的内置提示词）"""
+    return {"defaults": skill_mgr.get_defaults()}
+
+
 @app.get("/api/skills/{skill_id}")
 def get_skill(skill_id: str) -> dict:
     """获取单个 Skill 完整数据"""

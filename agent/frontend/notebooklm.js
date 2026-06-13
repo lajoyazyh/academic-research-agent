@@ -3092,6 +3092,8 @@
   _skillsState: {
     currentSkillId: null,
     skills: [],
+    _skillVditor: null,
+    _defaultSkills: null,
   },
 
   async initSkills() {
@@ -3100,8 +3102,29 @@
     document.getElementById("skillSaveBtn")?.addEventListener("click", () => this.saveSkill());
     document.getElementById("skillDeleteCancelBtn")?.addEventListener("click", () => this.closeSkillDeleteModal());
     document.getElementById("skillDeleteConfirmBtn")?.addEventListener("click", () => this.confirmDeleteSkill());
+    document.getElementById("skillShowDefaultBtn")?.addEventListener("click", () => this.showSkillDefault());
+    document.getElementById("skillDefaultCloseBtn")?.addEventListener("click", () => this.closeSkillDefaultModal());
+    document.getElementById("skillDefaultUseBtn")?.addEventListener("click", () => this.useSkillDefault());
+    document.getElementById("skillDeleteBtn")?.addEventListener("click", () => {
+      this.openSkillDeleteConfirm(this._skillsState.currentSkillId);
+    });
     this._initSkillCharCounter();
     await this.loadAllSkills();
+    // 预加载默认 skill 内容，完成后重新渲染以显示默认卡片
+    await this._loadDefaultSkills();
+    this.renderSkillsByType("search");
+    this.renderSkillsByType("notes");
+    this.renderSkillsByType("write");
+  },
+
+  async _loadDefaultSkills() {
+    try {
+      const resp = await fetch("/api/skills/defaults");
+      const data = await resp.json();
+      this._skillsState._defaultSkills = data.defaults || {};
+    } catch (e) {
+      this._skillsState._defaultSkills = {};
+    }
   },
 
   async loadAllSkills() {
@@ -3123,15 +3146,31 @@
     const skills = this._skillsState.skills.filter(function(s) { return s.type === type; });
     grid.innerHTML = "";
 
-    if (skills.length === 0) {
-      var labels = { search: "AI 检索论文", notes: "笔记生成", write: "综述生成" };
-      var icons = { search: "fa-magnifying-glass", notes: "fa-note-sticky", write: "fa-pen-to-square" };
-      grid.innerHTML = '<div class="skills-empty"><i class="fa-solid ' + (icons[type] || 'fa-file') + '"></i>暂无 ' + (labels[type] || type) + ' Skill，点击「创建」按钮添加</div>';
-      return;
-    }
-
-    var self = this;
+    var labels = { search: "AI 检索论文", notes: "笔记生成", write: "综述生成" };
     var iconMap = { search: "fa-magnifying-glass", notes: "fa-note-sticky", write: "fa-pen-to-square" };
+    var self = this;
+
+    // ━━━ 始终显示默认 Skill 卡片（系统内置，不可编辑）━━━
+    var defaults = this._skillsState._defaultSkills;
+    var def = (defaults && defaults[type]) ? defaults[type] : null;
+    var defCard = document.createElement("article");
+    defCard.className = "skill-card skill-card-default";
+    var defPreview = def ? (def.content || "").replace(/^#+\s*/gm, "").replace(/\n/g, " ").trim().slice(0, 60) : "";
+    defCard.innerHTML =
+      '<div class="skill-card-icon ' + type + ' default-icon"><i class="fa-solid ' + (iconMap[type] || 'fa-file') + '"></i></div>' +
+      '<div class="skill-card-body">' +
+        '<h4 title="' + self.escapeHtml(def ? def.title : "默认策略") + '">' +
+          '<i class="fa-solid fa-shield-halved" style="font-size:10px;color:var(--accent);margin-right:4px;" title="系统内置"></i>' +
+          self.escapeHtml(def ? def.title : "默认策略") +
+        '</h4>' +
+        '<div class="skill-card-meta"><span class="skill-default-badge">系统内置</span></div>' +
+        (defPreview ? '<div class="skill-card-preview">' + self.escapeHtml(defPreview) + '</div>' : '') +
+      '</div>';
+    defCard.addEventListener("click", function() { self.showSkillDefaultForType(type); });
+    defCard.title = "查看系统默认策略（不可编辑）";
+    grid.appendChild(defCard);
+
+    // ━━━ 用户自定义 Skill 卡片 ━━━
     skills.forEach(function(skill) {
       var card = document.createElement("article");
       card.className = "skill-card";
@@ -3157,19 +3196,27 @@
       card.appendChild(delBtn);
       grid.appendChild(card);
     });
+
+    // 如果默认也未加载，显示加载占位
+    if (!def && skills.length === 0) {
+      var emptyEl = document.createElement("div");
+      emptyEl.className = "skills-empty";
+      emptyEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 加载中...';
+      grid.appendChild(emptyEl);
+    }
   },
 
   openCreateModal: function(type) {
     this._skillsState.currentSkillId = null;
     document.getElementById("skillModalTitle").textContent = "创建 Skill";
-    document.getElementById("skillModalDesc").textContent = "自定义提示词模板，控制 Agent 在特定阶段的行为策略。";
+    document.getElementById("skillModalDesc").textContent = "自定义提示词模板，控制 Agent 在特定阶段的行为策略。留空则使用系统默认策略。";
     document.getElementById("skillTypeSelect").value = type || "search";
     document.getElementById("skillTypeSelect").disabled = false;
     document.getElementById("skillTitleInput").value = "";
-    document.getElementById("skillContentInput").value = "";
-    document.getElementById("skillCharCount").textContent = "0 / 16384";
     document.getElementById("skillDeleteBtn").style.display = "none";
     document.getElementById("skillModal").classList.add("active");
+    // 初始化 Vditor 编辑器
+    this._initSkillVditor("");
     var self = this;
     setTimeout(function() { document.getElementById("skillTitleInput").focus(); }, 100);
   },
@@ -3181,14 +3228,14 @@
       var skill = await resp.json();
       this._skillsState.currentSkillId = skillId;
       document.getElementById("skillModalTitle").textContent = "编辑 Skill";
-      document.getElementById("skillModalDesc").textContent = "";
+      document.getElementById("skillModalDesc").textContent = "修改后点击保存即可更新。";
       document.getElementById("skillTypeSelect").value = skill.type;
       document.getElementById("skillTypeSelect").disabled = true;
       document.getElementById("skillTitleInput").value = skill.title;
-      document.getElementById("skillContentInput").value = skill.content;
-      document.getElementById("skillCharCount").textContent = skill.content.length + " / 16384";
       document.getElementById("skillDeleteBtn").style.display = "inline-flex";
       document.getElementById("skillModal").classList.add("active");
+      // 初始化 Vditor 编辑器并填充内容
+      this._initSkillVditor(skill.content || "");
     } catch (e) {
       alert("加载 Skill 失败：" + e.message);
     }
@@ -3196,13 +3243,14 @@
 
   closeSkillModal: function() {
     document.getElementById("skillModal").classList.remove("active");
+    this._destroySkillVditor();
     this._skillsState.currentSkillId = null;
   },
 
   saveSkill: async function() {
     var type = document.getElementById("skillTypeSelect").value;
     var title = document.getElementById("skillTitleInput").value.trim();
-    var content = document.getElementById("skillContentInput").value.trim();
+    var content = this._getSkillVditorContent();
 
     if (!title) { alert("标题不能为空"); return; }
     if (!content) { alert("Skill 内容不能为空"); return; }
@@ -3211,7 +3259,7 @@
     var skillId = this._skillsState.currentSkillId;
     var saveBtn = document.getElementById("skillSaveBtn");
     saveBtn.disabled = true;
-    saveBtn.textContent = "保存中...";
+    saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 保存中...';
     var self = this;
 
     try {
@@ -3286,18 +3334,122 @@
   },
 
   _initSkillCharCounter: function() {
-    var textarea = document.getElementById("skillContentInput");
+    // Vditor 模式下通过轮询更新字符计数
+    var self = this;
     var counter = document.getElementById("skillCharCount");
-    if (textarea && counter) {
-      textarea.addEventListener("input", function() {
-        counter.textContent = textarea.value.length + " / 16384";
-        if (textarea.value.length > 16384) {
-          counter.style.color = "var(--danger)";
-        } else {
-          counter.style.color = "var(--muted)";
-        }
-      });
+    if (counter) {
+      this._skillsState._charPollTimer = setInterval(function() {
+        var len = (self._getSkillVditorContent() || "").length;
+        counter.textContent = len + " / 16384";
+        counter.style.color = len > 16384 ? "var(--danger)" : "var(--muted)";
+      }, 800);
     }
+  },
+
+  // ━━━ Vditor 编辑器（复用笔记编辑逻辑）━━━
+  _initSkillVditor: function(content) {
+    this._destroySkillVditor();
+    if (typeof Vditor === "undefined") return;
+
+    var container = document.getElementById("skillEditorContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    var isDark = document.body.dataset.theme === "dark";
+    var self = this;
+
+    this._skillsState._skillVditor = new Vditor(container, {
+      height: Math.max(360, window.innerHeight * 0.4),
+      mode: "ir",
+      value: content || "",
+      placeholder: "在此编辑 Skill 内容，支持 Markdown 格式...",
+      theme: isDark ? "dark" : "classic",
+      cdn: "https://cdn.jsdelivr.net/npm/vditor@3.10.6",
+      toolbar: [
+        "headings", "bold", "italic", "strike", "|",
+        "list", "ordered-list", "check", "|",
+        "quote", "code", "inline-code", "|",
+        "undo", "redo",
+      ],
+      cache: { enable: false },
+      after: function() {
+        var reset = container.querySelector(".vditor-reset");
+        if (reset) reset.setAttribute("spellcheck", "false");
+      },
+    });
+  },
+
+  _destroySkillVditor: function() {
+    if (this._skillsState._skillVditor) {
+      try { this._skillsState._skillVditor.destroy(); } catch(e) {}
+      this._skillsState._skillVditor = null;
+    }
+    if (this._skillsState._charPollTimer) {
+      clearInterval(this._skillsState._charPollTimer);
+      this._skillsState._charPollTimer = null;
+    }
+    var container = document.getElementById("skillEditorContainer");
+    if (container) container.innerHTML = "";
+  },
+
+  _getSkillVditorContent: function() {
+    var vd = this._skillsState._skillVditor;
+    if (vd) return vd.getValue();
+    return "";
+  },
+
+  // ━━━ 查看默认 Skill ━━━
+  showSkillDefault: async function() {
+    var type = document.getElementById("skillTypeSelect").value;
+    await this._showDefaultForType(type);
+  },
+
+  showSkillDefaultForType: async function(type) {
+    await this._showDefaultForType(type);
+  },
+
+  _showDefaultForType: async function(type) {
+    var defaults = this._skillsState._defaultSkills;
+
+    if (!defaults || Object.keys(defaults).length === 0) {
+      await this._loadDefaultSkills();
+      defaults = this._skillsState._defaultSkills;
+    }
+
+    if (!defaults || Object.keys(defaults).length === 0) {
+      alert("无法加载默认策略，请检查网络连接后重试。");
+      return;
+    }
+
+    var def = defaults[type];
+    if (!def || !def.content) {
+      alert("该类型暂无默认策略。");
+      return;
+    }
+
+    document.getElementById("skillDefaultTitle").textContent = def.title || type;
+    document.getElementById("skillDefaultContent").textContent = def.content;
+    // 查看模式下隐藏"使用此内容"按钮（从卡片点击查看默认时不需要）
+    var useBtn = document.getElementById("skillDefaultUseBtn");
+    if (useBtn) useBtn.style.display = "";
+    document.getElementById("skillDefaultModal").classList.add("active");
+  },
+
+  showSkillDefault: async function() {
+    var type = document.getElementById("skillTypeSelect").value;
+    await this._showDefaultForType(type);
+  },
+
+  closeSkillDefaultModal: function() {
+    document.getElementById("skillDefaultModal").classList.remove("active");
+  },
+
+  useSkillDefault: function() {
+    var content = document.getElementById("skillDefaultContent").textContent || "";
+    if (content) {
+      this._initSkillVditor(content);
+    }
+    this.closeSkillDefaultModal();
   },
 
   loadHomeSkillSelectors: async function() {
