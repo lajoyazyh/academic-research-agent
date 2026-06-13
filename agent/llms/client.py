@@ -52,16 +52,24 @@ class LLMClient:
     def embed(self, texts: list[str]) -> list[list[float]]:
         """调用智谱 text-embedding API，将文本列表转为向量列表。
         使用智谱 embedding-2 模型（1536 维）。
-        如果 API 不可用，返回零向量作为降级。
+        自动分批（每批最多 64 条），API 不可用时降级为零向量。
         """
         if not texts:
             return []
-        try:
-            resp = self.client.embeddings.create(
-                model="embedding-2",
-                input=texts,
-            )
-            return [d.embedding for d in resp.data]
-        except Exception as e:
-            print(f"[Embedding] API 调用失败，降级为零向量: {e}")
-            return [[0.0] * 1536 for _ in texts]
+
+        BATCH_SIZE = 64
+        all_embeddings = []
+
+        for i in range(0, len(texts), BATCH_SIZE):
+            batch = texts[i:i + BATCH_SIZE]
+            try:
+                resp = self.client.embeddings.create(
+                    model="embedding-2",
+                    input=batch,
+                )
+                all_embeddings.extend([d.embedding for d in resp.data])
+            except Exception as e:
+                print(f"[Embedding] API batch {i//BATCH_SIZE+1} failed, using zero vectors: {e}")
+                all_embeddings.extend([[0.0] * 1536 for _ in batch])
+
+        return all_embeddings
