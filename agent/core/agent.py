@@ -97,6 +97,7 @@ class BaseAgent:
         else:
             current_query = user_query
 
+        register_actions = {"paper_register", "arxiv_download_pdf"}  # 注册类工具
         _last_paper_round = -1  # 追踪上一次收录论文的轮次（-1 表示从未收录）
         for loop_count in range(self.max_loops):
             if loop_count > 0 and loop_delay_seconds > 0:
@@ -150,7 +151,6 @@ class BaseAgent:
             # 3. 终局判断（带质量门禁 + Pre-FINISH 自主质检）
             if action.lower() == "finish":
                 # ━━━ 质量门禁：检查是否收录了足够的论文 ━━━
-                register_actions = {"paper_register", "arxiv_download_pdf"}
                 recorded_count = sum(1 for t in self.traces if t.get("action") in register_actions)
 
                 _min_papers = 3
