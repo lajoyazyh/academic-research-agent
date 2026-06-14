@@ -105,9 +105,10 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
     current_abstract = (paper or {}).get("abstract", "") or (paper or {}).get("summary", "") or ""
     current_notes = session.get("notes", "") or ""
     current_review = session.get("review", "") or ""
-    accepted_names = "、".join(
-        [p.get("title") or p.get("paper_id", "") for p in session.get("papers", []) if p.get("status") == "accepted"]
-    )
+
+    #accepted_names = "、".join(
+    #    [p.get("title") or p.get("paper_id", "") for p in session.get("papers", []) if p.get("status") == "accepted"]
+    #)
 
     # ━━━ 迭代三 RAG 升级：迭代式混合检索 PDF 原文段落 ━━━
     rag_context = ""
@@ -179,7 +180,6 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
     user_prompt = f"""会话主题：{session.get('topic', '')}
 当前视图模式：{view_mode}
 当前论文：{current_name}
-已选论文：{accepted_names or '暂无'}
 
 当前论文摘要（如有）：
 {ctx['abstract'] or '无'}
