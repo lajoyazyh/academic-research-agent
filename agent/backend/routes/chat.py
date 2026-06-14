@@ -21,6 +21,7 @@ from functools import lru_cache
 from llms.client import LLMClient
 from utils.parser import extract_json
 from backend.session_manager import STATE_LABELS
+from .agent import revise_notes_phase, run_write_phase
 from .models import (
     ChatMessageRequest, ChatMessageResponse, RunPhaseRequest,
     ReviseNotesRequest, SaveFeedbackRequest,
