@@ -3768,6 +3768,7 @@ var GlobalCopilot = {
         self._loading = false;
         self._els.send.disabled = false;
         self._els.input.focus();
+        self._updateContextMeter();
       })
       .catch(function (err) {
         self._hideTyping();
@@ -3849,6 +3850,13 @@ var GlobalCopilot = {
       .then(function (data) {
         self._sessions = data.sessions || [];
         self._renderSessions();
+        // 如果没有会话，自动创建一个默认的
+        if (self._sessions.length === 0) {
+          self.createNewSession();
+        } else if (!self._currentSessionId) {
+          // 有会话但未选中，自动选中第一个
+          self.switchSession(self._sessions[0].session_id);
+        }
       })
       .catch(function (err) {
         console.error("加载会话列表失败:", err);
@@ -3906,6 +3914,32 @@ var GlobalCopilot = {
         });
       }
     }
+    self._updateContextMeter();
+  },
+
+  _updateContextMeter: function () {
+    var bar = document.getElementById("copilotContextBar");
+    var fill = document.getElementById("copilotContextFill");
+    var stats = document.getElementById("copilotContextStats");
+    if (!bar || !fill || !stats) return;
+    if (!this._currentSessionId) { bar.style.display = "none"; return; }
+
+    var self = this;
+    fetch("/api/copilot/context/stats?copilot_session_id=" + encodeURIComponent(this._currentSessionId))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        bar.style.display = "flex";
+        bar.style.cssText = "display:flex;align-items:center;gap:6px;padding:4px 0;";
+        var pct = Math.max(data.usage_percent || 0, 0.5);
+        fill.style.width = pct + "%";
+        if (pct > 80) fill.style.background = "var(--danger)";
+        else if (pct > 60) fill.style.background = "var(--warning, #f59e0b)";
+        else fill.style.background = "var(--accent)";
+        stats.textContent = (data.estimated_tokens || 0) + " / " + (data.max_tokens || 40000) + " tokens · " + (data.round_count || 0) + " 轮";
+      })
+      .catch(function () {
+        bar.style.display = "none";
+      });
   },
 
   createNewSession: function () {

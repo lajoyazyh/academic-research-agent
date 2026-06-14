@@ -194,6 +194,27 @@ def rebuild_knowledge() -> dict:
     return {"message": "索引已重建", "stats": stats}
 
 
+@router.get("/api/copilot/context/stats")
+def get_copilot_context_stats(copilot_session_id: str) -> dict:
+    """获取 Copilot 对话的上下文窗口使用统计"""
+    messages = copilot_mgr.get_messages(copilot_session_id) or []
+    total_chars = sum(len(m.get("content", "")) for m in messages)
+    estimated_tokens = int(total_chars / 2.5)
+    message_count = len(messages)
+    round_count = message_count // 2
+    max_tokens = 40000
+
+    return {
+        "copilot_session_id": copilot_session_id,
+        "message_count": message_count,
+        "round_count": round_count,
+        "total_chars": total_chars,
+        "estimated_tokens": estimated_tokens,
+        "max_tokens": max_tokens,
+        "usage_percent": min(100, round(estimated_tokens / max_tokens * 100, 1)),
+    }
+
+
 # ═══════════════════════════════════════════
 #  Copilot 会话管理 API（多会话历史记录）
 # ═══════════════════════════════════════════

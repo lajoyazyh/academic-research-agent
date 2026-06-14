@@ -185,6 +185,13 @@
     </div>
 
     <div class="copilot-input-area">
+      <div class="copilot-context-bar" id="copilotContextBar" style="display:none;">
+        <span style="font-size:11px;color:var(--subtle);white-space:nowrap;">上下文</span>
+        <div style="width:100px;height:6px;background:var(--line);border-radius:3px;overflow:hidden;flex-shrink:0;">
+          <div id="copilotContextFill" style="display:block;width:0%;height:6px;background:var(--accent);border-radius:3px;transition:width .3s,background .3s;"></div>
+        </div>
+        <span id="copilotContextStats" style="font-size:10px;color:var(--muted);white-space:nowrap;"></span>
+      </div>
       <div class="copilot-input-row">
         <textarea id="copilotInput" class="copilot-input" placeholder="向 Copilot 提问（跨项目知识问答）..." rows="1"></textarea>
         <button class="copilot-send-btn" id="copilotSend" title="发送"><i class="fa-solid fa-paper-plane"></i></button>
