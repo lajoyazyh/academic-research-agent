@@ -807,9 +807,9 @@
       const paperExists = prevPaperId && session.papers?.some(p => p.paper_id === prevPaperId);
       this.state.currentPaperId = paperExists ? prevPaperId : (session.papers?.[0]?.paper_id || null);
 
+      // 首次加载时渲染 tabs（含用量条），后续轮询通过 updateContextMeter 静默更新
+      this.renderChatTabs();
       this.renderConsoleSession();
-      // 确保用量条在首次加载时更新
-      setTimeout(() => this.updateContextMeter(), 300);
 
       if (session.state === "planning" && (!session.keywords || session.keywords.length === 0)) {
         await this.runPlanPhase();
@@ -846,11 +846,12 @@
     this.renderNotesBlock();
     this.renderReviewBlock();
     this.renderDetailPanel();
-    this.renderChatTabs();
     this.renderChatContext();
     this.updateChatPlaceholder();
     this.updateActionButtons();
     this.renderViewButtons();
+    // 静默更新用量条（不重建 DOM）
+    this.updateContextMeter();
   },
 
   setConsoleStatus(state, label) {
@@ -1654,6 +1655,11 @@
     if (!tabsEl) return;
     
     const convs = this.state.conversations;
+
+    // 先保存用量条 DOM（在 innerHTML 清空前），避免检索期间闪烁
+    const existingMeter = document.getElementById("chatContextBar");
+    const meterHTML = existingMeter ? existingMeter.outerHTML : null;
+
     tabsEl.innerHTML = "";
 
     convs.forEach((conv) => {
@@ -1689,7 +1695,13 @@
     addBtn.addEventListener("click", () => this.createConversation());
     tabsEl.appendChild(addBtn);
 
-    // 用量条（与标签同一行右侧）— 使用内联样式确保高度不被覆盖
+    // 用量条 — 如果之前存在则恢复 HTML 并只更新数据，避免检索期间闪烁
+    if (meterHTML) {
+      tabsEl.insertAdjacentHTML("beforeend", meterHTML);
+      this.updateContextMeter();
+      return;
+    }
+
     const meter = document.createElement("div");
     meter.id = "chatContextBar";
     meter.style.cssText = "display:flex;align-items:center;gap:8px;margin-left:auto;padding:2px 8px;flex-shrink:0;";
