@@ -1786,7 +1786,7 @@
       this.els.chatList.innerHTML = `
         <div class="chat-msg">
           <span class="chat-role">AI</span>
-          <span>点击左侧论文进入对应界面后可在下方提问，无需勾选。笔记模式和综述模式下可请求修改。</span>
+          <span>点击左侧论文进入对应界面后可在下方提问，笔记无需勾选，综述模式需要勾选对应的论文。笔记模式和综述模式下可请求修改。</span>
         </div>`;
       return;
     }
