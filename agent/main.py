@@ -749,6 +749,8 @@ def _build_research_query(topic: str, initial_plan: str, confirmed_keywords: lis
         "2. 必须至少使用了两个不同的学术数据库。\n"
         "3. **收集够 3 篇高质量论文后必须立即 FINISH，不要无谓重复搜索！**\n\n"
         "## ⛔ 严禁行为（违反直接判定失败）\n"
+        "- **禁止用中文关键词搜索任何学术数据库**：所有数据库都只支持英文！必须先将中文翻译为英文！\n"
+        "- **禁止调用不存在的工具（wait/sleep/manual/none 等）**：遇到 429 限流直接换数据库，不要等待！\n"
         "- **禁止用同一关键词反复搜索同一个数据库**：最多 2 次，之后必须换关键词或换数据库。\n"
         "- **禁止连续 3 轮用相同参数调用同一个工具**：观察返回是否相同，若是则立即换策略。\n"
         "- **禁止搜索到好论文后还继续搜同一篇**：搜到元数据后换新关键词找下一篇。\n"
@@ -771,8 +773,9 @@ def _build_research_query(topic: str, initial_plan: str, confirmed_keywords: lis
         "- semantic_scholar_search / semantic_scholar_fetch：Semantic Scholar 搜索\n\n"
         "## ⚠️ 关键经验\n"
         "- arxiv_search 返回结果里每条都有 ID、标题、作者、摘要。审核摘要后**必须立即调用 paper_register(paper_id, title, authors, abstract) 来收录论文**。\n"
-        "- **不要用 DOI 调用 paper_register！** paper_register 接受 arXiv ID（格式如 2308.11432）。\n"
-        "- 中文主题必须在 thought 中翻译为英文关键词后搜索。\n"
+        "- paper_register 支持 arXiv ID 和 DOI 两种格式，OpenAlex 返回的 doi 可以直接使用。\n"
+        "- **🔴 遇到 HTTP 429（限流）时，立即换另一个数据库搜索，不要等待、不要重试、不要调用不存在的工具（wait/sleep/manual 都不存在）！**\n"
+        "- 🔴 所有学术数据库都只支持英文关键词！中文关键词搜不到任何结果！必须在 thought 中将中文翻译为英文后再搜索。\n"
         "- crossref_search 传入论文标题/作者名。\n"
         "- HTTP 429 立即换数据库。\n"
         + keyword_hint +
@@ -814,16 +817,33 @@ def run_search_only(
 
     os.makedirs(papers_dir, exist_ok=True)
 
-    t1, t2 = ArxivSearchTool(), ArxivFetchTool()
-    t3, t4 = SemanticScholarSearchTool(), SemanticScholarFetchTool()
-    t5, t6 = CrossrefSearchTool(), CrossrefFetchByDoiTool()
-    t9 = OpenAlexSearchTool()
-    # 迭代三新增：论文收录一体化工具
+    # ━━━ 从工具注册中心加载已启用的工具 ━━━
+    tool_config_path = os.path.join(os.path.dirname(__file__), "config", "tools.json")
+    registry = get_registry(tool_config_path)
+    enabled_names = {m.name for m in registry.get_enabled()}
+
+    _tool_factories = {
+        "arxiv_search": ArxivSearchTool,
+        "arxiv_fetch": ArxivFetchTool,
+        "semantic_scholar_search": SemanticScholarSearchTool,
+        "semantic_scholar_fetch": SemanticScholarFetchTool,
+        "crossref_search": CrossrefSearchTool,
+        "crossref_fetch_doi": CrossrefFetchByDoiTool,
+        "openalex_search": OpenAlexSearchTool,
+    }
+
+    active_tools = []
+    for name in enabled_names:
+        factory = _tool_factories.get(name)
+        if factory:
+            active_tools.append(factory())
+
+    # paper_register 始终添加（不通过工具注册中心管理）
     session_id = os.path.basename(work_dir) if work_dir else ""
     from tools.paper_register import PaperRegisterTool
-    t_register = PaperRegisterTool(session_id=session_id, papers_dir=papers_dir)
+    active_tools.append(PaperRegisterTool(session_id=session_id, papers_dir=papers_dir))
 
-    researcher_agent = BaseAgent(tools=[t1, t2, t3, t4, t5, t6, t9, t_register], max_loops=max_loops)
+    researcher_agent = BaseAgent(tools=active_tools, max_loops=max_loops)
     if agent_callback:
         agent_callback(researcher_agent, work_dir)
 

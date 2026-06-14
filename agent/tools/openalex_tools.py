@@ -7,9 +7,9 @@ from core.tools import BaseTool
 
 class OpenAlexSearchTool(BaseTool):
     name = "openalex_search"
-    description = "用于在 OpenAlex 上检索综合领域论文（包含社科、医学、交叉学科等），返回标题、作者、年份、摘要、引用数及相关概念。"
+    description = "用于在 OpenAlex 上检索综合领域论文（包含社科、医学、交叉学科等），返回标题、作者、年份、摘要、引用数及相关概念。⚠️ 仅支持英文关键词，中文关键词无法检索到结果。"
     parameters = {
-        "query": "搜索关键词，例如 'sociology of artificial intelligence'",
+        "query": "英文搜索关键词，例如 'sociology of artificial intelligence'（请勿使用中文）",
         "limit": "最大返回数，默认为5（可选）"
     }
 

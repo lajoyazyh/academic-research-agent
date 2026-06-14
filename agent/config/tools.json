@@ -1,22 +1,22 @@
 {
   "arxiv_search": {
-    "enabled": true,
+    "enabled": false,
     "config": {
       "max_results": 5
     }
   },
   "arxiv_fetch": {
-    "enabled": true,
+    "enabled": false,
     "config": {}
   },
   "arxiv_pdf_reader": {
-    "enabled": true,
+    "enabled": false,
     "config": {
       "read_full_default": false
     }
   },
   "arxiv_download_pdf": {
-    "enabled": true,
+    "enabled": false,
     "config": {}
   },
   "semantic_scholar_search": {
@@ -26,11 +26,11 @@
     }
   },
   "semantic_scholar_fetch": {
-    "enabled": false,
+    "enabled": true,
     "config": {}
   },
   "crossref_search": {
-    "enabled": false,
+    "enabled": true,
     "config": {
       "rows": 5
     }
