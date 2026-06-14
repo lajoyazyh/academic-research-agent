@@ -80,6 +80,7 @@ class SessionManager:
         (session_dir / "plan").mkdir(parents=True, exist_ok=True)
         (session_dir / "papers").mkdir(parents=True, exist_ok=True)
         (session_dir / "notes").mkdir(parents=True, exist_ok=True)
+        (session_dir / "review").mkdir(parents=True, exist_ok=True)
         (session_dir / "draft").mkdir(parents=True, exist_ok=True)
         (session_dir / "traces").mkdir(parents=True, exist_ok=True)
 
@@ -166,21 +167,21 @@ class SessionManager:
         plan_path = session_dir / "plan" / "initial_plan.md"
         initial_plan = plan_path.read_text(encoding="utf-8") if plan_path.exists() else ""
 
-        # 加载最新草稿：优先使用 get_draft（它会优先读取 current_draft.md），并尝试确定版本号
-        draft = self.get_draft(session_id)
-        draft_version = 0
-        draft_dir = session_dir / "draft"
-        if draft_dir.exists():
-            draft_files = sorted(draft_dir.glob("draft_v*.md"), reverse=True)
-            if draft_files:
+        # 加载最新综述：优先使用 get_review（它会优先读取 current_review.md），并尝试确定版本号
+        review = self.get_review(session_id)
+        review_version = 0
+        review_dir = session_dir / "review"
+        if review_dir.exists():
+            review_files = sorted(review_dir.glob("review_v*.md"), reverse=True)
+            if review_files:
                 # 从最新的版本化文件名中解析版本号（如果存在）
                 import re
-                m = re.search(r"draft_v(\d+)", draft_files[0].name)
+                m = re.search(r"review_v(\d+)", review_files[0].name)
                 if m:
                     try:
-                        draft_version = int(m.group(1))
+                        review_version = int(m.group(1))
                     except Exception:
-                        draft_version = 0
+                        review_version = 0
 
         # 加载轨迹
         traces = self._read_json(session_dir / "traces" / "run_traces.json") or []
@@ -202,8 +203,10 @@ class SessionManager:
             "keywords": keywords,
             "papers": papers,
             "notes": notes,
-            "draft": draft,
-            "draft_version": draft_version,
+            "review": review,
+            "review_version": review_version,
+            "draft": review,
+            "draft_version": review_version,
             "traces": traces,
             "conversations": conversations,
         }
@@ -542,10 +545,37 @@ class SessionManager:
         self._touch_metadata(session_dir)
         return self.load_session(session_id)
 
-    # ━━━━━ 草稿管理 ━━━━━
+    # ━━━━━ 综述管理 ━━━━━
+
+    def get_review(self, session_id: str, version: int = None) -> str:
+        """获取综述（默认最新版本）"""
+        review_dir = self.root / session_id / "review"
+        if not review_dir.exists():
+            return self.get_draft(session_id, version)
+
+        if version is not None:
+            review_path = review_dir / f"review_v{version}.md"
+            return review_path.read_text(encoding="utf-8") if review_path.exists() else ""
+
+        # 获取最新版本
+        # 优先使用 current_review.md（用于快速同步最新综述），否则回退到按版本的文件
+        current_path = review_dir / "current_review.md"
+        if current_path.exists():
+            try:
+                return current_path.read_text(encoding="utf-8")
+            except Exception:
+                pass
+
+        review_files = sorted(review_dir.glob("review_v*.md"), reverse=True)
+        if review_files:
+            try:
+                return review_files[0].read_text(encoding="utf-8")
+            except Exception:
+                return ""
+        return self.get_draft(session_id, version)
 
     def get_draft(self, session_id: str, version: int = None) -> str:
-        """获取综述草稿（默认最新版本）"""
+        """兼容旧接口：读取旧 draft 目录中的综述草稿。"""
         draft_dir = self.root / session_id / "draft"
         if not draft_dir.exists():
             return ""
@@ -554,8 +584,6 @@ class SessionManager:
             draft_path = draft_dir / f"draft_v{version}.md"
             return draft_path.read_text(encoding="utf-8") if draft_path.exists() else ""
 
-        # 获取最新版本
-        # 优先使用 current_draft.md（用于快速同步最新草稿），否则回退到按版本的文件
         current_path = draft_dir / "current_draft.md"
         if current_path.exists():
             try:
@@ -571,8 +599,8 @@ class SessionManager:
                 return ""
         return ""
 
-    def save_draft(self, session_id: str, content: str, version: int = None, referenced_papers: list[str] = None) -> dict:
-        """保存综述草稿
+    def save_review(self, session_id: str, content: str, version: int = None, referenced_papers: list[str] = None) -> dict:
+        """保存综述
         
         Args:
             referenced_papers: 本次撰写实际引用的论文 paper_id 列表
@@ -581,28 +609,38 @@ class SessionManager:
         if not session_dir.exists():
             raise ValueError(f"Session {session_id} 不存在")
 
-        draft_dir = session_dir / "draft"
-        draft_dir.mkdir(parents=True, exist_ok=True)
+        review_dir = session_dir / "review"
+        review_dir.mkdir(parents=True, exist_ok=True)
 
         if version is None:
             # 自动计算下一个版本号
-            existing = list(draft_dir.glob("draft_v*.md"))
+            existing = list(review_dir.glob("review_v*.md"))
             version = len(existing) + 1
 
-        draft_path = draft_dir / f"draft_v{version}.md"
-        draft_path.write_text(content, encoding="utf-8")
+        review_path = review_dir / f"review_v{version}.md"
+        review_path.write_text(content, encoding="utf-8")
 
-        # 额外写入一份 current_draft.md，便于前端快速获取最新草稿
+        # 额外写入一份 current_review.md，便于前端快速获取最新综述
         try:
-            current_path = draft_dir / "current_draft.md"
+            current_path = review_dir / "current_review.md"
             current_path.write_text(content, encoding="utf-8")
+        except Exception:
+            pass
+
+        # 兼容旧前端和知识库索引：继续维护 draft 目录镜像。
+        try:
+            draft_dir = session_dir / "draft"
+            draft_dir.mkdir(parents=True, exist_ok=True)
+            (draft_dir / f"draft_v{version}.md").write_text(content, encoding="utf-8")
+            (draft_dir / "current_draft.md").write_text(content, encoding="utf-8")
         except Exception:
             pass
 
         # 更新重写计数
         metadata = self._read_json(session_dir / "metadata.json") or {}
         metadata["rewrite_count"] = version - 1
-        # 记录当前草稿版本，便于外部接口快速获取
+        # 记录当前综述版本，便于外部接口快速获取
+        metadata["review_version"] = version
         metadata["draft_version"] = version
         # 记录本次撰写实际引用的论文列表
         if referenced_papers is not None:
@@ -612,19 +650,23 @@ class SessionManager:
 
         return self.load_session(session_id)
 
+    def save_draft(self, session_id: str, content: str, version: int = None, referenced_papers: list[str] = None) -> dict:
+        """兼容旧接口：保存草稿时写入新的 review 存储。"""
+        return self.save_review(session_id, content, version=version, referenced_papers=referenced_papers)
+
     def save_feedback(self, session_id: str, feedback: str) -> dict:
         """保存用户反馈"""
         session_dir = self.root / session_id
         if not session_dir.exists():
             raise ValueError(f"Session {session_id} 不存在")
 
-        feedback_path = session_dir / "draft" / "user_feedback.md"
+        feedback_path = session_dir / "review" / "user_feedback.md"
         feedback_path.write_text(feedback, encoding="utf-8")
         return self.load_session(session_id)
 
     def get_feedback(self, session_id: str) -> str:
         """获取用户反馈"""
-        feedback_path = self.root / session_id / "draft" / "user_feedback.md"
+        feedback_path = self.root / session_id / "review" / "user_feedback.md"
         if feedback_path.exists():
             return feedback_path.read_text(encoding="utf-8")
         return ""

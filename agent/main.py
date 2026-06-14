@@ -915,7 +915,7 @@ def run_search_only(
 def run_write_from_notes(
     user_topic: str,
     notes_content: str,
-    previous_draft: str = "",
+    previous_review: str = "",
     user_feedback: str = "",
     rewrite_count: int = 0,
     max_rewrites: int = 100,
@@ -938,7 +938,7 @@ def run_write_from_notes(
     if rewrite_count >= max_rewrites:
         return {
             "phase": "write",
-            "draft": previous_draft or "已达到最大修改次数限制，请创建新会话或手动编辑。",
+            "review": previous_review or "已达到最大修改次数限制，请创建新会话或手动编辑。",
             "rewrite_count": rewrite_count,
             "max_rewrites": max_rewrites,
             "can_rewrite": False,
@@ -956,7 +956,7 @@ def run_write_from_notes(
             if write_skill_content:
                 print(f"[Skill] Injected write skill: {write_skill_id}")
 
-    if user_feedback and previous_draft:
+    if user_feedback and previous_review:
         # 带反馈的重写 — 双通道：有 Skill 时替换默认要求
         if write_skill_content:
             feedback_prompt = f"""你是学术综述修改专家。请根据用户反馈修改综述。
@@ -967,7 +967,7 @@ def run_write_from_notes(
 {user_feedback}
 
 【上一版草稿】
-{previous_draft}
+{previous_review}
 
 【调研笔记（参考）】
 {notes_content}
@@ -980,7 +980,7 @@ def run_write_from_notes(
 {user_feedback}
 
 【上一版草稿】
-{previous_draft}
+{previous_review}
 
 【调研笔记（参考）】
 {notes_content}
@@ -990,17 +990,17 @@ def run_write_from_notes(
 2. 保持学术严谨性
 3. 直接输出完整的修改后综述（Markdown格式）
 """
-        new_draft = llm.chat("你是严谨的学术综述修改专家。", feedback_prompt, []).strip()
-        if not new_draft:
-            new_draft = previous_draft
+        new_review = llm.chat("你是严谨的学术综述修改专家。", feedback_prompt, []).strip()
+        if not new_review:
+            new_review = previous_review
     else:
         # 首次撰写
         outline, review = compose_review_from_notes(user_topic, notes_content, write_skill_content)
-        new_draft = review
+        new_review = review
 
     return {
         "phase": "write",
-        "draft": new_draft,
+        "review": new_review,
         "rewrite_count": rewrite_count + 1,
         "max_rewrites": max_rewrites,
         "can_rewrite": (rewrite_count + 1) < max_rewrites,

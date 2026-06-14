@@ -254,7 +254,7 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     if not notes.strip():
         raise HTTPException(status_code=400, detail="笔记为空，请先为选中论文生成笔记")
 
-    previous_draft = session.get("draft", "")
+    previous_review = session.get("review", "")
     feedback = session_mgr.get_feedback(session_id)
     rewrite_count = session.get("rewrite_count", 0)
 
@@ -263,17 +263,17 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         result = run_write_from_notes(
             user_topic=payload.topic.strip(),
             notes_content=notes,
-            previous_draft=previous_draft,
+            previous_review=previous_review,
             user_feedback=feedback,
             rewrite_count=rewrite_count,
             session_id=session_id,
         )
 
-        # 保存草稿，并记录本次撰写引用了哪些论文
-        if result.get("draft"):
+        # 保存综述，并记录本次撰写引用了哪些论文
+        if result.get("review"):
             from main import _merge_referenced_papers
             referenced_papers = _merge_referenced_papers(notes, papers)
-            session_mgr.save_draft(session_id, result["draft"], referenced_papers=referenced_papers)
+            session_mgr.save_review(session_id, result["review"], referenced_papers=referenced_papers)
 
         # 更新状态
         new_state = "reviewing_draft" if result.get("can_rewrite", True) else "complete"
@@ -704,8 +704,8 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
                 notes_content=notes,
                 session_id=session_id,
             )
-            if write_result.get("draft"):
-                session_mgr.save_draft(session_id, write_result["draft"])
+            if write_result.get("review"):
+                session_mgr.save_review(session_id, write_result["review"])
             # 状态机要求 writing → reviewing_draft → complete，不能直接跳
             try:
                 session_mgr.update_session_state(session_id, "reviewing_draft")
