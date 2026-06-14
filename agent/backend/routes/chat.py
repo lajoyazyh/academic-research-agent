@@ -106,9 +106,12 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
     current_notes = session.get("notes", "") or ""
     current_review = session.get("review", "") or ""
 
-    #accepted_names = "、".join(
-    #    [p.get("title") or p.get("paper_id", "") for p in session.get("papers", []) if p.get("status") == "accepted"]
-    #)
+    accepted_names = "、".join(
+        [p.get("title") or p.get("paper_id", "") for p in session.get("papers", []) if p.get("status") == "accepted"]
+    )
+    if(view_mode == "review"):
+        accepted_names = "review模式下暂不提供已选论文列表"
+
 
     # ━━━ 迭代三 RAG 升级：迭代式混合检索 PDF 原文段落 ━━━
     rag_context = ""
@@ -180,6 +183,7 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
     user_prompt = f"""会话主题：{session.get('topic', '')}
 当前视图模式：{view_mode}
 当前论文：{current_name}
+已选论文：{accepted_names or '暂无'}
 
 当前论文摘要（如有）：
 {ctx['abstract'] or '无'}
