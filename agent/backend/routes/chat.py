@@ -488,6 +488,10 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
             session_mgr.update_session_state(session_id, "reviewing_notes")
         except ValueError:
             pass
+        try:
+            session_mgr.update_session_state(session_id, "writing")
+        except ValueError:
+            pass
         fresh_session = session_mgr.load_session(session_id) or session
         reply = "笔记已根据你的反馈修订。"
         note = "笔记修订已完成。"
