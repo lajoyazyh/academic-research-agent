@@ -3,7 +3,8 @@ from llms import client as llm_client_module
 from llms.client import LLMClient
 from main import _build_fallback_notes_from_traces
 from backend.session_manager import STATE_LABELS
-from web_app import ChatMessageRequest, chat_message
+from backend.routes.models import ChatMessageRequest
+from backend.routes.chat import chat_message
 
 
 def test_calculator_tool():
@@ -156,8 +157,8 @@ def test_chat_message_uses_ai_answer_for_normal_question(monkeypatch):
     fake_llm = _FakeChatLLM([
         '这篇论文系统综述了多智能体深度强化学习中的通信方法。',
     ])
-    monkeypatch.setattr("web_app.session_mgr", _FakeSessionManager(session))
-    monkeypatch.setattr("web_app._get_chat_intent_llm", lambda: fake_llm)
+    monkeypatch.setattr("backend.routes.chat.session_mgr", _FakeSessionManager(session))
+    monkeypatch.setattr("backend.routes.chat._get_chat_intent_llm", lambda: fake_llm)
 
     result = chat_message(
         "sess_test",
@@ -190,8 +191,8 @@ def test_chat_message_ai_revision_returns_confirmation(monkeypatch):
     fake_llm = _FakeChatLLM([
         '{"intent":"revise","target":"report","confidence":0.95,"reason":"用户明确要求删除章节","feedback":"删除亮点与不足部分"}',
     ])
-    monkeypatch.setattr("web_app.session_mgr", _FakeSessionManager(session))
-    monkeypatch.setattr("web_app._get_chat_intent_llm", lambda: fake_llm)
+    monkeypatch.setattr("backend.routes.chat.session_mgr", _FakeSessionManager(session))
+    monkeypatch.setattr("backend.routes.chat._get_chat_intent_llm", lambda: fake_llm)
 
     result = chat_message(
         "sess_test",
@@ -217,8 +218,9 @@ def test_chat_message_explicit_revision_still_direct(monkeypatch):
         "draft": "",
     }
     fake_manager = _FakeSessionManager(session)
-    monkeypatch.setattr("web_app.session_mgr", fake_manager)
-    monkeypatch.setattr("web_app.revise_notes_phase", lambda *args, **kwargs: {"notes": "更新后的笔记"})
+    monkeypatch.setattr("backend.routes.chat.session_mgr", fake_manager)
+    monkeypatch.setattr("backend.routes.agent.session_mgr", fake_manager)
+    monkeypatch.setattr("backend.routes.chat.revise_notes_phase", lambda *args, **kwargs: {"notes": "更新后的笔记"})
 
     result = chat_message(
         "sess_test",
@@ -243,8 +245,8 @@ def test_chat_message_ai_revision_low_confidence_requests_clarification(monkeypa
     fake_llm = _FakeChatLLM([
         '{"intent":"revise","target":"report","confidence":0.4,"reason":"语义不够明确","feedback":""}',
     ])
-    monkeypatch.setattr("web_app.session_mgr", _FakeSessionManager(session))
-    monkeypatch.setattr("web_app._get_chat_intent_llm", lambda: fake_llm)
+    monkeypatch.setattr("backend.routes.chat.session_mgr", _FakeSessionManager(session))
+    monkeypatch.setattr("backend.routes.chat._get_chat_intent_llm", lambda: fake_llm)
 
     result = chat_message(
         "sess_test",
@@ -272,10 +274,13 @@ def test_chat_message_explicit_review_revision_rewrites_draft(monkeypatch):
         assert session_id == "sess_test"
         assert payload.topic == "多智能体记忆机制"
         assert payload.start_phase == "write"
-        return {"draft": "更新后的综述草稿"}
+        return {"draft": "更新后的综述草稿", "review": "更新后的综述草稿"}
 
-    monkeypatch.setattr("web_app.session_mgr", fake_manager)
-    monkeypatch.setattr("web_app.run_write_phase", fake_run_write_phase)
+    monkeypatch.setattr("backend.routes.chat.session_mgr", fake_manager)
+    monkeypatch.setattr("backend.routes.agent.session_mgr", fake_manager)
+    # monkeypatch chat.py 中导入的 run_write_phase（from .agent import）
+    import backend.routes.chat as chat_mod
+    monkeypatch.setattr(chat_mod, "run_write_phase", fake_run_write_phase)
 
     result = chat_message(
         "sess_test",
@@ -309,8 +314,8 @@ def test_chat_message_falls_back_to_template_when_answer_llm_fails(monkeypatch):
         def chat(self, system_prompt: str, user_prompt: str, history: list):
             raise RuntimeError("LLM unavailable")
 
-    monkeypatch.setattr("web_app.session_mgr", _FakeSessionManager(session))
-    monkeypatch.setattr("web_app._get_chat_intent_llm", lambda: _FailingAnswerLLM())
+    monkeypatch.setattr("backend.routes.chat.session_mgr", _FakeSessionManager(session))
+    monkeypatch.setattr("backend.routes.chat._get_chat_intent_llm", lambda: _FailingAnswerLLM())
 
     result = chat_message(
         "sess_test",

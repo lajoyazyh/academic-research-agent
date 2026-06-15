@@ -90,6 +90,44 @@ def _manage_context_window(
     }
 
 
+def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | None = None) -> dict[str, str]:
+    paper = None
+    if current_paper_id:
+        for item in session.get("papers", []):
+            if item.get("paper_id") == current_paper_id:
+                paper = item
+                break
+    if paper is None:
+        papers = session.get("papers", [])
+        paper = papers[0] if papers else None
+
+    if view_mode == "review":
+        accepted_count = len([p for p in session.get("papers", []) if p.get("status") == "accepted"])
+        accepted_names = "、".join(
+            [p.get("title") or p.get("paper_id", "") for p in session.get("papers", []) if p.get("status") == "accepted"]
+        )
+        return {
+            "reply": f"根据当前综述草稿和 {accepted_count} 篇已选论文（{accepted_names or '暂无'}），请明确要修改的章节或段落，并将修改意见压缩为 3-5 条可执行建议。",
+            "note": "综述模式：可直接输入 /修订 + 修改意见 触发综述重写。",
+            "rag_status": "not_attempted",
+        }
+
+    if view_mode == "report":
+        current_name = (paper or {}).get("title") or (paper or {}).get("paper_id") or session.get("topic", "当前论文")
+        return {
+            "reply": f"收到你对「{current_name}」笔记的修改意见。你可以直接输入 /修订 + 修改意见，让系统基于反馈修订当前笔记。",
+            "note": "笔记模式：可直接输入 /修订 + 修改意见 触发笔记修订。",
+            "rag_status": "not_attempted",
+        }
+
+    current_name = (paper or {}).get("title") or (paper or {}).get("paper_id") or session.get("topic", "当前主题")
+    return {
+        "reply": f"针对「{current_name}」的摘要内容，我可以继续回答你的问题。若要修改内容，请切换到笔记或综述视图后使用 Agent 模式和 /修订 指令。",
+        "note": "当前为摘要模式，仅回答当前论文内容。",
+        "rag_status": "not_attempted",
+    }
+
+
 def _build_chat_answer(session: dict, message: str, view_mode: str, current_paper_id: str | None = None, conv_id: str = "default") -> dict[str, str]:
     paper = None
     if current_paper_id:
