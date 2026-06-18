@@ -48,6 +48,52 @@ def _load_analysis_context_for_writing(session_id: str) -> str:
             sections.append(f"### {labels[key]}\n\n{content}")
     return "\n\n".join(sections)
 
+
+def _collect_notes_for_analysis(session: dict) -> tuple[str, list[dict]]:
+    notes = session.get("notes", "")
+    papers = session.get("papers", [])
+
+    if not notes.strip() and papers:
+        parts = []
+        for paper in papers:
+            paper_notes = (paper.get("notes") or "").strip()
+            if paper_notes:
+                title = paper.get("title") or paper.get("paper_id") or "Unknown"
+                parts.append(f"## {title}\n\n{paper_notes}")
+        notes = "\n\n---\n\n".join(parts)
+
+    return notes, papers
+
+
+def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all") -> dict:
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    analysis_type = analysis_type or "all"
+    if analysis_type not in {"compare", "lineage", "gaps", "all"}:
+        raise HTTPException(status_code=400, detail="analysis_type 必须是 compare、lineage、gaps 或 all")
+
+    notes, papers = _collect_notes_for_analysis(session)
+
+    from tools.analysis_tools import compare_papers, trace_lineage, find_gaps
+
+    result = {"phase": "analysis", "session_id": session_id}
+    if analysis_type in ("compare", "all"):
+        result["compare"] = compare_papers(topic, notes, papers)
+    if analysis_type in ("lineage", "all"):
+        result["lineage"] = trace_lineage(topic, notes, papers)
+    if analysis_type in ("gaps", "all"):
+        result["gaps"] = find_gaps(topic, notes, papers)
+
+    analysis_dir = SESSIONS_DIR / session_id / "analysis"
+    os.makedirs(analysis_dir, exist_ok=True)
+    (analysis_dir / "analysis_results.json").write_text(
+        json.dumps(result, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return result
+
 @router.post("/{session_id}/run/plan")
 def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     """【阶段1】执行规划，生成关键词候选项"""
@@ -698,6 +744,27 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
 
         _update_run_status("reviewing_notes", "running",
                           message=f"笔记生成完成，共 {len(notes_map) if papers else 0} 篇，即将撰写综述...")
+
+        if _stop_flag[0]:
+            return
+
+        # Generate analysis before writing so the final review can use it.
+        try:
+            _update_run_status("analysis", "running", message="正在生成深度分析报告...")
+            analysis_result = _run_session_analysis(session_id, topic, "all")
+            _update_run_status(
+                "analysis",
+                "running",
+                message="深度分析报告已生成，即将撰写综述...",
+                analysis=analysis_result,
+            )
+        except Exception as exc:
+            _update_run_status(
+                "analysis",
+                "running",
+                message=f"深度分析生成失败，将继续撰写综述：{str(exc)}",
+                analysis_error=str(exc),
+            )
 
         if _stop_flag[0]:
             return

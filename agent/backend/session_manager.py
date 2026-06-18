@@ -186,6 +186,9 @@ class SessionManager:
         # 加载轨迹
         traces = self._read_json(session_dir / "traces" / "run_traces.json") or []
 
+        # 加载深度分析结果
+        analysis = self._read_json(session_dir / "analysis" / "analysis_results.json") or {}
+
         # 加载聊天历史（多会话模式，自动迁移旧版）
         self._migrate_legacy_chat(session_id)
         conversations = self.list_conversations(session_id)
@@ -208,6 +211,7 @@ class SessionManager:
             "draft": review,
             "draft_version": review_version,
             "traces": traces,
+            "analysis": analysis,
             "conversations": conversations,
         }
 
