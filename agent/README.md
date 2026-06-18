@@ -184,6 +184,9 @@ python web_app.py
 
 | 路径 | 内容 |
 |------|------|
+| `docs/Agent需求文档.md` | 当前迭代三版本的需求说明 |
+| `docs/Agent详细设计文档.md` | 当前迭代三版本的架构与模块详细设计 |
+| `docs/API接口文档.md` | 当前 Web 后端 API 接口总览 |
 | `docs/Agent优化文档.md` | 迭代三优化工作总文档：目标、架构、Pipeline、Skills、全局 Copilot、评估 |
 | `docs/迭代三会议记录.md` | 按周整理的会议记录、负责人、会议内容和阶段产出 |
 | `docs/项目架构分析.md` | 面向评审的项目架构拆解 |
