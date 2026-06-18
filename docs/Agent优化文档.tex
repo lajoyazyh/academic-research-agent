@@ -16,6 +16,7 @@
 \usepackage{float}
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, calc, backgrounds}
+\emergencystretch=2em
 
 \hypersetup{colorlinks=true, linkcolor=blue!60!black, urlcolor=blue!60!black}
 \newcommand{\resizetikz}[2][\textwidth]{\resizebox{#1}{!}{#2}}
@@ -139,7 +140,7 @@ RAG 笔记 & 笔记结构不稳定，PDF 利用不足 & 基于全文检索生成
 Skills 支持 search、notes、write 三阶段定制。系统在每个阶段都写入 \texttt{SKILL\_STATUS} trace，记录 skill id、标题、是否加载、是否 fallback 和原因。
 
 \subsection{全局 Copilot 范围选择}
-全局 Copilot 原先默认扫描所有 Session。当前支持前端多选 Session，后端 \texttt{/api/knowledge/chat} 根据 \texttt{session\_ids} 限定检索范围。
+全局 Copilot 原先默认扫描所有 Session。当前支持前端多选 Session，后端知识问答接口根据 \texttt{session\_ids} 限定检索范围。
 
 %============================================================
 \section{能力雷达图语义}
