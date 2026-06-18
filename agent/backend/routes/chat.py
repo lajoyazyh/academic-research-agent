@@ -325,7 +325,8 @@ def _infer_chat_revision_ai(session: dict, message: str, view_mode: str, current
     # ━━━ 轻量级预判：如果关键词规则能明确判断，跳过 LLM 调用 ━━━
     quick = _quick_intent_check(text)
     if quick == "chat":
-        return None  # 明确是提问，不走修订流程
+        # 关键词明确判定为提问 → 返回 chat 标记（区别于 LLM 调用失败）
+        return {"intent": "chat", "target": "none", "feedback": "", "reason": "关键词匹配：检测到明确的提问意图", "source": "keyword"}
     if quick == "revise":
         # 关键词明确是修改意图，直接构造修订结果
         target = "review" if view_mode == "review" else "report"
@@ -421,7 +422,8 @@ JSON 格式如下：
     if intent == "clarify":
         return {"intent": "clarify", "target": "none", "feedback": "", "reason": reason, "source": "ai"}
 
-    return None
+    # LLM 明确判定为 chat：返回特殊标记以区别于 LLM 调用失败
+    return {"intent": "chat", "target": "none", "feedback": "", "reason": reason, "source": "ai"}
 
 
 def _save_chat_exchange(session_id: str, user_msg: str, reply: str, note: str, view_mode: str, conv_id: str = "default") -> None:
@@ -468,8 +470,11 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
             if not revision:
                 revision = _infer_chat_revision_ai(session, message, payload.view_mode, payload.current_paper_id)
 
-        # Agent 模式下未识别到修订意图时，引导用户明确修改意图
-        if not revision:
+        # Agent 模式下：LLM 明确判定为 chat → 允许走普通问答
+        if revision and revision.get("intent") == "chat":
+            revision = None  # 重置，让后续走普通问答逻辑
+        # Agent 模式下：LLM 调用失败 / 无法判断 → 引导用户明确修改意图
+        elif not revision:
             content_type = "综述草稿" if payload.view_mode == "review" else "笔记"
             reply = f"当前是 Agent 模式，专用于修改{content_type}。请明确说出你想要修改的内容，例如「请补充XX部分」「删除YY段落」「重写ZZ章节」。如有疑问也可以先切换到对话模式再提问。"
             note = "Agent 模式下未识别到明确的修改意图，等待用户进一步指示。"

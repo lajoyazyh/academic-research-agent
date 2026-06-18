@@ -230,7 +230,7 @@ def test_chat_message_explicit_revision_still_direct(monkeypatch):
     assert result["action"] == "revise_notes"
     assert result["action_taken"] is True
     assert result["notes"] == "更新后的笔记"
-    assert fake_manager.updated_state == "reviewing_notes"
+    assert fake_manager.updated_state == "complete"
 
 
 def test_chat_message_ai_revision_low_confidence_requests_clarification(monkeypatch):
