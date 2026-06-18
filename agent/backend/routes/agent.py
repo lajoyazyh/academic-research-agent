@@ -589,7 +589,7 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
 
 
 def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int, min_papers: int) -> None:
-    """后台自动执行完整流水线：规划 → 搜索 → 笔记 → 综述"""
+    """后台自动执行完整流水线：规划 → 搜索 → 笔记 → 分析 → 综述"""
     import time as _time
 
     run_key = f"session_{session_id}"
@@ -762,7 +762,7 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
                 session_mgr.batch_update_paper_notes(session_id, notes_map)
 
         _update_run_status("reviewing_notes", "running",
-                          message=f"笔记生成完成，共 {len(notes_map) if papers else 0} 篇，即将撰写综述...")
+                          message=f"笔记生成完成，共 {len(notes_map) if papers else 0} 篇，即将生成深度分析...")
 
         if _stop_flag[0]:
             return
@@ -846,7 +846,7 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
 
 @router.post("/{session_id}/run/auto")
 def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
-    """【自动模式】一键触发 规划→搜索→笔记→综述 全流程自动执行"""
+    """【自动模式】一键触发 规划→搜索→笔记→分析→综述 全流程自动执行"""
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
