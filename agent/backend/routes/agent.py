@@ -25,6 +25,29 @@ from .models import (
 
 router = APIRouter(prefix="/api/sessions", tags=["agent"])
 
+
+def _load_analysis_context_for_writing(session_id: str) -> str:
+    """Load saved compare/lineage/gaps analysis as optional writing context."""
+    analysis_path = SESSIONS_DIR / session_id / "analysis" / "analysis_results.json"
+    if not analysis_path.exists():
+        return ""
+    try:
+        data = json.loads(analysis_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return ""
+
+    sections = []
+    labels = {
+        "compare": "Paper comparison",
+        "lineage": "Research lineage",
+        "gaps": "Research gaps",
+    }
+    for key in ("compare", "lineage", "gaps"):
+        content = str(data.get(key, "") or "").strip()
+        if content:
+            sections.append(f"### {labels[key]}\n\n{content}")
+    return "\n\n".join(sections)
+
 @router.post("/{session_id}/run/plan")
 def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     """【阶段1】执行规划，生成关键词候选项"""
@@ -257,6 +280,7 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     previous_review = session.get("review", "")
     feedback = session_mgr.get_feedback(session_id)
     rewrite_count = session.get("rewrite_count", 0)
+    analysis_context = _load_analysis_context_for_writing(session_id)
 
     try:
         from main import run_write_from_notes  # noqa
@@ -267,6 +291,7 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
             user_feedback=feedback,
             rewrite_count=rewrite_count,
             session_id=session_id,
+            analysis_context=analysis_context,
         )
 
         # 保存综述，并记录本次撰写引用了哪些论文
@@ -699,10 +724,12 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
 
         if notes.strip():
             from main import run_write_from_notes  # noqa
+            analysis_context = _load_analysis_context_for_writing(session_id)
             write_result = run_write_from_notes(
                 user_topic=topic,
                 notes_content=notes,
                 session_id=session_id,
+                analysis_context=analysis_context,
             )
             if write_result.get("review"):
                 session_mgr.save_review(session_id, write_result["review"])
