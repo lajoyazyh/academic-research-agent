@@ -17,6 +17,8 @@
     reportEditText: "",
     isEditingReview: false,
     reviewEditText: "",
+    isEditingAnalysis: false,
+    analysisEditText: "",
     _autoRunning: false,
     _autoPollTimer: null,
   },
@@ -1185,7 +1187,7 @@
     this.renderDetailPanel();
 
     // 延迟初始化 Vditor（等 DOM 渲染完）
-    setTimeout(() => this._initVditor("reportEditArea", rawNotes), 50);
+    setTimeout(() => this._initVditor("reportEditArea", rawNotes, "saveEditReport"), 50);
   },
 
   cancelEditReport() {
@@ -1233,7 +1235,7 @@
     this.state.reviewEditText = draft;
     this.renderDetailPanel();
 
-    setTimeout(() => this._initVditor("reviewEditArea", draft), 50);
+    setTimeout(() => this._initVditor("reviewEditArea", draft, "saveEditReview"), 50);
   },
 
   cancelEditReview() {
@@ -1273,7 +1275,7 @@
   // ━━━ Vditor 初始化/销毁 ━━━
   _vditors: {},
 
-  _initVditor(id, content) {
+  _initVditor(id, content, saveAction = "saveEditReport") {
     if (typeof Vditor === "undefined") return;
     this._destroyVditor(id);
 
@@ -1300,7 +1302,7 @@
         "list", "ordered-list", "check", "|",
         "quote", "code", "inline-code", "|",
         "undo", "redo", "|",
-        { name: "save", tip: "保存 (Ctrl+S)", className: "right", icon: '<i class="fa-solid fa-floppy-disk"></i>', click: () => this.saveEditReport() },
+        { name: "save", tip: "保存 (Ctrl+S)", className: "right", icon: '<i class="fa-solid fa-floppy-disk"></i>', click: () => this[saveAction]?.() },
       ],
       cache: { enable: false },
       after: () => {
@@ -2095,6 +2097,7 @@
               compare: status.analysis.compare || "",
               lineage: status.analysis.lineage || "",
               gaps: status.analysis.gaps || "",
+              document: status.analysis.document || "",
             };
           }
           this.state.currentSession = session;
@@ -2246,6 +2249,7 @@
       if (data.compare) this.state.currentSession._analysis.compare = data.compare;
       if (data.lineage) this.state.currentSession._analysis.lineage = data.lineage;
       if (data.gaps) this.state.currentSession._analysis.gaps = data.gaps;
+      this.state.currentSession._analysis.document = this.analysisToMarkdown(this.state.currentSession._analysis, session.topic || "当前主题");
 
       this.switchViewMode("analysis");
       this.setConsoleStatus("complete", "深度分析报告已生成");
@@ -2256,7 +2260,9 @@
 
   renderAnalysisView(session) {
     const analysis = session?._analysis || session?.analysis || {};
-    const hasData = analysis.compare || analysis.lineage || analysis.gaps;
+    const analysisDoc = this.analysisToMarkdown(analysis, session?.topic || "当前主题");
+    const editContent = typeof this.state.analysisEditText === "string" && this.state.isEditingAnalysis ? this.state.analysisEditText : analysisDoc;
+    const hasData = Boolean(analysisDoc.trim());
 
     if (!hasData) {
       return `
@@ -2276,49 +2282,33 @@
       `;
     }
 
-    let html = `
+    const contentHtml = this.state.isEditingAnalysis
+      ? `
+        <div id="analysisEditArea" style="display:none;">${this.escapeHtml(editContent)}</div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
+          <button class="secondary-btn" onclick="notebooklm.cancelEditAnalysis()">取消</button>
+          <button class="primary-btn" onclick="notebooklm.saveEditAnalysis()">保存</button>
+        </div>
+      `
+      : `<div class="markdown">${marked.parse(editContent)}</div>`;
+
+    return `
       <div class="detail-hero">
         <span class="topic-badge"><i class="fa-solid fa-magnifying-glass-chart"></i> 深度分析</span>
         <h3>${this.escapeHtml(session?.topic || "当前主题")}</h3>
-        <div class="lead">文献对比 · 研究脉络 · 空白发现</div>
+        <div class="lead">这是一份可编辑的 Markdown 分析文档，可作为综述写作的额外依据。</div>
       </div>
       <div class="detail-blocks" style="margin-top:16px;">
-    `;
-
-    if (analysis.compare) {
-      html += `
         <div class="panel-block">
           <div class="panel-block-head">
-            <strong><i class="fa-solid fa-table-columns"></i> 文献对比分析</strong>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <strong>深度分析文档</strong>
+              <span class="chip">Markdown</span>
+            </div>
+            ${!this.state.isEditingAnalysis ? `<button class="secondary-btn" title="编辑分析" onclick="notebooklm.startEditAnalysis()"><i class="fa-solid fa-pen" style="margin-right:4px;"></i>编辑分析</button>` : ""}
           </div>
-          <div class="markdown">${marked.parse(analysis.compare)}</div>
+          ${contentHtml}
         </div>
-      `;
-    }
-
-    if (analysis.lineage) {
-      html += `
-        <div class="panel-block">
-          <div class="panel-block-head">
-            <strong><i class="fa-solid fa-timeline"></i> 研究脉络梳理</strong>
-          </div>
-          <div class="markdown">${marked.parse(analysis.lineage)}</div>
-        </div>
-      `;
-    }
-
-    if (analysis.gaps) {
-      html += `
-        <div class="panel-block">
-          <div class="panel-block-head">
-            <strong><i class="fa-solid fa-lightbulb"></i> 研究空白发现</strong>
-          </div>
-          <div class="markdown">${marked.parse(analysis.gaps)}</div>
-        </div>
-      `;
-    }
-
-    html += `
         <div class="panel-block" style="text-align:center;padding:12px;">
           <button class="secondary-btn" onclick="notebooklm.generateAnalysisAction()" style="font-size:13px;">
             <i class="fa-solid fa-rotate"></i> 重新生成分析报告
@@ -2326,8 +2316,75 @@
         </div>
       </div>
     `;
+  },
 
-    return html;
+  analysisToMarkdown(analysis, topic = "当前主题") {
+    if (!analysis) return "";
+    const documentText = String(analysis.document || "").trim();
+    if (documentText) return this.stripMarkdownFence(documentText);
+
+    const sections = [];
+    const compare = String(analysis.compare || "").trim();
+    const lineage = String(analysis.lineage || "").trim();
+    const gaps = String(analysis.gaps || "").trim();
+    if (compare) sections.push(`## 文献对比分析\n\n${compare}`);
+    if (lineage) sections.push(`## 研究脉络梳理\n\n${lineage}`);
+    if (gaps) sections.push(`## 研究空白发现\n\n${gaps}`);
+    if (!sections.length) return "";
+    return `# 深度分析：${topic}\n\n${sections.join("\n\n---\n\n")}`;
+  },
+
+  stripMarkdownFence(text) {
+    return String(text || "")
+      .replace(/```markdown\s*\n([\s\S]*?)```/g, '$1')
+      .replace(/```markdown\s*\n([\s\S]*?)(\n---|\n## (?!##)|$)/, '$1$2')
+      .trim();
+  },
+
+  startEditAnalysis() {
+    const session = this.state.currentSession;
+    const rawAnalysis = this.analysisToMarkdown(session?._analysis || session?.analysis || {}, session?.topic || "当前主题");
+
+    this.state.isEditingAnalysis = true;
+    this.state.analysisEditText = rawAnalysis;
+    this.renderDetailPanel();
+
+    setTimeout(() => this._initVditor("analysisEditArea", rawAnalysis, "saveEditAnalysis"), 50);
+  },
+
+  cancelEditAnalysis() {
+    this._destroyVditor("analysisEditArea");
+    this.state.isEditingAnalysis = false;
+    this.state.analysisEditText = "";
+    this.renderDetailPanel();
+  },
+
+  async saveEditAnalysis() {
+    const vditor = this._vditors?.analysisEditArea;
+    const newAnalysis = vditor ? vditor.getValue() : "";
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId) return;
+
+    this.els.detailContent.innerHTML = '<div class="loading-state">保存中...</div>';
+
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/analysis`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newAnalysis }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "保存失败");
+
+      this._destroyVditor("analysisEditArea");
+      await this.reloadCurrentSession();
+      this.state.isEditingAnalysis = false;
+      this.state.analysisEditText = "";
+      this.renderDetailPanel();
+    } catch (error) {
+      alert(error.message);
+      this.renderDetailPanel();
+    }
   },
 
   async generateReviewAction() {

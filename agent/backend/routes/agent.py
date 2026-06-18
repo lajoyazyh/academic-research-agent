@@ -36,6 +36,10 @@ def _load_analysis_context_for_writing(session_id: str) -> str:
     except (json.JSONDecodeError, OSError):
         return ""
 
+    document = str(data.get("document", "") or "").strip()
+    if document:
+        return document
+
     sections = []
     labels = {
         "compare": "Paper comparison",
@@ -85,6 +89,7 @@ def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all
         result["lineage"] = trace_lineage(topic, notes, papers)
     if analysis_type in ("gaps", "all"):
         result["gaps"] = find_gaps(topic, notes, papers)
+    result["document"] = _analysis_result_to_markdown(result, topic)
 
     analysis_dir = SESSIONS_DIR / session_id / "analysis"
     os.makedirs(analysis_dir, exist_ok=True)
@@ -93,6 +98,19 @@ def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all
         encoding="utf-8",
     )
     return result
+
+
+def _analysis_result_to_markdown(result: dict, topic: str) -> str:
+    sections = []
+    if str(result.get("compare", "") or "").strip():
+        sections.append(f"## 文献对比分析\n\n{result['compare']}")
+    if str(result.get("lineage", "") or "").strip():
+        sections.append(f"## 研究脉络梳理\n\n{result['lineage']}")
+    if str(result.get("gaps", "") or "").strip():
+        sections.append(f"## 研究空白发现\n\n{result['gaps']}")
+    if not sections:
+        return ""
+    return f"# 深度分析：{topic}\n\n" + "\n\n---\n\n".join(sections)
 
 @router.post("/{session_id}/run/plan")
 def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
@@ -553,6 +571,7 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
             result["lineage"] = trace_lineage(topic, notes, papers)
         if analysis_type in ("gaps", "all"):
             result["gaps"] = find_gaps(topic, notes, papers)
+        result["document"] = _analysis_result_to_markdown(result, topic)
 
         analysis_dir = SESSIONS_DIR / session_id / "analysis"
         os.makedirs(analysis_dir, exist_ok=True)

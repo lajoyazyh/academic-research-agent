@@ -506,6 +506,31 @@ def save_notes(session_id: str, payload: dict) -> dict:
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.put("/{session_id}/analysis")
+def save_analysis(session_id: str, payload: dict) -> dict:
+    """保存用户手动编辑后的分析 Markdown 文档"""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+
+    content = str(payload.get("content", "") or "")
+    analysis = dict(session.get("analysis") or {})
+    analysis.update({
+        "phase": "analysis",
+        "session_id": session_id,
+        "document": content,
+        "updated_at": datetime.datetime.now().isoformat(),
+    })
+
+    analysis_dir = SESSIONS_DIR / session_id / "analysis"
+    analysis_dir.mkdir(parents=True, exist_ok=True)
+    (analysis_dir / "analysis_results.json").write_text(
+        json.dumps(analysis, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return {"message": "Success", "analysis": analysis}
+
+
 @router.put("/{session_id}/feedback")
 def save_feedback(session_id: str, payload: SaveFeedbackRequest) -> dict:
     """保存综述修改反馈"""
