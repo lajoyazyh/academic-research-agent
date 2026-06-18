@@ -186,6 +186,9 @@ class SessionManager:
         # 加载轨迹
         traces = self._read_json(session_dir / "traces" / "run_traces.json") or []
 
+        # 加载深度分析结果
+        analysis = self._read_json(session_dir / "analysis" / "analysis_results.json") or {}
+
         # 加载聊天历史（多会话模式，自动迁移旧版）
         self._migrate_legacy_chat(session_id)
         conversations = self.list_conversations(session_id)
@@ -208,6 +211,7 @@ class SessionManager:
             "draft": review,
             "draft_version": review_version,
             "traces": traces,
+            "analysis": analysis,
             "conversations": conversations,
         }
 
@@ -760,11 +764,16 @@ class SessionManager:
         self._write_json(path, history)
 
         # 更新索引中的 message_count
+        self._update_conv_index(session_id, conv_id, len(history))
+
+    def _update_conv_index(self, session_id: str, conv_id: str, message_count: int) -> None:
+        """Update conversation metadata after message edits or compression."""
         index = self._read_json(self._conv_index_path(session_id)) or []
+        now = datetime.datetime.now().isoformat()
         for c in index:
             if c.get("conv_id") == conv_id:
-                c["message_count"] = len(history)
-                c["updated_at"] = datetime.datetime.now().isoformat()
+                c["message_count"] = message_count
+                c["updated_at"] = now
                 break
         self._write_json(self._conv_index_path(session_id), index)
         self._touch_metadata(self.root / session_id)

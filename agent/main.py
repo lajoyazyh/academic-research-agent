@@ -397,16 +397,39 @@ def _self_critique_review(topic: str, raw_review: str) -> str:
     return raw_review
 
 
-def compose_review_from_notes(topic: str, notes_content: str, write_skill_content: str = "") -> tuple[str, str]:
+def _append_analysis_context(notes_content: str, analysis_context: str = "") -> str:
+    """Append optional cross-paper analysis as extra writing evidence."""
+    analysis_context = (analysis_context or "").strip()
+    if not analysis_context:
+        return notes_content
+    if len(analysis_context) > 12000:
+        analysis_context = analysis_context[:12000] + "\n\n...[analysis context truncated]..."
+    return (
+        f"{notes_content}\n\n---\n\n"
+        "## Cross-paper analysis insights for writing\n\n"
+        "Use this synthesis when writing method comparisons, research lineage, "
+        "limitations, and future directions.\n\n"
+        f"{analysis_context}"
+    )
+
+
+def compose_review_from_notes(
+    topic: str,
+    notes_content: str,
+    write_skill_content: str = "",
+    analysis_context: str = "",
+) -> tuple[str, str]:
     llm = LLMClient()
+    writing_source = _append_analysis_context(notes_content, analysis_context)
+    notes_content = writing_source
 
     # 双通道：大纲 + 逐节正文
     # 修复：body 已包含完整 ## 标题，不再在前面重复 prepend outline
     if write_skill_content:
-        outline = _build_writer_outline(llm, topic, notes_content, write_skill_content)
+        outline = _build_writer_outline(llm, topic, writing_source, write_skill_content)
     else:
-        outline = _build_writer_outline(llm, topic, notes_content)
-    body = _compose_review_by_sections(llm, topic, notes_content, outline, write_skill_content)
+        outline = _build_writer_outline(llm, topic, writing_source)
+    body = _compose_review_by_sections(llm, topic, writing_source, outline, write_skill_content)
     # outline 作为前置目录，使用引用格式（>）避免与 body 中的 ## 标题重复
     review = f"> **综述大纲**（由 AI 规划，仅供参考）\n>\n" + "\n".join(f"> {line}" for line in outline.split("\n")) + f"\n\n---\n\n{body}"
 
@@ -940,6 +963,7 @@ def run_write_from_notes(
     rewrite_count: int = 0,
     max_rewrites: int = 100,
     session_id: str = None,
+    analysis_context: str = "",
 ) -> dict:
     """
     【阶段 3：撰写综述】基于笔记内容生成/重写综述初稿。
@@ -965,6 +989,8 @@ def run_write_from_notes(
         }
 
     llm = LLMClient()
+    writing_source = _append_analysis_context(notes_content, analysis_context)
+    notes_content = writing_source
 
     # ━━━ Skill 注入：加载 write 类型的自定义提示词 ━━━
     write_skill_content = ""
@@ -1015,12 +1041,17 @@ def run_write_from_notes(
             new_review = previous_review
     else:
         # 首次撰写
-        outline, review = compose_review_from_notes(user_topic, notes_content, write_skill_content)
+        outline, review = compose_review_from_notes(
+            user_topic,
+            notes_content,
+            write_skill_content,
+        )
         new_review = review
 
     return {
         "phase": "write",
         "review": new_review,
+        "analysis_used": bool((analysis_context or "").strip()),
         "rewrite_count": rewrite_count + 1,
         "max_rewrites": max_rewrites,
         "can_rewrite": (rewrite_count + 1) < max_rewrites,

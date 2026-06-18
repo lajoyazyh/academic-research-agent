@@ -33,7 +33,7 @@ class GlobalKnowledgeBase:
         """扫描所有 Session 并构建全局 BM25 索引。返回统计信息。"""
         if not force and self._chunks and self._last_build:
             # 简单检查：sessions 目录是否有新 session
-            current_dirs = set(d.name for d in self.sessions_dir.iterdir() if d.is_dir())
+            current_dirs = set(d.name for d in self._iter_session_dirs())
             if len(current_dirs) <= len(self._stats.get("session_ids", [])):
                 return self._stats
 
@@ -44,9 +44,7 @@ class GlobalKnowledgeBase:
         total_drafts = 0
         session_ids = []
 
-        for session_dir in sorted(self.sessions_dir.iterdir(), reverse=True):
-            if not session_dir.is_dir():
-                continue
+        for session_dir in self._iter_session_dirs():
             sid = session_dir.name
             session_ids.append(sid)
 
@@ -201,6 +199,8 @@ class GlobalKnowledgeBase:
         for sid in self._stats.get("session_ids", []):
             session_dir = self.sessions_dir / sid
             meta = self._read_json(session_dir / "metadata.json")
+            if not meta:
+                continue
             papers = self._stats.get("session_papers", {}).get(sid, [])
             summaries.append({
                 "session_id": sid,
@@ -212,6 +212,15 @@ class GlobalKnowledgeBase:
         return summaries
 
     # ━━━ 辅助 ━━━
+
+    def _iter_session_dirs(self) -> list[Path]:
+        """Return only real user session directories, excluding internal stores."""
+        if not self.sessions_dir.exists():
+            return []
+        return [
+            d for d in sorted(self.sessions_dir.iterdir(), reverse=True)
+            if d.is_dir() and not d.name.startswith(".") and (d / "metadata.json").exists()
+        ]
 
     @staticmethod
     def _read_json(path: Path) -> Optional[dict | list]:

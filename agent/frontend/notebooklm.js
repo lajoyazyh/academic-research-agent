@@ -2090,6 +2090,13 @@
           if (status.traces && status.traces.length > 0) {
             session.traces = status.traces;
           }
+          if (status.analysis) {
+            session._analysis = {
+              compare: status.analysis.compare || "",
+              lineage: status.analysis.lineage || "",
+              gaps: status.analysis.gaps || "",
+            };
+          }
           this.state.currentSession = session;
           if (session.papers?.length && !this.state.currentPaperId) {
             this.state.currentPaperId = session.papers[0].paper_id;
@@ -2113,6 +2120,7 @@
             searching: "正在检索论文...",
             search_complete: "搜索完成，即将生成笔记...",
             reviewing_notes: "正在生成笔记...",
+            analysis: "正在生成深度分析报告...",
             writing: "正在撰写综述草稿...",
             reviewing_draft: "正在评审草稿...",
             complete: "流程完成",
@@ -2124,7 +2132,7 @@
         // 根据阶段切换视图
         if (phase === "search_complete") {
           this.switchViewMode("summary");
-        } else if (phase === "reviewing_notes" || phase === "writing") {
+        } else if (phase === "reviewing_notes" || phase === "analysis" || phase === "writing") {
           // 保持当前视图
         } else if (phase === "complete" && runStatus === "done") {
           this.switchViewMode("review");
@@ -2247,7 +2255,7 @@
   },
 
   renderAnalysisView(session) {
-    const analysis = session?._analysis || {};
+    const analysis = session?._analysis || session?.analysis || {};
     const hasData = analysis.compare || analysis.lineage || analysis.gaps;
 
     if (!hasData) {
