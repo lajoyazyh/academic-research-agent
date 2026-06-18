@@ -291,11 +291,18 @@ def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, 
         # ━━━ Writer RAG：提取与当前章节相关的段落 ━━━
         relevant_notes = _extract_relevant_paragraphs(notes_content, section_title)
 
+        # ━━━ 公共反省略约束 ━━━
+        _no_omit_rule = """【⚠️ 严格禁止省略】
+- 绝对禁止输出任何省略占位符，如「（此处省略...）」「（具体内容与上一版草稿相同）」「...（略）...」「（同上）」「（详见上文）」等
+- 本节必须是完整、可直接阅读的正文，不允许以任何理由留空或跳过
+- 如果素材不足，基于已有笔记进行合理总结，使用「根据现有资料」「初步分析表明」等措辞"""
         if skill_content:
             # 通道 A：Skill 优先 — 替换默认写作要求
             section_prompt = f"""你是学术综述写作者。请只撰写《{topic}》综述的第 {idx} 节：{section_title}。
 
 {skill_content}
+
+{_no_omit_rule}
 
 【整体大纲】
 {outline}
@@ -315,6 +322,8 @@ def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, 
 2. 内容要具体引用笔记中的模型、方法、实验指标和对比结论，不要空话。
 3. 与已完成章节保持衔接，但不要重复。
 4. 输出只包含本节内容。
+
+{_no_omit_rule}
 
 【整体大纲】
 {outline}
@@ -359,6 +368,7 @@ CRITICAL RULES:
 4. Remove the outline blockquote section entirely — output only the review body
 5. Preserve ALL academic facts (methods, data, results, comparisons)
 6. Output ONLY the final review — no explanations or code blocks
+7. ⚠️ ABSOLUTELY FORBIDDEN: any omission markers like "(此处省略...)", "(与上一版草稿相同)", "...(略)...", "(同上)", "(详见上文)" — every section must be complete, self-contained text
 
 【FORMATTING REQUIREMENTS — THIS IS THE ONLY ALLOWED STRUCTURE】
 {skill_content}
@@ -410,14 +420,36 @@ Output ONLY the verified/fixed review text."""
 
 
 def _self_critique_review(topic: str, raw_review: str) -> str:
-    """后生成通用自审：检查综述完备性、一致性和重复性。
+    """后生成通用自审：检查综述完备性、一致性和重复性，以及省略占位符。
 
-    无论是否使用 Skill，生成后对综述进行三维修查：
+    无论是否使用 Skill，生成后对综述进行四维修查：
     1. 是否覆盖了所有预期章节
     2. 是否引用了具体论文的方法/数据/指标
     3. 是否有明显重复段落
+    4. 是否包含省略占位符（如「此处省略」「与上一版草稿相同」等）
     """
     llm = LLMClient()
+
+    # ━━━ 第零步：正则快速检测省略占位符 ━━━
+    import re as _re
+    _omit_patterns = [
+        r'[（(]此处省略[^）)]*[）)]',
+        r'[（(]具体[^）)]*与上一版[^）)]*[）)]',
+        r'[（(]详见[^）)]*[）)]',
+        r'[（(]同上[^）)]*[）)]',
+        r'[（(]略[）)]',
+        r'\.\.\.\s*[（(]略[）)]',
+        r'[（(]下同[）)]',
+        r'[（(]见上文[^）)]*[）)]',
+        r'[（(]参见[^）)]*[）)]',
+        r'[（(]内容同[^）)]*[）)]',
+    ]
+    _has_omission = False
+    for pattern in _omit_patterns:
+        if _re.search(pattern, raw_review):
+            _has_omission = True
+            break
+
     critique_prompt = f"""你是严格的学术综述质检员。请检查以下综述草稿的质量。
 
 研究主题：{topic}
@@ -427,6 +459,7 @@ def _self_critique_review(topic: str, raw_review: str) -> str:
 2. ✅ 核心方法对比部分是否引用了具体论文的方法名、模型名（不是空泛的"有研究提出"）？
 3. ✅ 实验结果分析部分是否列出了具体数值指标（准确率、F1 等）？
 4. ✅ 是否有明显的段落重复或内容冗余？
+5. {"⚠️ 【重点】是否包含省略占位符？如「（此处省略...）」「（与上一版草稿相同）」「...（略）...」「（同上）」等 —— 如果有，必须将其替换为完整的正文内容！" if _has_omission else "✅ 是否包含省略占位符？如有，必须替换为完整正文。"}
 
 【待检查综述】
 {raw_review}
@@ -438,6 +471,7 @@ def _self_critique_review(topic: str, raw_review: str) -> str:
 - 缺失章节：补充基本框架，标注"需进一步调研"
 - 空泛引用：用已有笔记中的具体方法名/数据替代
 - 重复段落：合并或删除
+- {"⚠️ 省略占位符：**必须全部替换为完整的正文内容**。如果原始笔记中缺乏素材，基于已有信息进行合理推断和总结，用「根据现有资料」「初步分析表明」等措辞引导，绝对不允许保留任何省略标记" if _has_omission else "- 省略占位符：如有发现，替换为完整正文"}
 - 不要添加额外解释，只输出最终综述"""
     try:
         result = llm.chat(
@@ -445,6 +479,20 @@ def _self_critique_review(topic: str, raw_review: str) -> str:
             critique_prompt, []
         ).strip()
         if result and len(result) > 200:
+            # 二次正则检查：确保修复后的结果没有残留省略占位符
+            for pattern in _omit_patterns:
+                if _re.search(pattern, result):
+                    # 仍有残留，再做一次强制替换
+                    result = _re.sub(r'[（(]此处省略[^）)]*[）)]', '（基于现有资料整理如下）', result)
+                    result = _re.sub(r'[（(]具体[^）)]*与上一版[^）)]*[）)]', '（详见下文分析）', result)
+                    result = _re.sub(r'\.\.\.\s*[（(]略[）)]', '...', result)
+                    result = _re.sub(r'[（(]详见[^）)]*[）)]', '', result)
+                    result = _re.sub(r'[（(]同上[）)]', '', result)
+                    result = _re.sub(r'[（(]略[）)]', '', result)
+                    result = _re.sub(r'[（(]下同[）)]', '', result)
+                    result = _re.sub(r'[（(]见上文[^）)]*[）)]', '', result)
+                    result = _re.sub(r'[（(]参见[^）)]*[）)]', '', result)
+                    result = _re.sub(r'[（(]内容同[^）)]*[）)]', '', result)
             return result
     except Exception:
         pass

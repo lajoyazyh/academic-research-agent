@@ -36,7 +36,7 @@ VALID_TRANSITIONS = {
     SessionState.PLAN_CONFIRMED: [SessionState.SEARCHING, SessionState.PLANNING],
     SessionState.SEARCHING: [SessionState.SEARCH_COMPLETE],
     SessionState.SEARCH_COMPLETE: [SessionState.REVIEWING_NOTES, SessionState.SEARCHING],
-    SessionState.REVIEWING_NOTES: [SessionState.WRITING, SessionState.SEARCHING],
+    SessionState.REVIEWING_NOTES: [SessionState.WRITING, SessionState.SEARCHING, SessionState.SEARCH_COMPLETE, SessionState.COMPLETE],
     SessionState.WRITING: [SessionState.REVIEWING_DRAFT, SessionState.SEARCHING],
     SessionState.REVIEWING_DRAFT: [SessionState.WRITING, SessionState.COMPLETE, SessionState.SEARCHING],
     SessionState.COMPLETE: [SessionState.SEARCHING],

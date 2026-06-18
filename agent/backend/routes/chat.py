@@ -206,6 +206,7 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
 - 回答要自然、直接、简洁，默认 3-6 句；如果用户要求展开，可以适度加长。
 - 如果用户明显在请求修改，应该由外层路由处理，这里只负责普通问答。
 - 如果对话历史中有相关上下文，请结合历史理解用户的追问和指代（如"它"、"这个"、"那篇"等）。
+- ⚠️ 绝对禁止输出任何省略占位符，如「（此处省略...）」「（与上一版草稿相同）」「...（略）...」「（同上）」等。
 """
 
     # ━━━ 智能上下文窗口管理 ━━━
@@ -298,17 +299,22 @@ _QUESTION_KEYWORDS = [
 
 
 def _quick_intent_check(message: str) -> str | None:
-    """轻量级关键词预判，返回 'revise' | 'chat' | None（不确定时返回 None，走 LLM）"""
+    """轻量级关键词预判，返回 'revise' | 'chat' | None（不确定时返回 None，走 LLM）
+
+    注意：在 Agent 模式下，此函数应更倾向于返回 None（走 LLM），
+    因为 Agent 模式下的消息通常是修改意图，不应被问号等轻量关键词误判为 chat。
+    """
     text = message.strip().lower()
-    # 强修改意图：以 /修订 开头（已被 _parse_explicit_chat_revision 处理）
-    # 这里只做辅助判断
     revise_hits = sum(1 for kw in _REVISE_KEYWORDS if kw in text)
     question_hits = sum(1 for kw in _QUESTION_KEYWORDS if kw in text)
+    # 修改关键词 >= 2 且无疑问词 → 明确修订
     if revise_hits >= 2 and question_hits == 0:
         return "revise"
+    # 疑问词 >= 1 且无修改关键词 → 明确提问
     if question_hits >= 1 and revise_hits == 0:
         return "chat"
-    return None  # 不确定，走 LLM
+    # 其他情况（包括同时有修改词和疑问词）→ 不确定，走 LLM
+    return None
 
 
 def _infer_chat_revision_ai(session: dict, message: str, view_mode: str, current_paper_id: str | None) -> dict[str, str] | None:
@@ -339,28 +345,42 @@ def _infer_chat_revision_ai(session: dict, message: str, view_mode: str, current
                 paper_title = paper.get("title", "") or paper.get("paper_id", "")
                 break
 
-    system_prompt = """你是一个对用户自然语言消息进行意图分类的助手。
-你的任务不是回答问题，也不是直接修改内容，而是判断这条消息是否在请求修改当前笔记或综述。
+    # 根据视图模式确定当前内容的类型描述
+    if view_mode == "review":
+        content_type = "综述草稿"
+        content_desc = "当前综述草稿的内容"
+    elif view_mode == "report":
+        content_type = "论文笔记"
+        content_desc = "当前论文笔记的内容"
+    else:
+        content_type = "笔记/摘要"
+        content_desc = "当前笔记或摘要的内容"
+
+    system_prompt = f"""你是一个对用户自然语言消息进行意图分类的助手。
+你的任务不是回答问题，也不是直接修改内容，而是判断这条消息是否在请求修改当前{content_type}。
+
+当前上下文：用户正在 Agent 模式下与 AI 对话，该模式专用于请求 AI 修改{content_type}。
+因此，在判断意图时，应倾向于将模糊表达解释为修订请求。
 
 请只输出严格 JSON，不要输出解释、不要输出 Markdown 代码块。
 JSON 格式如下：
-{
+{{
   "intent": "revise" | "chat" | "clarify",
   "target": "report" | "review" | "none",
   "confidence": 0.0-1.0,
   "reason": "一句简短理由",
   "feedback": "若 intent=revise，则提炼出的修改意见；否则为空字符串"
-}
+}}
 
 判定规则：
-- 只有当用户明显在要求改写、删除、补充、压缩、重组、重写当前内容时，才判断为 revise。
-- 如果用户是在提问、解释、讨论内容含义，则判断为 chat。
-- 如果用户表达模糊，无法确定是否要修改，则判断为 clarify。
-- target 只在 revise 时填写 report 或 review；其他情况填 none。
+- 用户在 Agent 模式下，任何涉及{content_desc}的增删改查、调整、重写请求，都应判断为 revise
+- 只有当用户明确只是在提问、解释概念、讨论背景知识（与修改{content_type}无关）时，才判断为 chat
+- 如果用户表达模糊但可能涉及修改，倾向于判断为 revise 而非 clarify
+- target 只在 revise 时填写：review（综述）或 report（笔记）；其他情况填 none
 """
 
     user_prompt = f"""会话上下文：
-- 当前视图模式：{view_mode}
+- 当前视图模式：{view_mode}（{'综述视图' if view_mode == 'review' else '笔记视图' if view_mode == 'report' else '摘要视图'}）
 - 当前会话状态：{session.get('state', '')}
 - 当前论文标题：{paper_title or '无'}
 - 用户消息：{text}
@@ -448,6 +468,23 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
             if not revision:
                 revision = _infer_chat_revision_ai(session, message, payload.view_mode, payload.current_paper_id)
 
+        # Agent 模式下未识别到修订意图时，引导用户明确修改意图
+        if not revision:
+            content_type = "综述草稿" if payload.view_mode == "review" else "笔记"
+            reply = f"当前是 Agent 模式，专用于修改{content_type}。请明确说出你想要修改的内容，例如「请补充XX部分」「删除YY段落」「重写ZZ章节」。如有疑问也可以先切换到对话模式再提问。"
+            note = "Agent 模式下未识别到明确的修改意图，等待用户进一步指示。"
+            _save_chat_exchange(session_id, message, reply, note, payload.view_mode, conv_id)
+            return {
+                "conv_id": conv_id,
+                "reply": reply,
+                "note": note,
+                "action_taken": False,
+                "action": "agent_no_intent",
+                "confirmation_required": False,
+                "session_state": session.get("state", ""),
+                "session_state_label": STATE_LABELS.get(session.get("state", ""), session.get("state", "")),
+            }
+
     if revision and revision.get("intent") == "clarify":
         reply = "我还不能确定你是不是在请求修改内容。你可以直接说出要改哪里，或者用 /修订 + 修改意见 明确告诉我。"
         note = revision.get("reason", "需要你进一步澄清修改意图。")
@@ -497,6 +534,11 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
                     max_loops=20,
                 ),
             )
+            # 综述修订完成后，强制设为已完成状态
+            try:
+                session_mgr.update_session_state(session_id, "complete")
+            except ValueError:
+                pass
             fresh_session = session_mgr.load_session(session_id) or session
             reply = "综述已根据你的反馈重新生成。"
             note = "综述修订已完成。"
@@ -522,8 +564,13 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
                 paper_id=payload.current_paper_id,
             ),
         )
+        # 笔记修订完成后，设为已完成状态
         try:
             session_mgr.update_session_state(session_id, "reviewing_notes")
+        except ValueError:
+            pass
+        try:
+            session_mgr.update_session_state(session_id, "complete")
         except ValueError:
             pass
         fresh_session = session_mgr.load_session(session_id) or session
@@ -667,6 +714,7 @@ async def chat_message_stream(session_id: str, payload: ChatMessageRequest):
 - 如果上下文不足，明确说明无法从当前材料判断，并给出下一步建议。
 - 回答要自然、直接、简洁，默认 3-6 句；如果用户要求展开，可以适度加长。
 - 如果对话历史中有相关上下文，请结合历史理解用户的追问和指代。
+- ⚠️ 绝对禁止输出任何省略占位符，如「（此处省略...）」「（与上一版草稿相同）」「...（略）...」「（同上）」等。
 """
 
     user_prompt = f"""会话主题：{session.get('topic', '')}
