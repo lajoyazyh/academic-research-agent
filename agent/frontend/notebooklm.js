@@ -3702,6 +3702,9 @@ var GlobalCopilot = {
   _messages: [],
   _currentSessionId: null,
   _sessions: [],
+  _knowledgeSessions: [],
+  _selectedKnowledgeSessionIds: [],
+  _knowledgeSelectionInitialized: false,
   _els: {},
 
   _toolList: [],
@@ -3720,6 +3723,9 @@ var GlobalCopilot = {
       rebuild: document.getElementById("copilotRebuild"),
       newChat: document.getElementById("copilotNewChat"),
       sessionsList: document.getElementById("copilotSessionsList"),
+      knowledgeList: document.getElementById("copilotKnowledgeList"),
+      knowledgeSelectAll: document.getElementById("copilotKnowledgeSelectAll"),
+      knowledgeHint: document.getElementById("copilotKnowledgeHint"),
       toolsSection: document.getElementById("copilotToolsSection"),
       toolsHead: document.getElementById("copilotToolsHead"),
       toolsList: document.getElementById("copilotToolsList"),
@@ -3756,6 +3762,11 @@ var GlobalCopilot = {
     }
     if (this._els.rebuild) {
       this._els.rebuild.addEventListener("click", function () { self.rebuildIndex(); });
+    }
+    if (this._els.knowledgeSelectAll) {
+      this._els.knowledgeSelectAll.addEventListener("click", function () {
+        self.selectAllKnowledgeSessions();
+      });
     }
 
     // 绑定工具面板的展开/收起
@@ -3794,6 +3805,7 @@ var GlobalCopilot = {
 
     // 加载统计信息
     this._loadStats();
+    this.loadKnowledgeSessions();
   },
 
   toggle: function () {
@@ -3812,6 +3824,7 @@ var GlobalCopilot = {
     if (overlay) overlay.classList.add("active");
     this._loadStats();
     this.loadSessions();
+    this.loadKnowledgeSessions();
     this.loadTools();
     // 聚焦输入框
     setTimeout(function () {
@@ -3857,10 +3870,15 @@ var GlobalCopilot = {
     // 显示打字动画
     this._showTyping();
 
+    var selectedSessionIds = this._getSelectedKnowledgeSessionIds();
     fetch("/api/knowledge/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: message, copilot_session_id: self._currentSessionId || "" }),
+      body: JSON.stringify({
+        message: message,
+        copilot_session_id: self._currentSessionId || "",
+        session_ids: selectedSessionIds,
+      }),
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {
@@ -3868,7 +3886,9 @@ var GlobalCopilot = {
         var reply = data.reply || "抱歉，无法生成回答。";
         var meta = "";
         if (data.has_rag) {
-          meta = "基于 " + data.search_count + " 条跨项目资料";
+          var scopeCount = selectedSessionIds.length || 0;
+          meta = "基于 " + data.search_count + " 条资料";
+          if (scopeCount) meta += "，范围 " + scopeCount + " 个项目";
         }
         self._addMessage("agent", reply, meta);
         self._loading = false;
@@ -3943,6 +3963,119 @@ var GlobalCopilot = {
         btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> 刷新索引';
         self._addMessage("agent", "❌ 索引重建失败：" + err.message);
       });
+  },
+
+  loadKnowledgeSessions: function () {
+    var self = this;
+    fetch("/api/knowledge/sessions")
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        self._knowledgeSessions = data.sessions || [];
+        if (!self._knowledgeSelectionInitialized) {
+          self._selectedKnowledgeSessionIds = self._knowledgeSessions.map(function (s) {
+            return s.session_id;
+          });
+          self._knowledgeSelectionInitialized = true;
+        } else {
+          var existing = {};
+          for (var i = 0; i < self._knowledgeSessions.length; i++) {
+            existing[self._knowledgeSessions[i].session_id] = true;
+          }
+          self._selectedKnowledgeSessionIds = self._selectedKnowledgeSessionIds.filter(function (sid) {
+            return existing[sid];
+          });
+        }
+        self._renderKnowledgeSessions();
+        self._updateKnowledgeHint();
+      })
+      .catch(function () {
+        if (self._els.knowledgeList) {
+          self._els.knowledgeList.innerHTML = '<div class="copilot-knowledge-empty">知识范围加载失败</div>';
+        }
+      });
+  },
+
+  selectAllKnowledgeSessions: function () {
+    this._selectedKnowledgeSessionIds = (this._knowledgeSessions || []).map(function (s) {
+      return s.session_id;
+    });
+    this._renderKnowledgeSessions();
+    this._updateKnowledgeHint();
+  },
+
+  _getSelectedKnowledgeSessionIds: function () {
+    if (!this._knowledgeSelectionInitialized && this._knowledgeSessions.length) {
+      this._selectedKnowledgeSessionIds = this._knowledgeSessions.map(function (s) {
+        return s.session_id;
+      });
+      this._knowledgeSelectionInitialized = true;
+    }
+    return this._selectedKnowledgeSessionIds.slice();
+  },
+
+  _renderKnowledgeSessions: function () {
+    var self = this;
+    if (!this._els.knowledgeList) return;
+    var sessions = this._knowledgeSessions || [];
+    if (sessions.length === 0) {
+      this._els.knowledgeList.innerHTML = '<div class="copilot-knowledge-empty">暂无可用项目</div>';
+      return;
+    }
+
+    var selected = {};
+    for (var i = 0; i < this._selectedKnowledgeSessionIds.length; i++) {
+      selected[this._selectedKnowledgeSessionIds[i]] = true;
+    }
+
+    this._els.knowledgeList.innerHTML = "";
+    sessions.forEach(function (session) {
+      var label = document.createElement("label");
+      label.className = "copilot-knowledge-check";
+
+      var checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = !!selected[session.session_id];
+      checkbox.addEventListener("change", function () {
+        if (checkbox.checked) {
+          if (self._selectedKnowledgeSessionIds.indexOf(session.session_id) === -1) {
+            self._selectedKnowledgeSessionIds.push(session.session_id);
+          }
+        } else {
+          self._selectedKnowledgeSessionIds = self._selectedKnowledgeSessionIds.filter(function (sid) {
+            return sid !== session.session_id;
+          });
+        }
+        self._updateKnowledgeHint();
+      });
+
+      var title = document.createElement("span");
+      title.className = "copilot-knowledge-title";
+      title.textContent = session.topic || "未命名项目";
+
+      var count = document.createElement("span");
+      count.className = "copilot-knowledge-count";
+      count.textContent = (session.paper_count || 0) + " 篇";
+
+      label.appendChild(checkbox);
+      label.appendChild(title);
+      label.appendChild(count);
+      this._els.knowledgeList.appendChild(label);
+    }, this);
+  },
+
+  _updateKnowledgeHint: function () {
+    if (!this._els.knowledgeHint) return;
+    var total = (this._knowledgeSessions || []).length;
+    var selected = this._selectedKnowledgeSessionIds.length;
+    if (!total) {
+      this._els.knowledgeHint.textContent = "暂无可检索的 Session 知识";
+    } else if (selected === total) {
+      this._els.knowledgeHint.textContent = "基于全部 " + total + " 个 Session 的论文、笔记、综述回答";
+    } else if (selected > 0) {
+      this._els.knowledgeHint.textContent = "基于选中的 " + selected + " / " + total + " 个 Session 回答";
+    } else {
+      this._els.knowledgeHint.textContent = "未选择知识范围，本次问答不会引用项目资料";
+    }
   },
 
   // ═══════════════════════════════════════════

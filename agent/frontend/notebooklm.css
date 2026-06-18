@@ -1454,6 +1454,82 @@ html, body {
   background: var(--red-light);
 }
 
+/* Copilot Knowledge Scope */
+.copilot-knowledge {
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.copilot-knowledge-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--subtle);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.copilot-knowledge-select-all {
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--accent);
+  font-size: 11px;
+  cursor: pointer;
+}
+.copilot-knowledge-select-all:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+.copilot-knowledge-list {
+  max-height: 130px;
+  overflow-y: auto;
+  padding: 0 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.copilot-knowledge-empty {
+  text-align: center;
+  padding: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.copilot-knowledge-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background .12s;
+}
+.copilot-knowledge-check:hover {
+  background: var(--hover-bg);
+}
+.copilot-knowledge-check input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.copilot-knowledge-title {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.copilot-knowledge-count {
+  color: var(--muted);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
 /* Copilot Tool Checkboxes */
 .copilot-tools {
   border-top: 1px solid var(--line);

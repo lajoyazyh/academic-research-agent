@@ -118,9 +118,15 @@ def global_chat(payload: dict) -> dict:
         raise HTTPException(status_code=400, detail="message 不能为空")
 
     copilot_session_id = (payload.get("copilot_session_id") or "").strip()
+    raw_session_ids = payload.get("session_ids", None)
+    session_ids = None
+    if raw_session_ids is not None:
+        if not isinstance(raw_session_ids, list):
+            raise HTTPException(status_code=400, detail="session_ids 必须是数组")
+        session_ids = [str(sid).strip() for sid in raw_session_ids if str(sid).strip()]
 
     # 1. 全局检索
-    search_results = global_kb.search(message, top_k=8)
+    search_results = global_kb.search(message, top_k=8, session_ids=session_ids)
 
     # 2. 构建 RAG 上下文
     rag_context = ""
@@ -157,6 +163,9 @@ def global_chat(payload: dict) -> dict:
 - 总笔记字数：{stats.get('total_notes_chars', 0)}
 - 总综述草稿数：{stats.get('total_drafts', 0)}
 
+【知识检索范围】
+{('全部 Session' if session_ids is None else '选中的 Session：' + ', '.join(session_ids))}
+
 【跨 Session 检索到的相关资料】
 {rag_context or '（未找到相关资料）'}
 
@@ -175,7 +184,11 @@ def global_chat(payload: dict) -> dict:
         try:
             copilot_mgr.add_message(copilot_session_id, "user", message)
             copilot_mgr.add_message(copilot_session_id, "assistant", reply,
-                                    meta={"search_count": len(search_results), "has_rag": bool(rag_context)})
+                                    meta={
+                                        "search_count": len(search_results),
+                                        "has_rag": bool(rag_context),
+                                        "session_ids": session_ids,
+                                    })
         except Exception:
             pass  # 历史记录保存失败不阻断回复
 
@@ -184,6 +197,7 @@ def global_chat(payload: dict) -> dict:
         "search_count": len(search_results),
         "has_rag": bool(rag_context),
         "copilot_session_id": copilot_session_id or None,
+        "session_ids": session_ids,
     }
 
 

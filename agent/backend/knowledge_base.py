@@ -149,20 +149,28 @@ class GlobalKnowledgeBase:
 
     # ━━━ 检索 ━━━
 
-    def search(self, query: str, top_k: int = 8) -> list[dict]:
-        """跨 Session 检索，返回 Top-K 相关片段"""
+    def search(self, query: str, top_k: int = 8, session_ids: Optional[list[str]] = None) -> list[dict]:
+        """跨 Session 检索，返回 Top-K 相关片段；传入 session_ids 时限制检索范围。"""
         if not self._chunks or self._matrix is None or self._vectorizer is None:
             self.build_index(force=True)
             if not self._chunks:
                 return []
 
+        allowed_sessions = None
+        if session_ids is not None:
+            allowed_sessions = {str(sid) for sid in session_ids if str(sid).strip()}
+            if not allowed_sessions:
+                return []
+
         try:
             query_vec = self._vectorizer.transform([query])
             scores = cosine_similarity(query_vec, self._matrix).flatten()
-            top_indices = np.argsort(scores)[::-1][:top_k]
+            ranked_indices = np.argsort(scores)[::-1]
 
             results = []
-            for idx in top_indices:
+            for idx in ranked_indices:
+                if allowed_sessions is not None and self._chunks[idx].get("session_id") not in allowed_sessions:
+                    continue
                 score = float(scores[idx])
                 if score < 0.02:
                     continue
@@ -172,6 +180,8 @@ class GlobalKnowledgeBase:
                 if len(chunk.get("text", "")) > 1500:
                     chunk["text"] = chunk["text"][:1500] + "..."
                 results.append(chunk)
+                if len(results) >= top_k:
+                    break
             return results
         except Exception:
             return []

@@ -161,6 +161,16 @@
       </div>
     </div>
 
+    <div class="copilot-knowledge" id="copilotKnowledgeSection">
+      <div class="copilot-knowledge-head">
+        <span><i class="fa-solid fa-layer-group"></i> 知识范围</span>
+        <button class="copilot-knowledge-select-all" id="copilotKnowledgeSelectAll" title="选择全部项目">全选</button>
+      </div>
+      <div class="copilot-knowledge-list" id="copilotKnowledgeList">
+        <div class="copilot-knowledge-empty">加载中...</div>
+      </div>
+    </div>
+
     <div class="copilot-tools" id="copilotToolsSection">
       <div class="copilot-tools-head" id="copilotToolsHead">
         <span><i class="fa-solid fa-toolbox"></i> 调研工具参考</span>
@@ -197,7 +207,7 @@
         <button class="copilot-send-btn" id="copilotSend" title="发送"><i class="fa-solid fa-paper-plane"></i></button>
       </div>
       <div class="copilot-input-hint">
-        <span>基于所有 Session 的论文、笔记、综述回答</span>
+        <span id="copilotKnowledgeHint">基于所有 Session 的论文、笔记、综述回答</span>
         <button class="copilot-rebuild-btn" id="copilotRebuild" title="重建知识库索引"><i class="fa-solid fa-arrows-rotate"></i> 刷新索引</button>
       </div>
     </div>
