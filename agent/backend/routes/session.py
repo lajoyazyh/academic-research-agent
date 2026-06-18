@@ -508,17 +508,25 @@ def save_notes(session_id: str, payload: dict) -> dict:
 
 @router.put("/{session_id}/analysis")
 def save_analysis(session_id: str, payload: dict) -> dict:
-    """保存用户手动编辑后的分析 Markdown 文档"""
+    """保存用户手动编辑后的分析 Markdown 内容"""
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
 
     content = str(payload.get("content", "") or "")
+    section = str(payload.get("section", "") or "").strip()
     analysis = dict(session.get("analysis") or {})
+    if section:
+        if section not in {"compare", "lineage", "gaps"}:
+            raise HTTPException(status_code=400, detail="section 必须是 compare、lineage 或 gaps")
+        analysis[section] = content
+    else:
+        analysis["document"] = content
+
     analysis.update({
         "phase": "analysis",
         "session_id": session_id,
-        "document": content,
+        "document": _analysis_to_markdown(analysis, session.get("topic", "")),
         "updated_at": datetime.datetime.now().isoformat(),
     })
 
@@ -529,6 +537,22 @@ def save_analysis(session_id: str, payload: dict) -> dict:
         encoding="utf-8",
     )
     return {"message": "Success", "analysis": analysis}
+
+
+def _analysis_to_markdown(analysis: dict, topic: str) -> str:
+    sections = []
+    compare = str(analysis.get("compare", "") or "").strip()
+    lineage = str(analysis.get("lineage", "") or "").strip()
+    gaps = str(analysis.get("gaps", "") or "").strip()
+    if compare:
+        sections.append(f"## 文献对比分析\n\n{compare}")
+    if lineage:
+        sections.append(f"## 研究脉络梳理\n\n{lineage}")
+    if gaps:
+        sections.append(f"## 研究空白发现\n\n{gaps}")
+    if not sections:
+        return str(analysis.get("document", "") or "")
+    return f"# 深度分析：{topic or '当前主题'}\n\n" + "\n\n---\n\n".join(sections)
 
 
 @router.put("/{session_id}/feedback")

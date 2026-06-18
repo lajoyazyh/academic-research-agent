@@ -17,7 +17,7 @@
     reportEditText: "",
     isEditingReview: false,
     reviewEditText: "",
-    isEditingAnalysis: false,
+    editingAnalysisSection: "",
     analysisEditText: "",
     _autoRunning: false,
     _autoPollTimer: null,
@@ -2259,10 +2259,8 @@
   },
 
   renderAnalysisView(session) {
-    const analysis = session?._analysis || session?.analysis || {};
-    const analysisDoc = this.analysisToMarkdown(analysis, session?.topic || "当前主题");
-    const editContent = typeof this.state.analysisEditText === "string" && this.state.isEditingAnalysis ? this.state.analysisEditText : analysisDoc;
-    const hasData = Boolean(analysisDoc.trim());
+    const analysis = this.normalizeAnalysisSections(session?._analysis || session?.analysis || {}, session?.topic || "当前主题");
+    const hasData = analysis.compare || analysis.lineage || analysis.gaps;
 
     if (!hasData) {
       return `
@@ -2282,33 +2280,16 @@
       `;
     }
 
-    const contentHtml = this.state.isEditingAnalysis
-      ? `
-        <div id="analysisEditArea" style="display:none;">${this.escapeHtml(editContent)}</div>
-        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
-          <button class="secondary-btn" onclick="notebooklm.cancelEditAnalysis()">取消</button>
-          <button class="primary-btn" onclick="notebooklm.saveEditAnalysis()">保存</button>
-        </div>
-      `
-      : `<div class="markdown">${marked.parse(editContent)}</div>`;
-
     return `
       <div class="detail-hero">
         <span class="topic-badge"><i class="fa-solid fa-magnifying-glass-chart"></i> 深度分析</span>
         <h3>${this.escapeHtml(session?.topic || "当前主题")}</h3>
-        <div class="lead">这是一份可编辑的 Markdown 分析文档，可作为综述写作的额外依据。</div>
+        <div class="lead">文献对比 · 研究脉络 · 空白发现。每个分析卡片都可单独编辑 Markdown 内容。</div>
       </div>
       <div class="detail-blocks" style="margin-top:16px;">
-        <div class="panel-block">
-          <div class="panel-block-head">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <strong>深度分析文档</strong>
-              <span class="chip">Markdown</span>
-            </div>
-            ${!this.state.isEditingAnalysis ? `<button class="secondary-btn" title="编辑分析" onclick="notebooklm.startEditAnalysis()"><i class="fa-solid fa-pen" style="margin-right:4px;"></i>编辑分析</button>` : ""}
-          </div>
-          ${contentHtml}
-        </div>
+        ${this.renderAnalysisCard("compare", "文献对比分析", "fa-table-columns", analysis.compare)}
+        ${this.renderAnalysisCard("lineage", "研究脉络梳理", "fa-timeline", analysis.lineage)}
+        ${this.renderAnalysisCard("gaps", "研究空白发现", "fa-lightbulb", analysis.gaps)}
         <div class="panel-block" style="text-align:center;padding:12px;">
           <button class="secondary-btn" onclick="notebooklm.generateAnalysisAction()" style="font-size:13px;">
             <i class="fa-solid fa-rotate"></i> 重新生成分析报告
@@ -2318,20 +2299,74 @@
     `;
   },
 
+  renderAnalysisCard(section, title, icon, content) {
+    const safeContent = String(content || "").trim();
+    const isEditing = this.state.editingAnalysisSection === section;
+    const editAreaId = `analysisEditArea_${section}`;
+    const bodyHtml = isEditing
+      ? `
+        <div id="${editAreaId}" style="display:none;">${this.escapeHtml(this.state.analysisEditText || safeContent)}</div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
+          <button class="secondary-btn" onclick="notebooklm.cancelEditAnalysis()">取消</button>
+          <button class="primary-btn" onclick="notebooklm.saveEditAnalysis()">保存</button>
+        </div>
+      `
+      : (safeContent ? `<div class="markdown">${marked.parse(this.stripMarkdownFence(safeContent))}</div>` : '<div class="empty-state">暂无内容。</div>');
+
+    return `
+      <div class="panel-block">
+        <div class="panel-block-head">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <strong><i class="fa-solid ${icon}"></i> ${title}</strong>
+            <span class="chip">Markdown</span>
+          </div>
+          ${!isEditing ? `<button class="secondary-btn" title="编辑${title}" onclick="notebooklm.startEditAnalysis('${section}')"><i class="fa-solid fa-pen" style="margin-right:4px;"></i>编辑</button>` : ""}
+        </div>
+        ${bodyHtml}
+      </div>
+    `;
+  },
+
   analysisToMarkdown(analysis, topic = "当前主题") {
     if (!analysis) return "";
-    const documentText = String(analysis.document || "").trim();
-    if (documentText) return this.stripMarkdownFence(documentText);
-
+    const normalized = this.normalizeAnalysisSections(analysis, topic);
     const sections = [];
-    const compare = String(analysis.compare || "").trim();
-    const lineage = String(analysis.lineage || "").trim();
-    const gaps = String(analysis.gaps || "").trim();
+    const compare = String(normalized.compare || "").trim();
+    const lineage = String(normalized.lineage || "").trim();
+    const gaps = String(normalized.gaps || "").trim();
     if (compare) sections.push(`## 文献对比分析\n\n${compare}`);
     if (lineage) sections.push(`## 研究脉络梳理\n\n${lineage}`);
     if (gaps) sections.push(`## 研究空白发现\n\n${gaps}`);
     if (!sections.length) return "";
     return `# 深度分析：${topic}\n\n${sections.join("\n\n---\n\n")}`;
+  },
+
+  normalizeAnalysisSections(analysis, topic = "当前主题") {
+    const normalized = {
+      compare: String(analysis?.compare || "").trim(),
+      lineage: String(analysis?.lineage || "").trim(),
+      gaps: String(analysis?.gaps || "").trim(),
+    };
+
+    if ((normalized.compare || normalized.lineage || normalized.gaps) || !analysis?.document) {
+      return normalized;
+    }
+
+    const documentText = this.stripMarkdownFence(analysis.document);
+    const sectionPatterns = [
+      ["compare", /##\s*文献对比分析\s*\n+([\s\S]*?)(?=\n---\n|\n##\s*研究脉络梳理|\n##\s*研究空白发现|$)/],
+      ["lineage", /##\s*研究脉络梳理\s*\n+([\s\S]*?)(?=\n---\n|\n##\s*文献对比分析|\n##\s*研究空白发现|$)/],
+      ["gaps", /##\s*研究空白发现\s*\n+([\s\S]*?)(?=\n---\n|\n##\s*文献对比分析|\n##\s*研究脉络梳理|$)/],
+    ];
+    sectionPatterns.forEach(([key, pattern]) => {
+      const match = documentText.match(pattern);
+      if (match) normalized[key] = match[1].trim();
+    });
+
+    if (!normalized.compare && !normalized.lineage && !normalized.gaps && documentText) {
+      normalized.compare = documentText.replace(/^#\s*深度分析[:：]?.*?\n+/s, "").trim();
+    }
+    return normalized;
   },
 
   stripMarkdownFence(text) {
@@ -2341,26 +2376,32 @@
       .trim();
   },
 
-  startEditAnalysis() {
+  startEditAnalysis(section) {
     const session = this.state.currentSession;
-    const rawAnalysis = this.analysisToMarkdown(session?._analysis || session?.analysis || {}, session?.topic || "当前主题");
+    const analysis = this.normalizeAnalysisSections(session?._analysis || session?.analysis || {}, session?.topic || "当前主题");
+    const rawAnalysis = String(analysis[section] || "").trim();
+    const editAreaId = `analysisEditArea_${section}`;
 
-    this.state.isEditingAnalysis = true;
+    this.state.editingAnalysisSection = section;
     this.state.analysisEditText = rawAnalysis;
     this.renderDetailPanel();
 
-    setTimeout(() => this._initVditor("analysisEditArea", rawAnalysis, "saveEditAnalysis"), 50);
+    setTimeout(() => this._initVditor(editAreaId, rawAnalysis, "saveEditAnalysis"), 50);
   },
 
   cancelEditAnalysis() {
-    this._destroyVditor("analysisEditArea");
-    this.state.isEditingAnalysis = false;
+    const section = this.state.editingAnalysisSection;
+    if (section) this._destroyVditor(`analysisEditArea_${section}`);
+    this.state.editingAnalysisSection = "";
     this.state.analysisEditText = "";
     this.renderDetailPanel();
   },
 
   async saveEditAnalysis() {
-    const vditor = this._vditors?.analysisEditArea;
+    const section = this.state.editingAnalysisSection;
+    if (!section) return;
+    const editAreaId = `analysisEditArea_${section}`;
+    const vditor = this._vditors?.[editAreaId];
     const newAnalysis = vditor ? vditor.getValue() : "";
     const sessionId = this.state.currentSessionId;
     if (!sessionId) return;
@@ -2371,14 +2412,14 @@
       const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/analysis`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: newAnalysis }),
+        body: JSON.stringify({ section, content: newAnalysis }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || "保存失败");
 
-      this._destroyVditor("analysisEditArea");
+      this._destroyVditor(editAreaId);
       await this.reloadCurrentSession();
-      this.state.isEditingAnalysis = false;
+      this.state.editingAnalysisSection = "";
       this.state.analysisEditText = "";
       this.renderDetailPanel();
     } catch (error) {
