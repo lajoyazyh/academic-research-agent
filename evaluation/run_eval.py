@@ -50,6 +50,12 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, List
 
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 # ═══════════════════════════════════════════════════════════════
 # 0. 修复 Windows asyncio 事件循环策略
 # ═══════════════════════════════════════════════════════════════
@@ -75,12 +81,18 @@ for p in [str(CODE_DIR), str(AGENT_DIR), str(AGENT_PKG_DIR)]:
 # ═══════════════════════════════════════════════════════════════
 from dotenv import load_dotenv, find_dotenv
 
-# 优先加载仓库根的 .env
-root_env = ROOT_DIR / ".env"
-if root_env.exists():
-    load_dotenv(root_env)
-else:
-    load_dotenv(find_dotenv(usecwd=True))
+# 优先加载仓库根 .env；如果不存在，自动回退到迭代三/agent/.env。
+env_candidates = [
+    ROOT_DIR / ".env",
+    AGENT_DIR / ".env",
+    AGENT_PKG_DIR / ".env",
+]
+for env_path in env_candidates:
+    if env_path.exists():
+        load_dotenv(env_path, override=False)
+fallback_env = find_dotenv(usecwd=True)
+if fallback_env:
+    load_dotenv(fallback_env, override=False)
 
 # ═══════════════════════════════════════════════════════════════
 # 3. 导入评估相关模块

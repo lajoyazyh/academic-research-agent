@@ -9,15 +9,36 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from pydantic import SecretStr
 
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-
-load_dotenv(find_dotenv(usecwd=True))
+_EVAL_CODE_DIR = os.path.dirname(os.path.abspath(__file__))
+_EVAL_DIR = os.path.dirname(_EVAL_CODE_DIR)
+_REPO_DIR = os.path.dirname(_EVAL_DIR)
+_ROOT_DIR = os.path.dirname(_REPO_DIR)
+for _env_path in (
+    os.path.join(_ROOT_DIR, ".env"),
+    os.path.join(_REPO_DIR, ".env"),
+    os.path.join(_REPO_DIR, "agent", ".env"),
+):
+    if os.path.exists(_env_path):
+        load_dotenv(_env_path, override=False)
+_fallback_env = find_dotenv(usecwd=True)
+if _fallback_env:
+    load_dotenv(_fallback_env, override=False)
 if not os.getenv("OPENAI_API_KEY") and os.getenv("ZHIPU_API_KEY"):
     os.environ["OPENAI_API_KEY"] = os.getenv("ZHIPU_API_KEY", "")
 if not os.getenv("OPENAI_BASE_URL") and os.getenv("ZHIPU_BASE_URL"):
     os.environ["OPENAI_BASE_URL"] = os.getenv("ZHIPU_BASE_URL", "")
 if not os.getenv("OPENAI_API_BASE") and os.getenv("ZHIPU_BASE_URL"):
     os.environ["OPENAI_API_BASE"] = os.getenv("ZHIPU_BASE_URL", "")
+
+try:
+    from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+    LANGCHAIN_OPENAI_AVAILABLE = True
+    LANGCHAIN_OPENAI_IMPORT_ERROR = ""
+except Exception as exc:
+    ChatOpenAI = object
+    OpenAIEmbeddings = None
+    LANGCHAIN_OPENAI_AVAILABLE = False
+    LANGCHAIN_OPENAI_IMPORT_ERROR = str(exc)
 
 # 尝试导入 ragas，若不可用则使用回退评估器
 try:
@@ -139,6 +160,8 @@ def _records_to_score_summary(records: Sequence[Dict[str, Any]], metric_names: S
 
 def _build_ragas_llm():
     """创建兼容智谱/OpenAI 的 ragas LLM，自动过滤不兼容参数。"""
+    if not LANGCHAIN_OPENAI_AVAILABLE:
+        return None
     api_key = os.getenv("ZHIPU_API_KEY") or os.getenv("OPENAI_API_KEY")
     base_url = os.getenv("ZHIPU_BASE_URL") or os.getenv("OPENAI_BASE_URL") or os.getenv("OPENAI_API_BASE")
     model_name = os.getenv("ZHIPU_MODEL", "glm-4")
@@ -260,6 +283,8 @@ class _ZhipuCompatibleChatOpenAI(ChatOpenAI):
 
 
 def _build_ragas_embeddings():
+    if not LANGCHAIN_OPENAI_AVAILABLE or OpenAIEmbeddings is None:
+        return None
     api_key = os.getenv("ZHIPU_API_KEY") or os.getenv("OPENAI_API_KEY")
     base_url = os.getenv("ZHIPU_BASE_URL") or os.getenv("OPENAI_BASE_URL") or os.getenv("OPENAI_API_BASE")
     embedding_model = (
@@ -401,6 +426,8 @@ def _simple_evaluate(
 
 
 def _build_llm_judge():
+    if not LANGCHAIN_OPENAI_AVAILABLE:
+        return None
     api_key = os.getenv("ZHIPU_API_KEY") or os.getenv("OPENAI_API_KEY")
     base_url = os.getenv("ZHIPU_BASE_URL") or os.getenv("OPENAI_BASE_URL") or os.getenv("OPENAI_API_BASE")
     model_name = os.getenv("ZHIPU_MODEL") or os.getenv("OPENAI_MODEL") or "glm-4"
@@ -664,7 +691,28 @@ class LLMBasedEvaluator:
         return cast(Dict[str, Any], _sanitize_for_json(raw_result))
 
 
+class FallbackEvaluator:
+    """No-LLM fallback evaluator for offline smoke tests and degraded runs."""
+
+    def __init__(self, method: str, reason: str = ""):
+        self.method = method
+        self.reason = reason
+
+    def evaluate(self, questions: List[str], answers: List[str], contexts: List[List[str]], ground_truths: List[str]) -> Dict[str, Any]:
+        return _simple_evaluate(
+            questions,
+            answers,
+            contexts,
+            ground_truths,
+            method_name=self.method,
+            error_message=self.reason or "LLM judge unavailable; used fallback metrics",
+        )
+
+
 def get_evaluator(method: str):
     if method in {"result_oriented", "process_oriented", "explicit_metrics"}:
-        return LLMBasedEvaluator(method)
+        evaluator = LLMBasedEvaluator(method)
+        if evaluator.llm is None:
+            return FallbackEvaluator(method, "LLM judge not configured; used fallback metrics")
+        return evaluator
     raise ValueError(f"Unsupported evaluation method: {method}")

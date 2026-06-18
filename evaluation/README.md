@@ -185,7 +185,7 @@ python run_eval.py --dataset-id 1 --from-traces traces.json --from-answer draft.
 
 ## 环境配置
 
-仓库根目录 `.env`：
+评估脚本会按顺序尝试加载仓库根目录 `.env`、迭代三目录 `.env`、`agent/.env`。当前项目通常直接复用 `agent/.env`：
 
 ```env
 ZHIPU_API_KEY=your_api_key
@@ -197,5 +197,7 @@ EVAL_AGENT_TIMEOUT_SEC=1800
 AGENT_LOOP_DELAY_SEC=3
 AGENT_MIN_PAPERS=3
 ```
+
+如果未配置 LLM Judge 或 ragas 依赖不可用，评估器会回退到稳定的 fallback 指标，包括 `similarity_score`、`truth_coverage_score`、`token_f1_score` 和 `context_support_score`，保证评测流程不中断。
 
 ---
