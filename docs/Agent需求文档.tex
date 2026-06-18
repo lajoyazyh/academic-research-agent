@@ -1,0 +1,229 @@
+% ============================================================
+% Academic Research Agent 需求规格说明书（迭代三）
+% 编译方式：xelatex -> xelatex
+% ============================================================
+\documentclass[12pt,a4paper,onecolumn]{ctexart}
+
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.8cm,right=2.8cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, calc, backgrounds}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black,
+  citecolor=blue!60!black
+}
+
+\newcommand{\resizetikz}[2][\textwidth]{\resizebox{#1}{!}{#2}}
+\newcommand{\req}[1]{\textbf{\texttt{#1}}}
+
+\title{\textbf{Academic Research Agent 需求规格说明书}}
+\author{软件工程课程项目组}
+\date{迭代三 \quad 2026年6月}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\newpage
+\tableofcontents
+\newpage
+
+%============================================================
+\section{引言}
+%============================================================
+
+\subsection{编写目的}
+本文档定义 Academic Research Agent 在迭代三阶段的需求范围、用户目标、功能性需求、非功能性需求与验收标准。与迭代二的一次性 Agent 不同，迭代三的核心目标是构建一个可交互、可追踪、可修订、可评估的学术调研平台。
+
+\subsection{项目背景}
+学术调研通常包含主题拆解、关键词规划、论文检索、初筛、精读、笔记、分析、综述撰写与多轮修改。单轮 LLM 问答难以稳定覆盖这一完整链路；纯自动 Agent 又容易出现过程黑盒、搜索方向偏差、结果难以修订等问题。因此迭代三要求系统同时具备自动化能力与人工介入能力。
+
+\subsection{术语}
+\begin{longtable}{p{3.2cm}p{10.2cm}}
+\toprule
+\textbf{术语} & \textbf{说明} \\
+\midrule
+Session & 一个持久化研究任务，包含主题、论文、笔记、分析、综述、聊天与轨迹。\\
+Pipeline & 从规划到综述的完整执行链路。\\
+ReAct & Agent 的思考、行动、观察循环。\\
+Skill & 用户为搜索、笔记、综述阶段配置的自定义行为策略。\\
+Trace & Agent 执行过程记录，包含工具调用、错误、Skill 状态等。\\
+全局 Copilot & 首页跨 Session 知识问答助手。\\
+\bottomrule
+\end{longtable}
+
+%============================================================
+\section{涉众与使用场景}
+%============================================================
+
+\subsection{涉众分析}
+\begin{longtable}{p{3cm}p{5.2cm}p{5.2cm}}
+\toprule
+\textbf{角色} & \textbf{核心诉求} & \textbf{关注点} \\
+\midrule
+研究者/学生 & 快速形成可靠综述，能控制关键判断 & 论文相关性、笔记质量、综述结构 \\
+课程评审/助教 & 判断系统是否满足迭代三要求 & 流程完整性、可运行性、评估材料 \\
+开发成员 & 维护 Agent、前后端与评估脚本 & 模块边界、状态一致性、故障排查 \\
+外部 API 提供方 & 合规调用学术接口与模型服务 & 限流、重试、错误处理 \\
+\bottomrule
+\end{longtable}
+
+\subsection{顶层用例图}
+\begin{figure}[H]
+\centering
+\resizetikz{\begin{tikzpicture}[
+  actor/.style={ellipse, draw=blue!70, fill=blue!8, minimum width=2.6cm, minimum height=1cm, align=center},
+  usecase/.style={ellipse, draw=teal!70, fill=teal!6, text width=3.2cm, minimum height=1cm, align=center},
+  system/.style={draw=purple!50, rounded corners=4mm, dashed, inner sep=0.5cm},
+  arr/.style={-{Stealth}, thick}
+]
+  \node[actor] (user) {研究者};
+  \node[actor, below=1.1cm of user] (reviewer) {评审/助教};
+  \node[usecase, right=3.0cm of user, yshift=1.8cm] (create) {创建研究 Session};
+  \node[usecase, below=0.8cm of create] (interactive) {分步交互式调研};
+  \node[usecase, below=0.8cm of interactive] (auto) {自动模式一键执行};
+  \node[usecase, below=0.8cm of auto] (revise) {编辑与修订产物};
+  \node[usecase, right=3.8cm of interactive] (observe) {查看 Trace 与 Skill 状态};
+  \node[usecase, below=0.8cm of observe] (eval) {运行评估与查看文档};
+  \node[usecase, above=0.8cm of observe] (copilot) {跨 Session 知识问答};
+
+  \begin{scope}[on background layer]
+    \node[system, fit=(create)(interactive)(auto)(revise)(observe)(eval)(copilot),
+      label={[purple!70]above:{Academic Research Agent}}] {};
+  \end{scope}
+
+  \draw[arr] (user) -- (create);
+  \draw[arr] (user) -- (interactive);
+  \draw[arr] (user) -- (auto);
+  \draw[arr] (user) -- (revise);
+  \draw[arr] (user) -- (copilot);
+  \draw[arr] (reviewer) -- (observe);
+  \draw[arr] (reviewer) -- (eval);
+\end{tikzpicture}}
+\caption{迭代三系统顶层用例图}
+\end{figure}
+
+%============================================================
+\section{总体目标与范围}
+%============================================================
+
+\subsection{目标}
+\begin{enumerate}[label=\textbf{G\arabic*.}]
+  \item 支持连续对话和 Session 级持久化。
+  \item 支持关键词、论文、笔记、分析、综述等关键节点的人机协同。
+  \item 支持自动模式一键执行完整 Pipeline。
+  \item 支持 Agent 搜索与用户补充论文的混合来源。
+  \item 支持 Markdown 形式的中间产物编辑。
+  \item 支持 Trace、错误类型和 Skill 状态的可观测展示。
+  \item 支持全局 Copilot 跨 Session 知识问答，并允许显式选择知识范围。
+  \item 提供 evaluation 目录用于评估和课程验收。
+\end{enumerate}
+
+\subsection{范围边界}
+\begin{itemize}
+  \item \textbf{纳入范围}：文献检索、论文管理、PDF 上传、RAG 笔记、深度分析、综述写作、修订、对话、评估脚本与文档。
+  \item \textbf{排除范围}：真实实验复现、图表数据自动解析、多人权限系统、生产级数据库迁移。
+\end{itemize}
+
+%============================================================
+\section{功能性需求}
+%============================================================
+
+\subsection{需求总览矩阵}
+\begin{longtable}{p{2.2cm}p{5.1cm}p{6.1cm}}
+\toprule
+\textbf{编号} & \textbf{需求} & \textbf{验收要点} \\
+\midrule
+\req{FR-01} & Session 管理 & 可创建、打开、删除、恢复 Session，状态持久化。\\
+\req{FR-02} & 规划与关键词确认 & 能生成计划，用户可编辑关键词并保存。\\
+\req{FR-03} & Agent 搜索 & 能调用学术工具检索论文并记录 ReAct Trace。\\
+\req{FR-04} & 论文管理 & 支持 Agent 结果、arXiv/链接添加、PDF 上传、删除、状态修改。\\
+\req{FR-05} & RAG 笔记 & 为选中论文生成结构化笔记，支持编辑。\\
+\req{FR-06} & 深度分析 & 生成 compare/lineage/gaps 三类分析，并可编辑。\\
+\req{FR-07} & 综述写作 & 基于笔记与分析上下文生成综述，支持反馈修订。\\
+\req{FR-08} & 自动模式 & 一键执行规划、搜索、笔记、分析、综述。\\
+\req{FR-09} & 对话系统 & 支持多会话聊天、RAG 问答、上下文压缩与修订判意。\\
+\req{FR-10} & 全局 Copilot & 支持跨 Session 问答和显式 Session 范围选择。\\
+\req{FR-11} & Skills & 支持三阶段 Skill 管理、绑定、回退与 Trace 证明。\\
+\req{FR-12} & 工具管理 & 支持工具启用/禁用与配置持久化。\\
+\bottomrule
+\end{longtable}
+
+\subsection{Pipeline 需求语义图}
+\begin{figure}[H]
+\centering
+\resizetikz{\begin{tikzpicture}[
+  node distance=1.6cm,
+  phase/.style={rectangle, draw=blue!65, fill=blue!6, rounded corners=2mm, text width=2.6cm, align=center, minimum height=0.9cm},
+  artifact/.style={rectangle, draw=green!55!black, fill=green!6, rounded corners=1mm, text width=2.8cm, align=center, minimum height=0.75cm},
+  arr/.style={-{Stealth}, thick},
+  data/.style={-{Stealth}, dashed, thick, gray}
+]
+  \node[phase] (plan) {规划\\关键词确认};
+  \node[phase, right=of plan] (search) {搜索\\论文收录};
+  \node[phase, right=of search] (notes) {笔记\\RAG 生成};
+  \node[phase, right=of notes] (analysis) {分析\\三类洞察};
+  \node[phase, right=of analysis] (write) {综述\\写作修订};
+
+  \node[artifact, below=1.1cm of plan] (kw) {confirmed\\keywords};
+  \node[artifact, below=1.1cm of search] (papers) {papers\\list};
+  \node[artifact, below=1.1cm of notes] (notea) {draft\\notes};
+  \node[artifact, below=1.1cm of analysis] (ana) {analysis\\results};
+  \node[artifact, below=1.1cm of write] (draft) {review\\draft};
+
+  \draw[arr] (plan) -- (search);
+  \draw[arr] (search) -- (notes);
+  \draw[arr] (notes) -- (analysis);
+  \draw[arr] (analysis) -- (write);
+
+  \draw[data] (plan) -- (kw);
+  \draw[data] (search) -- (papers);
+  \draw[data] (notes) -- (notea);
+  \draw[data] (analysis) -- (ana);
+  \draw[data] (write) -- (draft);
+  \draw[data] (ana.east) .. controls +(1.0,-1.0) and +(-1.0,-1.0) .. (write.south);
+\end{tikzpicture}}
+\caption{迭代三 Pipeline 与中间产物关系}
+\end{figure}
+
+%============================================================
+\section{非功能性需求}
+%============================================================
+
+\begin{longtable}{p{3cm}p{10.5cm}}
+\toprule
+\textbf{类别} & \textbf{要求} \\
+\midrule
+可用性 & Web 平台可通过 \texttt{python web\_app.py} 启动，默认访问 \url{http://127.0.0.1:8000}。\\
+可维护性 & 后端路由模块化，避免业务逻辑集中在单个入口文件。\\
+可观测性 & Trace 展示工具调用、错误类型、Skill 加载状态和 fallback 原因。\\
+兼容性 & 分析文件或 Skill 缺失时，旧写作流程不应失败。\\
+鲁棒性 & 外部 API 限流、PDF 提取失败、Embedding 失败时应降级。\\
+可评估性 & evaluation 目录提供数据、脚本、README 与 fallback。\\
+\bottomrule
+\end{longtable}
+
+%============================================================
+\section{验收标准}
+%============================================================
+
+\begin{enumerate}
+  \item 用户可以完成分步模式下的规划、搜索、笔记、分析、综述。
+  \item 自动模式可以执行完整 Pipeline，并在运行状态中展示进度。
+  \item 分析结果可以编辑，并在综述写作时被读取。
+  \item 全局 Copilot 支持默认全局检索与指定 Session 范围检索。
+  \item search/notes/write 三阶段均记录 \texttt{SKILL\_STATUS}。
+  \item 现有测试命令 \texttt{pytest -q} 通过。
+\end{enumerate}
+
+\end{document}

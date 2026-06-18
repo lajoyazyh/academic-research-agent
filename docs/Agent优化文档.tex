@@ -1,0 +1,208 @@
+% ============================================================
+% 迭代三 Agent 优化工作记录（LaTeX 版）
+% 编译方式：xelatex -> xelatex
+% ============================================================
+\documentclass[12pt,a4paper,onecolumn]{ctexart}
+
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.8cm,right=2.8cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, calc, backgrounds}
+
+\hypersetup{colorlinks=true, linkcolor=blue!60!black, urlcolor=blue!60!black}
+\newcommand{\resizetikz}[2][\textwidth]{\resizebox{#1}{!}{#2}}
+
+\title{\textbf{迭代三 Agent 优化工作记录}}
+\author{软件工程课程项目组}
+\date{2026年6月}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\newpage
+\tableofcontents
+\newpage
+
+%============================================================
+\section{优化背景}
+%============================================================
+
+迭代二系统以一次性自动生成为主，用户输入主题后等待 Agent 自动搜索、记录笔记并生成综述。该方式自动化程度高，但存在过程黑盒、难以纠偏、中间产物不可编辑、评估和答辩可证明性不足等问题。
+
+迭代三围绕“连续对话 + 交互式调研 + 自动模式 + 可观测性”展开，将系统升级为可交互、可追踪、可修订、可评估的学术调研助手。
+
+%============================================================
+\section{优化路线}
+%============================================================
+
+\begin{figure}[H]
+\centering
+\resizetikz{\begin{tikzpicture}[
+  node distance=1.0cm,
+  wave/.style={rectangle, draw=blue!70, fill=blue!6, rounded corners=2mm, text width=3.8cm, align=center, minimum height=0.9cm},
+  arr/.style={-{Stealth}, thick}
+]
+  \node[wave] (w1) {第一波\\Session 与前端控制台};
+  \node[wave, right=of w1] (w2) {第二波\\笔记编辑与修订};
+  \node[wave, right=of w2] (w3) {第三波\\RAG 与 Paper Register};
+  \node[wave, below=1.1cm of w3] (w4) {第四波\\自动模式、工具、Skills};
+  \node[wave, left=of w4] (w5) {第五波\\分析阶段与写作注入};
+  \node[wave, left=of w5] (w6) {第六波\\Skill Trace 与 Copilot 范围};
+
+  \draw[arr] (w1) -- (w2);
+  \draw[arr] (w2) -- (w3);
+  \draw[arr] (w3) -- (w4);
+  \draw[arr] (w4) -- (w5);
+  \draw[arr] (w5) -- (w6);
+\end{tikzpicture}}
+\caption{迭代三优化路线}
+\end{figure}
+
+\begin{longtable}{p{2.5cm}p{5.5cm}p{5.5cm}}
+\toprule
+\textbf{阶段} & \textbf{主要问题} & \textbf{优化结果} \\
+\midrule
+Session 化 & 一次性运行，无法恢复 & 引入 Session 状态机与目录持久化。\\
+交互式流程 & 用户无法干预关键词、论文和笔记 & 控制台提供分阶段审核与编辑。\\
+RAG 笔记 & 笔记结构不稳定，PDF 利用不足 & 基于全文检索生成结构化笔记。\\
+自动模式 & 分步操作对演示和快速使用成本较高 & 一键执行完整 Pipeline。\\
+分析阶段 & 分析只是页面结果，未参与写作 & 分析结果注入 Writer。\\
+可观测性 & Skill 是否生效难以证明 & 三阶段记录 \texttt{SKILL\_STATUS}。\\
+知识共享 & 跨项目问答范围不可控 & Copilot 支持 \texttt{session\_ids}。\\
+\bottomrule
+\end{longtable}
+
+%============================================================
+\section{最终 Pipeline}
+%============================================================
+
+\begin{figure}[H]
+\centering
+\resizetikz{\begin{tikzpicture}[
+  node distance=1.15cm,
+  phase/.style={rectangle, draw=teal!70, fill=teal!6, rounded corners=2mm, text width=2.6cm, align=center, minimum height=0.85cm},
+  artifact/.style={rectangle, draw=orange!70, fill=orange!7, rounded corners=1mm, text width=2.6cm, align=center, minimum height=0.75cm},
+  arr/.style={-{Stealth}, thick},
+  data/.style={-{Stealth}, dashed, gray, thick}
+]
+  \node[phase] (plan) {规划};
+  \node[phase, right=of plan] (search) {搜索};
+  \node[phase, right=of search] (notes) {笔记};
+  \node[phase, right=of notes] (analysis) {分析};
+  \node[phase, right=of analysis] (write) {综述};
+
+  \node[artifact, below=1.0cm of plan] (a1) {关键词};
+  \node[artifact, below=1.0cm of search] (a2) {论文列表};
+  \node[artifact, below=1.0cm of notes] (a3) {笔记 Markdown};
+  \node[artifact, below=1.0cm of analysis] (a4) {compare\\lineage\\gaps};
+  \node[artifact, below=1.0cm of write] (a5) {综述草稿};
+
+  \draw[arr] (plan) -- (search);
+  \draw[arr] (search) -- (notes);
+  \draw[arr] (notes) -- (analysis);
+  \draw[arr] (analysis) -- (write);
+  \draw[data] (plan) -- (a1);
+  \draw[data] (search) -- (a2);
+  \draw[data] (notes) -- (a3);
+  \draw[data] (analysis) -- (a4);
+  \draw[data] (write) -- (a5);
+  \draw[data] (a4.east) .. controls +(0.8,-1.0) and +(-0.8,-1.0) .. node[below]{写作上下文} (write.south);
+\end{tikzpicture}}
+\caption{当前正式 Pipeline}
+\end{figure}
+
+%============================================================
+\section{重点优化说明}
+%============================================================
+
+\subsection{Session 与状态机}
+每个研究任务映射为一个 Session，包含 metadata、plan、papers、notes、analysis、draft、traces、chats 等目录。状态机覆盖从 planning 到 complete 的完整生命周期，并支持卡住状态修复。
+
+\subsection{Web 解耦}
+原先 Web 入口职责过重，后期拆分为 pages、session、agent、chat、conversation、draft、admin 等路由模块。通过 \texttt{deps.py} 延迟注入共享依赖，降低循环导入风险。
+
+\subsection{RAG 笔记生成}
+笔记阶段使用全文切块与向量检索，针对背景、方法、实验、结果、分析、局限等不同部分提取相关上下文。Embedding 失败时回退 BM25，PDF 失败时回退摘要。
+
+\subsection{分析阶段并入主流程}
+分析阶段从独立页面能力升级为正式 Pipeline 节点。自动模式中，系统先生成分析再写综述。Writer 读取 \texttt{analysis\_results.json}，将用户编辑后的分析文档作为额外上下文。
+
+\subsection{Skills 可证明}
+Skills 支持 search、notes、write 三阶段定制。系统在每个阶段都写入 \texttt{SKILL\_STATUS} trace，记录 skill id、标题、是否加载、是否 fallback 和原因。
+
+\subsection{全局 Copilot 范围选择}
+全局 Copilot 原先默认扫描所有 Session。当前支持前端多选 Session，后端 \texttt{/api/knowledge/chat} 根据 \texttt{session\_ids} 限定检索范围。
+
+%============================================================
+\section{能力雷达图语义}
+%============================================================
+
+\begin{figure}[H]
+\centering
+\resizetikz[0.72\textwidth]{\begin{tikzpicture}[
+  scale=1.0,
+  axis/.style={gray!70, thin},
+  label/.style={font=\small},
+  poly/.style={fill=blue!25, draw=blue!70, thick, opacity=0.75}
+]
+  \def\r{3}
+  \foreach \i/\name in {
+    90/交互性,
+    30/自动化,
+    -30/可观测,
+    -90/可评估,
+    -150/可维护,
+    150/可扩展
+  } {
+    \draw[axis] (0,0) -- (\i:\r);
+    \node[label] at (\i:\r+0.45) {\name};
+  }
+  \foreach \rad in {1,2,3} {
+    \draw[axis] (90:\rad) -- (30:\rad) -- (-30:\rad) -- (-90:\rad) -- (-150:\rad) -- (150:\rad) -- cycle;
+  }
+  \draw[poly] (90:2.8) -- (30:2.7) -- (-30:2.9) -- (-90:2.4) -- (-150:2.6) -- (150:2.5) -- cycle;
+  \node at (0,-3.7) {迭代三后系统能力分布示意};
+\end{tikzpicture}}
+\caption{迭代三优化后的能力覆盖}
+\end{figure}
+
+%============================================================
+\section{任务点对齐}
+%============================================================
+
+\begin{longtable}{p{3.4cm}p{7.0cm}p{2.6cm}}
+\toprule
+\textbf{任务点} & \textbf{当前实现} & \textbf{判断} \\
+\midrule
+连续对话 & Session 内多会话聊天、历史保存、上下文压缩 & 已实现 \\
+交互式调研 & 关键词、论文、笔记、分析、综述均可人工介入 & 已实现 \\
+自动执行 & 自动模式一键执行完整流程 & 已实现 \\
+混合论文来源 & Agent 搜索、链接添加、PDF 上传 & 已实现 \\
+中间产物编辑 & 笔记、分析卡片、综述均可 Markdown 编辑 & 已实现 \\
+运行轨迹 & ReAct trace、自动流程 trace、Skill trace & 已实现 \\
+深度分析 & compare/lineage/gaps 并注入写作 & 已实现 \\
+跨 Session 知识 & 全局 Copilot + 可选 Session 范围 & 已实现 \\
+评估支撑 & evaluation 目录、数据、脚本与 fallback & 基本具备 \\
+\bottomrule
+\end{longtable}
+
+%============================================================
+\section{风险与后续建议}
+%============================================================
+
+\begin{enumerate}
+  \item 增强 trace 面板摘要，展示工具调用次数、错误类型统计、论文收录数。
+  \item 在分步模式论文卡片中展示是否有笔记、是否被综述引用、是否适合用于对比/脉络/空白。
+  \item 补全 evaluation 数据集，增加自动模式、分析注入、Skill trace、Copilot 范围选择的专项样例。
+  \item 为前端核心流程增加轻量端到端回归测试。
+\end{enumerate}
+
+\end{document}
