@@ -174,7 +174,32 @@ python web_app.py
 - 📎 **PDF 查看** — 已下载论文可在浏览器中直接查看
 - ⭐ **收藏夹** — 收藏重要综述，支持取消收藏和删除
 - 🛠 **工具管理** — 控制台「工具管理」面板，6 类 16 个工具开关式启用/禁用，配置持久化
-- 💬 **全局 Copilot 助手** — 首页侧边栏：跨 Session 全局知识问答，多轮对话历史，内嵌工具勾选面板
+- 💬 **全局 Copilot 助手** — 首页侧边栏：跨 Session 全局知识问答，多轮对话历史，支持显式选择知识检索范围
+
+---
+
+## 迭代三优化与评估材料
+
+本仓库为迭代三保留了几类说明材料：
+
+| 路径 | 内容 |
+|------|------|
+| `docs/Agent优化文档.md` | 迭代三优化工作总文档：目标、架构、Pipeline、Skills、全局 Copilot、评估 |
+| `docs/迭代三会议记录.md` | 按周整理的会议记录、负责人、会议内容和阶段产出 |
+| `docs/项目架构分析.md` | 面向评审的项目架构拆解 |
+| `evaluation/` | 评估数据、评估脚本、独立运行说明和 fallback 逻辑 |
+
+`docs/Agent优化文档.md` 已合并早期方案文档和后期实现复盘，是答辩时建议优先引用的技术优化说明；会议过程材料单独维护在 `docs/迭代三会议记录.md`。
+
+### 最新达标点速览
+
+- **连续对话**：每个 Session 支持多个聊天会话，保留历史并支持上下文压缩。
+- **交互式调研**：关键词、论文、笔记、分析、综述均可人工审核和编辑。
+- **自动模式**：一键执行 `规划 → 搜索 → 笔记 → 分析 → 综述`。
+- **深度分析**：文献对比、研究脉络、研究空白三张 Markdown 卡片进入正式 Pipeline，并作为综述写作上下文。
+- **Skills 可证明**：search / notes / write 三阶段都会记录 `SKILL_STATUS` trace，展示 Skill 是否加载和是否回退默认策略。
+- **跨 Session 知识共享**：全局 Copilot 支持默认全局检索，也支持手动选择若干 Session 作为知识范围。
+- **评估支撑**：`evaluation/` 中包含评估任务、数据库、脚本和说明；缺少部分外部评估依赖时可走 fallback。
 
 ---
 
@@ -338,6 +363,26 @@ agent/
 | GET | `/api/agent/history/{filename}` | 历史综述详情 |
 | DELETE | `/api/agent/history/{filename}` | 删除历史综述 |
 | GET | `/api/agent/document/{filename}/papers/{pdf_name}` | 获取 PDF 文件 |
+
+### 全局知识库 / Copilot / Skills
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/knowledge/stats` | 获取全局知识库统计 |
+| GET | `/api/knowledge/sessions` | 获取可用于 Copilot 知识范围选择的 Session 摘要 |
+| POST | `/api/knowledge/search` | 跨 Session 检索知识片段 |
+| POST | `/api/knowledge/chat` | 全局 Copilot 问答，支持可选 `session_ids` 限制检索范围 |
+| POST | `/api/knowledge/rebuild` | 重建全局知识库索引 |
+| GET | `/api/copilot/sessions` | 获取 Copilot 对话列表 |
+| POST | `/api/copilot/sessions` | 新建 Copilot 对话 |
+| GET | `/api/copilot/sessions/{id}/messages` | 获取 Copilot 对话消息 |
+| DELETE | `/api/copilot/sessions/{id}` | 删除 Copilot 对话 |
+| GET | `/api/skills` | 获取 Skills 列表 |
+| POST | `/api/skills` | 创建自定义 Skill |
+| PUT | `/api/skills/{skill_id}` | 更新 Skill |
+| DELETE | `/api/skills/{skill_id}` | 软删除 Skill |
+| GET | `/api/skills/defaults` | 获取系统默认 Skill |
+| GET | `/api/skills/{skill_id}/usage` | 查看 Skill 被哪些 Session 使用 |
 
 ### 页面路由
 
@@ -606,6 +651,26 @@ GET /api/skills/{skill_id}/usage
 
 Skill 加载失败时（如文件损坏、已删除），自动静默回退到通道 B，确保流程不被中断。
 
+### Skill 可观测性
+
+为了便于调试和答辩展示，系统会在执行轨迹中记录 Skill 状态：
+
+```json
+{
+  "action": "SKILL_STATUS",
+  "input": {
+    "phase": "search",
+    "skill_id": "skill_xxx",
+    "skill_title": "自定义搜索策略",
+    "loaded": true,
+    "fallback_default": false
+  },
+  "error_type": "skill_info"
+}
+```
+
+search / notes / write 三个阶段都会记录该 trace。未配置、空内容、已删除或加载异常时，也会记录 `skill_fallback`，说明系统已回退默认策略。
+
 ### 存储结构
 
 ```
@@ -695,4 +760,4 @@ chats/
 - arXiv `id_list` 端点限流比 `search_query` 严格得多，已通过全局限流器和退避策略缓解
 - 对话区的普通问答与修订动作共用 `/api/sessions/{session_id}/chat`；修订不会直接执行，Agent 模式会先做 AI 意图判定并要求用户二次确认
 - 自动模式的笔记生成阶段依赖 `RAGNoteGenerator`，需要 Embedding 模型支持
-- Web 搜索阶段（`run_search_only`）目前使用固定工具列表，尚未接入 ToolRegistry；CLI 模式已接入
+- 评估数据集仍可继续扩充，尤其是自动模式、分析注入综述、Skill trace、全局 Copilot 范围选择等专项样例
