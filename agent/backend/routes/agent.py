@@ -26,6 +26,28 @@ from .models import (
 router = APIRouter(prefix="/api/sessions", tags=["agent"])
 
 
+def _build_skill_trace(phase: str, skill_id: str = "", skill_title: str = "", loaded: bool = False,
+                       fallback_default: bool = True, reason: str = "not_configured") -> dict:
+    return {
+        "timestamp": datetime.datetime.now().isoformat(),
+        "thought": f"Skill trace for {phase}",
+        "action": "SKILL_STATUS",
+        "input": {
+            "phase": phase,
+            "skill_id": skill_id or "",
+            "skill_title": skill_title or "",
+            "loaded": bool(loaded),
+            "fallback_default": bool(fallback_default),
+        },
+        "observation": (
+            f"skill_phase: {phase} | skill_id: {skill_id or '-'} | "
+            f"skill_title: {skill_title or '-'} | loaded: {str(bool(loaded)).lower()} | "
+            f"fallback_default: {str(bool(fallback_default)).lower()} | reason: {reason}"
+        ),
+        "error_type": "skill_info" if loaded else "skill_fallback",
+    }
+
+
 def _load_analysis_context_for_writing(session_id: str) -> str:
     """Load saved compare/lineage/gaps analysis as optional writing context."""
     analysis_path = SESSIONS_DIR / session_id / "analysis" / "analysis_results.json"
@@ -363,6 +385,8 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
             from main import _merge_referenced_papers
             referenced_papers = _merge_referenced_papers(notes, papers)
             session_mgr.save_review(session_id, result["review"], referenced_papers=referenced_papers)
+        if result.get("traces"):
+            session_mgr.save_traces(session_id, result["traces"], append=True)
 
         # 更新状态
         new_state = "reviewing_draft" if result.get("can_rewrite", True) else "complete"
@@ -402,21 +426,39 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
     notes_skill_content = ""
     skills_config = session.get("skills", {})
     notes_skill_id = skills_config.get("notes")
+    notes_skill_trace = _build_skill_trace("notes", skill_id=notes_skill_id or "")
     if notes_skill_id:
         try:
             notes_skill = skill_mgr.get_skill(notes_skill_id)
             if notes_skill and not notes_skill.get("deleted"):
                 notes_skill_content = str(notes_skill.get("content", ""))
+                notes_skill_title = str(notes_skill.get("title", "") or "")
                 if notes_skill_content:
                     print(f"[NotesSkill] Loaded skill {notes_skill_id}: len={len(notes_skill_content)}, title={notes_skill.get('title','?')}")
+                    notes_skill_trace = _build_skill_trace(
+                        "notes",
+                        skill_id=notes_skill_id,
+                        skill_title=notes_skill_title,
+                        loaded=True,
+                        fallback_default=False,
+                        reason="active",
+                    )
                 else:
                     print(f"[NotesSkill] Skill {notes_skill_id} has empty content, falling back to default")
+                    notes_skill_trace = _build_skill_trace(
+                        "notes",
+                        skill_id=notes_skill_id,
+                        skill_title=notes_skill_title,
+                        reason="empty_content",
+                    )
             else:
                 # Skill 已删除或无效 → 自动回退默认通道
                 print(f"[NotesSkill] Skill {notes_skill_id} is deleted/invalid, using default")
+                notes_skill_trace = _build_skill_trace("notes", skill_id=notes_skill_id, reason="deleted_or_invalid")
         except Exception as e:
             # Skill 加载异常 → 静默回退默认通道
             print(f"[NotesSkill] Failed to load skill {notes_skill_id}: {e}")
+            notes_skill_trace = _build_skill_trace("notes", skill_id=notes_skill_id, reason=f"load_error: {e}")
     else:
         print(f"[NotesSkill] No notes skill configured for this session, using default")
 
@@ -452,11 +494,13 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
 
     if notes_map:
         session_mgr.batch_update_paper_notes(session_id, notes_map)
+    session_mgr.save_traces(session_id, [notes_skill_trace], append=True)
 
     return {
         "phase": "notes",
         "notes_map": notes_map,
         "count": len(notes_map),
+        "traces": [notes_skill_trace],
     }
 
 @router.post("/{session_id}/run/notes/revise")
@@ -707,25 +751,48 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
 
             # ━━━ Skill 注入：加载 notes 类型的自定义提示词 ━━━
             _auto_notes_skill = ""
+            _auto_notes_trace = _build_skill_trace("notes")
             _auto_session = session_mgr.load_session(session_id)
             if _auto_session:
                 _auto_skills = _auto_session.get("skills", {})
                 _auto_notes_id = _auto_skills.get("notes")
+                _auto_notes_trace = _build_skill_trace("notes", skill_id=_auto_notes_id or "")
                 if _auto_notes_id:
                     try:
                         _auto_notes_data = skill_mgr.get_skill(_auto_notes_id)
                         if _auto_notes_data and not _auto_notes_data.get("deleted"):
                             _auto_notes_skill = str(_auto_notes_data.get("content", ""))
+                            _auto_notes_title = str(_auto_notes_data.get("title", "") or "")
                             if _auto_notes_skill:
                                 print(f"[NotesSkill] Auto-pipeline loaded skill {_auto_notes_id}: len={len(_auto_notes_skill)}")
+                                _auto_notes_trace = _build_skill_trace(
+                                    "notes",
+                                    skill_id=_auto_notes_id,
+                                    skill_title=_auto_notes_title,
+                                    loaded=True,
+                                    fallback_default=False,
+                                    reason="active",
+                                )
                             else:
                                 print(f"[NotesSkill] Auto-pipeline skill {_auto_notes_id} has empty content, using default")
+                                _auto_notes_trace = _build_skill_trace(
+                                    "notes",
+                                    skill_id=_auto_notes_id,
+                                    skill_title=_auto_notes_title,
+                                    reason="empty_content",
+                                )
                         else:
                             print(f"[NotesSkill] Auto-pipeline skill {_auto_notes_id} deleted/invalid, using default")
+                            _auto_notes_trace = _build_skill_trace("notes", skill_id=_auto_notes_id, reason="deleted_or_invalid")
                     except Exception as e:
                         print(f"[NotesSkill] Auto-pipeline failed to load skill {_auto_notes_id}: {e}")
+                        _auto_notes_trace = _build_skill_trace("notes", skill_id=_auto_notes_id, reason=f"load_error: {e}")
             else:
                 print(f"[NotesSkill] Auto-pipeline: no notes skill configured, using default")
+            session_mgr.save_traces(session_id, [_auto_notes_trace], append=True)
+            with RUN_LOCK:
+                existing_traces = RUNS.get(run_key, {}).get("traces", [])
+                RUNS[run_key]["traces"] = existing_traces + [_auto_notes_trace]
 
             for idx, paper in enumerate(papers):
                 if _stop_flag[0]:
@@ -819,6 +886,11 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
             )
             if write_result.get("review"):
                 session_mgr.save_review(session_id, write_result["review"])
+            if write_result.get("traces"):
+                session_mgr.save_traces(session_id, write_result["traces"], append=True)
+                with RUN_LOCK:
+                    existing_traces = RUNS.get(run_key, {}).get("traces", [])
+                    RUNS[run_key]["traces"] = existing_traces + write_result["traces"]
             # 状态机要求 writing → reviewing_draft → complete，不能直接跳
             try:
                 session_mgr.update_session_state(session_id, "reviewing_draft")

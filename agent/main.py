@@ -15,24 +15,78 @@ from tools.file_tools import ClearNoteTool, AppendNoteTool
 from llms.client import LLMClient
 
 
-def _load_skill_content(session_id: str = None, skill_id: str = None) -> str:
-    """从 Session metadata 或直接 skill_id 加载 Skill 内容。
-    返回 skill.md 的 Markdown 文本，失败时返回空字符串。
-    """
+def _load_skill_info(skill_id: str = None) -> dict:
+    """加载 Skill 内容和可观测状态，失败时返回明确的 fallback 信息。"""
+    info = {
+        "skill_id": skill_id or "",
+        "skill_title": "",
+        "content": "",
+        "loaded": False,
+        "fallback_default": True,
+        "reason": "not_configured" if not skill_id else "not_loaded",
+    }
     if not skill_id:
-        return ""
+        return info
     try:
         base_dir = os.path.dirname(__file__)
         skill_path = os.path.join(base_dir, "sessions", ".skills", f"{skill_id}.json")
         if not os.path.exists(skill_path):
-            return ""
+            info["reason"] = "missing_file"
+            return info
         with open(skill_path, "r", encoding="utf-8") as f:
             skill = json.loads(f.read())
+        info["skill_title"] = str(skill.get("title", "") or "")
         if skill.get("deleted"):
-            return ""
-        return str(skill.get("content", ""))
-    except Exception:
-        return ""
+            info["reason"] = "deleted"
+            return info
+        content = str(skill.get("content", "") or "")
+        if not content.strip():
+            info["reason"] = "empty_content"
+            return info
+        info.update({
+            "content": content,
+            "loaded": True,
+            "fallback_default": False,
+            "reason": "active",
+        })
+        return info
+    except Exception as exc:
+        info["reason"] = f"load_error: {exc}"
+        return info
+
+
+def _load_skill_content(session_id: str = None, skill_id: str = None) -> str:
+    """从 Session metadata 或直接 skill_id 加载 Skill 内容。
+    返回 skill.md 的 Markdown 文本，失败时返回空字符串。
+    """
+    return _load_skill_info(skill_id=skill_id).get("content", "")
+
+
+def _build_skill_trace(phase: str, skill_info: dict) -> dict:
+    """构造统一的 Skill 可观测 trace。"""
+    skill_id = skill_info.get("skill_id", "")
+    skill_title = skill_info.get("skill_title", "")
+    loaded = bool(skill_info.get("loaded", False))
+    fallback = bool(skill_info.get("fallback_default", True))
+    reason = skill_info.get("reason", "")
+    return {
+        "timestamp": datetime.datetime.now().isoformat(),
+        "thought": f"Skill trace for {phase}",
+        "action": "SKILL_STATUS",
+        "input": {
+            "phase": phase,
+            "skill_id": skill_id,
+            "skill_title": skill_title,
+            "loaded": loaded,
+            "fallback_default": fallback,
+        },
+        "observation": (
+            f"skill_phase: {phase} | skill_id: {skill_id or '-'} | "
+            f"skill_title: {skill_title or '-'} | loaded: {str(loaded).lower()} | "
+            f"fallback_default: {str(fallback).lower()} | reason: {reason}"
+        ),
+        "error_type": "skill_info" if loaded else "skill_fallback",
+    }
 
 
 def _get_skills_for_session(session_id: str = None) -> dict:
@@ -876,35 +930,27 @@ def run_search_only(
     if session_id:
         skills = _get_skills_for_session(session_id)
         search_skill_id = skills.get("search")
-        if search_skill_id:
-            skill_content = _load_skill_content(skill_id=search_skill_id)
-            if skill_content:
-                # 通道 A：Skill 优先 — 用 Skill 内容替换默认搜索策略，
-                # 仅保留最小核心约束（工具列表 + JSON 格式 + 质量门禁）
-                _MIN_SEARCH_RULES = (
-                    "## 核心硬约束（必须遵守，不可绕过）\n"
-                    "1. 必须严格按照 JSON 格式输出 thought/action/action_input。\n"
-                    "2. 只能调用上面列出的可用工具，不能调用不存在的工具。\n"
-                    "3. 完成搜索后，必须以 action: finish 结束。\n"
-                    "4. 遇到 HTTP 429 立即换数据库，不要反复重试同一目标。\n"
-                )
-                research_query = (
-                    "## 用户自定义搜索策略（请严格遵循以下策略进行文献搜索）\n\n"
-                    f"{skill_content}\n\n"
-                    "---\n\n"
-                    f"{_MIN_SEARCH_RULES}\n"
-                    f"\n研究主题：{user_topic}\n"
-                )
-                print(f"[Skill] Injected search skill: {search_skill_id}")
-                # 记录 Skill 状态到 Agent traces
-                researcher_agent.traces.append({
-                    "timestamp": datetime.datetime.now().isoformat(),
-                    "thought": "",
-                    "action": "SKILL_STATUS",
-                    "input": {"skill_id": search_skill_id, "skill_type": "search"},
-                    "observation": "skill_active: search | skill_content_loaded: true | mode: channel_a",
-                    "error_type": "skill_info",
-                })
+        skill_info = _load_skill_info(skill_id=search_skill_id)
+        researcher_agent.traces.append(_build_skill_trace("search", skill_info))
+        skill_content = skill_info.get("content", "")
+        if skill_content:
+            # 通道 A：Skill 优先 — 用 Skill 内容替换默认搜索策略，
+            # 仅保留最小核心约束（工具列表 + JSON 格式 + 质量门禁）
+            _MIN_SEARCH_RULES = (
+                "## 核心硬约束（必须遵守，不可绕过）\n"
+                "1. 必须严格按照 JSON 格式输出 thought/action/action_input。\n"
+                "2. 只能调用上面列出的可用工具，不能调用不存在的工具。\n"
+                "3. 完成搜索后，必须以 action: finish 结束。\n"
+                "4. 遇到 HTTP 429 立即换数据库，不要反复重试同一目标。\n"
+            )
+            research_query = (
+                "## 用户自定义搜索策略（请严格遵循以下策略进行文献搜索）\n\n"
+                f"{skill_content}\n\n"
+                "---\n\n"
+                f"{_MIN_SEARCH_RULES}\n"
+                f"\n研究主题：{user_topic}\n"
+            )
+            print(f"[Skill] Injected search skill: {search_skill_id}")
 
     final_answer = researcher_agent.run(research_query)
 
@@ -994,13 +1040,15 @@ def run_write_from_notes(
 
     # ━━━ Skill 注入：加载 write 类型的自定义提示词 ━━━
     write_skill_content = ""
+    skill_trace = None
     if session_id:
         skills_config = _get_skills_for_session(session_id)
         write_skill_id = skills_config.get("write")
-        if write_skill_id:
-            write_skill_content = _load_skill_content(skill_id=write_skill_id)
-            if write_skill_content:
-                print(f"[Skill] Injected write skill: {write_skill_id}")
+        write_skill_info = _load_skill_info(skill_id=write_skill_id)
+        skill_trace = _build_skill_trace("write", write_skill_info)
+        write_skill_content = write_skill_info.get("content", "")
+        if write_skill_content:
+            print(f"[Skill] Injected write skill: {write_skill_id}")
 
     if user_feedback and previous_review:
         # 带反馈的重写 — 双通道：有 Skill 时替换默认要求
@@ -1051,6 +1099,7 @@ def run_write_from_notes(
     return {
         "phase": "write",
         "review": new_review,
+        "traces": [skill_trace] if skill_trace else [],
         "analysis_used": bool((analysis_context or "").strip()),
         "rewrite_count": rewrite_count + 1,
         "max_rewrites": max_rewrites,
