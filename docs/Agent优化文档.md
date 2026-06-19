@@ -647,17 +647,8 @@ python -m pytest tests -q
 - `.gitlab-ci.yml`：NJU GitLab CI，包含测试阶段和 GitHub 镜像同步/部署预留阶段。
 - `.github/workflows/agent-ci.yml`：GitHub Actions，分别运行迭代二和迭代三测试。
 
-CI 的主要作用是每次提交后自动安装依赖并运行 pytest，避免基础功能被破坏。CD 部分当前更准确地说是“镜像同步/部署预留”，不是完整的公网 Web 自动部署。
+CI 的主要作用是每次提交后自动安装依赖并运行 pytest，避免基础功能被破坏。CD 部分当前更准确地说是“镜像同步/部署预留”，即同步到远程github仓库（方便后续如有需要，通过vercel等工具自动从github仓库导入部署），不是完整的公网 Web 自动部署。
 
-### 11.3 GitHub CI 失败说明
-
-曾出现 GitHub Actions 中 `tests-iter3` 失败，而本地和 GitLab 最新代码通过的问题。排查结果是 GitHub 镜像滞后，GitHub Actions 运行的是旧版本代码。当前迭代三本地测试结果为：
-
-```text
-20 passed
-```
-
-后续若要保证 GitHub Actions 同步通过，需要在 GitLab `dev` 合并到 `master` 后触发同步任务，或手动同步 GitHub 镜像。
 
 ---
 
