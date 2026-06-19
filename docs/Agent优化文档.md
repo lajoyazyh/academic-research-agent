@@ -588,7 +588,7 @@ backend/routes/
 | step_coherence_score | 0.75 | 0.80 | 0.85 | 0.90 | 0.88 |
 | faithfulness_score | 0.75 | 0.75 | 0.81 | 0.81 | 0.92 |
 | helpfulness_score | 0.75 | 0.70 | 0.76 | 0.85 | 0.83 |
-| overall_score | 0.65 | 0.70 | 0.80 | 0.80 | 0.83 |
+| **overall_score** | **0.65** | **0.70** | **0.80** | **0.80** | **0.83** |
 
 ### 10.3 结果分析
 
