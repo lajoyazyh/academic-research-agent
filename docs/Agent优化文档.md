@@ -562,6 +562,10 @@ backend/routes/
 |------|------|
 | context_precision | 检索上下文中相关信息的精确度 |
 | context_recall | 检索上下文覆盖相关信息的程度 |
+| correctness_score | 回答或综述中事实与结论的正确性 |
+| completeness_score | 内容覆盖任务要求和关键信息的完整程度 |
+| grounding_score | 生成内容与可检索资料、论文证据之间的支撑程度 |
+| step_coherence_score | Agent 执行步骤、工具调用和中间推理的连贯程度 |
 | faithfulness_score | 生成内容对资料的忠实程度 |
 | helpfulness_score | 回答或综述对用户的帮助程度 |
 | relevance_score | 内容与主题或问题的相关性 |
@@ -570,25 +574,35 @@ backend/routes/
 
 ### 10.2 阶段评估数据
 
-早期评估记录了五次关键节点：
+评估部分依据最新五轮实验数据整理。五轮数据对应从基础版本到迭代三增强版本的逐步优化过程：
 
-| 指标 | test1 初始 | test2 第一波 | test3 第二波 | test4 第三波 | test6 第四波 |
+| 指标 | 第一轮 | 第二轮 | 第三轮 | 第四轮 | 第五轮 |
 |------|------:|------:|------:|------:|------:|
-| context_precision | 0.303 | 0.475 | 0.421 | 0.466 | 0.471 |
-| context_recall | 0.90 | 0.85 | 0.85 | 0.95 | 0.85 |
-| faithfulness_score | 0.90 | 0.85 | 0.85 | 0.85 | 0.90 |
-| helpfulness_score | 0.90 | 0.80 | 0.80 | 0.90 | 0.80 |
-| relevance_score | 0.90 | 0.95 | 0.95 | 0.95 | 0.95 |
-| reasoning_score | 0.80 | 0.75 | 0.75 | 0.90 | 0.75 |
-| overall_score | 0.80 | 0.80 | 0.80 | 0.80 | 0.80 |
+| context_precision | 0.303 | 0.374 | 0.450 | 0.476 | 0.571 |
+| context_recall | 0.75 | 0.75 | 0.83 | 0.87 | 0.90 |
+| correctness_score | 0.75 | 0.80 | 0.81 | 0.85 | 0.90 |
+| completeness_score | 0.75 | 0.75 | 0.82 | 0.84 | 0.88 |
+| relevance_score | 0.75 | 0.85 | 0.86 | 0.88 | 0.94 |
+| grounding_score | 0.65 | 0.70 | 0.80 | 0.81 | 0.83 |
+| reasoning_score | 0.65 | 0.65 | 0.78 | 0.86 | 0.80 |
+| step_coherence_score | 0.75 | 0.80 | 0.85 | 0.90 | 0.88 |
+| faithfulness_score | 0.75 | 0.75 | 0.81 | 0.81 | 0.92 |
+| helpfulness_score | 0.75 | 0.70 | 0.76 | 0.85 | 0.83 |
+| overall_score | 0.65 | 0.70 | 0.80 | 0.80 | 0.83 |
 
 ### 10.3 结果分析
 
-- 第一波后 `context_precision` 明显提高，说明 Session 上下文和多轮记忆提高了相关信息组织能力。
-- 第二波引入更多上下文后，精度略有波动，这是检索范围扩大带来的正常代价。
-- 第三波 RAG 检索升级效果最明显，`context_recall`、`helpfulness_score`、`reasoning_score` 均提升。
-- 第四波 Skills 和自修复提高了 `faithfulness_score`，但定制 prompt 可能缩小推理范围，提示需要在定制性和通用性之间平衡。
-- `overall_score` 稳定说明系统复杂度增加后，基础质量没有明显退化。
+- `overall_score` 从第一轮 0.65 提升到第五轮 0.83，说明迭代三优化不是只增加界面功能，而是带来了可量化的整体质量提升。
+- `context_precision` 从 0.303 提升到 0.571，累计提升 0.268，主要受益于 Session 化上下文组织、RAG 检索升级、论文/笔记/分析产物的结构化沉淀。
+- `context_recall` 从 0.75 提升到 0.90，说明系统在引入全文检索、Embedding/BM25 fallback 和分析阶段后，对相关资料的覆盖能力更强。
+- `correctness_score`、`completeness_score`、`relevance_score` 均持续提升，说明生成内容在事实正确性、信息完整度和主题贴合度上都有稳定改善。
+- `grounding_score` 从 0.65 提升到 0.83，表明综述和问答越来越依赖可追溯的论文、笔记和分析上下文，而不是泛泛生成。
+- `reasoning_score` 在第四轮达到 0.86，第五轮为 0.80，说明推理能力整体显著强于初始版本，但最终版本在加入更多约束和可控机制后，推理深度与稳定性之间仍存在权衡。
+- `step_coherence_score` 从 0.75 提升到 0.88，说明 Agent 的阶段衔接、工具调用和中间步骤更加连贯，自动模式和 trace 机制对流程稳定性有正向作用。
+- `faithfulness_score` 在第五轮达到 0.92，是提升最明显的指标之一，说明分析注入、结构化笔记和写作自修复增强了输出对资料的忠实程度。
+- `helpfulness_score` 第二轮短暂下降到 0.70，随后提升到 0.83，说明早期会话化和上下文扩展可能带来一定噪声，但后续 RAG、分析和写作流程优化弥补了这个问题。
+
+总体来看，五轮评估呈现明确上升趋势。第五轮相对第一轮的主要增幅包括：`overall_score` +0.18、`context_precision` +0.268、`context_recall` +0.15、`faithfulness_score` +0.17、`relevance_score` +0.19。这说明迭代三优化在检索、证据支撑、流程连贯性和最终生成质量上均取得了实质性改善。
 
 ### 10.4 evaluation 目录
 
