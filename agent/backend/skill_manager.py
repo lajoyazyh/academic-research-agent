@@ -1,5 +1,5 @@
-"""
-Skills 管理器 — 迭代三扩展：用户自定义 Agent 行为策略
+﻿"""
+Skills 管理器 — Extension: 用户自定义 Agent 行为策略
 
 管理 Skill 的完整生命周期：
 - 创建/加载/更新/删除 Skill
@@ -309,3 +309,4 @@ def get_skill_manager(base_dir: str = None) -> SkillManager:
     if _skill_manager is None:
         _skill_manager = SkillManager(base_dir or "")
     return _skill_manager
+

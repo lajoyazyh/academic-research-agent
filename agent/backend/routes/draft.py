@@ -1,4 +1,4 @@
-"""综述草稿管理 API"""
+﻿"""综述草稿管理 API"""
 import json
 import os
 import datetime
@@ -41,3 +41,4 @@ def save_draft(session_id: str, payload: dict) -> dict:
         return {"message": "Success"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+

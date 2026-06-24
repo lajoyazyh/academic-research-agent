@@ -1,5 +1,5 @@
-"""
-BM25 + Embedding 混合检索器 — 迭代三 RAG 升级
+﻿"""
+BM25 + Embedding 混合检索器 — RAG upgrade
 
 基于 sklearn TfidfVectorizer 实现轻量级 BM25 检索 + 智谱 Embedding 向量语义检索，
 混合打分：score = 0.3 * BM25_score + 0.7 * embedding_score，
@@ -339,3 +339,4 @@ def iterative_search(
         return merged[:top_k]
     except Exception:
         return first_results
+

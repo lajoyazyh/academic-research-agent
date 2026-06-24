@@ -1,68 +1,49 @@
-# Security / Envs
-.env
-.env.*
-!.env.example
-secrets/
-
 # Python
 __pycache__/
 *.py[cod]
-*.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+*.pyo
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .coverage
 htmlcov/
 
-# Virtual Environments
-venv/
+# Virtual environments
 .venv/
+venv/
 env/
-ENV/
-.venv311/
 
-# Frontend
+# Secrets
+.env
+agent/.env
+*.key
+*.pem
+
+# Runtime data
+agent/sessions/*
+!agent/sessions/.gitkeep
+agent/documents/
+agent/**/.embed_cache/
+*.db
+*.sqlite
+*.sqlite3
+
+# Downloaded papers and generated artifacts
+*.aux
+*.log
+*.toc
+*.out
+*.synctex.gz
+
+# Frontend / OS
 node_modules/
 dist/
 build/
-.npm/
-
-# IDE / OS
-.vscode/
-.idea/
 .DS_Store
 Thumbs.db
 
-# Agent 运行时产出
-agent/sessions/
-agent/favorites.json
-agent/documents/
+# IDE
+.vscode/
+.idea/
+.serena/
 
-# Agent 运行时产出（不追踪）
-sessions/
-favorites.json
-documents/
-
-*/documents/*
-*/sessions/*
-*/logs/*
-*/test_sess/*
-
-
-*/favorites.json

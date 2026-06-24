@@ -1,4 +1,4 @@
-import os
+﻿import os
 import httpx
 from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
@@ -73,3 +73,4 @@ class LLMClient:
                 all_embeddings.extend([[0.0] * 1536 for _ in batch])
 
         return all_embeddings
+

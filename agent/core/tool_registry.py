@@ -1,4 +1,4 @@
-"""
+﻿"""
 工具注册中心：管理所有可用工具的元数据、启用/禁用状态、配置参数。
 支持持久化到 JSON 配置文件。
 """
@@ -241,3 +241,4 @@ def get_registry(config_path: str = None) -> ToolRegistry:
     if _registry is None:
         _registry = ToolRegistry(config_path)
     return _registry
+

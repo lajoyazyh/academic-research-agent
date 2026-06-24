@@ -1,5 +1,5 @@
-"""
-RAG 笔记生成器 — 迭代三阶段三升级
+﻿"""
+RAG 笔记生成器 — RAG upgrade
 
 基于智谱 Embedding API 实现向量语义检索，
 从 PDF 全文中检索最相关段落，逐节生成深度学术笔记。
@@ -501,3 +501,4 @@ IMPORTANT:
             sections_out.append(f"- **{section['name']}**：{note}")
 
         return f"## 论文笔记：{paper_title}\n\n" + "\n\n".join(sections_out)
+

@@ -1,4 +1,4 @@
-"""管理 API：工具注册中心、全局知识库、Copilot 会话、Skills 管理"""
+﻿"""管理 API：工具注册中心、全局知识库、Copilot 会话、Skills 管理"""
 import json
 import os
 import datetime
@@ -286,7 +286,7 @@ def get_copilot_messages(copilot_session_id: str) -> dict:
 
 
 # ═══════════════════════════════════════════
-#  Skills 管理 API（迭代三扩展：用户自定义 Agent 行为策略）
+#  Skills 管理 API（Extension: 用户自定义 Agent 行为策略）
 # ═══════════════════════════════════════════
 
 @router.get("/api/skills")
@@ -369,4 +369,5 @@ def get_skill_usage(skill_id: str) -> dict:
         raise HTTPException(status_code=404, detail=f"Skill {skill_id} 不存在")
     sessions = skill_mgr.get_skill_usage(skill_id)
     return {"skill_id": skill_id, "sessions": sessions, "count": len(sessions)}
+
 

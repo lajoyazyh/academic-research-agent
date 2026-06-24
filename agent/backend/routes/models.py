@@ -1,4 +1,4 @@
-"""
+﻿"""
 共享 Pydantic 模型：被多个路由模块使用。
 """
 from typing import Optional
@@ -109,3 +109,4 @@ class UpdatePaperStatusRequest(BaseModel):
 class CreateSessionRequest(BaseModel):
     topic: str
     keywords: Optional[list] = None
+

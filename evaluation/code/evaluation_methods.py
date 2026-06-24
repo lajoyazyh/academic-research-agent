@@ -1,4 +1,4 @@
-
+﻿
 import math
 from typing import List, Dict, Any, Iterable, Sequence, cast
 from difflib import SequenceMatcher
@@ -716,3 +716,4 @@ def get_evaluator(method: str):
             return FallbackEvaluator(method, "LLM judge not configured; used fallback metrics")
         return evaluator
     raise ValueError(f"Unsupported evaluation method: {method}")
+

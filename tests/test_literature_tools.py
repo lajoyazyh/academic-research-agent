@@ -1,4 +1,4 @@
-import json
+﻿import json
 import xml.etree.ElementTree as ET
 
 import pytest
@@ -266,3 +266,4 @@ def test_crossref_fetch_doi_tool_parses_response(monkeypatch):
     assert "Title: Crossref Detailed Paper" in result
     assert "Authors: Bob Lee" in result
     assert "Type: proceedings-article" in result
+

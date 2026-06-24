@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+﻿from sqlalchemy.orm import Session
 import crud, ModelS, schemas
 from evaluation_methods import get_evaluator
 import asyncio
@@ -53,13 +53,13 @@ def _resolve_ground_truths(raw_ground_truths):
     return [str(raw_ground_truths)]
 
 # 设置路径以导入 agent 模块（将仓库根加入 sys.path，以便 import agent）
-CURRENT_DIR = Path(__file__).resolve().parent       # 迭代三/evaluation/backend
-AGENT_DIR = CURRENT_DIR.parent.parent               # 迭代三
+CURRENT_DIR = Path(__file__).resolve().parent       # current version/evaluation/backend
+AGENT_DIR = CURRENT_DIR.parent.parent               # current version
 if str(AGENT_DIR) not in sys.path:
     sys.path.insert(0, str(AGENT_DIR))
 # 为了让 agent/main.py 中的 `from core...` 这类顶级导入生效，
 # 还需要把 `agent` 子目录加入 sys.path，使其内部模块可作为顶级模块被导入（例如 core、tools 等）。
-AGENT_PKG_DIR = AGENT_DIR / 'agent'                 # 迭代三/agent
+AGENT_PKG_DIR = AGENT_DIR / 'agent'                 # current version/agent
 if str(AGENT_PKG_DIR) not in sys.path:
     sys.path.insert(0, str(AGENT_PKG_DIR))
 
@@ -77,7 +77,7 @@ except Exception:
 def _run_agent_in_agent_dir(user_query: str, max_loops: int, agent_callback):
     """在 agent 目录工作上下文中运行 agent pipeline，以确保 .env 被正确加载"""
     original_cwd = os.getcwd()
-    agent_dir = AGENT_PKG_DIR  # 指向 迭代三/agent
+    agent_dir = AGENT_PKG_DIR  # 指向 current version/agent
     try:
         os.chdir(agent_dir)
         return run_agent_pipeline(user_query, max_loops, agent_callback)
@@ -183,3 +183,4 @@ async def perform_evaluation(db: Session, task_id: int):
             pass
         db_internal.close()
         return {"status": "failed", "error_message": str(e)}
+

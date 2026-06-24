@@ -1,5 +1,5 @@
-"""
-SessionManager - 迭代三核心：会话状态管理与数据持久化
+﻿"""
+SessionManager - Core: 会话状态管理与数据持久化
 
 管理 Session 的完整生命周期：
 - 创建/加载/更新 Session
@@ -826,3 +826,4 @@ class SessionManager:
         metadata = self._read_json(session_dir / "metadata.json") or {}
         metadata["updated_at"] = datetime.datetime.now().isoformat()
         self._write_json(session_dir / "metadata.json", metadata)
+

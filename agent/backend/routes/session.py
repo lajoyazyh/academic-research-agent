@@ -1,4 +1,4 @@
-"""Session 管理、论文管理、笔记管理 API"""
+﻿"""Session 管理、论文管理、笔记管理 API"""
 import json
 import os
 import datetime
@@ -600,4 +600,5 @@ def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | Non
         "note": "当前为摘要模式，仅回答当前论文内容。",
         "rag_status": "not_attempted",
     }
+
 

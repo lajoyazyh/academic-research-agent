@@ -1,4 +1,4 @@
-"""Shared path constants for the Academic Agent app."""
+﻿"""Shared path constants for the Academic Agent app."""
 
 from pathlib import Path
 
@@ -8,3 +8,4 @@ DOCS_DIR = BASE_DIR / "documents"
 SESSIONS_ROOT = str(BASE_DIR / "sessions")
 SESSIONS_DIR = Path(SESSIONS_ROOT)
 TOOLS_CONFIG = BASE_DIR / "config" / "tools.json"
+

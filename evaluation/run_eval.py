@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Agent 评估独立运行脚本（迭代三）
+Agent 评估独立运行脚本（current version）
 =====================================
 
 无需启动 Web 服务，从命令行一键完成：
@@ -65,10 +65,10 @@ if sys.platform == "win32":
 # ═══════════════════════════════════════════════════════════════
 # 1. 路径设置：确保能导入 agent 和 evaluation/code 模块
 # ═══════════════════════════════════════════════════════════════
-SCRIPT_DIR = Path(__file__).resolve().parent          # 迭代三/evaluation/
-CODE_DIR = SCRIPT_DIR / "code"                        # 迭代三/evaluation/code/
-AGENT_DIR = SCRIPT_DIR.parent                         # 迭代三/
-AGENT_PKG_DIR = AGENT_DIR / "agent"                   # 迭代三/agent/
+SCRIPT_DIR = Path(__file__).resolve().parent          # current version/evaluation/
+CODE_DIR = SCRIPT_DIR / "code"                        # current version/evaluation/code/
+AGENT_DIR = SCRIPT_DIR.parent                         # current version/
+AGENT_PKG_DIR = AGENT_DIR / "agent"                   # current version/agent/
 ROOT_DIR = AGENT_DIR.parent                           # code_repository/
 
 # 将路径加入 sys.path（避免污染已有路径）
@@ -81,7 +81,7 @@ for p in [str(CODE_DIR), str(AGENT_DIR), str(AGENT_PKG_DIR)]:
 # ═══════════════════════════════════════════════════════════════
 from dotenv import load_dotenv, find_dotenv
 
-# 优先加载仓库根 .env；如果不存在，自动回退到迭代三/agent/.env。
+# 优先加载仓库根 .env；如果不存在，自动回退到current version/agent/.env。
 env_candidates = [
     ROOT_DIR / ".env",
     AGENT_DIR / ".env",
@@ -543,7 +543,7 @@ def _extract_samples(items: list) -> list:
 # ═══════════════════════════════════════════════════════════════
 def main():
     parser = argparse.ArgumentParser(
-        description="Agent 评估独立运行器（迭代三）",
+        description="Agent 评估独立运行器（current version）",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
@@ -676,7 +676,7 @@ def main():
         mode_label += f"（从任务 ID={args.from_task}）"
 
     print("=" * 70)
-    print("  Agent 评估独立运行器（迭代三）")
+    print("  Agent 评估独立运行器（current version）")
     print(f"  启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"  模式: {mode_label}")
     print("=" * 70)
@@ -976,3 +976,4 @@ def _summarize_and_save(all_results, args, dataset, db, task_name, task_id, is_m
 
 if __name__ == "__main__":
     main()
+

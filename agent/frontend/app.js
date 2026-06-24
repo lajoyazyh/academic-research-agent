@@ -1,4 +1,4 @@
-const app = {
+﻿const app = {
     pollTimer: null,
     chatMessages: [],
     
@@ -22,7 +22,7 @@ const app = {
         this.loadTheme();
         
         this.loadFavorites();
-        this.loadSessions();  // 迭代三：加载 Session 列表
+        this.loadSessions();  // 加载 Session 列表
     },
 
     initConsole (){
@@ -659,7 +659,7 @@ const app = {
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  迭代三新增：Session 管理
+    //  Session-aware: Session 管理
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     currentSessionId: null,
@@ -1182,7 +1182,7 @@ const app = {
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  迭代三新增：关键词确认
+    //  Session-aware: 关键词确认
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     showKeywordModal(topic, keywords) {
@@ -1296,7 +1296,7 @@ const app = {
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  迭代三新增：搜索阶段（在关键词确认后触发）
+    //  Session-aware: 搜索阶段（在关键词确认后触发）
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     async startSearchPhase() {
@@ -1540,3 +1540,4 @@ document.addEventListener('DOMContentLoaded', () => {
         app.initChatPage();
     }
 });
+

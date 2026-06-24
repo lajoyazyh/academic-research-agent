@@ -1,5 +1,5 @@
-"""
-register_paper 工具 — 迭代三：下载 + 收录一体化
+﻿"""
+register_paper 工具 — 下载 + 收录一体化
 
 Agent 审核摘要后判断值得收录 → 调用此工具一次性完成：
   1. 下载 PDF 到 session papers 目录
@@ -225,3 +225,4 @@ class PaperRegisterTool(BaseTool):
         if abstract:
             summary += f"\n   摘要前 200 字: {abstract[:200]}..."
         return summary
+

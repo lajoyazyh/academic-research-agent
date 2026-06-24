@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import datetime
 import re
@@ -767,7 +767,7 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  迭代三新增：分阶段执行函数（支持断点/继续）
+#  Session-aware: 分阶段执行函数（支持断点/继续）
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def _extract_keywords_from_plan(plan_text: str) -> list[dict]:
@@ -1156,7 +1156,7 @@ def run_write_from_notes(
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  迭代三新增：整合的 Session-aware Pipeline
+#  Session-aware: 整合的 Session-aware Pipeline
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def run_agent_pipeline_session(
@@ -1267,3 +1267,4 @@ if __name__ == '__main__':
         
     except Exception as e:
         print(f'\n❌ Pipeline运行崩溃了：{str(e)}')
+

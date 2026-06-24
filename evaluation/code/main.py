@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import asyncio
 
 # 修复 Windows 上 "Event loop is closed" 问题
@@ -16,3 +16,4 @@ load_dotenv(ROOT_ENV)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8001)
+

@@ -1,4 +1,4 @@
-# Agent 评估
+﻿# Agent 评估
 
 对学术 Agent 的输出进行自动化评估。支持：**完整评估**（运行 Agent + 打分）、**从文件导入**（traces + answer 分别导入）。
 
@@ -6,9 +6,9 @@
 
 快速使用
 ```bash
-cd 迭代三\evaluation
+cd current version\evaluation
 
-# python 版本为3.11，与迭代二评估平台一致
+# python 版本为3.11，与previous version评估平台一致
 python -m pip install -r requirements.txt
 python -m pip install -r requirements-eval.txt
 
@@ -48,7 +48,7 @@ evaluation/
 ### 快速开始
 
 ```bash
-cd 迭代三\evaluation
+cd current version\evaluation
 
 # ━━━ 模式 A：完整评估（运行 Agent + 评估）━━━
 python run_eval.py --dataset-id 1
@@ -185,7 +185,7 @@ python run_eval.py --dataset-id 1 --from-traces traces.json --from-answer draft.
 
 ## 环境配置
 
-评估脚本会按顺序尝试加载仓库根目录 `.env`、迭代三目录 `.env`、`agent/.env`。当前项目通常直接复用 `agent/.env`：
+评估脚本会按顺序尝试加载仓库根目录 `.env`、current version目录 `.env`、`agent/.env`。当前项目通常直接复用 `agent/.env`：
 
 ```env
 ZHIPU_API_KEY=your_api_key
@@ -201,3 +201,4 @@ AGENT_MIN_PAPERS=3
 如果未配置 LLM Judge 或 ragas 依赖不可用，评估器会回退到稳定的 fallback 指标，包括 `similarity_score`、`truth_coverage_score`、`token_f1_score` 和 `context_support_score`，保证评测流程不中断。
 
 ---
+

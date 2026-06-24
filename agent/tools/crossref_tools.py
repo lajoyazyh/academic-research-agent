@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import re
 import urllib.parse
@@ -224,4 +224,5 @@ class CrossrefFetchByDoiTool(BaseTool):
             lines.append(f"URL: {entry_url}")
 
         return "\n".join(lines)
+
 

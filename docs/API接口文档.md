@@ -1,4 +1,4 @@
-# Academic Research Agent API 接口文档
+﻿# Academic Research Agent API 接口文档
 
 **版本**：v3.0  
 **日期**：2026-06-18  
@@ -247,3 +247,4 @@ Skill 类型：
 | 500 | 后端执行失败 |
 
 所有接口默认返回 JSON；文件和 PDF 接口返回文件响应。
+

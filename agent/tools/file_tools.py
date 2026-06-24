@@ -1,4 +1,4 @@
-import os
+﻿import os
 from typing import Any
 from core.tools import BaseTool
 
@@ -38,4 +38,5 @@ class AppendNoteTool(BaseTool):
         with open(self.note_file, 'r', encoding='utf-8') as f:
             current_size = len(f.read())
         return f"✅ 笔记已成功追加到草稿本！当前总字数：{current_size}。"
+
 

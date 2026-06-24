@@ -1,4 +1,4 @@
-import json
+﻿import json
 import re
 
 def extract_json(text: str) -> dict:
@@ -38,3 +38,4 @@ def extract_json(text: str) -> dict:
     except json.JSONDecodeError as e:
         # 如果依然无法解析，主动抛出异常供外部 Reflexion 反思拦截
         raise ValueError(f"无法将文本解析为合法 JSON: {str(e)}。原文摘录: {text[:50]}...")
+

@@ -1,4 +1,4 @@
-"""页面路由、收藏夹、历史记录、PDF 文件服务"""
+﻿"""页面路由、收藏夹、历史记录、PDF 文件服务"""
 import json
 import os
 import datetime
@@ -326,7 +326,7 @@ def get_pdf(filename: str, pdf_name: str) -> FileResponse:
     if "/" in filename or "\\" in filename or "/" in pdf_name or "\\" in pdf_name:
         raise HTTPException(status_code=400, detail="Invalid filename")
 
-    # 先检查 Session 目录（迭代三新路径）
+    # 先检查 Session 目录（current version新路径）
     pdf_path = SESSIONS_DIR / filename / "papers" / pdf_name
     if pdf_path.exists():
         return FileResponse(pdf_path, media_type="application/pdf")

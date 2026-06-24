@@ -1,4 +1,4 @@
-"""Agent 执行端点：规划、搜索、笔记、综述、自动模式、分析"""
+﻿"""Agent 执行端点：规划、搜索、笔记、综述、自动模式、分析"""
 import json
 import os
 import datetime
@@ -401,7 +401,7 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         raise HTTPException(status_code=500, detail=f"撰写阶段执行失败: {str(e)}")
 
 
-# ━━━ 迭代三新增：为选中论文生成独立笔记 ━━━
+# ━━━ Session-aware: 为选中论文生成独立笔记 ━━━
 
 
 @router.post("/{session_id}/run/notes")
@@ -958,4 +958,5 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
         "status": "started",
         "message": "自动流程已启动，请通过 GET /api/sessions/{session_id}/run/status 轮询进度",
     }
+
 

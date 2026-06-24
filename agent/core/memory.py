@@ -1,4 +1,4 @@
-import json
+﻿import json
 from typing import List, Dict, Any, Optional
 
 class TraceStep:
@@ -39,3 +39,4 @@ class Memory:
     def export_traces_to_json(self) -> str:
         """导出所有执行步骤的内部状态，方便 Web 端图形化展示"""
         return json.dumps([trace.to_dict() for trace in self.traces], ensure_ascii=False, indent=2)
+

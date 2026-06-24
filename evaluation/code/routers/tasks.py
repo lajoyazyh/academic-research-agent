@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+﻿from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 import crud,ModelS,schemas,database,services
@@ -63,3 +63,4 @@ def delete_evaluation_task(task_id: int, db: Session = Depends(database.get_db))
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     return {"status": "success"}
+

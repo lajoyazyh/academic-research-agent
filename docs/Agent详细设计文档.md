@@ -1,8 +1,8 @@
-# Academic Research Agent 详细设计文档
+﻿# Academic Research Agent 详细设计文档
 
 **版本**：v3.0  
 **日期**：2026-06-18  
-**范围**：迭代三当前实现架构
+**范围**：current version当前实现架构
 
 ---
 
@@ -331,3 +331,4 @@ evaluation/
 - Skills 失败时默认回退，保证演示稳定性。
 - 全局 Copilot 默认全局检索，但允许用户显式选择范围。
 - 外部 API 不稳定时，禁用部分工具属于工程稳定性策略。
+

@@ -1,4 +1,4 @@
-"""
+﻿"""
 共享依赖模块：所有路由子模块通过此模块获取公共对象，
 避免循环引用。
 """
@@ -52,3 +52,4 @@ def init_deps(mgr, kb, sm, cm, tr):
     skill_mgr = sm
     copilot_mgr = cm
     _tool_registry = tr
+

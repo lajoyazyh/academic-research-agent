@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+﻿from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
@@ -45,3 +45,4 @@ class EvaluationDatasetList(BaseModel):
 class StatusResponse(BaseModel):
     status: str
     error_message: Optional[str] = None
+

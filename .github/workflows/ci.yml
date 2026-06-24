@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: windows-latest
+
+    env:
+      PYTHONUTF8: "1"
+      ZHIPU_API_KEY: test_key_ci_only
+      ZHIPU_BASE_URL: https://example.com/api
+      ZHIPU_MODEL: glm-4-flash
+      AGENT_LOOP_DELAY_SEC: "0"
+      ARXIV_SEARCH_RETRY_LIMIT: "3"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest tests -q

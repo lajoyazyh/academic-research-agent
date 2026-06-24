@@ -1,25 +1,25 @@
-# 迭代三 Agent 优化文档
+﻿# current version Agent 优化文档
 
 **版本**：v4.0
 **日期**：2026-06-18
-**范围**：迭代三 Academic Research Agent 的会话化、交互式调研、RAG、Skills、深度分析、跨 Session 知识共享、评估与 CI/CD 支撑
-**依据**：迭代三任务说明、项目当前实现、`evaluation/` 评估材料、2026-05 至 2026-06 git 提交记录、阶段性评估结果
+**范围**：current version Academic Research Agent 的会话化、交互式调研、RAG、Skills、深度分析、跨 Session 知识共享、评估与 CI/CD 支撑
+**依据**：current versionproject requirements、项目当前实现、`evaluation/` 评估材料、2026-05 至 2026-06 git 提交记录、阶段性评估结果
 
 ---
 
 ## 1. 概述
 
-迭代三的目标不是简单给迭代二 Agent 增加几个页面，而是把原来的“一次性自动生成器”改造成一个可持续工作的学术调研系统。用户不再只是输入主题并等待最终综述，而是可以在关键词、论文筛选、笔记、分析、综述、修订等关键节点介入判断；系统也不再只保留最终结果，而是把计划、搜索轨迹、论文、笔记、分析、草稿、对话历史和评估材料组织成可复盘的 Session。
+current version的目标不是简单给previous version Agent 增加几个页面，而是把原来的“一次性自动生成器”改造成一个可持续工作的学术调研系统。用户不再只是输入主题并等待最终综述，而是可以在关键词、论文筛选、笔记、分析、综述、修订等关键节点介入判断；系统也不再只保留最终结果，而是把计划、搜索轨迹、论文、笔记、分析、草稿、对话历史和评估材料组织成可复盘的 Session。
 
 最终系统形成了两条等价的使用路径：
 
 - **手动分步模式**：用户逐步确认关键词、检索论文、选择论文、生成和编辑笔记、生成和编辑分析卡片、生成和修订综述。
 - **一键自动模式**：系统按照 `规划 -> 搜索 -> 笔记 -> 分析 -> 综述` 自动执行完整 pipeline，同时保留中间产物和 trace，便于后续检查和修改。
 
-迭代三的核心改造可以概括为六波：
+current version的核心改造可以概括为六波：
 
 ```text
-初始状态：迭代二一次性 Agent
+初始状态：previous version一次性 Agent
   -> 第一波：Session 状态管理 + 多轮聊天
   -> 第二波：深度笔记生成 + 聊天增强 + 工具注册中心
   -> 第三波：RAG 检索系统升级
@@ -30,9 +30,9 @@
 
 ---
 
-## 2. 迭代二痛点与迭代三目标
+## 2. previous version痛点与current version目标
 
-### 2.1 迭代二主要问题
+### 2.1 previous version主要问题
 
 | 问题 | 表现 | 对用户/答辩的影响 |
 |------|------|------|
@@ -45,7 +45,7 @@
 | Prompt 不可定制 | 不同主题只能使用同一套默认策略 | 缺少面向不同领域和用户偏好的可控性 |
 | 评估与可证明性弱 | 缺少 trace、Skill 状态、评估脚本闭环 | 难以证明系统确实按设计运行 |
 
-### 2.2 迭代三设计目标
+### 2.2 current version设计目标
 
 1. **交互式调研**：允许用户参与关键词、论文、笔记、分析和综述决策。
 2. **连续对话**：一个研究主题可长期维护，支持多会话聊天、历史保存、上下文压缩。
@@ -92,7 +92,7 @@
 
 ### 3.4 分析阶段并入主流程
 
-迭代三后期将分析阶段从“展示性页面”升级为正式 pipeline 节点：
+current version后期将分析阶段从“展示性页面”升级为正式 pipeline 节点：
 
 - 自动模式中，分析阶段位于笔记之后、综述之前。
 - 分析结果保存到 `sessions/{session_id}/analysis/analysis_results.json`。
@@ -108,7 +108,7 @@
 
 ### 4.1 问题
 
-迭代二每次运行创建独立结果目录，缺少统一状态和长期记忆：
+previous version每次运行创建独立结果目录，缺少统一状态和长期记忆：
 
 - 运行中无法暂停，也不能从搜索、笔记、写作等阶段恢复。
 - 搜索结束后若发现关键词有问题，只能重跑整个流程。
@@ -117,7 +117,7 @@
 
 ### 4.2 Session 状态机
 
-迭代三引入 `SessionManager`，将一个研究任务抽象为一个 Session。状态机覆盖：
+current version引入 `SessionManager`，将一个研究任务抽象为一个 Session。状态机覆盖：
 
 ```text
 planning -> plan_confirmed -> searching -> search_complete
@@ -264,7 +264,7 @@ PDF/摘要文本
 
 ### 5.3 工具注册中心
 
-迭代三将工具集中到 `core/tool_registry.py` 管理。工具元数据包括：
+current version将工具集中到 `core/tool_registry.py` 管理。工具元数据包括：
 
 - 名称
 - 描述
@@ -533,7 +533,7 @@ backend/routes/
 
 ### 9.4 跨 Session 知识共享显式选择
 
-全局 Copilot 原先默认从所有真实 Session 中检索。迭代三后期增加范围选择：
+全局 Copilot 原先默认从所有真实 Session 中检索。current version后期增加范围选择：
 
 - `/api/knowledge/chat` 支持可选 `session_ids`。
 - 不传 `session_ids`：保持全局检索。
@@ -574,7 +574,7 @@ backend/routes/
 
 ### 10.2 阶段评估数据
 
-评估部分依据最新五轮实验数据整理。五轮数据对应从基础版本到迭代三增强版本的逐步优化过程：
+评估部分依据最新五轮实验数据整理。五轮数据对应从基础版本到current version增强版本的逐步优化过程：
 
 | 指标 | 第一轮 | 第二轮 | 第三轮 | 第四轮 | 第五轮 |
 |------|------:|------:|------:|------:|------:|
@@ -592,7 +592,7 @@ backend/routes/
 
 ### 10.3 结果分析
 
-- `overall_score` 从第一轮 0.65 提升到第五轮 0.83，说明迭代三优化不是只增加界面功能，而是带来了可量化的整体质量提升。
+- `overall_score` 从第一轮 0.65 提升到第五轮 0.83，说明current version优化不是只增加界面功能，而是带来了可量化的整体质量提升。
 - `context_precision` 从 0.303 提升到 0.571，累计提升 0.268，主要受益于 Session 化上下文组织、RAG 检索升级、论文/笔记/分析产物的结构化沉淀。
 - `context_recall` 从 0.75 提升到 0.90，说明系统在引入全文检索、Embedding/BM25 fallback 和分析阶段后，对相关资料的覆盖能力更强。
 - `correctness_score`、`completeness_score`、`relevance_score` 均持续提升，说明生成内容在事实正确性、信息完整度和主题贴合度上都有稳定改善。
@@ -602,7 +602,7 @@ backend/routes/
 - `faithfulness_score` 在第五轮达到 0.92，是提升最明显的指标之一，说明分析注入、结构化笔记和写作自修复增强了输出对资料的忠实程度。
 - `helpfulness_score` 第二轮短暂下降到 0.70，随后提升到 0.83，说明早期会话化和上下文扩展可能带来一定噪声，但后续 RAG、分析和写作流程优化弥补了这个问题。
 
-总体来看，五轮评估呈现明确上升趋势。第五轮相对第一轮的主要增幅包括：`overall_score` +0.18、`context_precision` +0.268、`context_recall` +0.15、`faithfulness_score` +0.17、`relevance_score` +0.19。这说明迭代三优化在检索、证据支撑、流程连贯性和最终生成质量上均取得了实质性改善。
+总体来看，五轮评估呈现明确上升趋势。第五轮相对第一轮的主要增幅包括：`overall_score` +0.18、`context_precision` +0.268、`context_recall` +0.15、`faithfulness_score` +0.17、`relevance_score` +0.19。这说明current version优化在检索、证据支撑、流程连贯性和最终生成质量上均取得了实质性改善。
 
 ### 10.4 evaluation 目录
 
@@ -639,7 +639,7 @@ evaluation/
 
 ### 11.1 自动化测试
 
-迭代三测试位于 `tests/`，当前覆盖：
+current version测试位于 `tests/`，当前覆盖：
 
 - LLM 客户端默认配置和消息构造。
 - 工具执行和查询降级。
@@ -650,7 +650,7 @@ evaluation/
 常用命令：
 
 ```bash
-cd 迭代三
+cd current version
 python -m pytest tests -q
 ```
 
@@ -658,8 +658,8 @@ python -m pytest tests -q
 
 仓库包含两类自动化配置：
 
-- `.gitlab-ci.yml`：NJU GitLab CI，包含测试阶段和 GitHub 镜像同步/部署预留阶段。
-- `.github/workflows/agent-ci.yml`：GitHub Actions，分别运行迭代二和迭代三测试。
+- `.gitlab-ci.yml`：GitLab CI，包含测试阶段和 GitHub 镜像同步/部署预留阶段。
+- `.github/workflows/agent-ci.yml`：GitHub Actions，分别运行previous version和current version测试。
 
 CI 的主要作用是每次提交后自动安装依赖并运行 pytest，避免基础功能被破坏。CD 部分当前更准确地说是“镜像同步/部署预留”，即同步到远程github仓库（方便后续如有需要，通过vercel等工具自动从github仓库导入部署），不是完整的公网 Web 自动部署。
 
@@ -751,5 +751,6 @@ Skill 失败 -> 默认策略
 |------|------|------|
 | v1.0 | 2026-06-12 | 按四波优化记录会话、笔记、RAG、Pipeline |
 | v2.0 | 2026-06-13 | 补充 Web 解耦和上下文窗口管理 |
-| v3.0 | 2026-06-18 | 合并迭代三优化总文档，补充分析阶段、Skill trace、Copilot 范围 |
+| v3.0 | 2026-06-18 | 合并current version优化总文档，补充分析阶段、Skill trace、Copilot 范围 |
 | v4.0 | 2026-06-19 | 融合精细版内容，补全六波优化、评估解释、CI/CD 和任务点对齐 |
+

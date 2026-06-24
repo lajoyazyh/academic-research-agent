@@ -1,4 +1,4 @@
-import urllib.request
+﻿import urllib.request
 import os
 from typing import Any
 from core.tools import BaseTool
@@ -120,7 +120,7 @@ class ArxivDownloadPdfTool(BaseTool):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  迭代三 RAG 升级：PDF 全量文本提取器
+#  RAG upgrade：PDF 全量文本提取器
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def extract_full_text_from_pdf(pdf_path: str, session_id: str = "", paper_id: str = "") -> list[dict]:
@@ -202,3 +202,4 @@ def extract_all_session_pdfs(session_id: str, papers_dir: str) -> list[dict]:
         blocks = extract_full_text_from_pdf(pdf_path, session_id, paper_id)
         all_blocks.extend(blocks)
     return all_blocks
+

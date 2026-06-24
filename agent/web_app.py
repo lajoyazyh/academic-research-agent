@@ -1,4 +1,4 @@
-"""
+﻿"""
 Academic Agent Web — FastAPI 入口
 
 路由已按功能模块拆分到 backend/routes/ 目录：
@@ -86,3 +86,4 @@ if __name__ == "__main__":
     print("\n>>> Academic Agent Web 服务即将启动...")
     print(">>> 请在浏览器中打开: http://127.0.0.1:8000\n")
     uvicorn.run("web_app:app", host="127.0.0.1", port=8000, reload=True)
+

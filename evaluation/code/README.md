@@ -1,4 +1,4 @@
-# Agent评估平台后端
+﻿# Agent评估平台后端
 
 此后端提供分层 API，用于管理评估数据集、调度 Agent 执行并保存评测结果。
 
@@ -24,7 +24,7 @@
 安装依赖：
 
 ```powershell
-cd 迭代二
+cd previous version
 python -m pip install -r requirements.txt
 python -m pip install -r requirements-eval.txt
 ```
@@ -32,7 +32,7 @@ python -m pip install -r requirements-eval.txt
 启动后端：
 
 ```powershell
-cd 迭代二/eval_platform/backend
+cd previous version/eval_platform/backend
 python main.py
 ```
 
@@ -90,5 +90,6 @@ API 默认在 `http://127.0.0.1:8001` 可用。
 - 评估任务执行后能正确写回结果和状态。
 
 这些测试可直接用于 GitHub 提交前回归。
+
 
 

@@ -1,4 +1,4 @@
-from core.tools import CalculatorTool
+﻿from core.tools import CalculatorTool
 from llms import client as llm_client_module
 from llms.client import LLMClient
 from main import _build_fallback_notes_from_traces
@@ -325,3 +325,4 @@ def test_chat_message_falls_back_to_template_when_answer_llm_fails(monkeypatch):
     assert result["action"] == "chat"
     assert result["confirmation_required"] is False
     assert "摘要内容" in result["reply"]
+

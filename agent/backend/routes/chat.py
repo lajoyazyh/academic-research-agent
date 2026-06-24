@@ -1,4 +1,4 @@
-"""聊天系统：上下文窗口管理、意图判定、流式端点"""
+﻿"""聊天系统：上下文窗口管理、意图判定、流式端点"""
 import json
 import os
 import datetime
@@ -151,7 +151,7 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
         accepted_names = "review模式下暂不提供已选论文列表"
 
 
-    # ━━━ 迭代三 RAG 升级：迭代式混合检索 PDF 原文段落 ━━━
+    # ━━━ RAG upgrade：迭代式混合检索 PDF 原文段落 ━━━
     rag_context = ""
     _sid = session.get("session_id", "")
     if _sid:
@@ -879,4 +879,5 @@ def compress_context(session_id: str, conv_id: str = "default") -> dict:
         "summary": summary[:200],
         "message": f"已将 {len(to_compress)} 条消息压缩为摘要，保留最近 4 轮对话",
     }
+
 

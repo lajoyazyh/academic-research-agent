@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import time
 import urllib.parse
@@ -181,4 +181,5 @@ class SemanticScholarFetchTool(BaseTool):
             lines.append(f"ExternalIds: {json.dumps(external_ids, ensure_ascii=False)}")
 
         return "\n".join(lines)
+
 

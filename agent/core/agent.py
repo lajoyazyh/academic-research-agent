@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import time
 from typing import List, Dict, Any
@@ -267,3 +267,4 @@ class BaseAgent:
             current_query = f"这是执行 '{action}' 的结果 / 环境报错观察 (Observation):\n{observation}\n现在请根据这个观察结果决定你的下一步 thought 和 action。"
             
         return "很遗憾，已达到系统的最大内部循环配置上限，未能得出最终结论。"
+

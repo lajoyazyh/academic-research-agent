@@ -1,4 +1,4 @@
-import json
+﻿import json
 import urllib.parse
 import urllib.request
 import urllib.error
@@ -96,3 +96,4 @@ class OpenAlexSearchTool(BaseTool):
                     
         # Filter out empty strings and join
         return " ".join([w for w in words if w])
+

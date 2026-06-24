@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+﻿from abc import ABC, abstractmethod
 from typing import Dict, Any
 
 class BaseTool(ABC):
@@ -44,3 +44,4 @@ class DummySearchTool(BaseTool):
         if not query:
             raise ValueError("Missing required parameter: 'query'")
         return f"【搜索引擎返回结果】：检索词 '{query}' 的主要结果是：DeepSeek 是一家中国的人工智能初创公司。"
+

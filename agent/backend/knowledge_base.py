@@ -1,4 +1,4 @@
-"""
+﻿"""
 全局知识库 — 跨 Session 知识共享
 
 扫描所有 Session 的论文、笔记、综述草稿，建立全局索引，
@@ -252,3 +252,4 @@ class GlobalKnowledgeBase:
             tokens.append(chinese[i:i + 2])
         tokens.extend(list(chinese))
         return tokens
+
