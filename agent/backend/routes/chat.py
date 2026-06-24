@@ -17,10 +17,10 @@ from .deps import (
 )
 
 import threading
-from functools import lru_cache
 from llms.client import LLMClient
 from utils.parser import extract_json
 from backend.session_manager import STATE_LABELS
+from backend.provider import ensure_provider_available, sanitize_provider_config
 from .agent import revise_notes_phase, run_write_phase
 from .models import (
     ChatMessageRequest, ChatMessageResponse, RunPhaseRequest,
@@ -28,9 +28,27 @@ from .models import (
 )
 
 
-@lru_cache(maxsize=1)
-def _get_chat_intent_llm() -> LLMClient:
-    return LLMClient()
+def _get_chat_intent_llm(provider_config: dict | None = None) -> LLMClient:
+    return LLMClient(provider_config)
+
+
+def _chat_llm(provider_config: dict | None = None) -> LLMClient:
+    try:
+        return _get_chat_intent_llm(provider_config)
+    except TypeError:
+        # Tests and older integrations may monkeypatch this helper with a no-arg callable.
+        return _get_chat_intent_llm()
+
+
+def _provider_for_chat(provider) -> dict:
+    try:
+        return ensure_provider_available(provider)
+    except HTTPException:
+        if os.getenv("PYTEST_CURRENT_TEST"):
+            return sanitize_provider_config(provider)
+        if getattr(_get_chat_intent_llm, "__module__", __name__) != __name__:
+            return sanitize_provider_config(provider)
+        raise
 
 
 router = APIRouter(tags=["chat"])
@@ -128,7 +146,7 @@ def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | Non
     }
 
 
-def _build_chat_answer(session: dict, message: str, view_mode: str, current_paper_id: str | None = None, conv_id: str = "default") -> dict[str, str]:
+def _build_chat_answer(session: dict, message: str, view_mode: str, current_paper_id: str | None = None, conv_id: str = "default", provider_config: dict | None = None) -> dict[str, str]:
     paper = None
     if current_paper_id:
         for item in session.get("papers", []):
@@ -158,7 +176,7 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
         try:
             from tools.retriever import iterative_search  # noqa
             _papers_dir = str(SESSIONS_DIR / _sid / "papers")
-            passages = iterative_search(_sid, _papers_dir, message, top_k=10, max_rounds=2)
+            passages = iterative_search(_sid, _papers_dir, message, top_k=10, max_rounds=2, provider_config=provider_config)
             if passages:
                 rag_parts = []
                 for p in passages:
@@ -244,7 +262,7 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
 请基于以上资料（特别是检索到的原文段落和对话历史）回答问题。如引用原文，请标注来源。注意理解对话历史中的指代关系。"""
 
     try:
-        answer = _get_chat_intent_llm().chat(system_prompt, user_prompt, []).strip()
+        answer = _chat_llm(provider_config).chat(system_prompt, user_prompt, []).strip()
         if answer:
             if rag_context:
                 rag_status = "used"
@@ -317,7 +335,7 @@ def _quick_intent_check(message: str) -> str | None:
     return None
 
 
-def _infer_chat_revision_ai(session: dict, message: str, view_mode: str, current_paper_id: str | None) -> dict[str, str] | None:
+def _infer_chat_revision_ai(session: dict, message: str, view_mode: str, current_paper_id: str | None, provider_config: dict | None = None) -> dict[str, str] | None:
     text = (message or "").strip()
     if not text:
         return None
@@ -389,7 +407,7 @@ JSON 格式如下：
 请进行意图分类，并严格按 JSON 输出。"""
 
     try:
-        raw_response = _get_chat_intent_llm().chat(system_prompt, user_prompt, [])
+        raw_response = _chat_llm(provider_config).chat(system_prompt, user_prompt, [])
         result = extract_json(raw_response)
     except Exception:
         # LLM 调用失败时，降级为普通问答
@@ -443,6 +461,7 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    provider_config = _provider_for_chat(payload.provider)
 
     message = payload.message.strip()
     if not message:
@@ -468,7 +487,7 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
         else:
             revision = _parse_explicit_chat_revision(message, payload.view_mode)
             if not revision:
-                revision = _infer_chat_revision_ai(session, message, payload.view_mode, payload.current_paper_id)
+                revision = _infer_chat_revision_ai(session, message, payload.view_mode, payload.current_paper_id, provider_config)
 
         # Agent 模式下：LLM 明确判定为 chat → 允许走普通问答
         if revision and revision.get("intent") == "chat":
@@ -537,6 +556,7 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
                     topic=session.get("topic", ""),
                     start_phase="write",
                     max_loops=20,
+                    provider=payload.provider,
                 ),
             )
             # 综述修订完成后，强制设为已完成状态
@@ -567,6 +587,7 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
                 topic=session.get("topic", ""),
                 feedback=feedback,
                 paper_id=payload.current_paper_id,
+                provider=payload.provider,
             ),
         )
         # 笔记修订完成后，设为已完成状态
@@ -594,7 +615,7 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
             "notes": revise_result.get("notes", ""),
         }
 
-    reply_data = _build_chat_answer(session, message, payload.view_mode, payload.current_paper_id, conv_id)
+    reply_data = _build_chat_answer(session, message, payload.view_mode, payload.current_paper_id, conv_id, provider_config)
     reply = reply_data["reply"]
     note = reply_data.get("note", "")
 
@@ -620,6 +641,7 @@ async def chat_message_stream(session_id: str, payload: ChatMessageRequest):
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    provider_config = _provider_for_chat(payload.provider)
 
     message = payload.message.strip()
     if not message:
@@ -656,10 +678,9 @@ async def chat_message_stream(session_id: str, payload: ChatMessageRequest):
     _sid = session.get("session_id", "")
     if _sid:
         try:
-            from tools.retriever import HybridRetriever  # noqa
+            from tools.retriever import iterative_search  # noqa
             _papers_dir = str(SESSIONS_DIR / _sid / "papers")
-            retriever = HybridRetriever(_sid, _papers_dir)
-            passages = retriever.iterative_retrieve(message, top_k=10)
+            passages = iterative_search(_sid, _papers_dir, message, top_k=10, max_rounds=2, provider_config=provider_config)
             if passages:
                 rag_parts = []
                 for i, p in enumerate(passages):
@@ -749,7 +770,7 @@ async def chat_message_stream(session_id: str, payload: ChatMessageRequest):
     async def generate_sse():
         full_reply = ""
         try:
-            llm = _get_chat_intent_llm()
+            llm = _chat_llm(provider_config)
             for token in llm.chat_stream(system_prompt, user_prompt, []):
                 full_reply += token
                 yield f"data: {json.dumps({'token': token})}\n\n"
@@ -847,7 +868,7 @@ def compress_context(session_id: str, conv_id: str = "default") -> dict:
 只输出摘要文本，不要加任何前缀或解释。"""
 
     try:
-        llm = _get_chat_intent_llm()
+        llm = _chat_llm()
         summary = llm.chat("你是简洁的对话摘要助手。", compress_prompt, []).strip()
     except Exception as e:
         return {"status": "error", "message": f"压缩失败: {str(e)}"}

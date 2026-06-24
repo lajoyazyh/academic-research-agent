@@ -15,13 +15,12 @@ from .deps import (
     RUNS, RUN_LOCK, SESSIONS_DIR, DOCS_DIR, FRONTEND_DIR,
     FAVORITES_FILE,
 )
-from functools import lru_cache
 from llms.client import LLMClient
+from backend.provider import ensure_provider_available
 
 
-@lru_cache(maxsize=1)
-def _get_chat_intent_llm() -> LLMClient:
-    return LLMClient()
+def _get_chat_intent_llm(provider_config: dict | None = None) -> LLMClient:
+    return LLMClient(provider_config)
 
 
 router = APIRouter(tags=["admin"])
@@ -116,6 +115,7 @@ def global_chat(payload: dict) -> dict:
     message = (payload.get("message") or "").strip()
     if not message:
         raise HTTPException(status_code=400, detail="message 不能为空")
+    provider_config = ensure_provider_available(payload.get("provider"))
 
     copilot_session_id = (payload.get("copilot_session_id") or "").strip()
     raw_session_ids = payload.get("session_ids", None)
@@ -174,7 +174,7 @@ def global_chat(payload: dict) -> dict:
 请基于以上资料回答。如引用资料，请标注来源（如"[Session主题] 的笔记中提到..."）。"""
 
     try:
-        llm = _get_chat_intent_llm()
+        llm = _get_chat_intent_llm(provider_config)
         reply = llm.chat(system_prompt, user_prompt, []).strip()
     except Exception as e:
         reply = f"抱歉，生成回答时出错：{str(e)}"

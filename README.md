@@ -15,6 +15,7 @@ Academic Research Agent turns a research topic into a traceable research workspa
 - **Trace observability**: inspect tool calls, errors, fallback decisions, and active Skill status.
 - **Custom Skills**: configure search, note-taking, and writing behavior per workspace.
 - **Cross-session Copilot**: ask questions across saved research sessions, optionally scoped to selected sessions.
+- **BYOK-ready public demo**: visitors can provide their own OpenAI-compatible API key in the browser; the server does not persist it.
 
 ## Screens and Workflow
 
@@ -60,7 +61,7 @@ python -m pip install -r requirements.txt
 
 ### 2. Configure
 
-Create `.env` in the repository root or in `agent/.env`:
+For local private use, create `.env` in the repository root or in `agent/.env`:
 
 ```env
 ZHIPU_API_KEY=your_key_here
@@ -73,6 +74,15 @@ ARXIV_SEARCH_RETRY_LIMIT=3
 ```
 
 You can also use an OpenAI-compatible provider by setting `OPENAI_API_KEY`, `ZHIPU_BASE_URL`, and `ZHIPU_MODEL` appropriately.
+
+For public demos, leave `ZHIPU_API_KEY` unset and use the in-app **API 配置** button. The browser sends `API Key`, `Base URL`, and `Model` with LLM requests only. The backend never writes request keys to `agent/sessions/`, traces, metadata, notes, analysis, or reviews.
+
+Default in-app provider values:
+
+```text
+Base URL: https://open.bigmodel.cn/api/paas/v4/
+Model: glm-4-flash
+```
 
 ### 3. Run the Web App
 
@@ -106,12 +116,7 @@ Then open `http://127.0.0.1:8000/`.
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for Render, Railway, Fly.io, VPS, Docker, and personal website portfolio notes.
 
-For a public demo, do not expose an unrestricted paid LLM API key. Prefer one of:
-
-- a private demo behind authentication,
-- a limited-cost API key,
-- a preloaded sample session,
-- or a demo mode that disables expensive long-running workflows.
+For a public demo, prefer BYOK mode and do not configure your private paid LLM key on the server.
 
 ## Documentation
 
@@ -134,4 +139,3 @@ The `evaluation/` directory contains an optional standalone evaluation runner an
 ## License
 
 MIT License. See [LICENSE](LICENSE).
-

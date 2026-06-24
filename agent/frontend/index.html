@@ -16,6 +16,7 @@
       <strong id="consoleTopic">Notebook 研究控制台</strong>
     </div>
     <div class="topbar-right">
+      <button class="ghost-btn" id="apiConfigBtn" title="配置模型 API"><i class="fa-solid fa-key"></i> API 配置</button>
       <button class="ghost-btn" id="toolManagerBtn" title="管理 Agent 工具"><i class="fa-solid fa-toolbox"></i> 工具管理</button>
       <button class="ghost-btn" id="themeToggle" title="切换深色模式"><i class="fa-solid fa-moon"></i></button>
       <span class="state-pill"><span id="consoleStateDot" class="status-dot"></span><span id="consoleState">就绪</span></span>
@@ -146,6 +147,38 @@
       <div class="modal-foot">
         <button class="secondary-btn" id="addPaperClose">取消</button>
         <button class="primary-btn" id="addPaperSubmitBtn"><i class="fa-solid fa-plus"></i> 添加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API 配置弹窗：BYOK，仅保存在浏览器或本次请求内 -->
+  <div class="modal-overlay" id="apiConfigModal" style="display:none;">
+    <div class="modal-box" style="max-width:560px;">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-key"></i> API 配置</h3>
+        <button class="ghost-btn" id="apiConfigClose"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="modal-hint">公共 Demo 不内置私人模型额度。API Key 只会随本次请求发送到服务端，不会写入会话文件、轨迹或元数据。</p>
+      <div class="field-grid" style="margin-bottom:12px;">
+        <label>API Key</label>
+        <input type="password" id="providerApiKey" placeholder="请输入你的 API Key" autocomplete="off" />
+      </div>
+      <div class="field-grid" style="margin-bottom:12px;">
+        <label>Base URL</label>
+        <input type="text" id="providerBaseUrl" placeholder="https://open.bigmodel.cn/api/paas/v4/" />
+      </div>
+      <div class="field-grid" style="margin-bottom:12px;">
+        <label>Model</label>
+        <input type="text" id="providerModel" placeholder="glm-4-flash" />
+      </div>
+      <label class="provider-save-row">
+        <input type="checkbox" id="providerSaveLocal" checked />
+        <span>Save locally</span>
+      </label>
+      <div class="provider-status" id="providerStatusHint"></div>
+      <div class="modal-foot">
+        <button class="secondary-btn" id="apiConfigClear">清除</button>
+        <button class="primary-btn" id="apiConfigSave"><i class="fa-solid fa-check"></i> 保存</button>
       </div>
     </div>
   </div>

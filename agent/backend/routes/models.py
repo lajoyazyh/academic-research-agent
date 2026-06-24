@@ -36,6 +36,12 @@ class RunStatusResponse(BaseModel):
     papers: list[str] = []
 
 
+class ProviderConfig(BaseModel):
+    api_key: str | None = None
+    base_url: str | None = None
+    model: str | None = None
+
+
 class ChatMessageRequest(BaseModel):
     message: str
     view_mode: str = "summary"
@@ -45,6 +51,7 @@ class ChatMessageRequest(BaseModel):
     confirmed_revision: bool = False
     revision_target: str | None = None
     revision_feedback: str | None = None
+    provider: ProviderConfig | None = None
 
 
 class ChatMessageResponse(BaseModel):
@@ -62,28 +69,33 @@ class RunPhaseRequest(BaseModel):
     keywords: Optional[list] = None
     max_loops: int = 20
     min_papers: int = 3
+    provider: ProviderConfig | None = None
 
 
 class RunNotesRequest(BaseModel):
     topic: str
     paper_ids: list[str]
+    provider: ProviderConfig | None = None
 
 
 class ReviseNotesRequest(BaseModel):
     topic: str
     feedback: str
     paper_id: str | None = None
+    provider: ProviderConfig | None = None
 
 
 class AutoRunRequest(BaseModel):
     topic: str
     max_loops: int = 20
     min_papers: int = 3
+    provider: ProviderConfig | None = None
 
 
 class AnalysisRequest(BaseModel):
     topic: str
     analysis_type: str = "all"
+    provider: ProviderConfig | None = None
 
 
 class UpdateStateRequest(BaseModel):

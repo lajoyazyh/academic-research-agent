@@ -21,6 +21,13 @@
     analysisEditText: "",
     _autoRunning: false,
     _autoPollTimer: null,
+    provider: {
+      api_key: "",
+      base_url: "https://open.bigmodel.cn/api/paas/v4/",
+      model: "glm-4-flash",
+      save_local: true,
+      server_available: false,
+    },
   },
 
   els: {},
@@ -28,6 +35,7 @@
   init() {
     this.bindCommonElements();
     this.loadThemePreference();
+    this.loadProviderConfig();
 
     // 为所有页面绑定主题切换按钮
     this.els.themeToggle = document.getElementById("themeToggle");
@@ -103,6 +111,110 @@
     this.els.toolResetBtn = document.getElementById("toolResetBtn");
     this.els.toolEnabledCount = document.getElementById("toolEnabledCount");
     this.els.toolDisabledCount = document.getElementById("toolDisabledCount");
+    this.els.apiConfigBtn = document.getElementById("apiConfigBtn");
+    this.els.apiConfigModal = document.getElementById("apiConfigModal");
+    this.els.apiConfigClose = document.getElementById("apiConfigClose");
+    this.els.apiConfigSave = document.getElementById("apiConfigSave");
+    this.els.apiConfigClear = document.getElementById("apiConfigClear");
+    this.els.providerApiKey = document.getElementById("providerApiKey");
+    this.els.providerBaseUrl = document.getElementById("providerBaseUrl");
+    this.els.providerModel = document.getElementById("providerModel");
+    this.els.providerSaveLocal = document.getElementById("providerSaveLocal");
+    this.els.providerStatusHint = document.getElementById("providerStatusHint");
+  },
+
+  loadProviderConfig() {
+    const defaults = {
+      api_key: "",
+      base_url: "https://open.bigmodel.cn/api/paas/v4/",
+      model: "glm-4-flash",
+      save_local: true,
+      server_available: false,
+    };
+    try {
+      const saved = JSON.parse(localStorage.getItem("academic-agent:provider") || "{}");
+      this.state.provider = { ...defaults, ...saved, save_local: saved.save_local !== false };
+    } catch (error) {
+      this.state.provider = defaults;
+    }
+    fetch("/api/provider/status")
+      .then((res) => res.json())
+      .then((status) => {
+        this.state.provider.server_available = !!status.server_provider_available;
+        this.state.provider.base_url = this.state.provider.base_url || status.default_base_url || defaults.base_url;
+        this.state.provider.model = this.state.provider.model || status.default_model || defaults.model;
+        this.refreshProviderStatus();
+      })
+      .catch(() => this.refreshProviderStatus());
+  },
+
+  getProviderPayload() {
+    const provider = this.state.provider || {};
+    const payload = {
+      api_key: String(provider.api_key || "").trim(),
+      base_url: String(provider.base_url || "https://open.bigmodel.cn/api/paas/v4/").trim(),
+      model: String(provider.model || "glm-4-flash").trim(),
+    };
+    if (!payload.api_key) delete payload.api_key;
+    return payload;
+  },
+
+  withProvider(body = {}) {
+    return { ...body, provider: this.getProviderPayload() };
+  },
+
+  refreshProviderStatus() {
+    if (!this.els.providerStatusHint) return;
+    const hasLocalKey = !!String(this.state.provider?.api_key || "").trim();
+    const hasServerKey = !!this.state.provider?.server_available;
+    this.els.providerStatusHint.className = `provider-status ${hasLocalKey || hasServerKey ? "ok" : "warn"}`;
+    this.els.providerStatusHint.textContent = hasLocalKey
+      ? "已配置浏览器本地 API Key。"
+      : hasServerKey
+        ? "服务端已配置 fallback API Key。公共 Demo 建议仍使用自己的 key。"
+        : "未检测到 API Key。触发 AI 功能前请填写自己的 key。";
+  },
+
+  openApiConfigModal() {
+    if (!this.els.apiConfigModal) return;
+    this.els.providerApiKey.value = this.state.provider.api_key || "";
+    this.els.providerBaseUrl.value = this.state.provider.base_url || "https://open.bigmodel.cn/api/paas/v4/";
+    this.els.providerModel.value = this.state.provider.model || "glm-4-flash";
+    this.els.providerSaveLocal.checked = this.state.provider.save_local !== false;
+    this.refreshProviderStatus();
+    this.els.apiConfigModal.style.display = "";
+    this.els.apiConfigModal.classList.add("active");
+  },
+
+  closeApiConfigModal() {
+    this.els.apiConfigModal?.classList.remove("active");
+  },
+
+  saveApiConfig() {
+    this.state.provider.api_key = this.els.providerApiKey?.value?.trim() || "";
+    this.state.provider.base_url = this.els.providerBaseUrl?.value?.trim() || "https://open.bigmodel.cn/api/paas/v4/";
+    this.state.provider.model = this.els.providerModel?.value?.trim() || "glm-4-flash";
+    this.state.provider.save_local = this.els.providerSaveLocal?.checked !== false;
+    if (this.state.provider.save_local) {
+      localStorage.setItem("academic-agent:provider", JSON.stringify({
+        api_key: this.state.provider.api_key,
+        base_url: this.state.provider.base_url,
+        model: this.state.provider.model,
+        save_local: true,
+      }));
+    } else {
+      localStorage.removeItem("academic-agent:provider");
+    }
+    this.refreshProviderStatus();
+    this.closeApiConfigModal();
+  },
+
+  clearApiConfig() {
+    this.state.provider.api_key = "";
+    this.state.provider.base_url = "https://open.bigmodel.cn/api/paas/v4/";
+    this.state.provider.model = "glm-4-flash";
+    localStorage.removeItem("academic-agent:provider");
+    this.openApiConfigModal();
   },
 
   async initHome() {
@@ -661,7 +773,7 @@
       const res = await fetch("/api/keywords/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify(this.withProvider({ topic })),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "提取失败");
@@ -710,6 +822,10 @@
     this.els.searchBtn?.addEventListener("click", () => this.primarySourceAction());
     this.els.cancelSearchBtn?.addEventListener("click", () => this.cancelSearch());
     this.els.autoRunBtn?.addEventListener("click", () => this.startAutoRun());
+    this.els.apiConfigBtn?.addEventListener("click", () => this.openApiConfigModal());
+    this.els.apiConfigClose?.addEventListener("click", () => this.closeApiConfigModal());
+    this.els.apiConfigSave?.addEventListener("click", () => this.saveApiConfig());
+    this.els.apiConfigClear?.addEventListener("click", () => this.clearApiConfig());
     this.els.addPaperBtn?.addEventListener("click", () => this.openAddPaperModal());
     this.els.pdfFileInput?.addEventListener("change", (e) => this.handleDropZoneFile(e.target.files[0]));
     this.els.notesBtn?.addEventListener("click", () => this.generateNotesAction());
@@ -2017,7 +2133,7 @@
         const planResp = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/run/plan`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ topic, start_phase: "plan" }),
+          body: JSON.stringify(this.withProvider({ topic, start_phase: "plan" })),
         });
         const planData = await planResp.json();
         if (!planResp.ok) throw new Error(planData.detail || "规划失败");
@@ -2057,7 +2173,7 @@
       const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/run/auto`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, max_loops: 20, min_papers: 3 }),
+        body: JSON.stringify(this.withProvider({ topic, max_loops: 20, min_papers: 3 })),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || "启动失败");
@@ -2203,7 +2319,7 @@
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/notes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: session.topic, paper_ids: paperIds }),
+        body: JSON.stringify(this.withProvider({ topic: session.topic, paper_ids: paperIds })),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -2238,7 +2354,7 @@
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: session.topic, analysis_type: "all" }),
+        body: JSON.stringify(this.withProvider({ topic: session.topic, analysis_type: "all" })),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -2441,7 +2557,7 @@
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: session.topic, start_phase: "plan" }),
+        body: JSON.stringify(this.withProvider({ topic: session.topic, start_phase: "plan" })),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -2558,12 +2674,12 @@
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: JSON.stringify(this.withProvider({
           topic: session.topic,
           start_phase: "search",
           keywords: session.keywords || [],
           max_loops: 20,
-        }),
+        })),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -2624,7 +2740,7 @@
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/write`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: session.topic, start_phase: "write" }),
+        body: JSON.stringify(this.withProvider({ topic: session.topic, start_phase: "write" })),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -2935,13 +3051,13 @@
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: JSON.stringify(this.withProvider({
           message,
           view_mode: this.state.currentViewMode,
           chat_mode: this.state.chatMode,
           current_paper_id: this.state.currentPaperId,
           conv_id: this.state.currentConvId,
-        }),
+        })),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -3021,7 +3137,7 @@
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: JSON.stringify(this.withProvider({
           message: "确认修改",
           view_mode: this.state.currentViewMode,
           chat_mode: "agent",
@@ -3030,7 +3146,7 @@
           confirmed_revision: true,
           revision_target: target,
           revision_feedback: feedback,
-        }),
+        })),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -3874,11 +3990,11 @@ var GlobalCopilot = {
     fetch("/api/knowledge/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      body: JSON.stringify(self.withProvider({
         message: message,
         copilot_session_id: self._currentSessionId || "",
         session_ids: selectedSessionIds,
-      }),
+      })),
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {

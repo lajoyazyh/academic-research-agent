@@ -8,8 +8,8 @@ from llms.client import LLMClient
 from datetime import datetime
 
 class BaseAgent:
-    def __init__(self, tools: List[BaseTool], max_loops: int = 5):
-        self.llm = LLMClient()
+    def __init__(self, tools: List[BaseTool], max_loops: int = 5, provider_config: dict | None = None):
+        self.llm = LLMClient(provider_config)
         self.tools: Dict[str, BaseTool] = {tool.name: tool for tool in tools}
         self.max_loops = max_loops
         self.traces = []

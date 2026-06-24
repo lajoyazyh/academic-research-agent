@@ -85,8 +85,8 @@ class RAGNoteGenerator:
         },
     ]
 
-    def __init__(self):
-        self.llm = LLMClient()
+    def __init__(self, provider_config: dict | None = None):
+        self.llm = LLMClient(provider_config)
         self._embedding_failed = False  # 标记 Embedding API 是否已不可用
 
     def _try_embed(self, texts: list[str]) -> np.ndarray | None:

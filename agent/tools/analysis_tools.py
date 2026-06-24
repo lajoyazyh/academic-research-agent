@@ -45,12 +45,12 @@ def _build_paper_summary(papers: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def compare_papers(topic: str, notes_content: str, papers_list: list[dict] = None) -> str:
+def compare_papers(topic: str, notes_content: str, papers_list: list[dict] = None, provider_config: dict | None = None) -> str:
     """精确文献对比：对多篇论文进行横向对比分析
     
     产出：方法对比表格 + 优缺点矩阵 + 适用场景分析
     """
-    llm = LLMClient()
+    llm = LLMClient(provider_config)
     papers = _parse_papers_from_notes(notes_content, papers_list)
     paper_summary = _build_paper_summary(papers)
     
@@ -85,12 +85,12 @@ def compare_papers(topic: str, notes_content: str, papers_list: list[dict] = Non
     return result or "对比分析生成失败，请检查论文笔记是否完整。"
 
 
-def trace_lineage(topic: str, notes_content: str, papers_list: list[dict] = None) -> str:
+def trace_lineage(topic: str, notes_content: str, papers_list: list[dict] = None, provider_config: dict | None = None) -> str:
     """研究脉络梳理：按时间线/逻辑线梳理研究发展路径
     
     产出：时间线图 + 关键转折点 + 技术演进路径
     """
-    llm = LLMClient()
+    llm = LLMClient(provider_config)
     papers = _parse_papers_from_notes(notes_content, papers_list)
     paper_summary = _build_paper_summary(papers)
     
@@ -124,12 +124,12 @@ def trace_lineage(topic: str, notes_content: str, papers_list: list[dict] = None
     return result or "脉络分析生成失败，请检查论文笔记是否完整。"
 
 
-def find_gaps(topic: str, notes_content: str, papers_list: list[dict] = None) -> str:
+def find_gaps(topic: str, notes_content: str, papers_list: list[dict] = None, provider_config: dict | None = None) -> str:
     """研究空白发现：识别当前研究中未被覆盖的子领域和开放问题
     
     产出：空白领域列表 + 开放问题 + 未来方向建议
     """
-    llm = LLMClient()
+    llm = LLMClient(provider_config)
     papers = _parse_papers_from_notes(notes_content, papers_list)
     paper_summary = _build_paper_summary(papers)
     
@@ -164,10 +164,10 @@ def find_gaps(topic: str, notes_content: str, papers_list: list[dict] = None) ->
     return result or "研究空白分析生成失败，请检查论文笔记是否完整。"
 
 
-def run_full_analysis(topic: str, notes_content: str, papers_list: list[dict] = None) -> dict:
+def run_full_analysis(topic: str, notes_content: str, papers_list: list[dict] = None, provider_config: dict | None = None) -> dict:
     """运行全部三种分析，返回字典 {compare, lineage, gaps}"""
     return {
-        "compare": compare_papers(topic, notes_content, papers_list),
-        "lineage": trace_lineage(topic, notes_content, papers_list),
-        "gaps": find_gaps(topic, notes_content, papers_list),
+        "compare": compare_papers(topic, notes_content, papers_list, provider_config),
+        "lineage": trace_lineage(topic, notes_content, papers_list, provider_config),
+        "gaps": find_gaps(topic, notes_content, papers_list, provider_config),
     }

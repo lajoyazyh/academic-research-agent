@@ -24,7 +24,32 @@ With Compose:
 docker compose up --build
 ```
 
-## Render / Railway
+## Render Free Web Service
+
+Use the Dockerfile or the included `render.yaml` Blueprint.
+
+Recommended settings:
+
+- Repository: `https://github.com/lajoyazyh/academic-research-agent`
+- Service type: Web Service
+- Runtime: Docker
+- Plan: Free
+- Port: `8000`
+- Environment variables:
+  - `PORT=8000`
+  - `AGENT_MIN_PAPERS=3`
+  - `AGENT_LOOP_DELAY_SEC=3`
+  - `ARXIV_SEARCH_RETRY_LIMIT=3`
+
+Do not set `ZHIPU_API_KEY` for a public portfolio demo. The app supports BYOK mode: visitors open **API 配置** in the web UI and enter their own API key, base URL, and model. Render Free instances may sleep after inactivity, so the first request can take a while to wake up.
+
+Suggested public demo note:
+
+```text
+This demo runs on Render Free and may take a while to wake up. Please use your own API key.
+```
+
+## Railway / Other Docker Hosts
 
 Use the Dockerfile.
 
@@ -34,11 +59,9 @@ Recommended settings:
 - Start command: handled by Dockerfile.
 - Port: `8000` or platform-provided `PORT`.
 - Environment variables:
-  - `ZHIPU_API_KEY`
-  - `ZHIPU_BASE_URL`
-  - `ZHIPU_MODEL`
   - `AGENT_MIN_PAPERS`
   - `AGENT_LOOP_DELAY_SEC`
+  - optional private fallback: `ZHIPU_API_KEY`, `ZHIPU_BASE_URL`, `ZHIPU_MODEL`
 
 If the platform provides ephemeral storage, sessions may disappear after redeploys. For persistent demos, mount a volume at:
 
@@ -85,11 +108,10 @@ location / {
 
 Running the full Agent can call paid LLM APIs and external academic APIs. For a public portfolio demo:
 
-- use a limited billing key,
-- add authentication,
-- preload sample sessions,
-- disable high-cost workflows,
-- or deploy a private demo and show screenshots on your portfolio page.
+- prefer BYOK mode and do not configure your private key,
+- add authentication or rate limits if you later provide a server-side key,
+- preload sample sessions for low-cost browsing,
+- explain that free hosting can sleep after inactivity.
 
 ## Portfolio Card Copy
 
@@ -101,4 +123,3 @@ Suggested stack tags:
 ```text
 Python, FastAPI, LLM Agent, RAG, BM25, Embeddings, Markdown, Pytest, Docker
 ```
-

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: academic-research-agent
+    env: docker
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: AGENT_MIN_PAPERS
+        value: 3
+      - key: AGENT_LOOP_DELAY_SEC
+        value: 3
+      - key: ARXIV_SEARCH_RETRY_LIMIT
+        value: 3

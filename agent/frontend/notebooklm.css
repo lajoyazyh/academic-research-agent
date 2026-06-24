@@ -78,6 +78,24 @@ html, body {
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 15px; }
 .brand-mark { font-size: 20px; color: var(--accent); }
 .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.provider-save-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 10px;
+  color: var(--subtle);
+  font-size: 13px;
+}
+
+.provider-status {
+  min-height: 20px;
+  color: var(--subtle);
+  font-size: 13px;
+}
+
+.provider-status.ok { color: var(--success); }
+.provider-status.warn { color: var(--warning); }
 .state-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; background: var(--accent-light); color: var(--accent); }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #9aa0a6; display: inline-block; }
 .status-dot.live { background: var(--accent); }

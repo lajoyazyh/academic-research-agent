@@ -105,10 +105,11 @@ class HybridRetriever:
 
     _EMBED_CACHE_DIR = None  # 类级别缓存目录
 
-    def __init__(self):
+    def __init__(self, provider_config: dict | None = None):
         self.bm25 = BM25Retriever()
         self._embedding_vectors: np.ndarray | None = None
         self._embed_cache_path: Path | None = None
+        self.provider_config = provider_config
 
     def index(self, chunks: list[dict], cache_key: str = "") -> int:
         """构建 BM25 索引，Embedding 向量延迟计算。"""
@@ -137,7 +138,7 @@ class HybridRetriever:
             return
 
         from llms.client import LLMClient
-        llm = LLMClient()
+        llm = LLMClient(self.provider_config)
         texts = [c["text"] for c in self.bm25.chunks]
         batch_size = 20
         all_vectors = []
@@ -173,7 +174,7 @@ class HybridRetriever:
         if self._embedding_vectors is not None and len(self._embedding_vectors) > 0:
             try:
                 from llms.client import LLMClient
-                llm = LLMClient()
+                llm = LLMClient(self.provider_config)
                 query_vecs = llm.embed([query])
                 if query_vecs and not all(v == 0.0 for v in query_vecs[0]):
                     query_vec = np.array(query_vecs[0], dtype=np.float32)
@@ -216,16 +217,18 @@ class HybridRetriever:
 _RETRIEVER_CACHE: dict[str, HybridRetriever] = {}
 
 
-def get_retriever_for_session(session_id: str, papers_dir: str) -> HybridRetriever:
+def get_retriever_for_session(session_id: str, papers_dir: str, provider_config: dict | None = None) -> HybridRetriever:
     """
     获取某个 Session 的混合检索器（懒加载 + 缓存）。
     """
     if session_id in _RETRIEVER_CACHE:
-        return _RETRIEVER_CACHE[session_id]
+        retriever = _RETRIEVER_CACHE[session_id]
+        retriever.provider_config = provider_config
+        return retriever
 
     from tools.pdf_tools import extract_all_session_pdfs
 
-    retriever = HybridRetriever()
+    retriever = HybridRetriever(provider_config)
     chunks = extract_all_session_pdfs(session_id, papers_dir)
     count = retriever.index(chunks, cache_key=session_id)
 
@@ -251,11 +254,11 @@ def invalidate_retriever_cache(session_id: str = None):
         _RETRIEVER_CACHE.clear()
 
 
-def search_session_papers(session_id: str, papers_dir: str, query: str, top_k: int = 5) -> list[dict]:
+def search_session_papers(session_id: str, papers_dir: str, query: str, top_k: int = 5, provider_config: dict | None = None) -> list[dict]:
     """
     一站式混合检索：提取 PDF → 索引 → BM25 + Embedding 混合检索 → 返回 Top-K 段落。
     """
-    retriever = get_retriever_for_session(session_id, papers_dir)
+    retriever = get_retriever_for_session(session_id, papers_dir, provider_config)
     return retriever.search(query, top_k)
 
 
@@ -265,6 +268,7 @@ def iterative_search(
     query: str,
     top_k: int = 10,
     max_rounds: int = 2,
+    provider_config: dict | None = None,
 ) -> list[dict]:
     """
     迭代式混合检索：首次检索后，若结果不足或 LLM 判断需要补充，
@@ -279,7 +283,7 @@ def iterative_search(
     
     返回：合并去重后的段落列表，按混合分数排序。
     """
-    retriever = get_retriever_for_session(session_id, papers_dir)
+    retriever = get_retriever_for_session(session_id, papers_dir, provider_config)
     if not retriever.bm25.chunks:
         return []
 
@@ -302,7 +306,7 @@ def iterative_search(
     # 第二轮：用 LLM 生成追问 query（换一个角度）
     try:
         from llms.client import LLMClient
-        llm = LLMClient()
+        llm = LLMClient(provider_config)
         # 取第一轮结果的前 3 个作为上下文
         context_snippets = "\n".join([
             f"- {r.get('text', '')[:200]}" for r in first_results[:3]

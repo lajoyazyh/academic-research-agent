@@ -342,7 +342,7 @@ def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, 
     return "\n\n".join(section_texts)
 
 
-def _self_repair_review(raw_review: str, skill_content: str) -> str:
+def _self_repair_review(raw_review: str, skill_content: str, provider_config: dict | None = None) -> str:
     """后生成自我修复：当使用了 Skill 时，根据 Skill 要求完全重写综述格式。
 
     采用"完全重写"策略：不是修补格式，而是按照 Skill 的结构重新组织整个综述。
@@ -354,7 +354,7 @@ def _self_repair_review(raw_review: str, skill_content: str) -> str:
     Returns:
         修复后的综述（修复失败时返回原文）
     """
-    llm = LLMClient()
+    llm = LLMClient(provider_config)
 
     # ━━━ 基于 Skill 要求完全重写综述 ━━━
     rewrite_prompt = f"""You are a strict formatting enforcer.
@@ -419,7 +419,7 @@ Output ONLY the verified/fixed review text."""
     return repaired
 
 
-def _self_critique_review(topic: str, raw_review: str) -> str:
+def _self_critique_review(topic: str, raw_review: str, provider_config: dict | None = None) -> str:
     """后生成通用自审：检查综述完备性、一致性和重复性，以及省略占位符。
 
     无论是否使用 Skill，生成后对综述进行四维修查：
@@ -428,7 +428,7 @@ def _self_critique_review(topic: str, raw_review: str) -> str:
     3. 是否有明显重复段落
     4. 是否包含省略占位符（如「此处省略」「与上一版草稿相同」等）
     """
-    llm = LLMClient()
+    llm = LLMClient(provider_config)
 
     # ━━━ 第零步：正则快速检测省略占位符 ━━━
     import re as _re
@@ -520,8 +520,9 @@ def compose_review_from_notes(
     notes_content: str,
     write_skill_content: str = "",
     analysis_context: str = "",
+    provider_config: dict | None = None,
 ) -> tuple[str, str]:
-    llm = LLMClient()
+    llm = LLMClient(provider_config)
     writing_source = _append_analysis_context(notes_content, analysis_context)
     notes_content = writing_source
 
@@ -537,10 +538,10 @@ def compose_review_from_notes(
 
     # 自我修复：当有 Skill 时，调用 LLM 检查并修复综述格式和结构
     if write_skill_content:
-        review = _self_repair_review(review, write_skill_content)
+        review = _self_repair_review(review, write_skill_content, provider_config)
 
     # ━━━ 通用自审 (Self-Critique)：检查完备性与一致性 ━━━
-    review = _self_critique_review(topic, review)
+    review = _self_critique_review(topic, review, provider_config)
 
     return outline, review
 
@@ -599,7 +600,7 @@ def _build_fallback_notes_from_traces(topic: str, traces: list[dict]) -> str:
     )
     return header + "\n\n".join(snippets) + "\n"
 
-def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None):
+def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None, provider_config: dict | None = None):
     """
     暴露给后端和CLI共享的核心全链路逻辑
     """
@@ -615,7 +616,7 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
     os.makedirs(work_dir, exist_ok=True)
     os.makedirs(papers_dir, exist_ok=True)
 
-    planner_llm = LLMClient()
+    planner_llm = LLMClient(provider_config)
     initial_plan = _build_initial_plan(planner_llm, user_topic)
     with open(os.path.join(work_dir, "plan.md"), "w", encoding="utf-8") as f:
         f.write(initial_plan)
@@ -647,7 +648,7 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
         if factory:
             active_tools.append(factory())
 
-    researcher_agent = BaseAgent(tools=active_tools, max_loops=max_loops)
+    researcher_agent = BaseAgent(tools=active_tools, max_loops=max_loops, provider_config=provider_config)
     if agent_callback:
         agent_callback(researcher_agent, work_dir)
 
@@ -739,7 +740,7 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
     with open(note_path, 'r', encoding='utf-8') as f:
         notes_content = f.read()
 
-    outline, final_review = compose_review_from_notes(user_topic, notes_content)
+    outline, final_review = compose_review_from_notes(user_topic, notes_content, provider_config=provider_config)
 
     file_path = os.path.join(work_dir, 'final_review.md')
 
@@ -770,9 +771,9 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
 #  Session-aware: 分阶段执行函数（支持断点/继续）
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-def _extract_keywords_from_plan(plan_text: str) -> list[dict]:
+def _extract_keywords_from_plan(plan_text: str, provider_config: dict | None = None) -> list[dict]:
     """用 LLM 从规划文本中智能提取关键词三元组（中文→英文→同义词）"""
-    llm = LLMClient()
+    llm = LLMClient(provider_config)
     extract_prompt = f"""从以下研究规划中，提取真正用于学术搜索的关键词。
 
 规则：
@@ -824,15 +825,15 @@ def _extract_keywords_from_plan(plan_text: str) -> list[dict]:
     return []
 
 
-def run_plan_only(user_topic: str) -> dict:
+def run_plan_only(user_topic: str, provider_config: dict | None = None) -> dict:
     """
     【阶段 1：仅规划】生成初始规划并提取关键词候选项。
     在此断点暂停，将关键词返回给用户确认。
     """
     load_dotenv(find_dotenv(usecwd=True))
-    planner_llm = LLMClient()
+    planner_llm = LLMClient(provider_config)
     initial_plan = _build_initial_plan(planner_llm, user_topic)
-    keywords = _extract_keywords_from_plan(initial_plan)
+    keywords = _extract_keywords_from_plan(initial_plan, provider_config)
 
     return {
         "phase": "plan",
@@ -918,6 +919,7 @@ def run_search_only(
     session_papers_dir: str = None,
     session_notes_path: str = None,
     agent_callback=None,
+    provider_config: dict | None = None,
 ) -> dict:
     """
     【阶段 2：仅搜索】使用确认后的关键词执行论文搜索和笔记记录。
@@ -966,9 +968,9 @@ def run_search_only(
     # paper_register 始终添加（不通过工具注册中心管理）
     session_id = os.path.basename(work_dir) if work_dir else ""
     from tools.paper_register import PaperRegisterTool
-    active_tools.append(PaperRegisterTool(session_id=session_id, papers_dir=papers_dir))
+    active_tools.append(PaperRegisterTool(session_id=session_id, papers_dir=papers_dir, provider_config=provider_config))
 
-    researcher_agent = BaseAgent(tools=active_tools, max_loops=max_loops)
+    researcher_agent = BaseAgent(tools=active_tools, max_loops=max_loops, provider_config=provider_config)
     if agent_callback:
         agent_callback(researcher_agent, work_dir)
 
@@ -1058,6 +1060,7 @@ def run_write_from_notes(
     max_rewrites: int = 100,
     session_id: str = None,
     analysis_context: str = "",
+    provider_config: dict | None = None,
 ) -> dict:
     """
     【阶段 3：撰写综述】基于笔记内容生成/重写综述初稿。
@@ -1082,7 +1085,7 @@ def run_write_from_notes(
             "can_rewrite": False,
         }
 
-    llm = LLMClient()
+    llm = LLMClient(provider_config)
     writing_source = _append_analysis_context(notes_content, analysis_context)
     notes_content = writing_source
 
@@ -1138,9 +1141,11 @@ def run_write_from_notes(
     else:
         # 首次撰写
         outline, review = compose_review_from_notes(
-            user_topic,
-            notes_content,
-            write_skill_content,
+            topic=user_topic,
+            notes_content=notes_content,
+            write_skill_content=write_skill_content,
+            analysis_context=analysis_context,
+            provider_config=provider_config,
         )
         new_review = review
 
@@ -1166,6 +1171,7 @@ def run_agent_pipeline_session(
     user_keywords: list[dict] = None,
     max_loops: int = 20,
     agent_callback=None,
+    provider_config: dict | None = None,
 ) -> dict:
     """
     Session-aware 流水线，支持从指定断点继续执行。
@@ -1185,7 +1191,7 @@ def run_agent_pipeline_session(
 
     if start_phase == "plan":
         # 阶段 1：仅规划
-        result = run_plan_only(user_topic)
+        result = run_plan_only(user_topic, provider_config=provider_config)
         result["session_id"] = session_id
         return result
 
@@ -1195,7 +1201,7 @@ def run_agent_pipeline_session(
             raise ValueError("start_phase='search' 需要提供 user_keywords")
 
         # 重建 initial_plan（用于 Agent 上下文）
-        planner_llm = LLMClient()
+        planner_llm = LLMClient(provider_config)
         initial_plan = _build_initial_plan(planner_llm, user_topic)
 
         # 使用 Session 目录
@@ -1211,6 +1217,7 @@ def run_agent_pipeline_session(
             session_papers_dir=session_papers_dir,
             session_notes_path=session_notes_path,
             agent_callback=agent_callback,
+            provider_config=provider_config,
         )
         result["session_id"] = session_id
         return result
@@ -1233,6 +1240,7 @@ def run_agent_pipeline_session(
             user_topic=user_topic,
             notes_content=notes_content,
             session_id=session_id,
+            provider_config=provider_config,
         )
         result["session_id"] = session_id
         return result

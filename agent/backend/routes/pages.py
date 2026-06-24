@@ -17,6 +17,7 @@ from .deps import (
 )
 
 from fastapi.responses import HTMLResponse
+from backend.provider import ensure_provider_available, public_provider_status
 
 router = APIRouter(tags=["pages"])
 
@@ -80,14 +81,20 @@ def health() -> Dict[str, str]:
     return {"status": "ok"}
 
 
+@router.get("/api/provider/status")
+def provider_status() -> dict:
+    return public_provider_status()
+
+
 @router.post("/api/keywords/extract")
 def extract_keywords(payload: dict) -> dict:
     """【辅助】仅提取关键词，不创建 Session"""
     from main import _build_initial_plan, _extract_keywords_from_plan
     from llms.client import LLMClient
-    llm = LLMClient()
+    provider_config = ensure_provider_available(payload.get("provider"))
+    llm = LLMClient(provider_config)
     plan = _build_initial_plan(llm, payload.get("topic", "").strip())
-    keywords = _extract_keywords_from_plan(plan)
+    keywords = _extract_keywords_from_plan(plan, provider_config=provider_config)
     return {"keywords": keywords, "plan": plan}
 
 

@@ -43,9 +43,10 @@ class PaperRegisterTool(BaseTool):
         "abstract": "摘要全文。可选。",
     }
 
-    def __init__(self, session_id: str = "", papers_dir: str = ""):
+    def __init__(self, session_id: str = "", papers_dir: str = "", provider_config: dict | None = None):
         self.session_id = session_id
         self.papers_dir = papers_dir
+        self.provider_config = provider_config
 
     def _is_doi(self, paper_id: str) -> bool:
         """判断 paper_id 是否为 DOI 格式（支持纯 DOI 和 https://doi.org/ 前缀）"""
@@ -144,7 +145,7 @@ class PaperRegisterTool(BaseTool):
                 topic = session.get("topic", "") if session else ""
                 if topic:
                     from llms.client import LLMClient
-                    llm = LLMClient()
+                    llm = LLMClient(self.provider_config)
                     answer = llm.chat(
                         "你只回答 yes 或 no。",
                         f"研究主题：{topic}\n论文标题：{title[:150]}\n摘要前 300 字：{abstract[:300]}\n\n这篇论文与上述研究主题相关吗？",

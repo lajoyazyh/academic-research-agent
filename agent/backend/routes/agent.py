@@ -15,6 +15,7 @@ from .deps import (
     RUNS, RUN_LOCK, SESSIONS_DIR, DOCS_DIR, FRONTEND_DIR,
     FAVORITES_FILE,
 )
+from backend.provider import ensure_provider_available
 
 import threading
 from main import run_agent_pipeline, run_agent_pipeline_session  # noqa
@@ -91,7 +92,7 @@ def _collect_notes_for_analysis(session: dict) -> tuple[str, list[dict]]:
     return notes, papers
 
 
-def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all") -> dict:
+def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all", provider_config: dict | None = None) -> dict:
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
@@ -106,11 +107,11 @@ def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all
 
     result = {"phase": "analysis", "session_id": session_id}
     if analysis_type in ("compare", "all"):
-        result["compare"] = compare_papers(topic, notes, papers)
+        result["compare"] = compare_papers(topic, notes, papers, provider_config)
     if analysis_type in ("lineage", "all"):
-        result["lineage"] = trace_lineage(topic, notes, papers)
+        result["lineage"] = trace_lineage(topic, notes, papers, provider_config)
     if analysis_type in ("gaps", "all"):
-        result["gaps"] = find_gaps(topic, notes, papers)
+        result["gaps"] = find_gaps(topic, notes, papers, provider_config)
     result["document"] = _analysis_result_to_markdown(result, topic)
 
     analysis_dir = SESSIONS_DIR / session_id / "analysis"
@@ -140,12 +141,14 @@ def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    provider_config = ensure_provider_available(payload.provider)
 
     try:
         result = run_agent_pipeline_session(
             session_id=session_id,
             user_topic=payload.topic.strip(),
             start_phase="plan",
+            provider_config=provider_config,
         )
         # 保存初始规划到 Session
         if result.get("initial_plan"):
@@ -164,7 +167,7 @@ def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"规划阶段执行失败: {str(e)}")
 
-def _run_search_in_background(session_id: str, topic: str, keywords: list[dict], max_loops: int) -> None:
+def _run_search_in_background(session_id: str, topic: str, keywords: list[dict], max_loops: int, provider_config: dict | None = None) -> None:
     """后台执行搜索阶段，周期性保存 traces 供前端实时轮询"""
     import time as _time
     _stop_flag = [False]  # 用列表做可变容器，线程间可共享修改
@@ -213,6 +216,7 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
             start_phase="search",
             user_keywords=keywords,
             max_loops=max_loops,
+            provider_config=provider_config,
             agent_callback=lambda agent, wd: _agent_holder.update({"agent": agent}),
         )
         
@@ -256,6 +260,7 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    provider_config = ensure_provider_available(payload.provider)
 
     # 获取用户确认的关键词
     keywords = payload.keywords or session.get("keywords", [])
@@ -275,7 +280,7 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     # 后台执行
     worker = threading.Thread(
         target=_run_search_in_background,
-        args=(session_id, payload.topic.strip(), keywords, payload.max_loops),
+        args=(session_id, payload.topic.strip(), keywords, payload.max_loops, provider_config),
         daemon=True,
     )
     worker.start()
@@ -348,6 +353,7 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    provider_config = ensure_provider_available(payload.provider)
 
     notes = session.get("notes", "")
     # 如果 draft_notes.md 为空，尝试从 papers_list.json 中聚合各论文的笔记
@@ -378,6 +384,7 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
             rewrite_count=rewrite_count,
             session_id=session_id,
             analysis_context=analysis_context,
+            provider_config=provider_config,
         )
 
         # 保存综述，并记录本次撰写引用了哪些论文
@@ -410,6 +417,7 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    provider_config = ensure_provider_available(payload.provider)
 
     papers = session.get("papers", [])
     paper_ids = [pid.strip() for pid in payload.paper_ids if pid.strip()]
@@ -418,8 +426,8 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
 
     from llms.client import LLMClient
     from tools.rag_note_generator import RAGNoteGenerator
-    llm = LLMClient()
-    rag = RAGNoteGenerator()
+    llm = LLMClient(provider_config)
+    rag = RAGNoteGenerator(provider_config)
     topic = payload.topic.strip()
 
     # ━━━ 双通道 Skill 注入：笔记阶段 ━━━
@@ -508,6 +516,7 @@ def revise_notes_phase(session_id: str, payload: ReviseNotesRequest) -> dict:
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session 不存在")
+    provider_config = ensure_provider_available(payload.provider)
     
     # 优先获取论文独立笔记，否则获取整体笔记
     notes = ""
@@ -528,15 +537,14 @@ def revise_notes_phase(session_id: str, payload: ReviseNotesRequest) -> dict:
         raise HTTPException(status_code=400, detail="笔记为空，无法修订")
     
     from llms.client import LLMClient
-    llm = LLMClient()
+    llm = LLMClient(provider_config)
 
     rag_context = ""
     try:
-        from tools.retriever import HybridRetriever
+        from tools.retriever import iterative_search
         import os as _os
         papers_path = _os.path.join(SESSIONS_DIR, session_id, "papers")
-        retriever = HybridRetriever(session_id, str(papers_path))
-        passages = retriever.iterative_retrieve(payload.feedback, top_k=10)
+        passages = iterative_search(session_id, str(papers_path), payload.feedback, top_k=10, max_rounds=2, provider_config=provider_config)
         if passages:
             parts = []
             for p in passages:
@@ -584,6 +592,7 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    provider_config = ensure_provider_available(payload.provider)
 
     topic = payload.topic.strip()
     if not topic:
@@ -610,11 +619,11 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
 
         result = {"phase": "analysis", "session_id": session_id}
         if analysis_type in ("compare", "all"):
-            result["compare"] = compare_papers(topic, notes, papers)
+            result["compare"] = compare_papers(topic, notes, papers, provider_config)
         if analysis_type in ("lineage", "all"):
-            result["lineage"] = trace_lineage(topic, notes, papers)
+            result["lineage"] = trace_lineage(topic, notes, papers, provider_config)
         if analysis_type in ("gaps", "all"):
-            result["gaps"] = find_gaps(topic, notes, papers)
+            result["gaps"] = find_gaps(topic, notes, papers, provider_config)
         result["document"] = _analysis_result_to_markdown(result, topic)
 
         analysis_dir = SESSIONS_DIR / session_id / "analysis"
@@ -632,7 +641,7 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
 
 
 
-def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int, min_papers: int) -> None:
+def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int, min_papers: int, provider_config: dict | None = None) -> None:
     """后台自动执行完整流水线：规划 → 搜索 → 笔记 → 分析 → 综述"""
     import time as _time
 
@@ -658,6 +667,7 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
             session_id=session_id,
             user_topic=topic,
             start_phase="plan",
+            provider_config=provider_config,
         )
         if plan_result.get("initial_plan"):
             session_mgr.save_initial_plan(session_id, plan_result["initial_plan"])
@@ -710,6 +720,7 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
             start_phase="search",
             user_keywords=keywords,
             max_loops=max_loops,
+            provider_config=provider_config,
             agent_callback=lambda agent, wd: _agent_holder.update({"agent": agent}),
         )
 
@@ -745,8 +756,8 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
         if papers:
             from llms.client import LLMClient
             from tools.rag_note_generator import RAGNoteGenerator
-            llm = LLMClient()
-            rag = RAGNoteGenerator()
+            llm = LLMClient(provider_config)
+            rag = RAGNoteGenerator(provider_config)
             notes_map = {}
 
             # ━━━ Skill 注入：加载 notes 类型的自定义提示词 ━━━
@@ -837,7 +848,7 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
         # Generate analysis before writing so the final review can use it.
         try:
             _update_run_status("analysis", "running", message="正在生成深度分析报告...")
-            analysis_result = _run_session_analysis(session_id, topic, "all")
+            analysis_result = _run_session_analysis(session_id, topic, "all", provider_config)
             _update_run_status(
                 "analysis",
                 "running",
@@ -883,6 +894,7 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
                 notes_content=notes,
                 session_id=session_id,
                 analysis_context=analysis_context,
+                provider_config=provider_config,
             )
             if write_result.get("review"):
                 session_mgr.save_review(session_id, write_result["review"])
@@ -922,6 +934,7 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    provider_config = ensure_provider_available(payload.provider)
 
     topic = payload.topic.strip()
     if not topic:
@@ -948,7 +961,7 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
     # 后台执行
     worker = threading.Thread(
         target=_run_auto_pipeline_in_background,
-        args=(session_id, topic, payload.max_loops, payload.min_papers),
+        args=(session_id, topic, payload.max_loops, payload.min_papers, provider_config),
         daemon=True,
     )
     worker.start()
