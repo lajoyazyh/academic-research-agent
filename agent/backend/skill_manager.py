@@ -14,6 +14,7 @@ import uuid
 import datetime
 from pathlib import Path
 from typing import Optional
+from backend.tenant import tenant_path
 
 
 class SkillManager:
@@ -114,8 +115,13 @@ class SkillManager:
             base_dir: 存储根目录，如 agent/sessions/
         """
         self._base_dir = Path(base_dir)
-        self._skills_dir = self._base_dir / ".skills"
         self._skills_dir.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def _skills_dir(self) -> Path:
+        path = tenant_path(self._base_dir) / ".skills"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
 
     # ━━━━━ 基础 CRUD ━━━━━
 

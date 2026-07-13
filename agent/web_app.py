@@ -24,6 +24,7 @@ if hasattr(sys.stdout, 'reconfigure'):
         pass
 
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -33,6 +34,9 @@ from backend.copilot_session_manager import get_copilot_manager
 from backend.skill_manager import get_skill_manager
 from core.tool_registry import get_registry
 from backend.routes.deps import init_deps
+from backend.auth import auth_enabled, validate_access_token
+from backend.cloud_persistence import SupabaseWorkspaceStore
+from backend.tenant import reset_current_user, set_current_user
 
 # ━━━ 路径常量 ━━━
 BASE_DIR = Path(__file__).resolve().parent
@@ -45,6 +49,7 @@ global_kb = GlobalKnowledgeBase(str(SESSIONS_DIR))
 copilot_mgr = get_copilot_manager(str(SESSIONS_DIR))
 skill_mgr = get_skill_manager(str(SESSIONS_DIR))
 _tool_registry = get_registry(str(BASE_DIR / "config" / "tools.json"))
+workspace_store = SupabaseWorkspaceStore(SESSIONS_DIR)
 
 # ━━━ 注入依赖到路由模块 ━━━
 init_deps(session_mgr, global_kb, skill_mgr, copilot_mgr, _tool_registry)
@@ -52,13 +57,52 @@ init_deps(session_mgr, global_kb, skill_mgr, copilot_mgr, _tool_registry)
 # ━━━ 创建 FastAPI 应用 ━━━
 app = FastAPI(title="Academic Agent Web", version="1.0.0")
 
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:8000,http://localhost:3000").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=allowed_origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def authenticated_tenant(request, call_next):
+    """Validate Supabase sessions and bind all filesystem access to one user."""
+    public_api_paths = {"/api/health", "/api/provider/status"}
+    requires_auth = request.url.path.startswith("/api/") and request.url.path not in public_api_paths
+    user_id = "local"
+    if auth_enabled() and requires_auth and request.method != "OPTIONS":
+        authorization = request.headers.get("authorization", "")
+        token = authorization[7:].strip() if authorization.lower().startswith("bearer ") else ""
+        try:
+            user = validate_access_token(token)
+            user_id = user["id"]
+            workspace_store.hydrate(user_id)
+        except Exception as exc:
+            status_code = getattr(exc, "status_code", 503)
+            detail = getattr(exc, "detail", "Authentication failed")
+            return JSONResponse(status_code=status_code, content={"detail": detail})
+
+    context_token = set_current_user(user_id)
+    try:
+        response = await call_next(request)
+        if auth_enabled() and user_id != "local" and request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+            try:
+                workspace_store.sync(user_id)
+            except Exception as exc:
+                # Do not discard a successful agent response if remote persistence
+                # is temporarily unavailable; surface the degraded state instead.
+                response.headers["X-Workspace-Sync"] = "failed"
+                print(f"[WorkspaceSync] {user_id}: {exc}")
+        return response
+    finally:
+        reset_current_user(context_token)
 
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")

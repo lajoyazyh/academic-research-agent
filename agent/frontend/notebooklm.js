@@ -36,6 +36,7 @@
     this.bindCommonElements();
     this.loadThemePreference();
     this.loadProviderConfig();
+    window.addEventListener("academic-auth-changed", () => this.loadProviderConfig());
 
     // 为所有页面绑定主题切换按钮
     this.els.themeToggle = document.getElementById("themeToggle");
@@ -132,7 +133,7 @@
       server_available: false,
     };
     try {
-      const saved = JSON.parse(localStorage.getItem("academic-agent:provider") || "{}");
+      const saved = JSON.parse(localStorage.getItem(this.providerStorageKey()) || "{}");
       this.state.provider = { ...defaults, ...saved, save_local: saved.save_local !== false };
     } catch (error) {
       this.state.provider = defaults;
@@ -146,6 +147,11 @@
         this.refreshProviderStatus();
       })
       .catch(() => this.refreshProviderStatus());
+  },
+
+  providerStorageKey() {
+    const userId = window.academicAuthUserId || "local";
+    return `academic-agent:provider:${userId}`;
   },
 
   getProviderPayload() {
@@ -196,14 +202,14 @@
     this.state.provider.model = this.els.providerModel?.value?.trim() || "glm-4-flash";
     this.state.provider.save_local = this.els.providerSaveLocal?.checked !== false;
     if (this.state.provider.save_local) {
-      localStorage.setItem("academic-agent:provider", JSON.stringify({
+      localStorage.setItem(this.providerStorageKey(), JSON.stringify({
         api_key: this.state.provider.api_key,
         base_url: this.state.provider.base_url,
         model: this.state.provider.model,
         save_local: true,
       }));
     } else {
-      localStorage.removeItem("academic-agent:provider");
+      localStorage.removeItem(this.providerStorageKey());
     }
     this.refreshProviderStatus();
     this.closeApiConfigModal();
@@ -213,7 +219,7 @@
     this.state.provider.api_key = "";
     this.state.provider.base_url = "https://open.bigmodel.cn/api/paas/v4/";
     this.state.provider.model = "glm-4-flash";
-    localStorage.removeItem("academic-agent:provider");
+    localStorage.removeItem(this.providerStorageKey());
     this.openApiConfigModal();
   },
 

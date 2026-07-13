@@ -14,23 +14,41 @@ from typing import Optional
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from backend.tenant import get_current_user, tenant_path
 
 
 class GlobalKnowledgeBase:
     """全局知识库，聚合所有 Session 的数据"""
 
     def __init__(self, sessions_dir: str):
-        self.sessions_dir = Path(sessions_dir)
+        self._base_sessions_dir = Path(sessions_dir)
+        self._cache_user = ""
         self._vectorizer: Optional[TfidfVectorizer] = None
         self._matrix: Optional[np.ndarray] = None
         self._chunks: list[dict] = []
         self._stats: dict = {}
         self._last_build: Optional[str] = None
 
+    @property
+    def sessions_dir(self) -> Path:
+        return tenant_path(self._base_sessions_dir)
+
+    def _activate_user_cache(self) -> None:
+        user = get_current_user()
+        if user == self._cache_user:
+            return
+        self._cache_user = user
+        self._vectorizer = None
+        self._matrix = None
+        self._chunks = []
+        self._stats = {}
+        self._last_build = None
+
     # ━━━ 索引构建 ━━━
 
     def build_index(self, force: bool = False) -> dict:
         """扫描所有 Session 并构建全局 BM25 索引。返回统计信息。"""
+        self._activate_user_cache()
         if not force and self._chunks and self._last_build:
             # 简单检查：sessions 目录是否有新 session
             current_dirs = set(d.name for d in self._iter_session_dirs())

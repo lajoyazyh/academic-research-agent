@@ -113,6 +113,53 @@ Running the full Agent can call paid LLM APIs and external academic APIs. For a 
 - preload sample sessions for low-cost browsing,
 - explain that free hosting can sleep after inactivity.
 
+## Public Multi-user Deployment (Vercel + Render + Supabase)
+
+The production layout separates the static UI from the long-running Agent:
+
+- Vercel serves the files built from `agent/frontend`.
+- Render runs the Dockerized FastAPI backend and its background Agent threads.
+- Supabase Auth identifies users; Postgres indexes workspaces; private Storage
+  keeps an archive of each user's filesystem-oriented research workspace.
+- LLM credentials remain in browser storage and are sent only with the model
+  request. They are not written to Postgres, Storage, traces, or session files.
+
+### 1. Provision Supabase
+
+Create a Supabase project and run `supabase/migrations/001_public_workspace.sql`
+in its SQL editor. Enable the desired email authentication policy. Copy the
+project URL, anon key, and service-role key.
+
+### 2. Deploy the backend to Render
+
+Create/update the service from `render.yaml` and set these secret variables:
+
+```text
+SUPABASE_URL=https://<project>.supabase.co
+SUPABASE_ANON_KEY=<anon-key>
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+CORS_ALLOWED_ORIGINS=https://<frontend>.vercel.app
+```
+
+The service-role key belongs only on Render. Do not add it to Vercel or commit
+it. If Supabase variables are absent, the backend deliberately falls back to
+the original local single-user mode.
+
+### 3. Deploy the frontend to Vercel
+
+Import the repository as a Vercel project. `vercel.json` runs the static build.
+Set these build variables for Production and Preview:
+
+```text
+PUBLIC_API_BASE_URL=https://<backend>.onrender.com
+PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+```
+
+Add the Vercel production URL to Supabase Auth's allowed redirect URLs. Add any
+preview URL pattern you intend to use, and include those origins in the backend
+CORS setting before testing previews.
+
 ## Portfolio Card Copy
 
 **Academic Research Agent**  

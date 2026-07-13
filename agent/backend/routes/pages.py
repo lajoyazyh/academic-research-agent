@@ -1,6 +1,7 @@
 ﻿"""页面路由、收藏夹、历史记录、PDF 文件服务"""
 import json
 import os
+import os
 import datetime
 import re
 from pathlib import Path
@@ -15,6 +16,8 @@ from .deps import (
     RUNS, RUN_LOCK, SESSIONS_DIR, DOCS_DIR, FRONTEND_DIR,
     FAVORITES_FILE,
 )
+from backend.tenant import tenant_path
+from backend.auth import auth_enabled
 
 from fastapi.responses import HTMLResponse
 from backend.provider import ensure_provider_available, public_provider_status
@@ -22,16 +25,24 @@ from backend.provider import ensure_provider_available, public_provider_status
 router = APIRouter(tags=["pages"])
 
 def _load_favorites() -> list[dict]:
-    if FAVORITES_FILE.exists():
+    favorites_file = tenant_path(SESSIONS_DIR) / ".favorites.json"
+    if favorites_file.exists():
         try:
-            return json.loads(FAVORITES_FILE.read_text(encoding="utf-8"))
+            return json.loads(favorites_file.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, Exception):
             return []
     return []
 
 
 def _save_favorites(favs: list[dict]) -> None:
-    FAVORITES_FILE.write_text(json.dumps(favs, ensure_ascii=False, indent=2), encoding="utf-8")
+    favorites_file = tenant_path(SESSIONS_DIR) / ".favorites.json"
+    favorites_file.write_text(json.dumps(favs, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _tenant_docs_dir() -> Path:
+    path = tenant_path(SESSIONS_DIR) / ".documents"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 @router.get("/")
@@ -78,7 +89,12 @@ def skills_page():
 
 @router.get("/api/health")
 def health() -> Dict[str, str]:
-    return {"status": "ok"}
+    persistence_enabled = bool(os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
+    return {
+        "status": "ok",
+        "auth_mode": "supabase" if auth_enabled() else "local",
+        "workspace_persistence": "supabase" if persistence_enabled else "local",
+    }
 
 
 @router.get("/api/provider/status")
@@ -113,7 +129,7 @@ def get_stats() -> dict:
 
     for s in sessions:
         total_papers += s.get("paper_count", 0)
-        session_dir = SESSIONS_DIR / s["session_id"]
+        session_dir = tenant_path(SESSIONS_DIR) / s["session_id"]
         papers_list = None
         papers_path = session_dir / "papers" / "papers_list.json"
         if papers_path.exists():
@@ -183,14 +199,15 @@ def _summarize_failures_from_traces(traces: list[Dict[str, Any]]) -> Dict[str, i
 
 @router.get("/api/agent/history")
 def get_history() -> list[Dict[str, Any]]:
-    if not DOCS_DIR.exists():
+    docs_dir = _tenant_docs_dir()
+    if not docs_dir.exists():
         return []
 
     favs = _load_favorites()
     fav_filenames = {f.get("filename") for f in favs}
 
     runs = []
-    for d in DOCS_DIR.iterdir():
+    for d in docs_dir.iterdir():
         if not d.is_dir():
             continue
 
@@ -219,7 +236,7 @@ def get_history_detail(filename: str) -> Dict[str, Any]:
     if "/" in filename or "\\" in filename:
         raise HTTPException(status_code=400, detail="Invalid filename")
 
-    run_dir = DOCS_DIR / filename
+    run_dir = _tenant_docs_dir() / filename
     if not run_dir.exists():
         raise HTTPException(status_code=404, detail="Run not found")
 
@@ -257,7 +274,7 @@ def delete_history(filename: str) -> dict:
     """删除历史综述记录"""
     if "/" in filename or "\\" in filename:
         raise HTTPException(status_code=400, detail="Invalid filename")
-    run_dir = DOCS_DIR / filename
+    run_dir = _tenant_docs_dir() / filename
     if not run_dir.exists():
         raise HTTPException(status_code=404, detail="记录不存在")
     import shutil
@@ -279,7 +296,7 @@ def get_favorites() -> list[dict]:
     enriched = []
     for fav in favs:
         filename = fav.get("filename", "")
-        run_dir = DOCS_DIR / filename
+        run_dir = _tenant_docs_dir() / filename
         size = 0
         if run_dir.exists():
             review_file = run_dir / "final_review.md"
@@ -334,6 +351,6 @@ def get_pdf(filename: str, pdf_name: str) -> FileResponse:
         raise HTTPException(status_code=400, detail="Invalid filename")
 
     # 先检查 Session 目录（current version新路径）
-    pdf_path = SESSIONS_DIR / filename / "papers" / pdf_name
+    pdf_path = tenant_path(SESSIONS_DIR) / filename / "papers" / pdf_name
     if pdf_path.exists():
         return FileResponse(pdf_path, media_type="application/pdf")

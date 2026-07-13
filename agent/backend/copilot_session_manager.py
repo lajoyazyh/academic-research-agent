@@ -11,6 +11,7 @@ import uuid
 import datetime
 from pathlib import Path
 from typing import Optional
+from backend.tenant import tenant_path
 
 
 class CopilotSessionManager:
@@ -20,8 +21,13 @@ class CopilotSessionManager:
         if base_dir is None:
             base_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "sessions")
         self._base_dir = Path(base_dir)
-        self._sessions_dir = self._base_dir / ".copilot_sessions"
-        os.makedirs(self._sessions_dir, exist_ok=True)
+        self._sessions_dir.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def _sessions_dir(self) -> Path:
+        path = tenant_path(self._base_dir) / ".copilot_sessions"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
 
     def _session_path(self, session_id: str) -> Path:
         return self._sessions_dir / f"{session_id}.json"

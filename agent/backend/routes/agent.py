@@ -16,6 +16,8 @@ from .deps import (
     FAVORITES_FILE,
 )
 from backend.provider import ensure_provider_available
+from backend.cloud_persistence import SupabaseWorkspaceStore
+from backend.tenant import get_current_user, reset_current_user, set_current_user, tenant_key
 
 import threading
 from main import run_agent_pipeline, run_agent_pipeline_session  # noqa
@@ -25,6 +27,29 @@ from .models import (
 )
 
 router = APIRouter(prefix="/api/sessions", tags=["agent"])
+_workspace_store = SupabaseWorkspaceStore(SESSIONS_DIR)
+
+
+def _tenant_worker(target, *args) -> threading.Thread:
+    """Carry request identity into long-running agent threads and persist on exit."""
+    user_id = get_current_user()
+
+    def runner():
+        token = set_current_user(user_id)
+        try:
+            target(*args)
+        finally:
+            try:
+                _workspace_store.sync(user_id)
+            except Exception as exc:
+                print(f"[WorkspaceSync] background sync failed: {exc}")
+            reset_current_user(token)
+
+    return threading.Thread(target=runner, daemon=True)
+
+
+def _run_key(session_id: str) -> str:
+    return f"{tenant_key()}:{session_id}"
 
 
 def _build_skill_trace(phase: str, skill_id: str = "", skill_title: str = "", loaded: bool = False,
@@ -181,12 +206,12 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
                 traces = list(agent.traces) if agent else []
                 if not traces:
                     with RUN_LOCK:
-                        traces = list(RUNS.get(f"session_{session_id}", {}).get("traces", []))
+                        traces = list(RUNS.get(_run_key(session_id), {}).get("traces", []))
                 if traces:
                     # 只更新 RUNS 内存，供前端轮询 /api/sessions/{id}/run/status
                     with RUN_LOCK:
-                        if f"session_{session_id}" in RUNS:
-                            RUNS[f"session_{session_id}"]["traces"] = traces
+                        if _run_key(session_id) in RUNS:
+                            RUNS[_run_key(session_id)]["traces"] = traces
             except Exception:
                 pass
     
@@ -201,7 +226,7 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
             pass
         
         with RUN_LOCK:
-            RUNS[f"session_{session_id}"] = {
+            RUNS[_run_key(session_id)] = {
                 "status": "running",
                 "phase": "searching",
                 "traces": [],
@@ -235,7 +260,7 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
             pass  # 可能已被取消设置为其他状态
 
         with RUN_LOCK:
-            RUNS[f"session_{session_id}"] = {
+            RUNS[_run_key(session_id)] = {
                 "status": "done",
                 "phase": "search_complete",
                 "traces": result.get("traces", []),
@@ -246,7 +271,7 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
         import traceback
         _stop_flag[0] = True
         with RUN_LOCK:
-            RUNS[f"session_{session_id}"] = {
+            RUNS[_run_key(session_id)] = {
                 "status": "error",
                 "phase": "failed",
                 "error": str(exc),
@@ -278,10 +303,9 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         os.environ["AGENT_MIN_PAPERS"] = str(payload.min_papers)
 
     # 后台执行
-    worker = threading.Thread(
-        target=_run_search_in_background,
-        args=(session_id, payload.topic.strip(), keywords, payload.max_loops, provider_config),
-        daemon=True,
+    worker = _tenant_worker(
+        _run_search_in_background,
+        session_id, payload.topic.strip(), keywords, payload.max_loops, provider_config,
     )
     worker.start()
     return {
@@ -293,7 +317,7 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
 
 @router.get("/{session_id}/run/status")
 def get_session_run_status(session_id: str) -> dict:
-    run_key = f"session_{session_id}"
+    run_key = _run_key(session_id)
     with RUN_LOCK:
         run = RUNS.get(run_key)
     if not run:
@@ -304,7 +328,7 @@ def get_session_run_status(session_id: str) -> dict:
 @router.post("/{session_id}/run/cancel")
 def cancel_session_run(session_id: str) -> dict:
     """打断正在运行的搜索/撰写任务"""
-    run_key = f"session_{session_id}"
+    run_key = _run_key(session_id)
     with RUN_LOCK:
         run = RUNS.get(run_key)
     
@@ -645,7 +669,7 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
     """后台自动执行完整流水线：规划 → 搜索 → 笔记 → 分析 → 综述"""
     import time as _time
 
-    run_key = f"session_{session_id}"
+    run_key = _run_key(session_id)
     _stop_flag = [False]
 
     def _update_run_status(phase: str, status: str, **kwargs):
@@ -940,7 +964,7 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
     if not topic:
         raise HTTPException(status_code=400, detail="主题不能为空")
 
-    run_key = f"session_{session_id}"
+    run_key = _run_key(session_id)
 
     # 检查是否已有任务在运行
     with RUN_LOCK:
@@ -959,10 +983,9 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
         }
 
     # 后台执行
-    worker = threading.Thread(
-        target=_run_auto_pipeline_in_background,
-        args=(session_id, topic, payload.max_loops, payload.min_papers, provider_config),
-        daemon=True,
+    worker = _tenant_worker(
+        _run_auto_pipeline_in_background,
+        session_id, topic, payload.max_loops, payload.min_papers, provider_config,
     )
     worker.start()
 

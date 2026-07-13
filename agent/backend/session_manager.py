@@ -16,6 +16,7 @@ import datetime
 from pathlib import Path
 from typing import Any, Optional
 from enum import Enum
+from backend.tenant import tenant_path
 
 
 # ━━━━━ 状态机枚举 ━━━━━
@@ -63,8 +64,13 @@ class SessionManager:
         Args:
             sessions_root: Session 存储根目录，如 agent/sessions/
         """
-        self.root = Path(sessions_root)
-        self.root.mkdir(parents=True, exist_ok=True)
+        self._base_root = Path(sessions_root)
+        self._base_root.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def root(self) -> Path:
+        """Resolve storage from the authenticated request instead of sharing users."""
+        return tenant_path(self._base_root)
 
     # ━━━━━ 基础 CRUD ━━━━━
 

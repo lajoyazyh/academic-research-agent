@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/", "destination": "/home.html" },
+    { "source": "/app/console", "destination": "/index.html" },
+    { "source": "/app/history", "destination": "/history.html" },
+    { "source": "/app/chat", "destination": "/chat.html" },
+    { "source": "/app/help", "destination": "/help.html" },
+    { "source": "/app/skills", "destination": "/skills.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}

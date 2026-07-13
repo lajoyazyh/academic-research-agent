@@ -1,0 +1,7 @@
+{
+  "name": "academic-research-agent-web",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-frontend.mjs"
+  }
+}
