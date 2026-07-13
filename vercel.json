@@ -4,8 +4,8 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/home.html" },
-    { "source": "/app/console", "destination": "/index.html" },
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/app/console", "destination": "/console.html" },
     { "source": "/app/history", "destination": "/history.html" },
     { "source": "/app/chat", "destination": "/chat.html" },
     { "source": "/app/help", "destination": "/help.html" },

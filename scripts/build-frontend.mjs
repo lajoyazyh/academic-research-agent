@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,6 +10,11 @@ rmSync(output, { recursive: true, force: true });
 mkdirSync(output, { recursive: true });
 cpSync(source, output, { recursive: true });
 cpSync(source, resolve(output, "static"), { recursive: true });
+
+// Vercel serves /index.html before applying rewrites. Make the landing page the
+// physical index and keep the research console at its explicit application URL.
+copyFileSync(resolve(source, "index.html"), resolve(output, "console.html"));
+copyFileSync(resolve(source, "home.html"), resolve(output, "index.html"));
 
 const publicConfig = {
   apiBaseUrl: process.env.PUBLIC_API_BASE_URL || "",
