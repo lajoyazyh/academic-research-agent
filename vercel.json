@@ -8,7 +8,8 @@
     { "source": "/app/history", "destination": "/history" },
     { "source": "/app/chat", "destination": "/chat" },
     { "source": "/app/help", "destination": "/help" },
-    { "source": "/app/skills", "destination": "/skills" }
+    { "source": "/app/skills", "destination": "/skills" },
+    { "source": "/app/profile", "destination": "/profile" }
   ],
   "headers": [
     {

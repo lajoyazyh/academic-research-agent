@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 · 智能学术综述助手</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="/static/account.css">
+</head>
+<body class="account-page" data-page="auth">
+  <div class="account-shell">
+    <header class="account-header">
+      <a class="account-brand" href="/">
+        <span class="account-brand-mark"><i class="fa-solid fa-wave-square"></i></span>
+        <span>智能学术综述助手</span>
+      </a>
+      <a class="account-header-link" href="/app/help">使用帮助</a>
+    </header>
+
+    <main class="auth-main">
+      <section class="auth-intro">
+        <div class="auth-eyebrow">Academic Research Agent</div>
+        <h1>把检索、阅读与综述写作放进同一个工作流。</h1>
+        <p>登录后，你的研究项目会与其他用户隔离保存。模型 API 由你自行配置，密钥只保留在当前浏览器。</p>
+        <div class="auth-points">
+          <div class="auth-point"><i class="fa-solid fa-layer-group"></i><span>集中管理论文、笔记、研究会话与生成结果</span></div>
+          <div class="auth-point"><i class="fa-solid fa-shield-halved"></i><span>每位用户拥有独立工作区与独立模型配置</span></div>
+        </div>
+      </section>
+
+      <section class="auth-card" aria-labelledby="authTitle">
+        <div class="auth-tabs" role="tablist" aria-label="账号操作">
+          <button class="auth-tab active" id="signInTab" type="button" role="tab" aria-selected="true">登录</button>
+          <button class="auth-tab" id="signUpTab" type="button" role="tab" aria-selected="false">注册</button>
+        </div>
+        <h2 id="authTitle">欢迎回来</h2>
+        <p class="auth-description" id="authDescription">登录后继续你的研究工作。</p>
+        <form id="authForm" novalidate>
+          <div class="form-field" id="displayNameField" hidden>
+            <label for="displayName">称呼</label>
+            <input id="displayName" name="displayName" type="text" maxlength="60" autocomplete="name" placeholder="怎么称呼你">
+          </div>
+          <div class="form-field">
+            <label for="authEmail">邮箱</label>
+            <input id="authEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+          </div>
+          <div class="form-field">
+            <label for="authPassword">密码</label>
+            <div class="password-wrap">
+              <input id="authPassword" name="password" type="password" minlength="6" autocomplete="current-password" required placeholder="至少 6 位">
+              <button class="password-toggle" id="passwordToggle" type="button" aria-label="显示密码"><i class="fa-regular fa-eye"></i></button>
+            </div>
+            <span class="field-help" id="passwordHelp" hidden>请使用至少 6 位密码。</span>
+          </div>
+          <button class="primary-action auth-submit" id="authSubmit" type="submit">登录</button>
+          <div class="form-message" id="authMessage" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/runtime-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/static/api-client.js"></script>
+  <script src="/static/auth-page.js"></script>
+</body>
+</html>

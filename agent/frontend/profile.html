@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人中心 · 智能学术综述助手</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="/static/account.css">
+</head>
+<body class="account-page" data-page="profile">
+  <div class="account-shell">
+    <header class="account-header">
+      <a class="account-brand" href="/">
+        <span class="account-brand-mark"><i class="fa-solid fa-wave-square"></i></span>
+        <span>智能学术综述助手</span>
+      </a>
+      <nav class="account-header-actions" aria-label="主导航">
+        <a class="account-header-link" href="/">首页</a>
+        <a class="account-header-link" href="/app/console">研究控制台</a>
+      </nav>
+    </header>
+
+    <main class="profile-main">
+      <div class="profile-heading">
+        <div>
+          <h1>个人中心</h1>
+          <p>管理你的账号，以及当前浏览器使用的模型 API。</p>
+        </div>
+      </div>
+
+      <div class="profile-grid">
+        <section class="profile-card" aria-labelledby="accountTitle">
+          <h2 id="accountTitle">账号</h2>
+          <p class="card-description">当前登录身份及账号操作。</p>
+          <div class="profile-identity">
+            <div class="profile-avatar" id="profileAvatar">…</div>
+            <div>
+              <div class="profile-email" id="profileEmail">正在加载…</div>
+              <div class="profile-meta" id="profileMeta">已安全登录</div>
+            </div>
+          </div>
+          <div class="account-actions">
+            <button class="danger-action" id="signOutButton" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> 退出登录</button>
+          </div>
+        </section>
+
+        <section class="profile-card" id="api" aria-labelledby="apiTitle">
+          <h2 id="apiTitle">模型 API</h2>
+          <p class="card-description">使用你自己的 OpenAI 兼容 API。配置按当前账号保存在这台浏览器中。</p>
+          <div class="api-status" id="apiStatus"><i class="fa-solid fa-circle-notch fa-spin"></i><span>正在检查配置…</span></div>
+          <form id="apiForm">
+            <div class="form-field">
+              <label for="providerApiKey">API Key</label>
+              <div class="password-wrap">
+                <input id="providerApiKey" type="password" autocomplete="off" placeholder="请输入你的 API Key">
+                <button class="password-toggle" id="apiKeyToggle" type="button" aria-label="显示 API Key"><i class="fa-regular fa-eye"></i></button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="providerBaseUrl">Base URL</label>
+              <input id="providerBaseUrl" type="url" placeholder="https://open.bigmodel.cn/api/paas/v4/">
+              <span class="field-help">需兼容 OpenAI API 格式，并包含协议头。</span>
+            </div>
+            <div class="form-field">
+              <label for="providerModel">模型名称</label>
+              <input id="providerModel" type="text" placeholder="glm-4-flash">
+            </div>
+            <div class="api-form-actions">
+              <button class="danger-action" id="clearApiButton" type="button">清除配置</button>
+              <div>
+                <a class="secondary-action" href="/app/console" style="display:grid;place-items:center;text-decoration:none;">返回控制台</a>
+                <button class="primary-action" id="saveApiButton" type="submit"><i class="fa-solid fa-check"></i> 保存配置</button>
+              </div>
+            </div>
+            <div class="form-message" id="apiMessage" role="status" aria-live="polite"></div>
+          </form>
+          <div class="security-note"><i class="fa-solid fa-shield-halved"></i><span>API Key 不会写入项目数据库、研究文件或服务端配置；调用模型时才会随请求发送。使用公共或共享设备后请清除配置并退出登录。</span></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/runtime-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/static/api-client.js"></script>
+  <script src="/static/auth-ui.js"></script>
+  <script src="/static/profile-page.js"></script>
+</body>
+</html>

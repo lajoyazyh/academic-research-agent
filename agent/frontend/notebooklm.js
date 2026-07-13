@@ -828,7 +828,7 @@
     this.els.searchBtn?.addEventListener("click", () => this.primarySourceAction());
     this.els.cancelSearchBtn?.addEventListener("click", () => this.cancelSearch());
     this.els.autoRunBtn?.addEventListener("click", () => this.startAutoRun());
-    this.els.apiConfigBtn?.addEventListener("click", () => this.openApiConfigModal());
+    this.els.apiConfigBtn?.addEventListener("click", () => { window.location.href = "/app/profile#api"; });
     this.els.apiConfigClose?.addEventListener("click", () => this.closeApiConfigModal());
     this.els.apiConfigSave?.addEventListener("click", () => this.saveApiConfig());
     this.els.apiConfigClear?.addEventListener("click", () => this.clearApiConfig());
