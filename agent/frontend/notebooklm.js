@@ -1163,7 +1163,14 @@
       html = this.renderReviewView(session);
     }
 
+    this.els.detailContent.classList.toggle("pdf-mode", this.state.currentViewMode === "pdf");
+    if (this.state.currentViewMode !== "pdf") {
+      this.releasePDFObjectUrl();
+    }
     this.els.detailContent.innerHTML = html;
+    if (this.state.currentViewMode === "pdf" && paper) {
+      this.loadPDFPreview(paper, session);
+    }
   },
 
   renderPaperSummary(paper, session) {
@@ -1507,29 +1514,104 @@
     }
 
     const paperId = paper.paper_id || "";
-    const sessionId = session?.session_id || "";
-    const pdfUrl = sessionId
-      ? `/api/agent/document/${encodeURIComponent(sessionId)}/papers/${encodeURIComponent(paperId)}.pdf`
-      : `/api/agent/document/${encodeURIComponent(paperId)}/papers/${encodeURIComponent(paperId)}.pdf`;
-
     return `
       <div class="detail-hero">
         <span class="topic-badge"><i class="fa-solid fa-file-pdf"></i> PDF</span>
         <h3>${this.escapeHtml(paper.title || paperId)}</h3>
         <div class="lead">${this.escapeHtml(paper.authors || "")}</div>
       </div>
-      <div class="panel-block" style="margin-top:16px; height: calc(100vh - 260px); min-height: 500px;">
-        <embed
-          src="${pdfUrl}"
-          type="application/pdf"
-          style="width: 100%; height: 100%; border: none; border-radius: 8px;"
-        ></embed>
+      <div class="pdf-preview-shell panel-block">
+        <div class="pdf-preview-state" id="pdfPreviewMount">
+          <i class="fa-solid fa-circle-notch fa-spin"></i>
+          <strong>正在安全加载 PDF…</strong>
+          <span>正在从你的私有研究工作区读取文件</span>
+        </div>
       </div>
-      <div style="margin-top: 8px; text-align: center; font-size: 12px; color: var(--subtle);">
-        <i class="fa-solid fa-circle-info"></i> 如果 PDF 无法显示，该论文可能尚未下载。请先执行检索阶段。
-        &nbsp;<a href="${pdfUrl}" target="_blank" style="color: var(--accent);">在新窗口打开</a>
+      <div class="pdf-preview-actions">
+        <span><i class="fa-solid fa-shield-halved"></i> PDF 通过登录凭证安全读取，不会公开文件地址。</span>
+        <div>
+          <button class="secondary-btn" id="pdfDownloadButton" type="button" disabled><i class="fa-solid fa-download"></i> 下载</button>
+          <button class="secondary-btn" id="pdfOpenButton" type="button" disabled><i class="fa-solid fa-up-right-from-square"></i> 新窗口打开</button>
+        </div>
       </div>
     `;
+  },
+
+  pdfUrlForPaper(paper, session) {
+    const paperId = String(paper?.paper_id || "");
+    const sessionId = String(session?.session_id || "");
+    const pdfFilename = String(paper?.pdf_filename || `${paperId}.pdf`);
+    return sessionId
+      ? `/api/agent/document/${encodeURIComponent(sessionId)}/papers/${encodeURIComponent(pdfFilename)}`
+      : `/api/agent/document/${encodeURIComponent(paperId)}/papers/${encodeURIComponent(pdfFilename)}`;
+  },
+
+  releasePDFObjectUrl() {
+    if (this._pdfObjectUrl) {
+      URL.revokeObjectURL(this._pdfObjectUrl);
+      this._pdfObjectUrl = null;
+    }
+  },
+
+  async loadPDFPreview(paper, session) {
+    const mount = document.getElementById("pdfPreviewMount");
+    if (!mount) return;
+
+    this.releasePDFObjectUrl();
+    const loadToken = (this._pdfLoadToken || 0) + 1;
+    this._pdfLoadToken = loadToken;
+    const pdfUrl = this.pdfUrlForPaper(paper, session);
+    try {
+      const response = await fetch(pdfUrl);
+      if (!response.ok) {
+        let detail = "";
+        try { detail = (await response.json()).detail || ""; } catch (_error) {}
+        throw new Error(response.status === 404 ? "PDF 文件尚未下载或已经丢失。" : (detail || `PDF 请求失败（${response.status}）`));
+      }
+      const sourceBlob = await response.blob();
+      if (!sourceBlob.size) throw new Error("PDF 文件为空。 ");
+      const pdfBlob = sourceBlob.type === "application/pdf"
+        ? sourceBlob
+        : new Blob([sourceBlob], { type: "application/pdf" });
+      const objectUrl = URL.createObjectURL(pdfBlob);
+
+      if (this._pdfLoadToken !== loadToken || this.state.currentViewMode !== "pdf" || !mount.isConnected) {
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      this._pdfObjectUrl = objectUrl;
+      const title = this.escapeHtml(paper.title || paper.paper_id || "论文 PDF");
+      mount.className = "pdf-preview-state loaded";
+      mount.innerHTML = `<iframe src="${objectUrl}" title="${title}" class="pdf-preview-frame"></iframe>`;
+
+      const openButton = document.getElementById("pdfOpenButton");
+      const downloadButton = document.getElementById("pdfDownloadButton");
+      if (openButton) {
+        openButton.disabled = false;
+        openButton.addEventListener("click", () => window.open(objectUrl, "_blank", "noopener,noreferrer"));
+      }
+      if (downloadButton) {
+        downloadButton.disabled = false;
+        downloadButton.addEventListener("click", () => {
+          const link = document.createElement("a");
+          link.href = objectUrl;
+          link.download = `${String(paper.title || paper.paper_id || "paper").replace(/[\\/:*?\"<>|]+/g, "_")}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        });
+      }
+    } catch (error) {
+      if (this._pdfLoadToken !== loadToken || !mount.isConnected) return;
+      mount.className = "pdf-preview-state error";
+      mount.innerHTML = `
+        <i class="fa-solid fa-file-circle-xmark"></i>
+        <strong>无法显示这份 PDF</strong>
+        <span>${this.escapeHtml(error?.message || "PDF 加载失败，请稍后重试。")}</span>
+        <button class="secondary-btn" id="pdfRetryButton" type="button"><i class="fa-solid fa-rotate-right"></i> 重新加载</button>
+      `;
+      document.getElementById("pdfRetryButton")?.addEventListener("click", () => this.loadPDFPreview(paper, session));
+    }
   },
 
   renderTraceView(session) {

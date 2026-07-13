@@ -379,10 +379,14 @@ async def upload_paper(session_id: str, file: UploadFile = File(...)):
     papers_dir = session_dir / "papers"
     os.makedirs(papers_dir, exist_ok=True)
     
-    safe_filename = file.filename
+    # Keep the user-facing name as metadata only. Persist under the generated
+    # paper id so preview/delete routes use the same stable filename and an
+    # uploaded filename can never escape the papers directory.
+    safe_filename = Path(file.filename or "uploaded-paper.pdf").name
     clean_id = "paper_" + hashlib.md5(safe_filename.encode('utf-8')).hexdigest()[:8]
     
-    file_path = papers_dir / safe_filename
+    stored_filename = f"{clean_id}.pdf"
+    file_path = papers_dir / stored_filename
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
@@ -450,6 +454,8 @@ PDF 文本片段（前 5 页）：
         "authors": paper_authors,
         "source": "user_upload",
         "source_type": "pdf",
+        "original_filename": safe_filename,
+        "pdf_filename": stored_filename,
         "status": "accepted",
         "added_at": datetime.datetime.now().isoformat(),
     })

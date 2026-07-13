@@ -354,3 +354,21 @@ def get_pdf(filename: str, pdf_name: str) -> FileResponse:
     pdf_path = tenant_path(SESSIONS_DIR) / filename / "papers" / pdf_name
     if pdf_path.exists():
         return FileResponse(pdf_path, media_type="application/pdf")
+
+    # Compatibility for uploads created before files were normalized to
+    # <paper_id>.pdf. Their original filename may still be available in paper
+    # metadata. Never scan or expose another session/user directory.
+    requested_paper_id = pdf_name[:-4] if pdf_name.lower().endswith(".pdf") else pdf_name
+    for paper in session_mgr.get_papers(filename):
+        if paper.get("paper_id") != requested_paper_id:
+            continue
+        legacy_name = paper.get("pdf_filename") or paper.get("original_filename")
+        if not legacy_name and str(paper.get("title", "")).lower().endswith(".pdf"):
+            legacy_name = paper.get("title")
+        if legacy_name and Path(str(legacy_name)).name == legacy_name:
+            legacy_path = tenant_path(SESSIONS_DIR) / filename / "papers" / legacy_name
+            if legacy_path.exists():
+                return FileResponse(legacy_path, media_type="application/pdf")
+        break
+
+    raise HTTPException(status_code=404, detail="PDF not found")
