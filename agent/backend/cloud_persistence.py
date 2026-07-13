@@ -58,7 +58,15 @@ class SupabaseWorkspaceStore:
                 with self._request(url) as response:
                     archive = response.read()
             except urllib.error.HTTPError as exc:
-                if exc.code == 404:
+                # Supabase Storage currently reports a missing object as HTTP
+                # 400 with a JSON `not_found` payload, while some compatible
+                # deployments use the conventional HTTP 404.
+                error_body = exc.read().decode("utf-8", errors="replace").lower()
+                missing_object = exc.code == 404 or (
+                    exc.code == 400
+                    and ("not_found" in error_body or "object not found" in error_body)
+                )
+                if missing_object:
                     return
                 self._hydrated.discard(key)
                 raise

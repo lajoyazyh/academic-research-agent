@@ -40,3 +40,27 @@ def test_local_mode_keeps_legacy_workspace_layout(tmp_path):
 
     assert (tmp_path / session["session_id"] / "metadata.json").exists()
     assert not (tmp_path / ".users").exists()
+
+
+def test_first_login_accepts_supabase_missing_object_response(tmp_path, monkeypatch):
+    store = SupabaseWorkspaceStore(tmp_path)
+    store.url = "https://example.supabase.co"
+    store.service_key = "test-service-key"
+
+    def missing_object(*args, **kwargs):
+        raise urllib.error.HTTPError(
+            url="https://example.supabase.co/storage/v1/object/test/missing.zip",
+            code=400,
+            msg="Bad Request",
+            hdrs={},
+            fp=io.BytesIO(b'{"statusCode":"404","error":"not_found"}'),
+        )
+
+    monkeypatch.setattr(store, "_request", missing_object)
+    store.hydrate("new-user")
+
+    assert tenant_key("new-user") in store._hydrated
+import io
+import urllib.error
+
+from backend.cloud_persistence import SupabaseWorkspaceStore
