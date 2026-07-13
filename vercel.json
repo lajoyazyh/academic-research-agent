@@ -4,12 +4,11 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/app/console", "destination": "/console.html" },
-    { "source": "/app/history", "destination": "/history.html" },
-    { "source": "/app/chat", "destination": "/chat.html" },
-    { "source": "/app/help", "destination": "/help.html" },
-    { "source": "/app/skills", "destination": "/skills.html" }
+    { "source": "/app/console", "destination": "/console" },
+    { "source": "/app/history", "destination": "/history" },
+    { "source": "/app/chat", "destination": "/chat" },
+    { "source": "/app/help", "destination": "/help" },
+    { "source": "/app/skills", "destination": "/skills" }
   ],
   "headers": [
     {
