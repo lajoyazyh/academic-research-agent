@@ -181,6 +181,17 @@
     } catch (_error) {
       catalog = fallbackCatalog;
     }
+    // Keep the client compatible while an independently hosted API rolls out its catalog update.
+    catalog = catalog.map(function (provider) {
+      if (provider.id !== "zhipu") return provider;
+      var models = ["embedding-3"].concat((provider.embedding_models || []).filter(function (model) {
+        return model !== "embedding-3";
+      }));
+      return Object.assign({}, provider, {
+        embedding_models: models,
+        default_embedding_model: "embedding-3"
+      });
+    });
     providerSelect.innerHTML = "";
     catalog.forEach(function (provider) {
       var option = document.createElement("option");
@@ -238,7 +249,11 @@
         if (window.va && typeof window.va.track === "function") window.va.track("provider_test_succeeded");
       } else {
         setStatus("模型连接需要检查", "warn", "fa-triangle-exclamation");
-        showMessage(data.message || "连接失败，请检查配置。", "error");
+        var failureMessage = data.message || "连接失败，请检查配置。";
+        if (data.error_code === "embedding_unavailable") {
+          failureMessage = "聊天模型已连接，但向量请求失败。这不一定是模型名称错误，也可能是向量权限、账户额度或频率限制；请切换 embedding-3 / embedding-2，或暂时选择不启用向量模型。";
+        }
+        showMessage(failureMessage, "error");
       }
     } catch (_error) {
       setStatus("暂时无法完成连接测试", "warn", "fa-triangle-exclamation");
