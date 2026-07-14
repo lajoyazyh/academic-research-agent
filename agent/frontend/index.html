@@ -16,13 +16,30 @@
       <strong id="consoleTopic">Notebook 研究控制台</strong>
     </div>
     <div class="topbar-right">
-      <button class="ghost-btn" id="apiConfigBtn" title="前往个人中心配置模型 API"><i class="fa-solid fa-key"></i> API 配置</button>
-      <button class="ghost-btn" id="toolManagerBtn" title="管理 Agent 工具"><i class="fa-solid fa-toolbox"></i> 工具管理</button>
-      <button class="ghost-btn" id="themeToggle" title="切换深色模式"><i class="fa-solid fa-moon"></i></button>
-      <span class="state-pill"><span id="consoleStateDot" class="status-dot"></span><span id="consoleState">就绪</span></span>
-      <button class="ghost-btn" onclick="window.location.href='/'"><i class="fa-solid fa-arrow-left"></i> 返回首页</button>
+      <button class="ghost-btn provider-nav-status" id="apiConfigBtn" title="前往个人中心配置模型"><i class="fa-solid fa-circle" aria-hidden="true"></i> <span id="providerTopStatus">需要配置</span></button>
+      <details class="console-more">
+        <summary class="ghost-btn" aria-label="打开更多设置"><i class="fa-solid fa-ellipsis"></i> 更多</summary>
+        <div class="console-more-menu">
+          <button class="ghost-btn" id="toolManagerBtn" title="管理高级研究工具"><i class="fa-solid fa-toolbox"></i> 高级工具</button>
+          <button class="ghost-btn" id="exportArtifactsBtn" title="导出综述、笔记与分析"><i class="fa-solid fa-file-export"></i> 导出成果</button>
+        </div>
+      </details>
+      <button class="ghost-btn" id="themeToggle" title="切换深色模式" aria-label="切换深色模式"><i class="fa-solid fa-moon"></i></button>
+      <span class="state-pill" role="status" aria-live="polite"><span id="consoleStateDot" class="status-dot"></span><span id="consoleState">就绪</span></span>
+      <button class="ghost-btn console-back" onclick="window.location.href='/app'"><i class="fa-solid fa-arrow-left"></i> <span>返回工作台</span></button>
     </div>
   </header>
+
+  <nav class="research-progress" aria-label="研究进度">
+    <ol id="researchStages">
+      <li data-stage="question"><span>1</span>研究问题</li>
+      <li data-stage="search"><span>2</span>检索</li>
+      <li data-stage="screen"><span>3</span>筛选</li>
+      <li data-stage="read"><span>4</span>阅读与笔记</li>
+      <li data-stage="analysis"><span>5</span>综合分析</li>
+      <li data-stage="review"><span>6</span>综述完成</li>
+    </ol>
+  </nav>
 
   <main class="console-layout">
     <!-- 左侧：来源面板 -->
@@ -31,12 +48,17 @@
         <h2>来源</h2>
       </div>
       <div class="sources-toolbar">
-        <button class="primary-btn" id="searchPaperBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> AI检索论文</button>
+        <button class="primary-btn" id="searchPaperBtn"><i class="fa-solid fa-magnifying-glass"></i> 搜索相关论文</button>
         <button class="primary-btn" id="cancelSearchBtn" style="display:none;background:var(--danger);"><i class="fa-solid fa-stop"></i> 停止检索</button>
         <button class="secondary-btn" id="addPaperBtn"><i class="fa-solid fa-plus"></i> 添加论文</button>
-        <button class="accent-btn" id="autoRunBtn" title="一键自动完成：规划→搜索→笔记→综述"><i class="fa-solid fa-forward-step"></i> 自动进行</button>
+        <button class="secondary-btn" id="researchRepoBtn"><i class="fa-brands fa-github"></i> 调研仓库</button>
+        <button class="accent-btn" id="autoRunBtn" title="依次完成检索、笔记和综述初稿"><i class="fa-solid fa-wand-magic-sparkles"></i> 生成完整初稿</button>
         
         <input type="file" id="pdfFileInput" accept="application/pdf" style="display:none" />
+      </div>
+      <div class="sources-section repository-sources" id="repositorySourcesSection" hidden>
+        <div class="sources-section-head"><strong>GitHub 仓库</strong><span class="chip" id="repositoryCountChip">0 个</span></div>
+        <div id="repositoryList"></div>
       </div>
       <div class="sources-section">
         <div class="sources-section-head">
@@ -51,7 +73,7 @@
         <button class="secondary-btn" id="generateNotesBtn" disabled>生成笔记</button>
         <button class="secondary-btn" id="generateReviewBtn" disabled>生成综述</button>
       </div>
-      <div class="status-line"><span id="statusHint">就绪</span></div>
+      <div class="status-line" role="status" aria-live="polite"><span id="statusHint">就绪</span><button class="status-retry" id="statusRetry" type="button" hidden><i class="fa-solid fa-rotate-right"></i> 重试</button></div>
       <div class="sources-section" id="reviewBlock"></div>
     </section>
 
@@ -82,7 +104,7 @@
         <div class="chat-messages" id="chatList">
           <div class="chat-msg">
             <span class="chat-role">AI</span>
-            <span>点击左侧论文进入对应界面后可在下方提问，笔记无需勾选，综述模式需要勾选对应的论文。笔记模式和综述模式下可请求修改。</span>
+            <span>选择一篇论文后，可以针对摘要、方法或原文提问；进入“综述”时，回答会基于已纳入的论文。</span>
           </div>
         </div>
         <div class="chat-bar">
@@ -96,12 +118,18 @@
     </section>
   </main>
 
+  <nav class="mobile-workspace-nav" aria-label="手机工作台导航">
+    <button type="button" class="active" data-mobile-panel="sources" aria-pressed="true"><i class="fa-solid fa-layer-group"></i><span>论文</span></button>
+    <button type="button" data-mobile-panel="content" aria-pressed="false"><i class="fa-solid fa-file-lines"></i><span>内容</span></button>
+    <button type="button" data-mobile-panel="chat" aria-pressed="false"><i class="fa-solid fa-comments"></i><span>问答</span></button>
+  </nav>
+
   <!-- 关键词编辑弹窗（复用已有逻辑，需保持 HTML 结构不变） -->
   <div class="modal-overlay" id="keywordModal">
     <div class="modal-box" style="max-width:680px;">
       <div class="modal-head">
         <h3>确认关键词</h3>
-        <button class="ghost-btn" id="keywordCancel"><i class="fa-solid fa-xmark"></i></button>
+        <button class="ghost-btn" id="keywordCancel" aria-label="关闭检索词确认窗口"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <p class="modal-hint" id="keywordTopic"></p>
       <div id="keywordList" class="keyword-list"></div>
@@ -116,7 +144,7 @@
     <div class="modal-box" style="max-width:580px;">
       <div class="modal-head">
         <h3><i class="fa-solid fa-plus"></i> 添加论文</h3>
-        <button class="ghost-btn" id="addPaperCancel"><i class="fa-solid fa-xmark"></i></button>
+        <button class="ghost-btn" id="addPaperCancel" aria-label="关闭添加论文窗口"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <p class="modal-hint">输入 arXiv ID / 论文链接，或拖拽本地 PDF 文件到下方区域，然后点击「添加」</p>
 
@@ -140,7 +168,7 @@
         <div class="drop-zone-preview" id="dropZonePreview" style="display:none;">
           <i class="fa-solid fa-file-pdf drop-zone-file-icon"></i>
           <span id="dropZoneFileName"></span>
-          <button class="tiny-btn" id="dropZoneClear" title="清除"><i class="fa-solid fa-xmark"></i></button>
+          <button class="tiny-btn" id="dropZoneClear" title="清除" aria-label="清除已选择的 PDF"><i class="fa-solid fa-xmark"></i></button>
         </div>
       </div>
 
@@ -156,7 +184,7 @@
     <div class="modal-box" style="max-width:700px; max-height:85vh; overflow-y:auto;">
       <div class="modal-head">
         <h3><i class="fa-solid fa-toolbox"></i> Agent 工具管理</h3>
-        <button class="ghost-btn" id="toolManagerClose"><i class="fa-solid fa-xmark"></i></button>
+        <button class="ghost-btn" id="toolManagerClose" aria-label="关闭高级工具窗口"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <p class="modal-hint">启用或禁用 Agent 可用的工具。禁用后 Agent 在调研时将无法调用该工具。</p>
       <div class="tool-manager-stats" style="display:flex; gap:16px; margin-bottom:16px;">
@@ -171,6 +199,63 @@
         <button class="primary-btn" id="toolManagerSave"><i class="fa-solid fa-check"></i> 保存配置</button>
         <button class="secondary-btn" id="toolManagerClose2">关闭</button>
       </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="exportModal" style="display:none;">
+    <div class="modal-box export-modal-box">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-file-export"></i> 导出研究成果</h3>
+        <button class="ghost-btn" id="exportModalClose" aria-label="关闭导出窗口"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="modal-hint">导出包可包含综述、调研笔记、综合分析、来源清单和仓库调研结果。</p>
+      <label class="export-include-row"><input type="checkbox" id="exportIncludeAll" checked><span><strong>包含完整研究材料</strong><small>关闭后只导出最终综述。</small></span></label>
+      <div class="export-format-grid" aria-label="本地导出格式">
+        <button type="button" data-export-format="md"><i class="fa-brands fa-markdown"></i><span>Markdown</span></button>
+        <button type="button" data-export-format="docx"><i class="fa-solid fa-file-word"></i><span>Word</span></button>
+        <button type="button" data-export-format="pdf"><i class="fa-solid fa-file-pdf"></i><span>PDF</span></button>
+        <button type="button" data-export-format="html"><i class="fa-solid fa-code"></i><span>HTML</span></button>
+        <button type="button" data-export-format="json"><i class="fa-solid fa-code"></i><span>JSON</span></button>
+        <button type="button" data-export-format="zip"><i class="fa-solid fa-file-zipper"></i><span>完整 ZIP</span></button>
+      </div>
+      <div class="github-export-panel">
+        <div class="panel-block-head"><strong><i class="fa-brands fa-github"></i> 导出到 GitHub</strong><span class="chip" id="githubExportStatus">检查连接中</span></div>
+        <div class="field-grid">
+          <label for="githubExportRepo">目标仓库</label>
+          <select id="githubExportRepo"><option value="">请先连接 GitHub</option></select>
+          <label for="githubExportPath">文件路径</label>
+          <input id="githubExportPath" value="research/review.md" placeholder="research/review.md">
+          <label for="githubExportBranch">分支（可选）</label>
+          <input id="githubExportBranch" placeholder="留空使用默认分支">
+        </div>
+        <button class="primary-btn" id="githubExportSubmit" type="button"><i class="fa-solid fa-code-commit"></i> 提交 Markdown 到仓库</button>
+      </div>
+      <div class="form-message" id="exportMessage" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="repositoryResearchModal" style="display:none;">
+    <div class="modal-box repository-modal-box">
+      <div class="modal-head">
+        <h3><i class="fa-brands fa-github"></i> 调研 GitHub 仓库</h3>
+        <button class="ghost-btn" id="repositoryModalClose" aria-label="关闭仓库调研窗口"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="repository-mode-tabs" role="tablist" aria-label="仓库调研方式">
+        <button type="button" class="active" data-repo-mode="specified" aria-selected="true">指定仓库</button>
+        <button type="button" data-repo-mode="discovery" aria-selected="false">自主检索仓库</button>
+      </div>
+      <div class="field-grid">
+        <label for="repositoryTarget" id="repositoryTargetLabel">仓库地址或 owner/repo</label>
+        <input id="repositoryTarget" placeholder="例如 openai/openai-python">
+        <label for="repositoryQuestion">调研问题</label>
+        <textarea id="repositoryQuestion" rows="3">分析仓库的目标、架构、核心实现、工程质量、适用边界和研究价值</textarea>
+      </div>
+      <div class="repository-permission-note"><i class="fa-solid fa-shield-halved"></i><span>公开仓库无需 GitHub 登录；连接后也可以调研你有权访问的私有仓库。读取的文件会受大小与数量限制。</span></div>
+      <div class="modal-foot">
+        <button class="secondary-btn" id="repositoryModalCancel" type="button">取消</button>
+        <button class="primary-btn" id="repositoryResearchSubmit" type="button"><i class="fa-solid fa-magnifying-glass-chart"></i> 开始调研</button>
+      </div>
+      <div class="repository-result" id="repositoryResearchResult" role="status" aria-live="polite"></div>
     </div>
   </div>
 

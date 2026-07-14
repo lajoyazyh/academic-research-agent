@@ -37,9 +37,12 @@ class RunStatusResponse(BaseModel):
 
 
 class ProviderConfig(BaseModel):
+    provider_id: str | None = None
     api_key: str | None = None
     base_url: str | None = None
     model: str | None = None
+    chat_model: str | None = None
+    embedding_model: str | None = None
 
 
 class ChatMessageRequest(BaseModel):

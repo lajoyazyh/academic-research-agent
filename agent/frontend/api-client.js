@@ -10,6 +10,19 @@
     client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
+    // Register immediately so OAuth provider tokens are captured during the
+    // callback event. They remain session-scoped and are never persisted with
+    // research data or the long-lived Supabase session.
+    client.auth.onAuthStateChange(function (event, session) {
+      if (session && session.user && session.provider_token) {
+        sessionStorage.setItem("academic-agent:github-token:" + session.user.id, session.provider_token);
+      }
+      if (event === "SIGNED_OUT") {
+        Object.keys(sessionStorage).forEach(function (key) {
+          if (key.indexOf("academic-agent:github-token:") === 0) sessionStorage.removeItem(key);
+        });
+      }
+    });
   }
   window.academicAuth = { client: client, configured: Boolean(client) };
 

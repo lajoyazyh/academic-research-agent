@@ -40,6 +40,9 @@
     var user = session && session.user ? session.user : null;
     window.academicAuthUserId = user ? user.id : "anonymous";
     window.academicAuthSession = session || null;
+    if (user && session && session.provider_token) {
+      sessionStorage.setItem("academic-agent:github-token:" + user.id, session.provider_token);
+    }
     if (user) addAccountLink(user);
     window.dispatchEvent(new CustomEvent("academic-auth-changed", {
       detail: { userId: window.academicAuthUserId, user: user }
@@ -48,6 +51,16 @@
   }
 
   window.academicAuthRequireLogin = redirectToAuth;
+  window.academicGitHubToken = function () {
+    var session = window.academicAuthSession;
+    var user = session && session.user;
+    if (!user) return "";
+    return (session && session.provider_token) || sessionStorage.getItem("academic-agent:github-token:" + user.id) || "";
+  };
+  window.academicGitHubHeaders = function () {
+    var token = window.academicGitHubToken();
+    return token ? { "X-GitHub-Token": token } : {};
+  };
   window.academicAuthReady = auth.client.auth.getSession().then(function (result) {
     var session = result.data && result.data.session;
     publishSession(session);
@@ -60,6 +73,11 @@
 
   auth.client.auth.onAuthStateChange(function (event, session) {
     publishSession(session);
+    if (event === "SIGNED_OUT") {
+      Object.keys(sessionStorage).forEach(function (key) {
+        if (key.indexOf("academic-agent:github-token:") === 0) sessionStorage.removeItem(key);
+      });
+    }
     if (event === "SIGNED_OUT" || !session) redirectToAuth();
   });
 })();

@@ -13,6 +13,7 @@ from tools.openalex_tools import OpenAlexSearchTool
 from tools.pdf_tools import ArxivPdfReaderTool, ArxivDownloadPdfTool
 from tools.file_tools import ClearNoteTool, AppendNoteTool
 from llms.client import LLMClient
+from prompts.review_skills import DEFAULT_REVIEW_SKILL
 
 
 def _load_skill_info(skill_id: str = None) -> dict:
@@ -28,13 +29,12 @@ def _load_skill_info(skill_id: str = None) -> dict:
     if not skill_id:
         return info
     try:
+        from backend.skill_manager import get_skill_manager
         base_dir = os.path.dirname(__file__)
-        skill_path = os.path.join(base_dir, "sessions", ".skills", f"{skill_id}.json")
-        if not os.path.exists(skill_path):
+        skill = get_skill_manager(os.path.join(base_dir, "sessions")).get_skill(skill_id)
+        if not skill:
             info["reason"] = "missing_file"
             return info
-        with open(skill_path, "r", encoding="utf-8") as f:
-            skill = json.loads(f.read())
         info["skill_title"] = str(skill.get("title", "") or "")
         if skill.get("deleted"):
             info["reason"] = "deleted"
@@ -94,13 +94,10 @@ def _get_skills_for_session(session_id: str = None) -> dict:
     if not session_id:
         return {}
     try:
+        from backend.session_manager import SessionManager
         base_dir = os.path.dirname(__file__)
-        meta_path = os.path.join(base_dir, "sessions", session_id, "metadata.json")
-        if not os.path.exists(meta_path):
-            return {}
-        with open(meta_path, "r", encoding="utf-8") as f:
-            meta = json.loads(f.read())
-        return meta.get("skills", {})
+        session = SessionManager(os.path.join(base_dir, "sessions")).load_session(session_id)
+        return (session or {}).get("skills", {})
     except Exception:
         return {}
 
@@ -119,10 +116,12 @@ def _merge_referenced_papers(notes_content: str, papers_list: list[dict] = None)
         return []
     referenced = []
     notes_lower = notes_content.lower()
-    for p in papers_list:
+    for index, p in enumerate(papers_list, start=1):
         pid = p.get("paper_id", "")
         title = p.get("title", "")
-        if pid and pid.lower() in notes_lower:
+        if f"[p{index}]" in notes_lower:
+            referenced.append(pid)
+        elif pid and pid.lower() in notes_lower:
             referenced.append(pid)
         elif title and len(title) > 10 and title.lower()[:40] in notes_lower:
             referenced.append(pid)
@@ -155,6 +154,13 @@ def _build_initial_plan(llm: LLMClient, topic: str) -> str:
 
 # 每个章节的关键词映射，用于从笔记中检索相关段落
 SECTION_KEYWORDS = {
+    "摘要": ["背景", "方法", "结果", "结论", "contribution", "method", "result", "limitation"],
+    "研究范围与证据基础": ["研究问题", "scope", "dataset", "sample", "来源", "纳入", "排除", "evidence"],
+    "主题综合": ["theme", "mechanism", "方法", "发现", "result", "approach", "contribution"],
+    "方法与证据对比": ["method", "dataset", "sample", "baseline", "metric", "evaluation", "方法", "数据", "指标"],
+    "共识、分歧与解释": ["result", "finding", "comparison", "difference", "conflict", "一致", "分歧", "对比"],
+    "局限性与研究空白": ["limitation", "future", "gap", "bias", "局限", "不足", "未来", "空白"],
+    "结论": ["conclusion", "finding", "result", "contribution", "结论", "发现", "贡献"],
     "引言与背景": [
         "背景", "引言", "introduction", "background", "problem", "challenge",
         "limitation", "issue", "gap", "motivation", "研究背景", "问题定义",
@@ -252,6 +258,8 @@ def _build_writer_outline(llm: LLMClient, topic: str, notes_content: str, skill_
         outline_prompt = f"""你是学术综述写作规划师。请基于给定调研笔记，为主题《{topic}》生成一份中文 Markdown 大纲。
 
 {skill_content}
+
+大纲中的每个正式章节必须使用 `## 章节名`；章节下只写简短要点。不要输出一级标题、正文、前言或代码块。主题综合可以拆成 2–4 个具有信息量的二级章节。
 
 【调研笔记】
 {notes_content}
@@ -515,35 +523,177 @@ def _append_analysis_context(notes_content: str, analysis_context: str = "") -> 
     )
 
 
+def _build_evidence_catalog(
+    notes_content: str,
+    papers_list: list[dict] | None = None,
+    repository_sources: list[dict] | None = None,
+) -> tuple[str, list[dict]]:
+    """Build stable citation IDs and compact evidence excerpts for the writer."""
+    sources: list[dict] = []
+    for index, paper in enumerate(papers_list or [], start=1):
+        title = str(paper.get("title") or paper.get("paper_id") or f"论文 {index}").strip()
+        paper_notes = str(paper.get("notes") or paper.get("abstract") or "").strip()
+        sources.append({
+            "id": f"P{index}",
+            "kind": "paper",
+            "title": title,
+            "authors": str(paper.get("authors") or "").strip(),
+            "year": str(paper.get("year") or paper.get("published") or "").strip()[:4],
+            "identifier": str(paper.get("doi") or paper.get("paper_id") or "").strip(),
+            "url": str(paper.get("url") or paper.get("pdf_url") or "").strip(),
+            "excerpt": paper_notes[:5000],
+        })
+
+    # Legacy projects may only contain a Markdown notes document.  Preserve
+    # citation support by treating its top-level paper sections as evidence.
+    if not sources and notes_content.strip():
+        sections = re.split(r"(?m)^##\s+", notes_content)
+        for index, section in enumerate(sections[1:9], start=1):
+            lines = section.strip().splitlines()
+            if not lines:
+                continue
+            sources.append({
+                "id": f"P{index}", "kind": "paper", "title": lines[0].strip(),
+                "authors": "", "year": "", "identifier": "", "url": "",
+                "excerpt": "\n".join(lines[1:])[:5000],
+            })
+
+    for index, repo in enumerate(repository_sources or [], start=1):
+        sources.append({
+            "id": f"R{index}",
+            "kind": "repository",
+            "title": str(repo.get("full_name") or repo.get("name") or f"Repository {index}"),
+            "authors": str(repo.get("owner") or ""),
+            "year": "",
+            "identifier": str(repo.get("default_branch") or ""),
+            "url": str(repo.get("html_url") or repo.get("url") or ""),
+            "excerpt": str(repo.get("report") or repo.get("summary") or repo.get("readme") or "")[:6000],
+        })
+
+    blocks = []
+    for source in sources:
+        meta = " · ".join(filter(None, [source["authors"], source["year"], source["identifier"]]))
+        blocks.append(
+            f"### [{source['id']}] {source['title']}\n"
+            f"类型：{'论文' if source['kind'] == 'paper' else 'GitHub 仓库'}"
+            f"{('；元数据：' + meta) if meta else ''}\n"
+            f"链接：{source['url'] or '未提供'}\n\n"
+            f"{source['excerpt'] or '当前材料仅包含元数据，不能据此推断研究结果。'}"
+        )
+    return "\n\n---\n\n".join(blocks), sources
+
+
+def _append_verified_references(review: str, sources: list[dict]) -> str:
+    """Replace model-written references with a deterministic source list."""
+    cleaned = re.sub(r"(?ms)\n##\s+参考来源\s*.*$", "", review).rstrip()
+    if not sources:
+        return cleaned
+    lines = ["## 参考来源", ""]
+    for source in sources:
+        detail = ". ".join(filter(None, [source.get("authors", ""), source.get("year", "")]))
+        identifier = source.get("identifier", "")
+        suffix = "; ".join(filter(None, [detail, identifier, source.get("url", "")]))
+        lines.append(f"- [{source['id']}] {source['title']}{(' — ' + suffix) if suffix else ''}")
+    return cleaned + "\n\n" + "\n".join(lines) + "\n"
+
+
+def assess_review_quality(review: str, sources: list[dict]) -> dict:
+    """Return a transparent, non-LLM quality gate for the generated review."""
+    valid_ids = {source["id"] for source in sources}
+    cited_ids = set(re.findall(r"\[([PR]\d+)\]", review))
+    invalid_ids = sorted(cited_ids - valid_ids)
+    used_ids = sorted(cited_ids & valid_ids)
+    required_sections = ["摘要", "研究范围", "主题", "方法", "局限", "结论", "参考来源"]
+    headings = re.findall(r"(?m)^##\s+(.+)$", review)
+    section_hits = sum(1 for name in required_sections if any(name in heading for heading in headings))
+    omission = bool(re.search(r"此处省略|同上|详见上文|与上一版.*相同|\.\.\.\s*[（(]略", review))
+    citation_coverage = round(len(used_ids) / max(1, len(valid_ids)), 2)
+    score = max(0, min(100, int(section_hits / len(required_sections) * 35 + citation_coverage * 50 + (15 if not omission and not invalid_ids else 0))))
+    return {
+        "score": score,
+        "source_count": len(valid_ids),
+        "cited_source_count": len(used_ids),
+        "citation_coverage": citation_coverage,
+        "invalid_citations": invalid_ids,
+        "section_coverage": round(section_hits / len(required_sections), 2),
+        "has_omission_markers": omission,
+        "status": "passed" if score >= 75 and not invalid_ids and not omission else "needs_review",
+    }
+
+
+def _verify_review_against_evidence(
+    topic: str,
+    review: str,
+    evidence_catalog: str,
+    provider_config: dict | None = None,
+) -> str:
+    """Final evidence-grounding pass that may delete, but never invent, claims."""
+    if not evidence_catalog.strip():
+        return review
+    prompt = f"""你是学术综述的证据审计员。请直接修订全文，使其满足以下要求：
+1. 具体方法、样本、数据、指标、数值与归因判断后必须使用证据目录中的 `[P#]` 或 `[R#]`。
+2. 删除不存在于证据目录中的引用编号；不得创造新的来源、数字、作者、年份、DOI、页码或文件路径。
+3. 证据不足的判断改写为“现有材料不足以判断”。
+4. 保留跨来源综合、共识、分歧与局限分析，避免退化为逐篇摘要。
+5. 输出完整 Markdown 正文，不输出解释，不自行撰写参考文献列表。
+
+研究主题：{topic}
+
+【唯一可引用的证据目录】
+{evidence_catalog}
+
+【待审计综述】
+{review}
+"""
+    try:
+        verified = LLMClient(provider_config).chat(
+            "你是严格的证据审计员，只保留可由给定材料支持的学术陈述。", prompt, []
+        ).strip()
+        return verified or review
+    except Exception:
+        return review
+
+
 def compose_review_from_notes(
     topic: str,
     notes_content: str,
     write_skill_content: str = "",
     analysis_context: str = "",
     provider_config: dict | None = None,
-) -> tuple[str, str]:
+    papers_list: list[dict] | None = None,
+    repository_sources: list[dict] | None = None,
+) -> tuple[str, str, dict]:
     llm = LLMClient(provider_config)
     writing_source = _append_analysis_context(notes_content, analysis_context)
+    evidence_catalog, evidence_sources = _build_evidence_catalog(
+        writing_source, papers_list=papers_list, repository_sources=repository_sources
+    )
+    if evidence_catalog:
+        writing_source = (
+            f"{writing_source}\n\n---\n\n## 可引用证据目录（引用编号不可更改）\n\n"
+            f"{evidence_catalog}"
+        )
     notes_content = writing_source
+    effective_skill = write_skill_content or DEFAULT_REVIEW_SKILL
 
     # 双通道：大纲 + 逐节正文
     # 修复：body 已包含完整 ## 标题，不再在前面重复 prepend outline
-    if write_skill_content:
-        outline = _build_writer_outline(llm, topic, writing_source, write_skill_content)
-    else:
-        outline = _build_writer_outline(llm, topic, writing_source)
-    body = _compose_review_by_sections(llm, topic, writing_source, outline, write_skill_content)
+    outline = _build_writer_outline(llm, topic, writing_source, effective_skill)
+    body = _compose_review_by_sections(llm, topic, writing_source, outline, effective_skill)
     # outline 作为前置目录，使用引用格式（>）避免与 body 中的 ## 标题重复
     review = f"> **综述大纲**（由 AI 规划，仅供参考）\n>\n" + "\n".join(f"> {line}" for line in outline.split("\n")) + f"\n\n---\n\n{body}"
 
     # 自我修复：当有 Skill 时，调用 LLM 检查并修复综述格式和结构
-    if write_skill_content:
-        review = _self_repair_review(review, write_skill_content, provider_config)
+    review = _self_repair_review(review, effective_skill, provider_config)
 
     # ━━━ 通用自审 (Self-Critique)：检查完备性与一致性 ━━━
     review = _self_critique_review(topic, review, provider_config)
 
-    return outline, review
+    review = _verify_review_against_evidence(topic, review, evidence_catalog, provider_config)
+    review = _append_verified_references(review, evidence_sources)
+    quality = assess_review_quality(review, evidence_sources)
+
+    return outline, review, quality
 
 
 def _build_fallback_notes_from_traces(topic: str, traces: list[dict]) -> str:
@@ -740,7 +890,9 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
     with open(note_path, 'r', encoding='utf-8') as f:
         notes_content = f.read()
 
-    outline, final_review = compose_review_from_notes(user_topic, notes_content, provider_config=provider_config)
+    outline, final_review, review_quality = compose_review_from_notes(
+        user_topic, notes_content, provider_config=provider_config
+    )
 
     file_path = os.path.join(work_dir, 'final_review.md')
 
@@ -763,7 +915,8 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
         "writer_result": final_review,
         "traces": researcher_agent.traces,
         "output_file": folder_name,
-        "papers": downloaded_papers
+        "papers": downloaded_papers,
+        "review_quality": review_quality,
     }
 
 
@@ -1061,6 +1214,8 @@ def run_write_from_notes(
     session_id: str = None,
     analysis_context: str = "",
     provider_config: dict | None = None,
+    papers_list: list[dict] | None = None,
+    repository_sources: list[dict] | None = None,
 ) -> dict:
     """
     【阶段 3：撰写综述】基于笔记内容生成/重写综述初稿。
@@ -1140,20 +1295,33 @@ def run_write_from_notes(
             new_review = previous_review
     else:
         # 首次撰写
-        outline, review = compose_review_from_notes(
+        outline, review, quality = compose_review_from_notes(
             topic=user_topic,
             notes_content=notes_content,
             write_skill_content=write_skill_content,
             analysis_context=analysis_context,
             provider_config=provider_config,
+            papers_list=papers_list,
+            repository_sources=repository_sources,
         )
         new_review = review
+
+    if user_feedback and previous_review:
+        evidence_catalog, evidence_sources = _build_evidence_catalog(
+            notes_content, papers_list=papers_list, repository_sources=repository_sources
+        )
+        new_review = _verify_review_against_evidence(
+            user_topic, new_review, evidence_catalog, provider_config
+        )
+        new_review = _append_verified_references(new_review, evidence_sources)
+        quality = assess_review_quality(new_review, evidence_sources)
 
     return {
         "phase": "write",
         "review": new_review,
         "traces": [skill_trace] if skill_trace else [],
         "analysis_used": bool((analysis_context or "").strip()),
+        "quality": quality,
         "rewrite_count": rewrite_count + 1,
         "max_rewrites": max_rewrites,
         "can_rewrite": (rewrite_count + 1) < max_rewrites,
@@ -1206,8 +1374,10 @@ def run_agent_pipeline_session(
 
         # 使用 Session 目录
         base_dir = os.path.dirname(__file__)
-        session_papers_dir = os.path.join(base_dir, "sessions", session_id, "papers") if session_id else None
-        session_notes_path = os.path.join(base_dir, "sessions", session_id, "notes", "draft_notes.md") if session_id else None
+        from backend.tenant import tenant_path
+        sessions_root = tenant_path(os.path.join(base_dir, "sessions"))
+        session_papers_dir = str(sessions_root / session_id / "papers") if session_id else None
+        session_notes_path = str(sessions_root / session_id / "notes" / "draft_notes.md") if session_id else None
 
         result = run_search_only(
             user_topic=user_topic,
@@ -1231,7 +1401,8 @@ def run_agent_pipeline_session(
         notes_content = ""
         if session_id:
             base_dir = os.path.dirname(__file__)
-            notes_path = os.path.join(base_dir, "sessions", session_id, "notes", "draft_notes.md")
+            from backend.tenant import tenant_path
+            notes_path = tenant_path(os.path.join(base_dir, "sessions")) / session_id / "notes" / "draft_notes.md"
             if os.path.exists(notes_path):
                 with open(notes_path, 'r', encoding='utf-8') as f:
                     notes_content = f.read()

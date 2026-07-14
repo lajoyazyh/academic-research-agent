@@ -161,7 +161,7 @@ def auto_fix_session_state(session_id: str) -> dict:
         session_mgr.update_session_state(session_id, new_state)
     except ValueError:
         # 如果状态机不允许回退，直接改 metadata
-        session_dir = SESSIONS_DIR / session_id
+        session_dir = session_mgr.root / session_id
         meta = json.loads((session_dir / "metadata.json").read_text(encoding="utf-8"))
         meta["state"] = new_state
         meta["updated_at"] = datetime.datetime.now().isoformat()
@@ -173,7 +173,7 @@ def auto_fix_session_state(session_id: str) -> dict:
 @router.put("/{session_id}")
 def update_session(session_id: str, payload: dict) -> dict:
     """更新会话基本信息（主题等）"""
-    session_dir = SESSIONS_DIR / session_id
+    session_dir = session_mgr.root / session_id
     if not session_dir.exists():
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
     metadata_path = session_dir / "metadata.json"
@@ -536,7 +536,7 @@ def save_analysis(session_id: str, payload: dict) -> dict:
         "updated_at": datetime.datetime.now().isoformat(),
     })
 
-    analysis_dir = SESSIONS_DIR / session_id / "analysis"
+    analysis_dir = session_mgr.root / session_id / "analysis"
     analysis_dir.mkdir(parents=True, exist_ok=True)
     (analysis_dir / "analysis_results.json").write_text(
         json.dumps(analysis, ensure_ascii=False, indent=2),

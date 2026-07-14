@@ -74,7 +74,7 @@ app.add_middleware(
 @app.middleware("http")
 async def authenticated_tenant(request, call_next):
     """Validate Supabase sessions and bind all filesystem access to one user."""
-    public_api_paths = {"/api/health", "/api/provider/status"}
+    public_api_paths = {"/api/health", "/api/provider/status", "/api/provider/catalog"}
     requires_auth = request.url.path.startswith("/api/") and request.url.path not in public_api_paths
     user_id = "local"
     if auth_enabled() and requires_auth and request.method != "OPTIONS":
@@ -115,6 +115,8 @@ from backend.routes.conversation import router as conversation_router
 from backend.routes.draft import router as draft_router
 from backend.routes.agent import router as agent_router
 from backend.routes.admin import router as admin_router
+from backend.routes.exports import router as exports_router
+from backend.routes.repositories import router as repositories_router
 
 app.include_router(pages_router)
 app.include_router(session_router)
@@ -123,6 +125,8 @@ app.include_router(conversation_router)
 app.include_router(draft_router)
 app.include_router(agent_router)
 app.include_router(admin_router)
+app.include_router(exports_router)
+app.include_router(repositories_router)
 
 
 if __name__ == "__main__":

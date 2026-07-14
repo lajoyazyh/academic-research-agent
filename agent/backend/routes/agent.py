@@ -76,7 +76,7 @@ def _build_skill_trace(phase: str, skill_id: str = "", skill_title: str = "", lo
 
 def _load_analysis_context_for_writing(session_id: str) -> str:
     """Load saved compare/lineage/gaps analysis as optional writing context."""
-    analysis_path = SESSIONS_DIR / session_id / "analysis" / "analysis_results.json"
+    analysis_path = session_mgr.root / session_id / "analysis" / "analysis_results.json"
     if not analysis_path.exists():
         return ""
     try:
@@ -99,6 +99,18 @@ def _load_analysis_context_for_writing(session_id: str) -> str:
         if content:
             sections.append(f"### {labels[key]}\n\n{content}")
     return "\n\n".join(sections)
+
+
+def _repository_context_for_writing(session: dict) -> str:
+    repositories = session.get("repositories") or []
+    sections = []
+    for index, repo in enumerate(repositories, start=1):
+        report = str(repo.get("report") or "").strip()
+        if report:
+            sections.append(
+                f"## GitHub 仓库证据 R{index}：{repo.get('full_name', 'repository')}\n\n{report}"
+            )
+    return "\n\n---\n\n".join(sections)
 
 
 def _collect_notes_for_analysis(session: dict) -> tuple[str, list[dict]]:
@@ -139,7 +151,7 @@ def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all
         result["gaps"] = find_gaps(topic, notes, papers, provider_config)
     result["document"] = _analysis_result_to_markdown(result, topic)
 
-    analysis_dir = SESSIONS_DIR / session_id / "analysis"
+    analysis_dir = session_mgr.root / session_id / "analysis"
     os.makedirs(analysis_dir, exist_ok=True)
     (analysis_dir / "analysis_results.json").write_text(
         json.dumps(result, ensure_ascii=False, indent=2),
@@ -342,7 +354,7 @@ def cancel_session_run(session_id: str) -> dict:
             try:
                 session_mgr.update_session_state(session_id, new_state)
             except ValueError:
-                session_dir = SESSIONS_DIR / session_id
+                session_dir = session_mgr.root / session_id
                 meta = json.loads((session_dir / "metadata.json").read_text(encoding="utf-8"))
                 meta["state"] = new_state
                 (session_dir / "metadata.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -380,15 +392,19 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     provider_config = ensure_provider_available(payload.provider)
 
     notes = session.get("notes", "")
+    papers = session.get("papers", [])
     # 如果 draft_notes.md 为空，尝试从 papers_list.json 中聚合各论文的笔记
     if not notes.strip():
-        papers = session.get("papers", [])
         aggregated = []
         for p in papers:
             pn = (p.get("notes") or "").strip()
             if pn:
                 aggregated.append(f"## {p.get('title', p.get('paper_id', ''))}\n\n{pn}")
         notes = "\n\n---\n\n".join(aggregated)
+
+    repository_context = _repository_context_for_writing(session)
+    if repository_context:
+        notes = f"{notes}\n\n---\n\n{repository_context}" if notes.strip() else repository_context
     
     if not notes.strip():
         raise HTTPException(status_code=400, detail="笔记为空，请先为选中论文生成笔记")
@@ -409,13 +425,17 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
             session_id=session_id,
             analysis_context=analysis_context,
             provider_config=provider_config,
+            papers_list=papers,
+            repository_sources=session.get("repositories", []),
         )
 
         # 保存综述，并记录本次撰写引用了哪些论文
         if result.get("review"):
             from main import _merge_referenced_papers
-            referenced_papers = _merge_referenced_papers(notes, papers)
+            referenced_papers = _merge_referenced_papers(result["review"], papers)
             session_mgr.save_review(session_id, result["review"], referenced_papers=referenced_papers)
+            quality_path = session_mgr.root / session_id / "review" / "quality.json"
+            quality_path.write_text(json.dumps(result.get("quality", {}), ensure_ascii=False, indent=2), encoding="utf-8")
         if result.get("traces"):
             session_mgr.save_traces(session_id, result["traces"], append=True)
 
@@ -494,6 +514,9 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
     else:
         print(f"[NotesSkill] No notes skill configured for this session, using default")
 
+    if not notes_skill_content:
+        notes_skill_content = str(skill_mgr.get_defaults().get("notes", {}).get("content", ""))
+
     notes_map = {}
 
     for paper in papers:
@@ -567,7 +590,7 @@ def revise_notes_phase(session_id: str, payload: ReviseNotesRequest) -> dict:
     try:
         from tools.retriever import iterative_search
         import os as _os
-        papers_path = _os.path.join(SESSIONS_DIR, session_id, "papers")
+        papers_path = str(session_mgr.root / session_id / "papers")
         passages = iterative_search(session_id, str(papers_path), payload.feedback, top_k=10, max_rounds=2, provider_config=provider_config)
         if passages:
             parts = []
@@ -650,7 +673,7 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
             result["gaps"] = find_gaps(topic, notes, papers, provider_config)
         result["document"] = _analysis_result_to_markdown(result, topic)
 
-        analysis_dir = SESSIONS_DIR / session_id / "analysis"
+        analysis_dir = session_mgr.root / session_id / "analysis"
         os.makedirs(analysis_dir, exist_ok=True)
         (analysis_dir / "analysis_results.json").write_text(
             json.dumps(result, ensure_ascii=False, indent=2),
@@ -824,6 +847,8 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
                         _auto_notes_trace = _build_skill_trace("notes", skill_id=_auto_notes_id, reason=f"load_error: {e}")
             else:
                 print(f"[NotesSkill] Auto-pipeline: no notes skill configured, using default")
+            if not _auto_notes_skill:
+                _auto_notes_skill = str(skill_mgr.get_defaults().get("notes", {}).get("content", ""))
             session_mgr.save_traces(session_id, [_auto_notes_trace], append=True)
             with RUN_LOCK:
                 existing_traces = RUNS.get(run_key, {}).get("traces", [])
@@ -919,9 +944,13 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
                 session_id=session_id,
                 analysis_context=analysis_context,
                 provider_config=provider_config,
+                papers_list=session.get("papers", []),
+                repository_sources=session.get("repositories", []),
             )
             if write_result.get("review"):
                 session_mgr.save_review(session_id, write_result["review"])
+                quality_path = session_mgr.root / session_id / "review" / "quality.json"
+                quality_path.write_text(json.dumps(write_result.get("quality", {}), ensure_ascii=False, indent=2), encoding="utf-8")
             if write_result.get("traces"):
                 session_mgr.save_traces(session_id, write_result["traces"], append=True)
                 with RUN_LOCK:
