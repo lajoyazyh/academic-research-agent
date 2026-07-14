@@ -174,7 +174,8 @@ class PaperRegisterTool(BaseTool):
                             "authors": authors,
                             "source": "agent_search",
                             "source_type": "doi" if is_doi else "arxiv",
-                            "status": "pending",
+                            # The agent has already screened relevance before invoking this tool.
+                            "status": "accepted",
                             "abstract": abstract[:1500] if abstract else "",
                             "notes": "",
                             "has_notes": False,
@@ -208,7 +209,8 @@ class PaperRegisterTool(BaseTool):
                         "authors": authors,
                         "source": "agent_search",
                         "source_type": "doi" if is_doi else "arxiv",
-                        "status": "pending",
+                        # The agent has already screened relevance before invoking this tool.
+                        "status": "accepted",
                         "abstract": abstract[:1500] if abstract else "",
                         "notes": "",
                         "has_notes": False,

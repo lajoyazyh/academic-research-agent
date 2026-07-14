@@ -86,7 +86,7 @@ html, body {
 .console-more > summary { display: flex; align-items: center; gap: 6px; list-style: none; }
 .console-more > summary::-webkit-details-marker { display: none; }
 .console-more-menu { position: absolute; top: calc(100% + 8px); right: 0; min-width: 150px; padding: 6px; z-index: 30; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: 0 12px 30px rgba(0,0,0,.12); }
-.console-more-menu .ghost-btn { width: 100%; justify-content: flex-start; }
+.console-more-menu .ghost-btn { width: 100%; display: flex; align-items: center; gap: 7px; justify-content: flex-start; white-space: nowrap; }
 
 .research-progress { height: 52px; padding: 0 20px; display: flex; align-items: center; border-bottom: 1px solid var(--line); background: var(--panel); overflow-x: auto; scrollbar-width: none; }
 .research-progress::-webkit-scrollbar { display: none; }
@@ -170,9 +170,16 @@ html, body {
 .sources-toolbar .primary-btn { flex: 1; justify-content: center; }
 .sources-toolbar .secondary-btn { flex: 1; justify-content: center; }
 .sources-toolbar .accent-btn { flex: 1; justify-content: center; }
+.sources-primary-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+.sources-primary-actions .primary-btn,
+.sources-primary-actions .secondary-btn,
+.sources-primary-actions .accent-btn { min-width: 0; width: auto; }
+.sources-primary-actions #autoRunBtn,
+.sources-primary-actions #cancelSearchBtn { grid-column: 1 / -1; }
 
 .sources-section { padding: 0 16px 8px; display: flex; flex-direction: column; }
-.sources-section:nth-child(3) { flex: 1; min-height: 0; overflow: hidden; }
+.repository-sources[hidden] { display: none; }
+.papers-section { flex: 1; min-height: 0; overflow: hidden; }
 .sources-section-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 6px; font-size: 13px; color: var(--subtle); flex-shrink: 0; }
 .sources-section-head strong { font-size: 14px; color: var(--text); font-weight: 500; }
 
@@ -199,6 +206,7 @@ html, body {
 }
 .paper-row:hover { border-color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
 .paper-row.active { border-color: var(--accent); background: var(--accent-light); }
+.paper-row.is-updating { opacity: .72; pointer-events: none; }
 .paper-main { min-width: 0; flex: 1; }
 .paper-main h4 { margin: 0 0 3px; font-size: 13px; line-height: 1.35; font-weight: 500; }
 .paper-main p { margin: 0; color: var(--subtle); font-size: 12px; line-height: 1.4; }
@@ -207,6 +215,7 @@ html, body {
 .paper-include-btn { min-height: 32px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--accent); font-size: 11px; font-weight: 650; cursor: pointer; }
 .paper-include-btn:hover { border-color: var(--accent); background: var(--accent-light); }
 .paper-include-btn.accepted { border-color: color-mix(in srgb, var(--success) 45%, var(--line)); background: var(--green-light); color: var(--success); }
+.paper-include-btn:disabled { cursor: wait; }
 .paper-more-menu { position: relative; }
 .paper-more-menu > summary { list-style: none; }
 .paper-more-menu > summary::-webkit-details-marker { display: none; }
@@ -220,6 +229,7 @@ html, body {
   display: inline-flex; align-items: center; gap: 6px;
   border-radius: 20px; font-size: 13px; font-weight: 500;
   cursor: pointer; border: none; padding: 8px 16px;
+  white-space: nowrap;
   transition: background .15s, opacity .15s;
 }
 .primary-btn { background: var(--accent); color: var(--on-primary); }
@@ -2071,8 +2081,8 @@ html, body {
 
   .sources-head { padding: 13px 16px 8px; }
   .sources-toolbar { padding-left: 12px; padding-right: 12px; }
-  .sources-toolbar .primary-btn { flex-basis: calc(60% - 4px); }
-  .sources-toolbar .secondary-btn { flex-basis: calc(40% - 4px); }
+  .sources-toolbar:not(.sources-primary-actions) .primary-btn { flex-basis: calc(60% - 4px); }
+  .sources-toolbar:not(.sources-primary-actions) .secondary-btn { flex-basis: calc(40% - 4px); }
   .sources-toolbar .accent-btn { width: 100%; justify-content: center; }
   .sources-section { min-height: 0; }
   .list-scroll { padding-left: 12px; padding-right: 12px; }

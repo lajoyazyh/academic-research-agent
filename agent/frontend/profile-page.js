@@ -31,7 +31,7 @@
     if (!token) {
       githubConnection.className = "github-connection warn";
       githubConnection.innerHTML = '<span class="github-connection-icon"><i class="fa-solid fa-link-slash"></i></span><span><strong>尚未连接</strong><small>连接时会请求仓库读写权限，用于检索与导出。</small></span>';
-      connectGithubButton.innerHTML = '<i class="fa-brands fa-github"></i> 连接 GitHub';
+      connectGithubButton.innerHTML = '<i class="fa-brands fa-github"></i> 前往 GitHub 授权';
       return;
     }
     try {
@@ -56,8 +56,8 @@
       base_url: "https://open.bigmodel.cn/api/paas/v4/",
       chat_models: ["glm-4-flash", "glm-4-plus"],
       default_chat_model: "glm-4-flash",
-      embedding_models: ["embedding-2"],
-      default_embedding_model: "embedding-2"
+      embedding_models: ["embedding-3", "embedding-2"],
+      default_embedding_model: "embedding-3"
     },
     {
       id: "openai",
@@ -100,9 +100,9 @@
     return catalog.find(function (item) { return item.id === providerSelect.value; }) || catalog[0] || fallbackCatalog[0];
   }
 
-  function fillSelect(element, values, selectedValue, emptyLabel) {
+  function fillSelect(element, values, selectedValue, emptyLabel, allowEmpty) {
     element.innerHTML = "";
-    if (!values.length && emptyLabel) {
+    if (emptyLabel && (allowEmpty || !values.length)) {
       var emptyOption = document.createElement("option");
       emptyOption.value = "";
       emptyOption.textContent = emptyLabel;
@@ -120,7 +120,7 @@
       savedOption.textContent = selectedValue;
       element.appendChild(savedOption);
     }
-    element.value = selectedValue || (values[0] || "");
+    element.value = selectedValue === "" ? "" : (selectedValue || (values[0] || ""));
   }
 
   function applyProvider(providerId, saved) {
@@ -131,7 +131,10 @@
     baseUrl.value = (saved && saved.base_url) || provider.base_url || "";
     baseUrl.readOnly = !isCustom;
     fillSelect(chatModel, provider.chat_models || [], (saved && (saved.chat_model || saved.model)) || provider.default_chat_model, "请填写聊天模型");
-    fillSelect(embeddingModel, provider.embedding_models || [], (saved && saved.embedding_model) || provider.default_embedding_model, "不使用向量模型");
+    var savedEmbedding = saved && Object.prototype.hasOwnProperty.call(saved, "embedding_model")
+      ? saved.embedding_model
+      : provider.default_embedding_model;
+    fillSelect(embeddingModel, provider.embedding_models || [], savedEmbedding, "不启用向量模型（关键词检索）", true);
     chatModel.hidden = isCustom;
     embeddingModel.hidden = isCustom;
     customChatModel.hidden = !isCustom;
@@ -289,22 +292,17 @@
       if (!auth || !auth.client) return;
       connectGithubButton.disabled = true;
       try {
-        var identitiesResult = await auth.client.auth.getUserIdentities();
-        var identities = identitiesResult.data && identitiesResult.data.identities || [];
-        var hasGithub = identities.some(function (identity) { return identity.provider === "github"; });
         var options = {
           redirectTo: window.location.origin + "/app/profile#github",
           scopes: "repo read:user user:email"
         };
-        var result = hasGithub
-          ? await auth.client.auth.signInWithOAuth({ provider: "github", options: options })
-          : await auth.client.auth.linkIdentity({ provider: "github", options: options });
+        var result = await auth.client.auth.signInWithOAuth({ provider: "github", options: options });
         if (result.error) throw result.error;
       } catch (_error) {
         connectGithubButton.disabled = false;
         githubConnection.className = "github-connection warn";
-        githubConnection.querySelector("strong").textContent = "GitHub 连接未完成";
-        githubConnection.querySelector("small").textContent = "请确认 Supabase 已启用 GitHub Provider 与手动身份关联。";
+        githubConnection.querySelector("strong").textContent = "GitHub 授权未开始";
+        githubConnection.querySelector("small").textContent = "无法打开 GitHub 授权页，请检查网络后重试。";
       }
     });
   }

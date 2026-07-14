@@ -28,7 +28,7 @@
       base_url: "https://open.bigmodel.cn/api/paas/v4/",
       model: "glm-4-flash",
       chat_model: "glm-4-flash",
-      embedding_model: "embedding-2",
+      embedding_model: "embedding-3",
       save_local: false,
       server_available: false,
     },
@@ -152,7 +152,7 @@
       base_url: "https://open.bigmodel.cn/api/paas/v4/",
       model: "glm-4-flash",
       chat_model: "glm-4-flash",
-      embedding_model: "embedding-2",
+      embedding_model: "embedding-3",
       save_local: false,
       server_available: false,
     };
@@ -1211,7 +1211,7 @@
     }
 
     if (!papers.length) {
-      this.els.paperList.innerHTML = '<div class="empty-state">点击「AI 检索论文」或「添加论文」开始构建来源库。</div>';
+      this.els.paperList.innerHTML = '<div class="empty-state">点击「搜索相关论文」或「添加论文」开始构建来源库。</div>';
       return;
     }
 
@@ -1224,7 +1224,9 @@
       paper._hasReview = referencedPapers.indexOf(paper.paper_id) >= 0;
 
       const row = document.createElement("article");
-      row.className = `paper-row ${paper.paper_id === this.state.currentPaperId ? "active" : ""}`;
+      const isUpdating = this.state._updatingPaperId === paper.paper_id;
+      row.dataset.paperId = paper.paper_id;
+      row.className = `paper-row ${paper.paper_id === this.state.currentPaperId ? "active" : ""} ${isUpdating ? "is-updating" : ""}`;
       row.addEventListener("click", () => {
         this.state.currentPaperId = paper.paper_id;
         this.renderPaperList();
@@ -1263,7 +1265,7 @@
           </div>
         </div>
         <div class="paper-actions">
-          <button class="paper-include-btn ${selectedClass}" data-action="accept" aria-label="${paper.status === 'accepted' ? '从综述中移除' : '纳入综述'}"><i class="fa-solid fa-check"></i><span>${paper.status === 'accepted' ? '已纳入' : '纳入综述'}</span></button>
+          <button class="paper-include-btn ${selectedClass}" data-action="accept" ${isUpdating ? "disabled" : ""} aria-pressed="${paper.status === 'accepted'}" aria-label="${paper.status === 'accepted' ? '从综述中移除' : '纳入综述'}">${isUpdating ? '<i class="fa-solid fa-circle-notch fa-spin"></i><span>保存中</span>' : `<i class="fa-solid fa-check"></i><span>${paper.status === 'accepted' ? '已纳入' : '纳入综述'}</span>`}</button>
           <details class="paper-more-menu">
             <summary class="mini-btn" aria-label="打开论文操作菜单"><i class="fa-solid fa-ellipsis-vertical"></i></summary>
             <div>
@@ -3336,6 +3338,17 @@
 
   async setPaperStatus(paperId, status) {
     if (!this.state.currentSessionId) return;
+    const paper = (this.state.currentSession?.papers || []).find((item) => item.paper_id === paperId);
+    if (!paper) {
+      this.setConsoleStatus("error", "找不到这篇论文，请刷新项目后重试。");
+      return;
+    }
+    const previousStatus = paper.status || "pending";
+    this.state._updatingPaperId = paperId;
+    paper.status = status;
+    this.renderPaperList();
+    this.updateActionButtons();
+    this.updateResearchStage(this.state.currentSession);
     try {
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/papers/${encodeURIComponent(paperId)}/status`, {
         method: "PUT",
@@ -3348,10 +3361,17 @@
       }
 
       this.state.currentPaperId = paperId;
-      await this.reloadCurrentSession();
-      this.switchViewMode("summary");
+      this.state.currentSession = data;
+      this.state._updatingPaperId = null;
+      this.renderConsoleSession();
+      const actionLabel = status === "accepted" ? "已纳入综述" : status === "rejected" ? "已排除" : "已移出综述";
+      this.setConsoleStatus(data.state, actionLabel);
     } catch (error) {
-      alert(`状态更新失败：${error.message}`);
+      paper.status = previousStatus;
+      this.state._updatingPaperId = null;
+      this.renderPaperList();
+      this.updateActionButtons();
+      this.setConsoleStatus("error", `状态更新失败：${error.message}`);
     }
   },
 
