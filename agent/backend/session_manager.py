@@ -87,6 +87,7 @@ class SessionManager:
         (session_dir / "papers").mkdir(parents=True, exist_ok=True)
         (session_dir / "notes").mkdir(parents=True, exist_ok=True)
         (session_dir / "review").mkdir(parents=True, exist_ok=True)
+        (session_dir / "repositories").mkdir(parents=True, exist_ok=True)
         (session_dir / "draft").mkdir(parents=True, exist_ok=True)
         (session_dir / "traces").mkdir(parents=True, exist_ok=True)
 
@@ -195,6 +196,11 @@ class SessionManager:
         # 加载深度分析结果
         analysis = self._read_json(session_dir / "analysis" / "analysis_results.json") or {}
 
+        # GitHub repository sources are optional and remain compatible with
+        # sessions created before repository research was introduced.
+        repositories = self._read_json(session_dir / "repositories" / "sources.json") or []
+        review_quality = self._read_json(session_dir / "review" / "quality.json") or {}
+
         # 加载聊天历史（多会话模式，自动迁移旧版）
         self._migrate_legacy_chat(session_id)
         conversations = self.list_conversations(session_id)
@@ -218,6 +224,8 @@ class SessionManager:
             "draft_version": review_version,
             "traces": traces,
             "analysis": analysis,
+            "repositories": repositories,
+            "review_quality": review_quality,
             "conversations": conversations,
         }
 

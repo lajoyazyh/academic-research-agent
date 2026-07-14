@@ -3,6 +3,7 @@ import json
 import os
 import os
 import datetime
+import time
 import re
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -20,7 +21,8 @@ from backend.tenant import tenant_path
 from backend.auth import auth_enabled
 
 from fastapi.responses import HTMLResponse
-from backend.provider import ensure_provider_available, public_provider_status
+from backend.provider import ensure_provider_available, public_provider_catalog, public_provider_status
+from .models import ProviderConfig
 
 router = APIRouter(tags=["pages"])
 
@@ -46,11 +48,34 @@ def _tenant_docs_dir() -> Path:
 
 
 @router.get("/")
+def landing():
+    landing_file = FRONTEND_DIR / "market.html"
+    if not landing_file.exists():
+        raise HTTPException(status_code=404, detail="Landing page not found")
+    return HTMLResponse(landing_file.read_text(encoding="utf-8"))
+
+@router.get("/app")
 def home():
     home_file = FRONTEND_DIR / "home.html"
     if not home_file.exists():
         raise HTTPException(status_code=404, detail="Home page not found")
     return HTMLResponse(home_file.read_text(encoding="utf-8"))
+
+
+@router.get("/auth")
+def auth_page():
+    auth_file = FRONTEND_DIR / "auth.html"
+    if not auth_file.exists():
+        raise HTTPException(status_code=404, detail="Auth page not found")
+    return HTMLResponse(auth_file.read_text(encoding="utf-8"))
+
+
+@router.get("/app/profile")
+def profile_page():
+    profile_file = FRONTEND_DIR / "profile.html"
+    if not profile_file.exists():
+        raise HTTPException(status_code=404, detail="Profile page not found")
+    return HTMLResponse(profile_file.read_text(encoding="utf-8"))
 
 @router.get("/app/console")
 def console():
@@ -100,6 +125,69 @@ def health() -> Dict[str, str]:
 @router.get("/api/provider/status")
 def provider_status() -> dict:
     return public_provider_status()
+
+
+@router.get("/api/provider/catalog")
+def provider_catalog() -> dict:
+    return public_provider_catalog()
+
+
+class ProviderTestRequest(ProviderConfig):
+    pass
+
+
+@router.post("/api/provider/test")
+def test_provider(payload: ProviderTestRequest) -> dict:
+    """Validate BYOK chat and embedding capabilities without persisting secrets."""
+    from llms.client import LLMClient
+
+    started_at = time.perf_counter()
+    config = ensure_provider_available(payload)
+    capabilities = {"chat": False, "embedding": False}
+    try:
+        llm = LLMClient(config)
+        llm.client.chat.completions.create(
+            model=llm.model,
+            messages=[{"role": "user", "content": "Reply with OK."}],
+            temperature=0,
+            max_tokens=3,
+        )
+        capabilities["chat"] = True
+
+        if config.get("embedding_model"):
+            llm.client.embeddings.create(model=llm.embedding_model, input=["connection test"])
+            capabilities["embedding"] = True
+
+        return {
+            "ok": True,
+            "capabilities": capabilities,
+            "latency_ms": round((time.perf_counter() - started_at) * 1000),
+            "message": "聊天和向量模型连接正常。" if capabilities["embedding"] else "聊天模型连接正常；未配置向量模型。",
+        }
+    except Exception as exc:
+        error_name = exc.__class__.__name__.lower()
+        if "authentication" in error_name or "permission" in error_name:
+            error_code = "invalid_key"
+            message = "API Key 无效或没有访问该模型的权限。"
+        elif "timeout" in error_name:
+            error_code = "timeout"
+            message = "连接超时，请检查网络、Base URL 或稍后重试。"
+        elif "notfound" in error_name:
+            error_code = "model_not_found"
+            message = "没有找到填写的模型，请检查模型名称。"
+        elif capabilities["chat"]:
+            error_code = "embedding_unavailable"
+            message = "聊天模型可用，但向量模型连接失败。请检查向量模型名称。"
+        else:
+            error_code = "connection_failed"
+            message = "模型连接失败，请检查提供商、地址和模型名称。"
+        return {
+            "ok": False,
+            "capabilities": capabilities,
+            "latency_ms": round((time.perf_counter() - started_at) * 1000),
+            "error_code": error_code,
+            "message": message,
+        }
 
 
 @router.post("/api/keywords/extract")

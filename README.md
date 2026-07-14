@@ -15,7 +15,11 @@ Academic Research Agent turns a research topic into a traceable research workspa
 - **Trace observability**: inspect tool calls, errors, fallback decisions, and active Skill status.
 - **Custom Skills**: configure search, note-taking, and writing behavior per workspace.
 - **Cross-session Copilot**: ask questions across saved research sessions, optionally scoped to selected sessions.
-- **BYOK-ready public demo**: visitors can provide their own OpenAI-compatible API key in the browser; the server does not persist it.
+- **Market-ready BYOK onboarding**: visitors choose a supported provider, test chat and embedding capabilities, and decide whether the browser should remember the key; the server does not persist it.
+- **Responsive research workspace**: desktop keeps the two-panel workflow while mobile provides dedicated Papers, Content, and Chat views.
+- **Evidence-first review writing**: stable source IDs, cross-paper synthesis, citation auditing, deterministic references, and a visible quality score.
+- **GitHub research workflow**: sign in with GitHub, inspect a specified public/private repository, or autonomously discover and compare repositories.
+- **Portable outputs**: export Markdown, Word, PDF, HTML, JSON, or a ZIP package, and commit selected artifacts directly to a GitHub repository.
 
 ## Screens and Workflow
 
@@ -75,9 +79,9 @@ ARXIV_SEARCH_RETRY_LIMIT=3
 
 You can also use an OpenAI-compatible provider by setting `OPENAI_API_KEY`, `ZHIPU_BASE_URL`, and `ZHIPU_MODEL` appropriately.
 
-For public demos, leave `ZHIPU_API_KEY` unset and use the in-app **API 配置** button. The browser sends `API Key`, `Base URL`, and `Model` with LLM requests only. The backend never writes request keys to `agent/sessions/`, traces, metadata, notes, analysis, or reviews.
+For public demos, leave `ZHIPU_API_KEY` unset and configure a provider in **Profile -> Model API**. The browser sends the key only with model requests. By default it is kept in `sessionStorage`; users can explicitly opt in to remembering it in `localStorage`. The backend never writes request keys to sessions, traces, metadata, notes, analysis, reviews, or analytics events.
 
-Default in-app provider values:
+Built-in presets include Zhipu AI and OpenAI, plus an advanced OpenAI-compatible option. Chat and embedding models are tested separately before research begins.
 
 ```text
 Base URL: https://open.bigmodel.cn/api/paas/v4/
@@ -96,6 +100,8 @@ Open:
 ```text
 http://127.0.0.1:8000/
 ```
+
+The public product page is served at `/`, the authenticated dashboard at `/app`, and account/provider settings at `/app/profile`.
 
 ### 4. Run Tests
 

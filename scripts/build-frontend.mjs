@@ -11,10 +11,11 @@ mkdirSync(output, { recursive: true });
 cpSync(source, output, { recursive: true });
 cpSync(source, resolve(output, "static"), { recursive: true });
 
-// Vercel serves /index.html before applying rewrites. Make the landing page the
-// physical index and keep the research console at its explicit application URL.
+// Keep the public marketing site at `/` and protect the research workspace at
+// its explicit `/app` route. The console remains available at `/app/console`.
 copyFileSync(resolve(source, "index.html"), resolve(output, "console.html"));
-copyFileSync(resolve(source, "home.html"), resolve(output, "index.html"));
+copyFileSync(resolve(source, "home.html"), resolve(output, "app-home.html"));
+copyFileSync(resolve(source, "market.html"), resolve(output, "index.html"));
 
 const publicConfig = {
   apiBaseUrl: process.env.PUBLIC_API_BASE_URL || "",

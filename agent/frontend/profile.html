@@ -11,12 +11,12 @@
 <body class="account-page" data-page="profile">
   <div class="account-shell">
     <header class="account-header">
-      <a class="account-brand" href="/">
+      <a class="account-brand" href="/app">
         <span class="account-brand-mark"><i class="fa-solid fa-wave-square"></i></span>
         <span>智能学术综述助手</span>
       </a>
       <nav class="account-header-actions" aria-label="主导航">
-        <a class="account-header-link" href="/">首页</a>
+        <a class="account-header-link" href="/app">工作台</a>
         <a class="account-header-link" href="/app/console">研究控制台</a>
       </nav>
     </header>
@@ -45,37 +45,75 @@
           </div>
         </section>
 
+        <section class="profile-card" id="github" aria-labelledby="githubTitle">
+          <h2 id="githubTitle"><i class="fa-brands fa-github" aria-hidden="true"></i> GitHub</h2>
+          <p class="card-description">连接后可以登录、调研公开或私有仓库，并把综述直接提交到你选择的仓库。</p>
+          <div class="github-connection" id="githubConnection" role="status" aria-live="polite">
+            <span class="github-connection-icon"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+            <span><strong>正在检查连接…</strong><small>Token 只保留在当前浏览器会话。</small></span>
+          </div>
+          <div class="account-actions">
+            <button class="secondary-action" id="connectGithubButton" type="button"><i class="fa-brands fa-github"></i> 连接 GitHub</button>
+          </div>
+        </section>
+
         <section class="profile-card" id="api" aria-labelledby="apiTitle">
           <h2 id="apiTitle">模型 API</h2>
-          <p class="card-description">使用你自己的 OpenAI 兼容 API。配置按当前账号保存在这台浏览器中。</p>
+          <p class="card-description">选择模型提供商并测试连接。密钥默认只保留到当前浏览器会话结束。</p>
           <div class="api-status" id="apiStatus"><i class="fa-solid fa-circle-notch fa-spin"></i><span>正在检查配置…</span></div>
           <form id="apiForm">
+            <div class="form-field">
+              <label for="providerSelect">模型提供商</label>
+              <select id="providerSelect">
+                <option value="zhipu">智谱 AI</option>
+                <option value="openai">OpenAI</option>
+                <option value="custom">自定义 OpenAI-compatible</option>
+              </select>
+              <span class="field-help" id="providerDescription">当前项目默认支持，适合中文学术研究。</span>
+            </div>
             <div class="form-field">
               <label for="providerApiKey">API Key</label>
               <div class="password-wrap">
                 <input id="providerApiKey" type="password" autocomplete="off" placeholder="请输入你的 API Key">
                 <button class="password-toggle" id="apiKeyToggle" type="button" aria-label="显示 API Key"><i class="fa-regular fa-eye"></i></button>
               </div>
+              <span class="field-help">我们不会把密钥写入项目数据库或分析事件。</span>
             </div>
-            <div class="form-field">
-              <label for="providerBaseUrl">Base URL</label>
-              <input id="providerBaseUrl" type="url" placeholder="https://open.bigmodel.cn/api/paas/v4/">
-              <span class="field-help">需兼容 OpenAI API 格式，并包含协议头。</span>
+            <div class="provider-model-grid">
+              <div class="form-field">
+                <label for="providerModel">聊天模型</label>
+                <select id="providerModel"></select>
+                <input id="providerCustomModel" type="text" placeholder="例如：your-chat-model" hidden>
+              </div>
+              <div class="form-field">
+                <label for="providerEmbeddingModel">向量模型</label>
+                <select id="providerEmbeddingModel"></select>
+                <input id="providerCustomEmbeddingModel" type="text" placeholder="可选，例如：your-embedding-model" hidden>
+                <span class="field-help">用于论文语义检索；不可用时系统将明确提示并降级。</span>
+              </div>
             </div>
-            <div class="form-field">
-              <label for="providerModel">模型名称</label>
-              <input id="providerModel" type="text" placeholder="glm-4-flash">
-            </div>
+            <details class="profile-advanced" id="providerAdvanced">
+              <summary>高级连接设置</summary>
+              <div class="form-field">
+                <label for="providerBaseUrl">Base URL</label>
+                <input id="providerBaseUrl" type="url" placeholder="https://open.bigmodel.cn/api/paas/v4/">
+                <span class="field-help">预设提供商会自动填写；自定义接口需兼容 OpenAI API。</span>
+              </div>
+            </details>
+            <label class="remember-api-row">
+              <input id="providerRemember" type="checkbox">
+              <span><strong>记住在此设备</strong><small>不勾选时，关闭浏览器会话后自动清除。</small></span>
+            </label>
             <div class="api-form-actions">
               <button class="danger-action" id="clearApiButton" type="button">清除配置</button>
               <div>
-                <a class="secondary-action" href="/app/console" style="display:grid;place-items:center;text-decoration:none;">返回控制台</a>
+                <button class="secondary-action" id="testApiButton" type="button"><i class="fa-solid fa-plug-circle-check"></i> 测试连接</button>
                 <button class="primary-action" id="saveApiButton" type="submit"><i class="fa-solid fa-check"></i> 保存配置</button>
               </div>
             </div>
             <div class="form-message" id="apiMessage" role="status" aria-live="polite"></div>
           </form>
-          <div class="security-note"><i class="fa-solid fa-shield-halved"></i><span>API Key 不会写入项目数据库、研究文件或服务端配置；调用模型时才会随请求发送。使用公共或共享设备后请清除配置并退出登录。</span></div>
+          <div class="security-note"><i class="fa-solid fa-shield-halved"></i><span>调用模型时，API Key 会通过 HTTPS 随请求发送给研究服务，但不会写入项目数据库、研究文件、服务端配置或日志。使用公共设备后请清除配置并退出登录。</span></div>
         </section>
       </div>
     </main>

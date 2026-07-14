@@ -329,6 +329,28 @@ def get_default_skills() -> dict:
     return {"defaults": skill_mgr.get_defaults()}
 
 
+@router.get("/api/skills/presets")
+def get_skill_presets() -> dict:
+    """List curated, immutable review-writing strategies."""
+    return {"presets": skill_mgr.get_presets()}
+
+
+@router.post("/api/skills/presets/{preset_id}/copy")
+def copy_skill_preset(preset_id: str) -> dict:
+    """Create an editable user Skill from one built-in preset."""
+    preset = skill_mgr.get_presets().get(preset_id)
+    if not preset:
+        raise HTTPException(status_code=404, detail="预设 Skill 不存在")
+    title = preset["title"]
+    existing_titles = {item.get("title") for item in skill_mgr.list_skills(skill_type=preset["type"])}
+    if title in existing_titles:
+        suffix = 2
+        while f"{title} {suffix}" in existing_titles:
+            suffix += 1
+        title = f"{title} {suffix}"
+    return skill_mgr.create_skill(title, preset["type"], preset["content"])
+
+
 @router.get("/api/skills/{skill_id}")
 def get_skill(skill_id: str) -> dict:
     """获取单个 Skill 完整数据"""

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="从研究问题出发，检索、筛选并阅读论文，生成带来源依据的学术综述。">
+  <title>智能学术综述助手</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="/static/market.css">
+</head>
+<body class="market-page">
+  <header class="market-nav">
+    <a class="market-brand" href="/" aria-label="智能学术综述助手首页">
+      <span class="market-brand-mark"><i class="fa-solid fa-wave-square" aria-hidden="true"></i></span>
+      <span>智能学术综述助手</span>
+    </a>
+    <nav class="market-nav-links" aria-label="主导航">
+      <a href="#workflow">工作流程</a>
+      <a href="#trust">数据安全</a>
+      <a class="market-nav-login" id="marketLoginLink" href="/auth">登录</a>
+      <a class="market-button market-button--small" id="marketPrimaryLink" href="/auth?mode=signup">免费开始</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="market-hero">
+      <div class="market-hero-copy">
+        <div class="market-eyebrow"><i class="fa-solid fa-sparkles" aria-hidden="true"></i> 面向个人研究者的文献工作台</div>
+        <h1>从一个研究问题，走到一篇有依据的综述初稿。</h1>
+        <p>在同一条工作流中搜索论文、判断是否纳入、阅读原文、记录证据并生成综述。每一步都保留来源，方便你核查和继续修改。</p>
+        <div class="market-hero-actions">
+          <a class="market-button" id="marketHeroCta" href="/auth?mode=signup">开始第一次研究 <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+          <a class="market-button market-button--secondary" href="#workflow">看看如何工作</a>
+        </div>
+        <div class="market-proof-row" aria-label="产品特点">
+          <span><i class="fa-solid fa-check" aria-hidden="true"></i> 论文来源可追溯</span>
+          <span><i class="fa-solid fa-check" aria-hidden="true"></i> 用户自带模型密钥</span>
+          <span><i class="fa-solid fa-check" aria-hidden="true"></i> 项目独立保存</span>
+        </div>
+      </div>
+
+      <div class="market-product-preview" aria-label="研究工作台预览">
+        <div class="preview-topbar">
+          <div><span class="preview-dot"></span><strong>多智能体协作记忆机制</strong></div>
+          <span class="preview-status"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> 模型已连接</span>
+        </div>
+        <div class="preview-stages" aria-label="研究进度">
+          <span class="done">研究问题</span><span class="done">检索</span><span class="active">筛选</span><span>阅读与笔记</span><span>综合分析</span><span>综述完成</span>
+        </div>
+        <div class="preview-workspace">
+          <div class="preview-papers">
+            <div class="preview-panel-title">候选论文 <span>12</span></div>
+            <article class="preview-paper selected">
+              <small>2025 · 38 次引用</small>
+              <strong>Memory-Augmented Collaboration for LLM Agents</strong>
+              <span><i class="fa-solid fa-check" aria-hidden="true"></i> 已纳入</span>
+            </article>
+            <article class="preview-paper">
+              <small>2024 · arXiv</small>
+              <strong>Shared Memory in Multi-Agent Systems</strong>
+              <span class="muted">等待判断</span>
+            </article>
+          </div>
+          <div class="preview-detail">
+            <div class="preview-panel-title">论文证据</div>
+            <h3>核心结论</h3>
+            <p>结构化共享记忆能够减少代理之间的重复检索，并提高长任务中的协作一致性。</p>
+            <div class="preview-citation"><i class="fa-solid fa-quote-left" aria-hidden="true"></i> 查看原文依据 · 第 6 页</div>
+            <button type="button" tabindex="-1">加入调研笔记</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="market-section" id="workflow">
+      <div class="market-section-heading">
+        <span>完整但不复杂</span>
+        <h2>把文献综述拆成清楚的三个动作</h2>
+        <p>系统处理重复劳动，你保留研究判断。</p>
+      </div>
+      <div class="market-feature-grid">
+        <article class="market-feature-card">
+          <span class="feature-number">01</span>
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <h3>描述研究问题</h3>
+          <p>用自然语言输入主题，系统生成可编辑的关键词并搜索相关论文。</p>
+        </article>
+        <article class="market-feature-card">
+          <span class="feature-number">02</span>
+          <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+          <h3>筛选和核查证据</h3>
+          <p>在摘要、方法和 PDF 原文之间切换，决定哪些论文真正进入综述。</p>
+        </article>
+        <article class="market-feature-card">
+          <span class="feature-number">03</span>
+          <i class="fa-solid fa-file-pen" aria-hidden="true"></i>
+          <h3>形成综述初稿</h3>
+          <p>基于已纳入论文生成笔记、分析和带引用的初稿，再继续对话修改。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="market-trust" id="trust">
+      <div>
+        <span class="market-eyebrow"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> BYOK 数据边界</span>
+        <h2>模型由你选择，密钥由你掌握。</h2>
+        <p>API Key 只在调用模型时通过 HTTPS 发送，不写入研究项目、分析事件或服务端日志。默认只保留到当前浏览器会话结束。</p>
+      </div>
+      <ul>
+        <li><i class="fa-solid fa-lock" aria-hidden="true"></i><span><strong>密钥与研究数据分离</strong>项目数据库不会保存模型密钥。</span></li>
+        <li><i class="fa-solid fa-user-shield" aria-hidden="true"></i><span><strong>独立研究空间</strong>登录用户的项目和文件彼此隔离。</span></li>
+        <li><i class="fa-solid fa-link" aria-hidden="true"></i><span><strong>结果保留来源</strong>生成内容能够回到论文和 PDF 继续核查。</span></li>
+      </ul>
+    </section>
+
+    <section class="market-final-cta">
+      <div>
+        <span>从下一次文献检索开始</span>
+        <h2>少一些工具切换，多一些研究判断。</h2>
+      </div>
+      <a class="market-button" id="marketBottomCta" href="/auth?mode=signup">创建研究空间</a>
+    </section>
+  </main>
+
+  <footer class="market-footer">
+    <span>智能学术综述助手</span>
+    <span>AI 生成内容可能存在错误，请始终核查论文原文。</span>
+  </footer>
+
+  <script src="/static/runtime-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/static/api-client.js"></script>
+  <script src="/static/market-page.js"></script>
+</body>
+</html>

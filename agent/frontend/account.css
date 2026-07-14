@@ -104,7 +104,7 @@ a { color: inherit; }
 
 .form-field { display: grid; gap: 7px; margin-bottom: 16px; }
 .form-field label { font-size: 13px; font-weight: 600; }
-.form-field input {
+.form-field input, .form-field select {
   width: 100%;
   height: 44px;
   padding: 0 13px;
@@ -116,7 +116,8 @@ a { color: inherit; }
   outline: none;
   transition: border-color .15s, box-shadow .15s;
 }
-.form-field input:focus { border-color: var(--account-accent); box-shadow: 0 0 0 3px rgba(11,87,208,.12); }
+.form-field input:focus, .form-field select:focus { border-color: var(--account-accent); box-shadow: 0 0 0 3px rgba(11,87,208,.12); }
+.form-field input:read-only { background: #f7f8fa; color: var(--account-subtle); }
 .field-help { margin-top: -1px; color: var(--account-subtle); font-size: 12px; line-height: 1.5; }
 .password-wrap { position: relative; }
 .password-wrap input { padding-right: 44px; }
@@ -137,6 +138,15 @@ a { color: inherit; }
 .primary-action:hover { background: var(--account-accent-hover); }
 .primary-action:disabled { opacity: .6; cursor: wait; }
 .auth-submit { width: 100%; margin-top: 5px; }
+.auth-divider { display:flex; align-items:center; gap:12px; margin:18px 0 14px; color:var(--account-subtle); font-size:12px; }
+.auth-divider::before,.auth-divider::after { content:""; height:1px; background:var(--account-line); flex:1; }
+.github-auth-button { width:100%; min-height:46px; border:1px solid #263244; border-radius:10px; background:#111827; color:#fff; display:flex; align-items:center; justify-content:center; gap:9px; font:600 14px/1 inherit; cursor:pointer; }
+.github-auth-button:hover { background:#1f2937; }
+.github-auth-button:disabled { opacity:.6; cursor:wait; }
+.github-auth-note { margin:10px 0 0; color:var(--account-subtle); font-size:11px; line-height:1.55; }
+.auth-text-action { margin: -2px 0 2px auto; padding: 3px 0; display: block; border: 0; background: transparent; color: var(--account-accent); font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; }
+.auth-text-action:hover { text-decoration: underline; }
+.auth-text-action:disabled { opacity: .55; cursor: wait; }
 .secondary-action { color: var(--account-text); background: #fff; border-color: var(--account-line); }
 .secondary-action:hover { background: #f8f9fa; }
 .danger-action { color: var(--account-danger); background: #fff; border-color: #f0c8c5; }
@@ -151,10 +161,17 @@ a { color: inherit; }
 .profile-heading h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -.035em; }
 .profile-heading p { margin: 0; color: var(--account-subtle); line-height: 1.55; }
 .profile-grid { display: grid; grid-template-columns: minmax(260px, .72fr) minmax(0, 1.28fr); gap: 20px; align-items: start; }
+.profile-grid > #api { grid-column: 1 / -1; }
 .profile-card { padding: 24px; box-shadow: 0 10px 30px rgba(60,64,67,.09); }
 .profile-card h2 { margin: 0; font-size: 18px; }
 .card-description { margin: 7px 0 22px; color: var(--account-subtle); font-size: 13px; line-height: 1.6; }
 .profile-identity { display: flex; align-items: center; gap: 14px; padding: 16px; border: 1px solid var(--account-line); border-radius: 14px; background: #f8f9fa; }
+.github-connection { display:flex; align-items:center; gap:12px; padding:13px; border-radius:11px; background:#f8f9fa; color:var(--account-subtle); }
+.github-connection.ok { background:#e6f4ea; color:#0d652d; }
+.github-connection.warn { background:#fef7e0; color:#7a4f01; }
+.github-connection-icon { width:34px; height:34px; flex:0 0 34px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.72); }
+.github-connection > span:last-child { display:grid; gap:2px; }
+.github-connection small { font-size:11px; line-height:1.45; }
 .profile-avatar { width: 45px; height: 45px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; color: #fff; background: linear-gradient(145deg,#0b57d0,#6b8afd); font-weight: 700; font-size: 18px; }
 .profile-email { font-weight: 650; overflow-wrap: anywhere; }
 .profile-meta { margin-top: 4px; color: var(--account-subtle); font-size: 12px; }
@@ -162,6 +179,16 @@ a { color: inherit; }
 .api-status { display: flex; align-items: flex-start; gap: 10px; margin: 4px 0 20px; padding: 12px 13px; border-radius: 10px; background: #f1f3f4; color: var(--account-subtle); font-size: 13px; line-height: 1.5; }
 .api-status.ok { color: var(--account-success); background: #e6f4ea; }
 .api-status.warn { color: #8a4b00; background: #fef7e0; }
+.provider-model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.profile-advanced { margin: 4px 0 16px; border: 1px solid var(--account-line); border-radius: 11px; background: #f8f9fa; }
+.profile-advanced summary { min-height: 42px; padding: 0 13px; display: flex; align-items: center; cursor: pointer; color: var(--account-subtle); font-size: 13px; font-weight: 600; }
+.profile-advanced[open] summary { border-bottom: 1px solid var(--account-line); }
+.profile-advanced .form-field { margin: 14px; }
+.remember-api-row { margin: 2px 0 18px; padding: 13px; display: flex; align-items: flex-start; gap: 10px; border: 1px solid var(--account-line); border-radius: 11px; cursor: pointer; }
+.remember-api-row input { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--account-accent); }
+.remember-api-row span { display: grid; gap: 3px; }
+.remember-api-row strong { font-size: 13px; }
+.remember-api-row small { color: var(--account-subtle); line-height: 1.45; }
 .api-form-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; }
 .api-form-actions > div { display: flex; gap: 10px; }
 .security-note { display: flex; gap: 9px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--account-line); color: var(--account-subtle); font-size: 12px; line-height: 1.6; }
@@ -172,6 +199,7 @@ a { color: inherit; }
   .auth-intro h1 { font-size: 40px; }
   .auth-points { display: none; }
   .profile-grid { grid-template-columns: 1fr; }
+  .profile-grid > #api { grid-column: auto; }
   .profile-heading { align-items: flex-start; flex-direction: column; }
 }
 
@@ -185,4 +213,5 @@ a { color: inherit; }
   .auth-points { display: none; }
   .api-form-actions { align-items: stretch; flex-direction: column-reverse; }
   .api-form-actions > div { display: grid; grid-template-columns: 1fr 1fr; }
+  .provider-model-grid { grid-template-columns: 1fr; gap: 0; }
 }

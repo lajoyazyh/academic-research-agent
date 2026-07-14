@@ -8,6 +8,7 @@ from openai import OpenAI
 class LLMClient:
     DEFAULT_BASE_URL = "https://open.bigmodel.cn/api/paas/v4/"
     DEFAULT_MODEL = "glm-4-flash"
+    DEFAULT_EMBEDDING_MODEL = "embedding-2"
 
     def __init__(self, provider_config: dict | None = None):
         # 使用 find_dotenv 递归往上层查找 .env 文件
@@ -16,12 +17,15 @@ class LLMClient:
         provider_config = provider_config or {}
         request_key = str(provider_config.get("api_key") or "").strip()
         request_base_url = str(provider_config.get("base_url") or "").strip()
-        request_model = str(provider_config.get("model") or "").strip()
+        request_model = str(provider_config.get("chat_model") or provider_config.get("model") or "").strip()
+        request_embedding_model = str(provider_config.get("embedding_model") or "").strip()
+        self.provider_id = str(provider_config.get("provider_id") or "zhipu").strip()
 
         # BYOK: request-scoped keys are used only inside this client instance.
         self.api_key = request_key or os.getenv("ZHIPU_API_KEY") or os.getenv("OPENAI_API_KEY") or "your-api-key-here"
         self.base_url = request_base_url or os.getenv("ZHIPU_BASE_URL", self.DEFAULT_BASE_URL)
         self.model = request_model or os.getenv("ZHIPU_MODEL", self.DEFAULT_MODEL)
+        self.embedding_model = request_embedding_model or os.getenv("EMBEDDING_MODEL", "") or ("" if self.provider_id == "custom" else self.DEFAULT_EMBEDDING_MODEL)
         self._using_request_key = bool(request_key)
         self._missing_api_key = not self.api_key or self.api_key == "your-api-key-here"
 
@@ -82,6 +86,8 @@ class LLMClient:
         if not texts:
             return []
         self._ensure_configured()
+        if not self.embedding_model:
+            raise RuntimeError("尚未配置向量模型，请在个人中心补充配置后重试。")
 
         batch_size = 64
         all_embeddings = []
@@ -90,12 +96,11 @@ class LLMClient:
             batch = texts[i:i + batch_size]
             try:
                 resp = self.client.embeddings.create(
-                    model="embedding-2",
+                    model=self.embedding_model,
                     input=batch,
                 )
                 all_embeddings.extend([d.embedding for d in resp.data])
-            except Exception as e:
-                print(f"[Embedding] API batch {i // batch_size + 1} failed, using zero vectors: {e}")
-                all_embeddings.extend([[0.0] * 1536 for _ in batch])
+            except Exception as exc:
+                raise RuntimeError("向量模型调用失败，请在个人中心检查向量模型配置。") from exc
 
         return all_embeddings

@@ -21,11 +21,15 @@
     analysisEditText: "",
     _autoRunning: false,
     _autoPollTimer: null,
+    lastAction: "",
     provider: {
+      provider_id: "zhipu",
       api_key: "",
       base_url: "https://open.bigmodel.cn/api/paas/v4/",
       model: "glm-4-flash",
-      save_local: true,
+      chat_model: "glm-4-flash",
+      embedding_model: "embedding-2",
+      save_local: false,
       server_available: false,
     },
   },
@@ -65,6 +69,10 @@
     this.els.topicCancel = document.getElementById("topicCancel");
     this.els.keywordAddHome = document.getElementById("keywordAddHome");
     this.els.homeRail = document.getElementById("homeRail");
+    this.els.homeContinueProject = document.getElementById("homeContinueProject");
+    this.els.homeProviderStep = document.getElementById("homeProviderStep");
+    this.els.homeProviderStepStatus = document.getElementById("homeProviderStepStatus");
+    this.els.homeOnboardingProgress = document.getElementById("homeOnboardingProgress");
     this.els.historyCount = document.getElementById("historyCount");
 
     this.els.consoleTopic = document.getElementById("consoleTopic");
@@ -122,19 +130,37 @@
     this.els.providerModel = document.getElementById("providerModel");
     this.els.providerSaveLocal = document.getElementById("providerSaveLocal");
     this.els.providerStatusHint = document.getElementById("providerStatusHint");
+    this.els.providerTopStatus = document.getElementById("providerTopStatus");
+    this.els.researchStages = document.getElementById("researchStages");
+    this.els.statusRetry = document.getElementById("statusRetry");
+    this.els.exportArtifactsBtn = document.getElementById("exportArtifactsBtn");
+    this.els.exportModal = document.getElementById("exportModal");
+    this.els.exportModalClose = document.getElementById("exportModalClose");
+    this.els.exportMessage = document.getElementById("exportMessage");
+    this.els.githubExportRepo = document.getElementById("githubExportRepo");
+    this.els.githubExportSubmit = document.getElementById("githubExportSubmit");
+    this.els.researchRepoBtn = document.getElementById("researchRepoBtn");
+    this.els.repositoryResearchModal = document.getElementById("repositoryResearchModal");
+    this.els.repositoryResearchResult = document.getElementById("repositoryResearchResult");
+    this.els.repositoryList = document.getElementById("repositoryList");
   },
 
   loadProviderConfig() {
     const defaults = {
+      provider_id: "zhipu",
       api_key: "",
       base_url: "https://open.bigmodel.cn/api/paas/v4/",
       model: "glm-4-flash",
-      save_local: true,
+      chat_model: "glm-4-flash",
+      embedding_model: "embedding-2",
+      save_local: false,
       server_available: false,
     };
     try {
-      const saved = JSON.parse(localStorage.getItem(this.providerStorageKey()) || "{}");
-      this.state.provider = { ...defaults, ...saved, save_local: saved.save_local !== false };
+      const localSaved = JSON.parse(localStorage.getItem(this.providerStorageKey()) || "{}");
+      const sessionSaved = JSON.parse(sessionStorage.getItem(this.providerStorageKey()) || "{}");
+      const saved = Object.keys(sessionSaved).length ? sessionSaved : localSaved;
+      this.state.provider = { ...defaults, ...saved, save_local: !!saved.save_local };
     } catch (error) {
       this.state.provider = defaults;
     }
@@ -157,9 +183,12 @@
   getProviderPayload() {
     const provider = this.state.provider || {};
     const payload = {
+      provider_id: String(provider.provider_id || "zhipu").trim(),
       api_key: String(provider.api_key || "").trim(),
       base_url: String(provider.base_url || "https://open.bigmodel.cn/api/paas/v4/").trim(),
-      model: String(provider.model || "glm-4-flash").trim(),
+      model: String(provider.chat_model || provider.model || "glm-4-flash").trim(),
+      chat_model: String(provider.chat_model || provider.model || "glm-4-flash").trim(),
+      embedding_model: String(provider.embedding_model || "").trim(),
     };
     if (!payload.api_key) delete payload.api_key;
     return payload;
@@ -170,15 +199,36 @@
   },
 
   refreshProviderStatus() {
-    if (!this.els.providerStatusHint) return;
     const hasLocalKey = !!String(this.state.provider?.api_key || "").trim();
     const hasServerKey = !!this.state.provider?.server_available;
-    this.els.providerStatusHint.className = `provider-status ${hasLocalKey || hasServerKey ? "ok" : "warn"}`;
-    this.els.providerStatusHint.textContent = hasLocalKey
-      ? "已配置浏览器本地 API Key。"
-      : hasServerKey
-        ? "服务端已配置 fallback API Key。公共 Demo 建议仍使用自己的 key。"
-        : "未检测到 API Key。触发 AI 功能前请填写自己的 key。";
+    if (this.els.providerStatusHint) {
+      this.els.providerStatusHint.className = `provider-status ${hasLocalKey || hasServerKey ? "ok" : "warn"}`;
+      this.els.providerStatusHint.textContent = hasLocalKey
+        ? "模型已连接。"
+        : hasServerKey
+          ? "模型已连接。"
+          : "需要配置模型后才能使用 AI 功能。";
+    }
+    if (this.els.providerTopStatus) {
+      this.els.providerTopStatus.textContent = hasLocalKey || hasServerKey ? "模型已连接" : "需要配置";
+      this.els.apiConfigBtn?.classList.toggle("connected", hasLocalKey || hasServerKey);
+    }
+    this.refreshHomeOnboarding();
+  },
+
+  refreshHomeOnboarding() {
+    if (!this.els.homeProviderStep) return;
+    const hasProvider = !!String(this.state.provider?.api_key || "").trim() || !!this.state.provider?.server_available;
+    const hasProject = (this.state.sessions || []).length > 0;
+    const hasSearch = (this.state.sessions || []).some((session) => Number(session.paper_count || 0) > 0);
+    this.els.homeProviderStep.classList.toggle("complete", hasProvider);
+    if (this.els.homeProviderStepStatus) this.els.homeProviderStepStatus.textContent = hasProvider ? "已连接" : "需要配置";
+    document.getElementById("homeTopicStep")?.classList.toggle("complete", hasProject);
+    document.getElementById("homeSearchStep")?.classList.toggle("complete", hasSearch);
+    if (this.els.homeOnboardingProgress) {
+      const completed = [hasProvider, hasProject, hasSearch].filter(Boolean).length;
+      this.els.homeOnboardingProgress.textContent = `${completed} / 3`;
+    }
   },
 
   openApiConfigModal() {
@@ -203,13 +253,26 @@
     this.state.provider.save_local = this.els.providerSaveLocal?.checked !== false;
     if (this.state.provider.save_local) {
       localStorage.setItem(this.providerStorageKey(), JSON.stringify({
+        provider_id: this.state.provider.provider_id,
         api_key: this.state.provider.api_key,
         base_url: this.state.provider.base_url,
         model: this.state.provider.model,
+        chat_model: this.state.provider.chat_model || this.state.provider.model,
+        embedding_model: this.state.provider.embedding_model,
         save_local: true,
       }));
+      sessionStorage.removeItem(this.providerStorageKey());
     } else {
       localStorage.removeItem(this.providerStorageKey());
+      sessionStorage.setItem(this.providerStorageKey(), JSON.stringify({
+        provider_id: this.state.provider.provider_id,
+        api_key: this.state.provider.api_key,
+        base_url: this.state.provider.base_url,
+        model: this.state.provider.model,
+        chat_model: this.state.provider.chat_model || this.state.provider.model,
+        embedding_model: this.state.provider.embedding_model,
+        save_local: false,
+      }));
     }
     this.refreshProviderStatus();
     this.closeApiConfigModal();
@@ -220,6 +283,7 @@
     this.state.provider.base_url = "https://open.bigmodel.cn/api/paas/v4/";
     this.state.provider.model = "glm-4-flash";
     localStorage.removeItem(this.providerStorageKey());
+    sessionStorage.removeItem(this.providerStorageKey());
     this.openApiConfigModal();
   },
 
@@ -228,12 +292,16 @@
     if (openCreateTopic) {
       openCreateTopic.addEventListener("click", () => this.openTopicModal());
     }
+    document.getElementById("openCreateTopicInline")?.addEventListener("click", () => this.openTopicModal());
     if (this.els.topicSubmit) {
       this.els.topicSubmit.addEventListener("click", () => this.createTopicFromModal());
     }
     if (this.els.topicCancel) {
       this.els.topicCancel.addEventListener("click", () => this.closeTopicModal());
     }
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && this.els.topicModal?.classList.contains("active")) this.closeTopicModal();
+    });
     if (this.els.keywordPlanGenerate) {
       this.els.keywordPlanGenerate.addEventListener("click", () => this.generateHomeKeywordPlan());
     }
@@ -275,7 +343,7 @@
       this.state.sessions = enriched.concat(this.state.sessions.slice(10));
       this.renderHomeSessions();
     } catch (error) {
-      this.els.homeRail.innerHTML = `<div class="empty-state">加载失败：${this.escapeHtml(error.message)}</div>`;
+      this.els.homeRail.innerHTML = '<div class="empty-state">暂时无法加载最近项目，请刷新页面重试。</div>';
     }
   },
 
@@ -288,6 +356,13 @@
 
     if (!this.els.homeRail) return;
     this.els.homeRail.innerHTML = "";
+
+    const latest = sessions[0];
+    if (this.els.homeContinueProject) {
+      this.els.homeContinueProject.hidden = !latest;
+      if (latest) this.els.homeContinueProject.href = `/app/console?sessionId=${encodeURIComponent(latest.session_id)}`;
+    }
+    this.refreshHomeOnboarding();
 
     // Always show a Create card first (NotebookLM style)
     const createCard = document.createElement("article");
@@ -435,7 +510,9 @@
       const stats = await response.json();
       this.renderHomeStats(stats);
     } catch (error) {
-      statsGrid.innerHTML = `<div class="stats-loading">统计加载失败：${this.escapeHtml(error.message)}</div>`;
+      statsGrid.innerHTML = '<div class="stats-loading">暂时无法加载工作台概览。</div>';
+      const timelineBox = document.getElementById("timelineBox");
+      if (timelineBox) timelineBox.innerHTML = '<div class="timeline-empty">暂时无法加载最近活动。</div>';
     }
   },
 
@@ -575,7 +652,9 @@
 
   openTopicModal() {
     if (!this.els.topicModal) return;
+    this._topicModalReturnFocus = document.activeElement;
     this.els.topicModal.classList.add("active");
+    this.els.topicModal.setAttribute("aria-hidden", "false");
     if (this.els.topicInput) {
       this.els.topicInput.value = "";
       this.els.topicInput.focus();
@@ -586,6 +665,8 @@
     }
     this.renderHomeKeywordPlan([]);
     this.syncKeywordPlanHint();
+    const advanced = document.getElementById("createAdvancedSettings");
+    if (advanced) advanced.open = false;
     // 加载 Skills 选择器选项
     this.loadHomeSkillSelectors();
   },
@@ -593,7 +674,9 @@
   closeTopicModal() {
     if (this.els.topicModal) {
       this.els.topicModal.classList.remove("active");
+      this.els.topicModal.setAttribute("aria-hidden", "true");
     }
+    if (this._topicModalReturnFocus && typeof this._topicModalReturnFocus.focus === "function") this._topicModalReturnFocus.focus();
   },
 
   async createTopicFromModal() {
@@ -604,11 +687,6 @@
       alert("请输入主题");
       return;
     }
-    if (!keywords.length) {
-      alert("请先生成并确认 AI 关键词规划");
-      return;
-    }
-
     try {
       localStorage.setItem("notebooklm:lastTopic", topic);
       localStorage.setItem("notebooklm:lastKeywords", (this.els.keywordInput?.value || "").trim());
@@ -639,6 +717,8 @@
 
       this.closeTopicModal();
 
+      this.trackProductEvent("project_created");
+
       window.location.href = `/app/console?sessionId=${encodeURIComponent(data.session_id)}`;
     } catch (error) {
       alert(`创建失败：${error.message}`);
@@ -646,9 +726,16 @@
       const createBtn = this.els.topicSubmit;
       if (createBtn) {
         createBtn.disabled = false;
-        createBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> 进入控制台';
+        createBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> 创建研究';
       }
     }
+  },
+
+  trackProductEvent(name) {
+    const safeEvents = new Set(["project_created", "first_search_completed", "first_review_generated", "provider_test_succeeded"]);
+    if (!safeEvents.has(name)) return;
+    if (window.va && typeof window.va.track === "function") window.va.track(name);
+    window.dispatchEvent(new CustomEvent("academic-product-event", { detail: { name } }));
   },
 
   keywordPlanDictionary: {
@@ -814,6 +901,7 @@
 
   async initConsole() {
     this.bindConsoleActions();
+    this.setMobileWorkspacePanel("sources");
     this.updateChatPlaceholder();
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("sessionId");
@@ -850,6 +938,23 @@
         this.sendChatMessage();
       }
     });
+    document.querySelectorAll("[data-mobile-panel]").forEach((button) => {
+      button.addEventListener("click", () => this.setMobileWorkspacePanel(button.dataset.mobilePanel));
+    });
+    this.els.statusRetry?.addEventListener("click", () => this.retryLastAction());
+    this.els.exportArtifactsBtn?.addEventListener("click", () => this.openExportModal());
+    this.els.exportModalClose?.addEventListener("click", () => this.closeExportModal());
+    document.querySelectorAll("[data-export-format]").forEach((button) => {
+      button.addEventListener("click", () => this.downloadArtifact(button.dataset.exportFormat));
+    });
+    this.els.githubExportSubmit?.addEventListener("click", () => this.exportArtifactToGitHub());
+    this.els.researchRepoBtn?.addEventListener("click", () => this.openRepositoryResearch());
+    document.getElementById("repositoryModalClose")?.addEventListener("click", () => this.closeRepositoryResearch());
+    document.getElementById("repositoryModalCancel")?.addEventListener("click", () => this.closeRepositoryResearch());
+    document.getElementById("repositoryResearchSubmit")?.addEventListener("click", () => this.runRepositoryResearch());
+    document.querySelectorAll("[data-repo-mode]").forEach((button) => {
+      button.addEventListener("click", () => this.setRepositoryMode(button.dataset.repoMode));
+    });
 
     this.els.keywordConfirm?.addEventListener("click", () => this.confirmKeywords());
     this.els.keywordCancel?.addEventListener("click", () => this.closeKeywordModal());
@@ -864,6 +969,24 @@
 
     // 初始化对话助手拖拽缩放
     this.initChatResize();
+  },
+
+  setMobileWorkspacePanel(panel) {
+    const safePanel = ["sources", "content", "chat"].includes(panel) ? panel : "sources";
+    document.body.dataset.mobileView = safePanel;
+    document.querySelectorAll("[data-mobile-panel]").forEach((button) => {
+      const active = button.dataset.mobilePanel === safePanel;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+  },
+
+  retryLastAction() {
+    const action = this.state.lastAction;
+    if (action === "auto") return this.startAutoRun();
+    if (action === "notes") return this.generateNotesAction();
+    if (action === "review") return this.generateReviewAction();
+    return this.runSearchPhase();
   },
 
   initChatResize() {
@@ -950,11 +1073,14 @@
 
   setConsoleEmptyState() {
     if (this.els.detailContent) {
-      this.els.detailContent.innerHTML = '<div class="empty-state">请先从首页新建综述并进入会话。</div>';
+      this.els.detailContent.innerHTML = '<div class="empty-state empty-state--action"><i class="fa-solid fa-lightbulb"></i><strong>从一个研究问题开始</strong><span>创建项目后，这里会显示论文摘要、笔记和 PDF 原文。</span><a class="primary-btn" href="/app">返回工作台新建研究</a></div>';
     }
     if (this.els.paperList) {
-      this.els.paperList.innerHTML = '<div class="empty-state">暂无会话</div>';
+      this.els.paperList.innerHTML = '<div class="empty-state">还没有打开研究项目。</div>';
     }
+    [this.els.searchBtn, this.els.addPaperBtn, this.els.autoRunBtn, this.els.notesBtn, this.els.reviewBtn, this.els.chatInput, this.els.chatSend, this.els.researchRepoBtn, this.els.exportArtifactsBtn].forEach((element) => {
+      if (element) element.disabled = true;
+    });
   },
 
   renderConsoleSession() {
@@ -965,10 +1091,15 @@
       this.els.consoleTopic.textContent = session.topic || "未命名主题";
     }
 
-    this.setConsoleStatus(session.state, session.state_label || session.state || "就绪");
+    const statusLabel = session.state === "searching"
+      ? `正在检索论文 · 已发现 ${(session.papers || []).length} 篇`
+      : (session.state_label || session.state || "就绪");
+    this.setConsoleStatus(session.state, statusLabel);
+    this.updateResearchStage(session);
     this.renderPaperList();
     this.renderNotesBlock();
     this.renderReviewBlock();
+    this.renderRepositorySources();
     this.renderDetailPanel();
     this.renderChatContext();
     this.updateChatPlaceholder();
@@ -978,10 +1109,75 @@
     this.updateContextMeter();
   },
 
+  updateResearchStage(session) {
+    if (!this.els.researchStages || !session) return;
+    const papers = session.papers || [];
+    const hasPapers = papers.length > 0;
+    const hasAccepted = papers.some((paper) => paper.status === "accepted");
+    const hasNotes = papers.some((paper) => paper.has_notes || String(paper.notes || "").trim());
+    const hasAnalysis = !!(session.analysis && Object.keys(session.analysis).length);
+    const hasReview = !!String(session.draft || "").trim();
+    const order = ["question", "search", "screen", "read", "analysis", "review"];
+    let activeIndex = 0;
+    if (session.state === "searching") activeIndex = 1;
+    else if (hasPapers) activeIndex = 2;
+    if (hasAccepted || hasNotes) activeIndex = 3;
+    if (hasAnalysis || ["analysis", "writing", "reviewing_draft", "complete"].includes(session.state)) activeIndex = 4;
+    if (hasReview || session.state === "complete") activeIndex = 5;
+    this.els.researchStages.querySelectorAll("[data-stage]").forEach((item) => {
+      const index = order.indexOf(item.dataset.stage);
+      item.classList.toggle("active", index === activeIndex);
+      item.classList.toggle("complete", index < activeIndex || (index === 5 && hasReview));
+      if (index === activeIndex) item.setAttribute("aria-current", "step");
+      else item.removeAttribute("aria-current");
+    });
+  },
+
+  displaySource(value, sourceType) {
+    const key = String(value || sourceType || "").toLowerCase();
+    const labels = {
+      agent_search: "AI 检索",
+      arxiv: "arXiv",
+      pdf: "上传 PDF",
+      paper: "学术论文",
+      manual: "手动添加",
+      semantic_scholar: "Semantic Scholar",
+      openalex: "OpenAlex",
+    };
+    return labels[key] || value || sourceType || "来源待确认";
+  },
+
+  displayPaperStatus(status) {
+    const labels = { accepted: "已纳入", rejected: "已排除", pending: "等待判断" };
+    return labels[String(status || "pending").toLowerCase()] || "等待判断";
+  },
+
+  displayResearchState(state, label) {
+    const labels = {
+      planning: "准备研究问题",
+      plan_confirmed: "检索词已确认",
+      searching: "正在检索论文",
+      search_complete: "等待筛选论文",
+      reviewing_notes: "正在整理笔记",
+      analysis: "正在综合分析",
+      writing: "正在生成综述",
+      reviewing_draft: "综述初稿已生成",
+      complete: "研究已完成",
+      failed: "任务失败",
+      error: "发生错误",
+    };
+    return label && label !== state ? label : (labels[state] || "就绪");
+  },
+
   setConsoleStatus(state, label) {
+    const displayLabel = this.displayResearchState(state, label);
     if (this.els.consoleState) {
-      this.els.consoleState.textContent = label;
+      this.els.consoleState.textContent = displayLabel;
     }
+    const statusHint = document.getElementById("statusHint");
+    if (statusHint && displayLabel) statusHint.textContent = displayLabel;
+    if (this.els.statusRetry) this.els.statusRetry.hidden = !["error", "failed"].includes(state);
+    if (this.state.currentSession) this.updateResearchStage({ ...this.state.currentSession, state });
     if (!this.els.consoleStateDot) return;
 
     const map = {
@@ -1010,7 +1206,7 @@
       const acceptedCount = papers.filter(p => p.status === "accepted").length;
       const hasNotesCount = papers.filter(p => p.has_notes).length;
       countChip.innerHTML = acceptedCount > 0
-        ? `<i class="fa-solid fa-check"></i> ${papers.length} 篇（${acceptedCount} 已选，${hasNotesCount} 有笔记）`
+        ? `<i class="fa-solid fa-check"></i> ${papers.length} 篇（${acceptedCount} 已纳入，${hasNotesCount} 有笔记）`
         : `<i class="fa-solid fa-check"></i> ${papers.length} 篇（${hasNotesCount} 有笔记）`;
     }
 
@@ -1035,10 +1231,12 @@
         this.renderDetailPanel();
         this.renderChatContext();
         this.renderViewButtons();
+        this.setMobileWorkspacePanel("content");
       });
 
       const title = paper.title || paper.paper_id || "未命名论文";
-      const authorLine = paper.authors || paper.source_type || paper.source || "来源未标记";
+      const sourceLabel = this.displaySource(paper.source, paper.source_type);
+      const authorLine = paper.authors || sourceLabel;
       const abstractPreview = (paper.abstract || "").slice(0, 80) + (paper.abstract && paper.abstract.length > 80 ? "..." : "");
       
       const statusIcon = paper._hasNotes
@@ -1047,6 +1245,9 @@
       const reviewIcon = paper._hasReview
         ? '<span class="chip ok" title="已纳入综述"><i class="fa-solid fa-check-circle"></i> 已纳入综述</span>'
         : '';
+      const decisionIcon = paper.status === "rejected"
+        ? '<span class="chip" title="已标记为不纳入"><i class="fa-solid fa-ban"></i> 已排除</span>'
+        : '';
       const selectedClass = paper.status === "accepted" ? "accepted" : "";
 
       row.innerHTML = `
@@ -1054,17 +1255,26 @@
           <h4>${this.escapeHtml(title)}</h4>
           <p>${this.escapeHtml(abstractPreview || authorLine)}</p>
           <div class="paper-meta">
-            <span class="chip"><i class="fa-regular fa-circle-dot"></i> ${this.escapeHtml(paper.source || "agent_search")}</span>
+            <span class="chip"><i class="fa-regular fa-circle-dot"></i> ${this.escapeHtml(sourceLabel)}</span>
             ${statusIcon}
             ${reviewIcon}
+            ${decisionIcon}
             ${paper.added_at ? `<span class="chip"><i class="fa-regular fa-clock"></i> ${this.formatDate(paper.added_at)}</span>` : ""}
           </div>
         </div>
         <div class="paper-actions">
-          <button class="mini-btn remove" title="移除论文" data-action="remove"><i class="fa-solid fa-xmark"></i></button>
-          <button class="mini-btn ${selectedClass}" title="${paper.status === 'accepted' ? '取消选中' : '选中论文'}" data-action="accept"><i class="fa-solid fa-check"></i></button>
+          <button class="paper-include-btn ${selectedClass}" data-action="accept" aria-label="${paper.status === 'accepted' ? '从综述中移除' : '纳入综述'}"><i class="fa-solid fa-check"></i><span>${paper.status === 'accepted' ? '已纳入' : '纳入综述'}</span></button>
+          <details class="paper-more-menu">
+            <summary class="mini-btn" aria-label="打开论文操作菜单"><i class="fa-solid fa-ellipsis-vertical"></i></summary>
+            <div>
+              <button type="button" data-action="reject"><i class="fa-solid fa-ban"></i> 标记为不纳入</button>
+              <button type="button" class="danger" data-action="remove"><i class="fa-solid fa-trash"></i> 从项目移除</button>
+            </div>
+          </details>
         </div>
       `;
+
+      row.querySelector(".paper-more-menu")?.addEventListener("click", (event) => event.stopPropagation());
 
       row.querySelector('[data-action="remove"]')?.addEventListener("click", async (event) => {
         event.stopPropagation();
@@ -1074,6 +1284,11 @@
       row.querySelector('[data-action="accept"]')?.addEventListener("click", async (event) => {
         event.stopPropagation();
         await this.setPaperStatus(paper.paper_id, paper.status === "accepted" ? "pending" : "accepted");
+      });
+
+      row.querySelector('[data-action="reject"]')?.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        await this.setPaperStatus(paper.paper_id, "rejected");
       });
 
       this.els.paperList.appendChild(row);
@@ -1090,6 +1305,7 @@
     const draft = this.state.currentSession?.draft || "";
     const hasDraft = Boolean(draft.trim());
     const topic = this.state.currentSession?.topic || "综述";
+    const quality = this.state.currentSession?.review_quality || {};
 
     if (hasDraft) {
       const outputFile = this.state.currentSessionId;
@@ -1104,6 +1320,7 @@
           <span style="font-size:0.82rem;color:var(--subtle);">点击查看完整综述 →</span>
         </div>
         <div style="margin-top:8px;" id="favBtnArea"></div>
+        ${quality.score !== undefined ? `<div class="review-quality"><i class="fa-solid fa-shield-halved"></i><span class="quality-score">证据质量 ${this.escapeHtml(String(quality.score))}/100</span><span>引用覆盖 ${this.escapeHtml(String(Math.round((quality.citation_coverage || 0) * 100)))}%</span></div>` : ""}
       `;
       const link = document.getElementById("reviewTitleLink");
       if (link) {
@@ -1142,9 +1359,9 @@
     if (this.els.detailMeta) {
       const modeLabel = this.viewModeLabel(this.state.currentViewMode);
       if (isPerSession) {
-        this.els.detailMeta.textContent = `${paperCount} 个来源 · ${modeLabel} · ${session.state_label || session.state}`;
+        this.els.detailMeta.textContent = `${paperCount} 个来源 · ${modeLabel} · ${this.displayResearchState(session.state, session.state_label)}`;
       } else {
-        this.els.detailMeta.textContent = `${paperCount} 个来源 · ${modeLabel} · ${session.state_label || session.state}`;
+        this.els.detailMeta.textContent = `${paperCount} 个来源 · ${modeLabel} · ${this.displayResearchState(session.state, session.state_label)}`;
       }
     }
 
@@ -1182,8 +1399,8 @@
     const sessionNotes = session.notes || "";
 
     // 从 session.notes（draft_notes.md）中用论文 id 提取对应的整段 Markdown
-    let sectionMd = "";
-    if (pid && sessionNotes) {
+    let sectionMd = String(paper.notes || "").trim();
+    if (!sectionMd && pid && sessionNotes) {
       // 按「论文id:」分割，找到匹配 pid 的那一段
       const blocks = sessionNotes.split(/\n(?=论文id:)/);
       for (const block of blocks) {
@@ -1201,18 +1418,18 @@
       <div class="detail-hero">
         <span class="topic-badge"><i class="fa-regular fa-note-sticky"></i> 摘要</span>
         <h3>${this.escapeHtml(paper.title || paper.paper_id || "未命名论文")}</h3>
-        <div class="lead">${this.escapeHtml(paper.authors || paper.source || "该论文已加入当前综述主题")}</div>
+        <div class="lead">${this.escapeHtml(paper.authors || this.displaySource(paper.source, paper.source_type) || "该论文已加入当前研究项目")}</div>
       </div>
       <div class="detail-blocks" style="margin-top:16px;">
         <div class="panel-block">
-          <div class="panel-block-head"><strong>调研笔记（draft_notes）</strong><span class="chip">${hasSection ? '自动提取' : '无'}</span></div>
+          <div class="panel-block-head"><strong>调研笔记</strong><span class="chip">${hasSection ? '已整理' : '尚未生成'}</span></div>
           ${hasSection
             ? `<div class="markdown">${marked.parse(sectionMd)}</div>`
             : `<div class="plain-text">${this.escapeHtml(paper.abstract || "当前没有可用摘要。")}</div>`}
         </div>
         <div class="panel-block">
-          <div class="panel-block-head"><strong>来源信息</strong><span class="chip">${this.escapeHtml(paper.status || "pending")}</span></div>
-          <div class="plain-text">来源：${this.escapeHtml(paper.source || "agent_search")} · 来源类型：${this.escapeHtml(paper.source_type || "n/a")} · 添加时间：${this.escapeHtml(this.formatDate(paper.added_at))}</div>
+          <div class="panel-block-head"><strong>来源信息</strong><span class="chip">${this.displayPaperStatus(paper.status)}</span></div>
+          <div class="plain-text">来源：${this.escapeHtml(this.displaySource(paper.source, paper.source_type))} · 添加时间：${this.escapeHtml(this.formatDate(paper.added_at))}</div>
         </div>
       </div>
     `;
@@ -1240,8 +1457,8 @@
 
     return `
       <div class="detail-hero">
-        <span class="topic-badge"><i class="fa-solid fa-chart-line"></i> 报告</span>
-        <h3>${this.escapeHtml(paper?.title || paper?.paper_id || session?.topic || "综合报告")}</h3>
+        <span class="topic-badge"><i class="fa-solid fa-note-sticky"></i> 调研笔记</span>
+        <h3>${this.escapeHtml(paper?.title || paper?.paper_id || session?.topic || "调研笔记")}</h3>
         <div class="lead">${hasPaperNotes ? '这是该论文的研究笔记，由 AI 自动生成。' : '该论文尚未生成笔记，请选中后点击左侧「生成笔记」。'}</div>
       </div>
       <div class="panel-block" style="margin-top:16px;">
@@ -1535,6 +1752,22 @@
         </div>
       </div>
     `;
+  },
+
+  renderRepositorySources() {
+    const section = document.getElementById("repositorySourcesSection");
+    const list = this.els.repositoryList;
+    if (!section || !list) return;
+    const repositories = this.state.currentSession?.repositories || [];
+    section.hidden = repositories.length === 0;
+    const count = document.getElementById("repositoryCountChip");
+    if (count) count.textContent = `${repositories.length} 个`;
+    list.innerHTML = repositories.map((repo) => `
+      <article class="repository-card">
+        <a href="${this.escapeHtml(repo.html_url || "#")}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i> ${this.escapeHtml(repo.full_name || "GitHub repository")}</a>
+        <p>${this.escapeHtml(repo.description || "已作为研究证据加入当前项目")}</p>
+      </article>
+    `).join("");
   },
 
   pdfUrlForPaper(paper, session) {
@@ -2057,12 +2290,12 @@
       this.els.addPaperBtn.disabled = false;
     }
 
-    // 「自动进行」按钮
+    // 「生成完整初稿」按钮
     // 规则：以 _autoRunning 标志为唯一运行中判断依据，不依赖 session.state
     if (this.els.autoRunBtn) {
       if (this.state._autoRunning) {
         this.els.autoRunBtn.disabled = true;
-        this.els.autoRunBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 自动进行中...';
+        this.els.autoRunBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在生成初稿...';
         this.els.autoRunBtn.style.display = "";
       } else if (session.state === "complete") {
         this.els.autoRunBtn.disabled = true;
@@ -2070,7 +2303,7 @@
         this.els.autoRunBtn.style.display = "";
       } else {
         this.els.autoRunBtn.disabled = false;
-        this.els.autoRunBtn.innerHTML = '<i class="fa-solid fa-forward-step"></i> 自动进行';
+        this.els.autoRunBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> 生成完整初稿';
         this.els.autoRunBtn.style.display = "";
       }
     }
@@ -2137,10 +2370,11 @@
   viewModeLabel(mode) {
     return {
       summary: "摘要",
-      report: "报告",
+      report: "笔记",
       review: "综述",
       trace: "轨迹",
       analysis: "分析",
+      pdf: "PDF",
     }[mode] || "摘要";
   },
 
@@ -2202,6 +2436,7 @@
 
   async startAutoRun() {
     const session = this.state.currentSession;
+    this.state.lastAction = "auto";
     const sessionId = this.state.currentSessionId;
     if (!session || !sessionId) {
       alert("当前没有活跃的会话");
@@ -2213,6 +2448,7 @@
       alert("主题不能为空");
       return;
     }
+    if (!confirm("“生成完整初稿”将依次完成检索、论文笔记、综合分析和综述初稿。你可以在检索阶段停止任务，是否继续？")) return;
 
     // 如果还在 planning 阶段且无关键词，先自动生成关键词再启动
     if (!session.keywords || !session.keywords.length || session.state === "planning") {
@@ -2359,6 +2595,7 @@
 
           if (runStatus === "done") {
             this.setConsoleStatus("complete", "🎉 自动流程全部完成！");
+            this.trackProductEvent("first_review_generated");
           } else if (runStatus === "error") {
             this.setConsoleStatus("error", `自动流程失败：${status.error || "未知错误"}`);
           }
@@ -2386,6 +2623,7 @@
   },
 
   async generateNotesAction() {
+    this.state.lastAction = "notes";
     const session = this.state.currentSession;
     if (!session || !this.state.currentSessionId) return;
 
@@ -2633,6 +2871,7 @@
   },
 
   async generateReviewAction() {
+    this.state.lastAction = "review";
     await this.runWritePhase();
   },
 
@@ -2748,6 +2987,7 @@
   },
 
   async runSearchPhase() {
+    this.state.lastAction = "search";
     const session = this.state.currentSession;
     if (!session || !this.state.currentSessionId) return;
 
@@ -2804,6 +3044,7 @@
             this._setSearchButtons("idle");
             this.switchViewMode("summary");
             this.setConsoleStatus("search_complete", "论文检索完成，可以生成综述");
+            this.trackProductEvent("first_search_completed");
           }
         } catch (error) {
           clearInterval(this.state.pollTimer);
@@ -2838,6 +3079,7 @@
       await this.reloadCurrentSession();
       this.switchViewMode("review");
       this.setConsoleStatus("reviewing_draft", "综述已生成，可以继续提问或提交修改建议");
+      this.trackProductEvent("first_review_generated");
     } catch (error) {
       this.setConsoleStatus("error", `写作失败：${error.message}`);
     }
@@ -3317,6 +3559,171 @@
     await this.executeConfirmedRevision(target, feedback);
   },
 
+  githubHeaders(extra = {}) {
+    const tokenHeaders = window.academicGitHubHeaders ? window.academicGitHubHeaders() : {};
+    return { ...extra, ...tokenHeaders };
+  },
+
+  showExportMessage(text, type = "success") {
+    if (!this.els.exportMessage) return;
+    this.els.exportMessage.textContent = text || "";
+    this.els.exportMessage.className = `form-message${text ? ` visible ${type}` : ""}`;
+  },
+
+  async openExportModal() {
+    if (!this.state.currentSessionId || !this.els.exportModal) return;
+    this.els.exportModal.style.display = "flex";
+    this.showExportMessage("");
+    await this.loadGitHubRepositoriesForExport();
+  },
+
+  closeExportModal() {
+    if (this.els.exportModal) this.els.exportModal.style.display = "none";
+  },
+
+  async downloadArtifact(format) {
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId) return;
+    const includeAll = document.getElementById("exportIncludeAll")?.checked !== false;
+    this.showExportMessage(`正在生成 ${String(format).toUpperCase()} 文件…`);
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/export?format=${encodeURIComponent(format)}&include_all=${includeAll}`);
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.detail || "导出失败");
+      }
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get("Content-Disposition") || "";
+      const match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+      const fallback = `${this.state.currentSession?.topic || "research-output"}.${format}`;
+      const filename = match ? decodeURIComponent(match[1]) : fallback;
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      this.showExportMessage(`${filename} 已生成。`, "success");
+    } catch (error) {
+      this.showExportMessage(error.message || "导出失败，请稍后重试。", "error");
+    }
+  },
+
+  async loadGitHubRepositoriesForExport() {
+    const select = this.els.githubExportRepo;
+    const status = document.getElementById("githubExportStatus");
+    const token = window.academicGitHubToken ? window.academicGitHubToken() : "";
+    if (!select || !status) return;
+    if (!token) {
+      select.innerHTML = '<option value="">请先在个人中心连接 GitHub</option>';
+      status.textContent = "需要连接";
+      status.className = "chip warn";
+      this.els.githubExportSubmit.disabled = true;
+      return;
+    }
+    try {
+      const response = await fetch("/api/github/repositories", { headers: this.githubHeaders() });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "无法读取仓库");
+      select.innerHTML = (data.repositories || []).map((repo) => `<option value="${this.escapeHtml(repo.full_name)}">${this.escapeHtml(repo.full_name)}${repo.private ? " · 私有" : ""}</option>`).join("");
+      status.textContent = `${(data.repositories || []).length} 个可用仓库`;
+      status.className = "chip ok";
+      this.els.githubExportSubmit.disabled = !(data.repositories || []).length;
+    } catch (error) {
+      status.textContent = "连接失效";
+      status.className = "chip warn";
+      this.els.githubExportSubmit.disabled = true;
+      this.showExportMessage(error.message, "error");
+    }
+  },
+
+  async exportArtifactToGitHub() {
+    const repository = this.els.githubExportRepo?.value || "";
+    if (!repository || !this.state.currentSessionId) return;
+    const path = document.getElementById("githubExportPath")?.value.trim() || "research/review.md";
+    const branch = document.getElementById("githubExportBranch")?.value.trim() || null;
+    const includeAll = document.getElementById("exportIncludeAll")?.checked !== false;
+    this.els.githubExportSubmit.disabled = true;
+    this.showExportMessage("正在向 GitHub 提交研究产物…");
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/export/github`, {
+        method: "POST",
+        headers: this.githubHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ repository, path, branch, format: "md", include_all: includeAll }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "GitHub 导出失败");
+      this.showExportMessage(`已提交到 ${data.repository}/${data.path}`, "success");
+      if (data.content_url) window.open(data.content_url, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      this.showExportMessage(error.message, "error");
+    } finally {
+      this.els.githubExportSubmit.disabled = false;
+    }
+  },
+
+  openRepositoryResearch() {
+    if (!this.els.repositoryResearchModal) return;
+    this.els.repositoryResearchModal.style.display = "flex";
+    this.setRepositoryMode("specified");
+    if (this.els.repositoryResearchResult) this.els.repositoryResearchResult.innerHTML = "";
+    document.getElementById("repositoryTarget")?.focus();
+  },
+
+  closeRepositoryResearch() {
+    if (this.els.repositoryResearchModal) this.els.repositoryResearchModal.style.display = "none";
+  },
+
+  setRepositoryMode(mode) {
+    this.state.repositoryMode = mode === "discovery" ? "discovery" : "specified";
+    document.querySelectorAll("[data-repo-mode]").forEach((button) => {
+      const active = button.dataset.repoMode === this.state.repositoryMode;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", String(active));
+    });
+    const input = document.getElementById("repositoryTarget");
+    const label = document.getElementById("repositoryTargetLabel");
+    if (input) input.placeholder = this.state.repositoryMode === "discovery" ? "例如 RAG evaluation framework" : "例如 openai/openai-python";
+    if (label) label.textContent = this.state.repositoryMode === "discovery" ? "希望检索的仓库主题" : "仓库地址或 owner/repo";
+  },
+
+  async runRepositoryResearch() {
+    const target = document.getElementById("repositoryTarget")?.value.trim() || "";
+    const question = document.getElementById("repositoryQuestion")?.value.trim() || "";
+    const resultBox = this.els.repositoryResearchResult;
+    const submit = document.getElementById("repositoryResearchSubmit");
+    if (!target) {
+      resultBox.innerHTML = '<div class="form-message visible error">请填写仓库或检索主题。</div>';
+      return;
+    }
+    submit.disabled = true;
+    resultBox.innerHTML = '<div class="loading-state"><i class="fa-solid fa-circle-notch fa-spin"></i> 正在读取仓库结构、README 和关键代码文件…</div>';
+    try {
+      const body = this.withProvider({
+        repository: this.state.repositoryMode === "specified" ? target : null,
+        query: this.state.repositoryMode === "discovery" ? target : null,
+        question,
+        session_id: this.state.currentSessionId,
+      });
+      const response = await fetch("/api/github/research", {
+        method: "POST",
+        headers: this.githubHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(body),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "仓库调研失败");
+      resultBox.innerHTML = `<div class="markdown-body">${marked.parse(data.report || "调研完成")}</div>`;
+      await this.reloadCurrentSession();
+      this.renderRepositorySources();
+    } catch (error) {
+      resultBox.innerHTML = `<div class="form-message visible error">${this.escapeHtml(error.message)}</div>`;
+    } finally {
+      submit.disabled = false;
+    }
+  },
+
   loadThemePreference() {
     const theme = localStorage.getItem("notebooklm:theme");
     if (theme === "dark") {
@@ -3504,6 +3911,7 @@
     skills: [],
     _skillVditor: null,
     _defaultSkills: null,
+    _presets: {},
   },
 
   async initSkills() {
@@ -3532,8 +3940,12 @@
       const resp = await fetch("/api/skills/defaults");
       const data = await resp.json();
       this._skillsState._defaultSkills = data.defaults || {};
+      const presetResp = await fetch("/api/skills/presets");
+      const presetData = await presetResp.json();
+      this._skillsState._presets = presetData.presets || {};
     } catch (e) {
       this._skillsState._defaultSkills = {};
+      this._skillsState._presets = {};
     }
   },
 
@@ -3580,6 +3992,32 @@
     defCard.title = "查看系统默认策略（不可编辑）";
     grid.appendChild(defCard);
 
+    if (type === "write") {
+      Object.entries(this._skillsState._presets || {}).forEach(function(entry) {
+        var presetId = entry[0];
+        var preset = entry[1];
+        var presetCard = document.createElement("article");
+        presetCard.className = "skill-card skill-card-preset";
+        presetCard.innerHTML =
+          '<div class="skill-card-icon write"><i class="fa-solid fa-book-open"></i></div>' +
+          '<div class="skill-card-body"><h4>' + self.escapeHtml(preset.title) + '</h4>' +
+          '<div class="skill-card-meta"><span class="skill-preset-badge">写作预设</span></div>' +
+          '<div class="skill-card-preview">' + self.escapeHtml(preset.description || "") + '</div></div>' +
+          '<button class="skill-preset-copy" type="button" aria-label="复制为可编辑 Skill"><i class="fa-solid fa-copy"></i></button>';
+        presetCard.querySelector("button").addEventListener("click", function(event) {
+          event.stopPropagation();
+          self.copySkillPreset(presetId);
+        });
+        presetCard.addEventListener("click", function() {
+          self._skillsState._defaultViewType = "write";
+          document.getElementById("skillDefaultTitle").textContent = preset.title;
+          document.getElementById("skillDefaultContent").textContent = preset.content;
+          document.getElementById("skillDefaultModal").classList.add("active");
+        });
+        grid.appendChild(presetCard);
+      });
+    }
+
     // ━━━ 用户自定义 Skill 卡片 ━━━
     skills.forEach(function(skill) {
       var card = document.createElement("article");
@@ -3613,6 +4051,17 @@
       emptyEl.className = "skills-empty";
       emptyEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 加载中...';
       grid.appendChild(emptyEl);
+    }
+  },
+
+  async copySkillPreset(presetId) {
+    try {
+      const response = await fetch(`/api/skills/presets/${encodeURIComponent(presetId)}/copy`, { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "复制失败");
+      await this.loadAllSkills();
+    } catch (error) {
+      alert(error.message);
     }
   },
 

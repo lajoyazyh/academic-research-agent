@@ -219,6 +219,9 @@ Skill 类型：
 | DELETE | `/api/agent/history/{filename}` | 删除旧版历史综述 |
 | GET | `/api/agent/document/{filename}/papers/{pdf_name}` | 获取 PDF |
 | POST | `/api/keywords/extract` | 仅提取关键词，不创建 Session |
+| GET | `/api/provider/status` | 获取服务端备用模型和默认值状态，不返回密钥 |
+| GET | `/api/provider/catalog` | 获取 BYOK 提供商、聊天模型和向量模型预设 |
+| POST | `/api/provider/test` | 测试请求级模型配置的聊天与向量能力，不保存密钥 |
 
 ---
 
@@ -226,7 +229,10 @@ Skill 类型：
 
 | 路径 | 页面 |
 |------|------|
-| `/` | 首页 |
+| `/` | 公开产品介绍页 |
+| `/auth` | 登录与注册 |
+| `/app` | 登录后的个人工作台 |
+| `/app/profile` | 账号与模型配置 |
 | `/app/console` | 控制台 |
 | `/app/history` | 历史记录 |
 | `/app/chat` | 对话页面 |
@@ -248,3 +254,32 @@ Skill 类型：
 
 所有接口默认返回 JSON；文件和 PDF 接口返回文件响应。
 
+# GitHub 与产物导出
+
+## `GET /api/github/status`
+
+使用 `X-GitHub-Token` 请求头检查当前 GitHub 授权。Token 仅用于本次请求。
+
+## `GET /api/github/repositories`
+
+列出当前 GitHub 用户可访问并可用于导出的仓库。
+
+## `POST /api/github/search`
+
+按主题检索公开 GitHub 仓库。请求：`query`、`limit?`。
+
+## `POST /api/github/inspect`
+
+读取指定仓库元数据、README、文件树和受限数量的关键文本文件。请求：`repository`。
+
+## `POST /api/github/research`
+
+调研指定仓库，或先自主检索再比较仓库。请求支持：`repository?`、`query?`、`question`、`session_id?`、`provider`。提供 `session_id` 时结果会加入当前研究项目，并成为后续综述可引用的 `[R#]` 证据。
+
+## `GET /api/sessions/{session_id}/export`
+
+查询参数：`format=md|html|txt|json|docx|pdf|zip`、`include_all=true|false`。返回可下载文件。
+
+## `POST /api/sessions/{session_id}/export/github`
+
+使用 `X-GitHub-Token` 把研究产物提交到仓库。请求：`repository`、`path`、`branch?`、`format=md|html|txt|json`、`include_all`、`commit_message?`。更新已有文件时服务会先读取其 SHA。

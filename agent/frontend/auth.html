@@ -53,9 +53,15 @@
             </div>
             <span class="field-help" id="passwordHelp" hidden>请使用至少 6 位密码。</span>
           </div>
+          <button class="auth-text-action" id="forgotPassword" type="button">忘记密码？</button>
           <button class="primary-action auth-submit" id="authSubmit" type="submit">登录</button>
           <div class="form-message" id="authMessage" role="status" aria-live="polite"></div>
         </form>
+        <div class="auth-divider"><span>或</span></div>
+        <button class="github-auth-button" id="githubAuthButton" type="button">
+          <i class="fa-brands fa-github" aria-hidden="true"></i><span>使用 GitHub 继续</span>
+        </button>
+        <p class="github-auth-note">授权包含仓库读写权限，用于调研仓库及把产物导出到你选择的仓库；Token 不会写入项目数据库。</p>
       </section>
     </main>
   </div>

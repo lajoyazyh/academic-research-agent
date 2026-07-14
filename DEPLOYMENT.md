@@ -2,6 +2,14 @@
 
 This project is a FastAPI web app with a static frontend served from `agent/frontend`.
 
+## GitHub Login, Repository Research, and Export
+
+1. Create a GitHub OAuth App in GitHub Developer Settings. Use the callback shown by the Supabase GitHub provider: `https://<project-ref>.supabase.co/auth/v1/callback`.
+2. Enable GitHub in Supabase → Authentication → Providers and add the GitHub Client ID and Client Secret.
+3. Add the production `/app` and `/app/profile` URLs to Supabase Authentication → URL Configuration → Redirect URLs.
+4. Enable manual identity linking in Supabase if email/password users should connect GitHub from Profile. Direct GitHub sign-in does not require manual linking.
+5. Redeploy the frontend. The app requests `repo read:user user:email` so it can inspect authorized repositories and commit exports. Provider tokens stay in browser session storage and are never archived with the research workspace.
+
 ## Local Production Run
 
 ```bash

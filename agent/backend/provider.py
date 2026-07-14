@@ -8,6 +8,43 @@ from fastapi import HTTPException
 
 DEFAULT_BASE_URL = "https://open.bigmodel.cn/api/paas/v4/"
 DEFAULT_MODEL = "glm-4-flash"
+DEFAULT_EMBEDDING_MODEL = "embedding-2"
+
+PROVIDER_CATALOG = [
+    {
+        "id": "zhipu",
+        "name": "智谱 AI",
+        "description": "当前项目默认支持，适合中文学术研究。",
+        "base_url": DEFAULT_BASE_URL,
+        "chat_models": ["glm-4-flash", "glm-4-plus"],
+        "default_chat_model": DEFAULT_MODEL,
+        "embedding_models": [DEFAULT_EMBEDDING_MODEL],
+        "default_embedding_model": DEFAULT_EMBEDDING_MODEL,
+        "capabilities": {"chat": True, "embedding": True},
+    },
+    {
+        "id": "openai",
+        "name": "OpenAI",
+        "description": "使用 OpenAI 官方 API。",
+        "base_url": "https://api.openai.com/v1/",
+        "chat_models": ["gpt-5-mini", "gpt-4.1-mini"],
+        "default_chat_model": "gpt-5-mini",
+        "embedding_models": ["text-embedding-3-small", "text-embedding-3-large"],
+        "default_embedding_model": "text-embedding-3-small",
+        "capabilities": {"chat": True, "embedding": True},
+    },
+    {
+        "id": "custom",
+        "name": "自定义 OpenAI-compatible",
+        "description": "高级选项；需要自行确认聊天和向量接口兼容性。",
+        "base_url": "",
+        "chat_models": [],
+        "default_chat_model": "",
+        "embedding_models": [],
+        "default_embedding_model": "",
+        "capabilities": {"chat": True, "embedding": "optional"},
+    },
+]
 
 
 def _read_field(provider: Any, name: str) -> str:
@@ -22,11 +59,16 @@ def _read_field(provider: Any, name: str) -> str:
 
 def sanitize_provider_config(provider: Any = None) -> dict:
     """Return a minimal request-scoped config without empty values."""
+    provider_id = _read_field(provider, "provider_id") or "zhipu"
+    preset = next((item for item in PROVIDER_CATALOG if item["id"] == provider_id), PROVIDER_CATALOG[0])
     config = {
+        "provider_id": provider_id,
         "api_key": _read_field(provider, "api_key"),
-        "base_url": _read_field(provider, "base_url") or DEFAULT_BASE_URL,
-        "model": _read_field(provider, "model") or DEFAULT_MODEL,
+        "base_url": _read_field(provider, "base_url") or preset.get("base_url") or DEFAULT_BASE_URL,
+        "chat_model": _read_field(provider, "chat_model") or _read_field(provider, "model") or preset.get("default_chat_model") or DEFAULT_MODEL,
+        "embedding_model": _read_field(provider, "embedding_model") or preset.get("default_embedding_model") or "",
     }
+    config["model"] = config["chat_model"]
     return {key: value for key, value in config.items() if value}
 
 
@@ -54,4 +96,10 @@ def public_provider_status() -> dict:
         "server_provider_available": server_provider_available(),
         "default_base_url": DEFAULT_BASE_URL,
         "default_model": DEFAULT_MODEL,
+        "default_embedding_model": DEFAULT_EMBEDDING_MODEL,
     }
+
+
+def public_provider_catalog() -> dict:
+    """Return public provider metadata without credentials."""
+    return {"providers": PROVIDER_CATALOG, "default_provider_id": "zhipu"}

@@ -53,6 +53,11 @@ def _provider_for_chat(provider) -> dict:
 
 router = APIRouter(tags=["chat"])
 
+
+def _session_storage_root() -> Path:
+    """Resolve tenant storage while keeping lightweight test doubles compatible."""
+    return Path(getattr(session_mgr, "root", SESSIONS_DIR))
+
 # ━━━ 上下文窗口管理 ━━━
 # glm-4-flash 上下文窗口约 128K tokens，保守估计 1 token ≈ 2 字符（中英文混合）
 MAX_CONTEXT_CHARS = 80000  # 约 40K tokens，留一半给 system prompt + 回复
@@ -160,6 +165,13 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
     current_name = (paper or {}).get("title") or (paper or {}).get("paper_id") or session.get("topic", "当前主题")
     current_abstract = (paper or {}).get("abstract", "") or (paper or {}).get("summary", "") or ""
     current_notes = session.get("notes", "") or ""
+    repository_reports = []
+    for index, repo in enumerate(session.get("repositories") or [], start=1):
+        report = str(repo.get("report") or "").strip()
+        if report:
+            repository_reports.append(f"## [R{index}] GitHub {repo.get('full_name', 'repository')}\n\n{report}")
+    if repository_reports:
+        current_notes = f"{current_notes}\n\n" + "\n\n---\n\n".join(repository_reports)
     current_review = session.get("review", "") or ""
 
     accepted_names = "、".join(
@@ -175,7 +187,7 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
     if _sid:
         try:
             from tools.retriever import iterative_search  # noqa
-            _papers_dir = str(SESSIONS_DIR / _sid / "papers")
+            _papers_dir = str(_session_storage_root() / _sid / "papers")
             passages = iterative_search(_sid, _papers_dir, message, top_k=10, max_rounds=2, provider_config=provider_config)
             if passages:
                 rag_parts = []
@@ -194,7 +206,7 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
             pass
     
     # 检查是否有 PDF 文件
-    has_pdfs = _sid and (SESSIONS_DIR / _sid / "papers").exists() and any((SESSIONS_DIR / _sid / "papers").glob("*.pdf"))
+    has_pdfs = _sid and (_session_storage_root() / _sid / "papers").exists() and any((_session_storage_root() / _sid / "papers").glob("*.pdf"))
 
     # ━━━ 阶段一：多轮对话记忆 ━━━
     history_context = ""
@@ -667,6 +679,13 @@ async def chat_message_stream(session_id: str, payload: ChatMessageRequest):
     current_name = (paper or {}).get("title") or (paper or {}).get("paper_id") or session.get("topic", "当前主题")
     current_abstract = (paper or {}).get("abstract", "") or (paper or {}).get("summary", "") or ""
     current_notes = session.get("notes", "") or ""
+    repository_reports = []
+    for index, repo in enumerate(session.get("repositories") or [], start=1):
+        report = str(repo.get("report") or "").strip()
+        if report:
+            repository_reports.append(f"## [R{index}] GitHub {repo.get('full_name', 'repository')}\n\n{report}")
+    if repository_reports:
+        current_notes = f"{current_notes}\n\n" + "\n\n---\n\n".join(repository_reports)
     current_review = session.get("review", "") or ""
     accepted_names = "、".join(
         [p.get("title") or p.get("paper_id", "") for p in session.get("papers", []) if p.get("status") == "accepted"]
@@ -679,7 +698,7 @@ async def chat_message_stream(session_id: str, payload: ChatMessageRequest):
     if _sid:
         try:
             from tools.retriever import iterative_search  # noqa
-            _papers_dir = str(SESSIONS_DIR / _sid / "papers")
+            _papers_dir = str(_session_storage_root() / _sid / "papers")
             passages = iterative_search(_sid, _papers_dir, message, top_k=10, max_rounds=2, provider_config=provider_config)
             if passages:
                 rag_parts = []
@@ -879,7 +898,7 @@ def compress_context(session_id: str, conv_id: str = "default") -> dict:
     ] + recent
 
     # 保存压缩后的消息
-    conv_path = SESSIONS_DIR / session_id / "chats" / f"{conv_id}.json"
+    conv_path = session_mgr.root / session_id / "chats" / f"{conv_id}.json"
     try:
         conv_path.write_text(json.dumps(compressed, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception:
