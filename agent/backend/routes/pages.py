@@ -136,6 +136,29 @@ class ProviderTestRequest(ProviderConfig):
     pass
 
 
+def _provider_test_error(exc: Exception, capability: str) -> tuple[str, str]:
+    """Map SDK errors to safe, actionable messages without returning provider payloads."""
+    error_name = exc.__class__.__name__.lower()
+    status_code = getattr(exc, "status_code", None)
+    error_text = str(exc).lower()
+
+    if status_code in {401, 403} or any(term in error_name for term in ("authentication", "permission")):
+        if capability == "embedding":
+            return "embedding_permission_denied", "聊天模型可用，但当前 API Key 没有向量模型权限。请检查账号权限或暂时关闭向量检索。"
+        return "invalid_key", "API Key 无效，或没有访问聊天模型的权限。"
+    if status_code in {402, 429} or any(term in error_text for term in ("quota", "balance", "credit", "insufficient", "余额", "额度")):
+        label = "向量模型" if capability == "embedding" else "聊天模型"
+        return "quota_exceeded", f"{label}请求被额度或频率限制。请检查提供商余额、套餐与调用限额。"
+    if "timeout" in error_name or "timed out" in error_text:
+        return "timeout", "连接超时，请检查网络、Base URL 或稍后重试。"
+    if status_code == 404 or "notfound" in error_name or "not found" in error_text:
+        label = "向量模型" if capability == "embedding" else "聊天模型"
+        return "model_not_found", f"没有找到填写的{label}，请检查模型名称与 Base URL。"
+    if capability == "embedding":
+        return "embedding_unavailable", "聊天模型可用，但向量模型请求失败。可改用推荐模型，或暂时关闭向量检索继续使用关键词检索。"
+    return "connection_failed", "聊天模型连接失败，请检查提供商、地址和模型名称。"
+
+
 @router.post("/api/provider/test")
 def test_provider(payload: ProviderTestRequest) -> dict:
     """Validate BYOK chat and embedding capabilities without persisting secrets."""
@@ -153,34 +176,8 @@ def test_provider(payload: ProviderTestRequest) -> dict:
             max_tokens=3,
         )
         capabilities["chat"] = True
-
-        if config.get("embedding_model"):
-            llm.client.embeddings.create(model=llm.embedding_model, input=["connection test"])
-            capabilities["embedding"] = True
-
-        return {
-            "ok": True,
-            "capabilities": capabilities,
-            "latency_ms": round((time.perf_counter() - started_at) * 1000),
-            "message": "聊天和向量模型连接正常。" if capabilities["embedding"] else "聊天模型连接正常；未配置向量模型。",
-        }
     except Exception as exc:
-        error_name = exc.__class__.__name__.lower()
-        if "authentication" in error_name or "permission" in error_name:
-            error_code = "invalid_key"
-            message = "API Key 无效或没有访问该模型的权限。"
-        elif "timeout" in error_name:
-            error_code = "timeout"
-            message = "连接超时，请检查网络、Base URL 或稍后重试。"
-        elif "notfound" in error_name:
-            error_code = "model_not_found"
-            message = "没有找到填写的模型，请检查模型名称。"
-        elif capabilities["chat"]:
-            error_code = "embedding_unavailable"
-            message = "聊天模型可用，但向量模型连接失败。请检查向量模型名称。"
-        else:
-            error_code = "connection_failed"
-            message = "模型连接失败，请检查提供商、地址和模型名称。"
+        error_code, message = _provider_test_error(exc, "chat")
         return {
             "ok": False,
             "capabilities": capabilities,
@@ -188,6 +185,27 @@ def test_provider(payload: ProviderTestRequest) -> dict:
             "error_code": error_code,
             "message": message,
         }
+
+    if config.get("embedding_model"):
+        try:
+            llm.client.embeddings.create(model=llm.embedding_model, input=["connection test"])
+            capabilities["embedding"] = True
+        except Exception as exc:
+            error_code, message = _provider_test_error(exc, "embedding")
+            return {
+                "ok": False,
+                "capabilities": capabilities,
+                "latency_ms": round((time.perf_counter() - started_at) * 1000),
+                "error_code": error_code,
+                "message": message,
+            }
+
+    return {
+        "ok": True,
+        "capabilities": capabilities,
+        "latency_ms": round((time.perf_counter() - started_at) * 1000),
+        "message": "聊天和向量模型连接正常。" if capabilities["embedding"] else "聊天模型连接正常；当前使用关键词检索，不启用向量模型。",
+    }
 
 
 @router.post("/api/keywords/extract")

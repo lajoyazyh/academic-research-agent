@@ -21,6 +21,7 @@
         <summary class="ghost-btn" aria-label="打开更多设置"><i class="fa-solid fa-ellipsis"></i> 更多</summary>
         <div class="console-more-menu">
           <button class="ghost-btn" id="toolManagerBtn" title="管理高级研究工具"><i class="fa-solid fa-toolbox"></i> 高级工具</button>
+          <button class="ghost-btn" id="researchRepoBtn" title="进入独立的 GitHub 仓库调研流程"><i class="fa-brands fa-github"></i> GitHub 仓库调研</button>
           <button class="ghost-btn" id="exportArtifactsBtn" title="导出综述、笔记与分析"><i class="fa-solid fa-file-export"></i> 导出成果</button>
         </div>
       </details>
@@ -47,11 +48,10 @@
       <div class="sources-head">
         <h2>来源</h2>
       </div>
-      <div class="sources-toolbar">
+      <div class="sources-toolbar sources-primary-actions">
         <button class="primary-btn" id="searchPaperBtn"><i class="fa-solid fa-magnifying-glass"></i> 搜索相关论文</button>
         <button class="primary-btn" id="cancelSearchBtn" style="display:none;background:var(--danger);"><i class="fa-solid fa-stop"></i> 停止检索</button>
         <button class="secondary-btn" id="addPaperBtn"><i class="fa-solid fa-plus"></i> 添加论文</button>
-        <button class="secondary-btn" id="researchRepoBtn"><i class="fa-brands fa-github"></i> 调研仓库</button>
         <button class="accent-btn" id="autoRunBtn" title="依次完成检索、笔记和综述初稿"><i class="fa-solid fa-wand-magic-sparkles"></i> 生成完整初稿</button>
         
         <input type="file" id="pdfFileInput" accept="application/pdf" style="display:none" />
@@ -60,13 +60,13 @@
         <div class="sources-section-head"><strong>GitHub 仓库</strong><span class="chip" id="repositoryCountChip">0 个</span></div>
         <div id="repositoryList"></div>
       </div>
-      <div class="sources-section">
+      <div class="sources-section papers-section">
         <div class="sources-section-head">
           <strong>检索到和添加的论文</strong>
           <span class="chip" id="paperCountChip">0 篇</span>
         </div>
         <div class="list-scroll" id="paperList">
-          <div class="empty-state">点击「AI 检索论文」开始。</div>
+          <div class="empty-state">点击「搜索相关论文」开始。</div>
         </div>
       </div>
       <div class="sources-toolbar" id="generateActions">

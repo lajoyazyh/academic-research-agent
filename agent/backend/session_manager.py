@@ -409,11 +409,17 @@ class SessionManager:
 
     def update_paper_status(self, session_id: str, paper_id: str, status: str) -> dict:
         """更新论文审查状态（accepted/rejected/pending）"""
+        if status not in {"accepted", "rejected", "pending"}:
+            raise ValueError(f"不支持的论文状态: {status}")
         papers = self.get_papers(session_id)
+        found = False
         for p in papers:
             if p.get("paper_id") == paper_id:
                 p["status"] = status
+                found = True
                 break
+        if not found:
+            raise ValueError(f"论文 {paper_id} 不存在")
         self.save_papers_list(session_id, papers)
         return self.load_session(session_id)
     def update_paper_notes(self, session_id: str, paper_id: str, notes: str) -> dict:
