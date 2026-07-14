@@ -1087,6 +1087,9 @@
     const session = this.state.currentSession;
     if (!session) return;
 
+    // Backfill sessions created before agent-screened papers were persisted as accepted.
+    this.acceptLegacyAgentScreenedPapers(session);
+
     if (this.els.consoleTopic) {
       this.els.consoleTopic.textContent = session.topic || "未命名主题";
     }
@@ -1107,6 +1110,31 @@
     this.renderViewButtons();
     // 静默更新用量条（不重建 DOM）
     this.updateContextMeter();
+  },
+
+  acceptLegacyAgentScreenedPapers(session) {
+    const migrations = this.state._paperStatusMigrations || (this.state._paperStatusMigrations = new Set());
+    const legacyPapers = (session.papers || []).filter((paper) => (
+      paper.status === "pending" && paper.source === "agent_search"
+    ));
+    legacyPapers.forEach((paper) => {
+      const migrationKey = `${session.session_id || this.state.currentSessionId}:${paper.paper_id}`;
+      if (!this.state.currentSessionId || migrations.has(migrationKey)) return;
+      migrations.add(migrationKey);
+      paper.status = "accepted";
+      fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/papers/${encodeURIComponent(paper.paper_id)}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "accepted" }),
+      }).then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      }).catch(() => {
+        paper.status = "pending";
+        this.renderPaperList();
+        this.updateActionButtons();
+        this.setConsoleStatus("error", "旧项目的论文纳入状态同步失败，请稍后刷新重试。");
+      });
+    });
   },
 
   updateResearchStage(session) {
