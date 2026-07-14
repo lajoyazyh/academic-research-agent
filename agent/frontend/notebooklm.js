@@ -2385,12 +2385,12 @@
       this.els.addPaperBtn.disabled = false;
     }
 
-    // 「生成完整初稿」按钮
+    // 「自动进行」按钮
     // 规则：以 _autoRunning 标志为唯一运行中判断依据，不依赖 session.state
     if (this.els.autoRunBtn) {
       if (this.state._autoRunning) {
         this.els.autoRunBtn.disabled = true;
-        this.els.autoRunBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在生成初稿...';
+        this.els.autoRunBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 自动进行中...';
         this.els.autoRunBtn.style.display = "";
       } else if (session.state === "complete") {
         this.els.autoRunBtn.disabled = true;
@@ -2398,7 +2398,7 @@
         this.els.autoRunBtn.style.display = "";
       } else {
         this.els.autoRunBtn.disabled = false;
-        this.els.autoRunBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> 生成完整初稿';
+        this.els.autoRunBtn.innerHTML = '<i class="fa-solid fa-forward-step"></i> 自动进行';
         this.els.autoRunBtn.style.display = "";
       }
     }
@@ -2543,7 +2543,7 @@
       alert("主题不能为空");
       return;
     }
-    if (!confirm("“生成完整初稿”将依次完成检索、论文笔记、综合分析和综述初稿。你可以在检索阶段停止任务，是否继续？")) return;
+    if (!confirm("“自动进行”将依次完成检索、论文笔记、综合分析和综述初稿。你可以在检索阶段停止任务，是否继续？")) return;
 
     // 如果还在 planning 阶段且无关键词，先自动生成关键词再启动
     if (!session.keywords || !session.keywords.length || session.state === "planning") {
