@@ -65,8 +65,13 @@
           <strong>检索到和添加的论文</strong>
           <span class="chip" id="paperCountChip">0 篇</span>
         </div>
-        <div class="list-scroll" id="paperList">
-          <div class="empty-state">点击「搜索相关论文」开始。</div>
+        <div class="paper-list-frame">
+          <div class="list-scroll" id="paperList" role="list" tabindex="0" aria-label="论文列表">
+            <div class="empty-state">点击「搜索相关论文」开始。</div>
+          </div>
+          <div class="paper-scroll-track" id="paperScrollTrack" aria-hidden="true" hidden>
+            <div class="paper-scroll-thumb" id="paperScrollThumb"></div>
+          </div>
         </div>
       </div>
       <div class="sources-toolbar" id="generateActions">

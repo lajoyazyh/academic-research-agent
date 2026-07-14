@@ -84,6 +84,8 @@
     this.els.notesBtn = document.getElementById("generateNotesBtn");
     this.els.reviewBtn = document.getElementById("generateReviewBtn");
     this.els.paperList = document.getElementById("paperList");
+    this.els.paperScrollTrack = document.getElementById("paperScrollTrack");
+    this.els.paperScrollThumb = document.getElementById("paperScrollThumb");
     this.els.notesBlock = document.getElementById("notesBlock");
     this.els.reviewBlock = document.getElementById("reviewBlock");
     this.els.detailHeader = document.getElementById("detailHeader");
@@ -955,6 +957,7 @@
     document.querySelectorAll("[data-repo-mode]").forEach((button) => {
       button.addEventListener("click", () => this.setRepositoryMode(button.dataset.repoMode));
     });
+    this.initPaperListScroll();
 
     this.els.keywordConfirm?.addEventListener("click", () => this.confirmKeywords());
     this.els.keywordCancel?.addEventListener("click", () => this.closeKeywordModal());
@@ -969,6 +972,65 @@
 
     // 初始化对话助手拖拽缩放
     this.initChatResize();
+  },
+
+  initPaperListScroll() {
+    const list = this.els.paperList;
+    const track = this.els.paperScrollTrack;
+    const thumb = this.els.paperScrollThumb;
+    if (!list || !track || !thumb) return;
+
+    list.addEventListener("scroll", () => this.updatePaperScrollbar(), { passive: true });
+    track.addEventListener("pointerdown", (event) => {
+      if (event.target !== track) return;
+      const rect = track.getBoundingClientRect();
+      const thumbHeight = thumb.getBoundingClientRect().height;
+      const travel = Math.max(1, rect.height - thumbHeight);
+      const ratio = Math.max(0, Math.min(1, (event.clientY - rect.top - thumbHeight / 2) / travel));
+      list.scrollTop = ratio * Math.max(0, list.scrollHeight - list.clientHeight);
+    });
+    thumb.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this._paperScrollDrag = { startY: event.clientY, startScrollTop: list.scrollTop };
+      thumb.classList.add("dragging");
+      thumb.setPointerCapture(event.pointerId);
+    });
+    thumb.addEventListener("pointermove", (event) => {
+      if (!this._paperScrollDrag) return;
+      const maxScroll = Math.max(0, list.scrollHeight - list.clientHeight);
+      const travel = Math.max(1, track.clientHeight - thumb.clientHeight);
+      list.scrollTop = this._paperScrollDrag.startScrollTop + (event.clientY - this._paperScrollDrag.startY) * maxScroll / travel;
+    });
+    const stopDragging = (event) => {
+      if (!this._paperScrollDrag) return;
+      this._paperScrollDrag = null;
+      thumb.classList.remove("dragging");
+      if (thumb.hasPointerCapture(event.pointerId)) thumb.releasePointerCapture(event.pointerId);
+    };
+    thumb.addEventListener("pointerup", stopDragging);
+    thumb.addEventListener("pointercancel", stopDragging);
+    if (window.ResizeObserver) {
+      this._paperListResizeObserver = new ResizeObserver(() => this.updatePaperScrollbar());
+      this._paperListResizeObserver.observe(list);
+    }
+    this.updatePaperScrollbar();
+  },
+
+  updatePaperScrollbar() {
+    const list = this.els.paperList;
+    const track = this.els.paperScrollTrack;
+    const thumb = this.els.paperScrollThumb;
+    if (!list || !track || !thumb) return;
+    const maxScroll = Math.max(0, list.scrollHeight - list.clientHeight);
+    track.hidden = maxScroll <= 1;
+    if (track.hidden) return;
+    const trackHeight = track.clientHeight;
+    const thumbHeight = Math.max(44, Math.round(trackHeight * list.clientHeight / list.scrollHeight));
+    const travel = Math.max(0, trackHeight - thumbHeight);
+    const offset = maxScroll ? Math.round(travel * list.scrollTop / maxScroll) : 0;
+    thumb.style.height = `${thumbHeight}px`;
+    thumb.style.transform = `translateY(${offset}px)`;
   },
 
   setMobileWorkspacePanel(panel) {
@@ -1240,6 +1302,7 @@
 
     if (!papers.length) {
       this.els.paperList.innerHTML = '<div class="empty-state">点击「搜索相关论文」或「添加论文」开始构建来源库。</div>';
+      requestAnimationFrame(() => this.updatePaperScrollbar());
       return;
     }
 
@@ -1253,6 +1316,7 @@
 
       const row = document.createElement("article");
       const isUpdating = this.state._updatingPaperId === paper.paper_id;
+      row.setAttribute("role", "listitem");
       row.dataset.paperId = paper.paper_id;
       row.className = `paper-row ${paper.paper_id === this.state.currentPaperId ? "active" : ""} ${isUpdating ? "is-updating" : ""}`;
       row.addEventListener("click", () => {
@@ -1323,6 +1387,7 @@
 
       this.els.paperList.appendChild(row);
     });
+    requestAnimationFrame(() => this.updatePaperScrollbar());
   },
 
   renderNotesBlock() {
