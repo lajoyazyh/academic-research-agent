@@ -92,7 +92,7 @@ class CrossrefSearchTool(BaseTool):
             offset = 0
 
         base_url = os.getenv("CROSSREF_API_BASE", "https://api.crossref.org")
-        mailto = os.getenv("CROSSREF_MAILTO", "")
+        mailto = os.getenv("CROSSREF_MAILTO", "").strip() or os.getenv("SCHOLAR_CONTACT_EMAIL", "").strip()
         encoded_query = urllib.parse.quote(query)
 
         url = (
@@ -178,7 +178,7 @@ class CrossrefFetchByDoiTool(BaseTool):
             raise ValueError("CrossrefFetchByDoiTool 缺少必要参数: 'doi'")
 
         base_url = os.getenv("CROSSREF_API_BASE", "https://api.crossref.org")
-        mailto = os.getenv("CROSSREF_MAILTO", "")
+        mailto = os.getenv("CROSSREF_MAILTO", "").strip() or os.getenv("SCHOLAR_CONTACT_EMAIL", "").strip()
         encoded_doi = urllib.parse.quote(doi, safe="")
         url = f"{base_url}/works/{encoded_doi}"
         if mailto:

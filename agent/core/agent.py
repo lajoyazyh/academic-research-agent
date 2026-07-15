@@ -125,7 +125,10 @@ class BaseAgent:
 
         register_actions = {"paper_register"}
         _last_paper_round = -1  # 追踪上一次收录论文的轮次（-1 表示从未收录）
-        _last_recorded_count = self.get_registered_paper_count()
+        initial_recorded_count = self.get_registered_paper_count()
+        _last_recorded_count = initial_recorded_count
+        action_call_counts: dict[str, int] = {}
+        rate_limited_tools: set[str] = set()
         for loop_count in range(self.max_loops):
             if loop_count > 0 and loop_delay_seconds > 0:
                 print(f"\n[Rate Limit] Cooling {loop_delay_seconds:g}s to avoid 429...")
@@ -178,7 +181,7 @@ class BaseAgent:
             # 3. 终局判断（带质量门禁 + Pre-FINISH 自主质检）
             if action.lower() == "finish":
                 # ━━━ 质量门禁：检查是否收录了足够的论文 ━━━
-                recorded_count = self.get_registered_paper_count()
+                recorded_count = max(0, self.get_registered_paper_count() - initial_recorded_count)
                 _min_papers = self.min_new_papers
 
                 _should_allow = False
@@ -230,20 +233,61 @@ class BaseAgent:
             # 4. 执行业务 Tool 与自我修正（Action/Observation Reflexion）
             observation = ""
             error_type = ""
+            action_input = action_input if isinstance(action_input, dict) else {}
+            original_signature = json.dumps(
+                {"action": action, "input": action_input},
+                ensure_ascii=False,
+                sort_keys=True,
+                default=str,
+            )
+            repeated_count = action_call_counts.get(original_signature, 0)
+            action_call_counts[original_signature] = repeated_count + 1
+
+            # Repeating page 1 wastes both the user's model calls and provider
+            # quota. Advance supported search cursors deterministically.
+            pagination_note = ""
+            if repeated_count and action in {"arxiv_search", "crossref_search", "openalex_search", "semantic_scholar_search"}:
+                action_input = dict(action_input)
+                def _safe_int(value, default):
+                    try:
+                        return int(value)
+                    except (TypeError, ValueError):
+                        return default
+                if action == "arxiv_search":
+                    page_size = max(1, _safe_int(action_input.get("max_results", 5), 5))
+                    action_input["start"] = max(0, _safe_int(action_input.get("start", 0), 0)) + page_size * repeated_count
+                elif action in {"crossref_search", "semantic_scholar_search"}:
+                    size_key = "rows" if action == "crossref_search" else "limit"
+                    page_size = max(1, _safe_int(action_input.get(size_key, 5), 5))
+                    action_input["offset"] = max(0, _safe_int(action_input.get("offset", 0), 0)) + page_size * repeated_count
+                else:
+                    action_input["page"] = max(1, _safe_int(action_input.get("page", 1), 1)) + repeated_count
+                pagination_note = f"系统检测到重复检索，已自动翻到新的结果页：{action_input}。\n"
+
             if action not in self.tools:
                 # 工具调用名不存在 -> 交由反思池
                 observation = f"你尝试调用的工具名称 '{action}' 并不存在。允许调用的工具有：{list(self.tools.keys())}。"
                 error_type = "unknown_tool"
+            elif action in rate_limited_tools:
+                observation = (
+                    f"❌ {action} 本轮已因 HTTP 429 暂停，禁止再次调用。"
+                    "请立即改用其他检索工具，并处理上一轮结果中尚未登记的候选论文。"
+                )
+                error_type = "provider_rate_limited"
             else:
                 tool = self.tools[action]
                 try:
                     # ✅ 真正的外部业务执行，并包裹捕捉致命的报错
-                    observation = str(tool.execute(**action_input))  # 【核心修复：防止 Token 爆炸导致 TPM 限流】
+                    raw_observation = str(tool.execute(**action_input))
+                    observation = pagination_note + raw_observation  # 【核心修复：防止 Token 爆炸导致 TPM 限流】
                     if len(observation) > 4500:
                         observation = observation[:4500] + "\n\n...[警告：为防止大模型上下文超限，PDF后续内容已被系统自动截断]..."
                         error_type = "tool_observation_truncated"
-                    elif observation.lstrip().startswith("❌"):
+                    elif raw_observation.lstrip().startswith("❌"):
                         error_type = "tool_reported_failure"
+                    if "429" in observation:
+                        rate_limited_tools.add(action)
+                        error_type = "provider_rate_limited"
                 except Exception as ex:
                     # 【核心：运行时自我修正 Reflexion】
                     observation = f"目标工具 '{action}' 在执行输入 \n{action_input}\n 时产生了一个异常报错: {str(ex)}。\n请使用 thought 字段反思参数为什么抛出该错误，调整你的算法和参数值并在下一次回答中重试。"
@@ -292,5 +336,16 @@ class BaseAgent:
             # 把当前回合的环境事实结果交由下一轮 user 对话的输入，驱动 ReAct 前进
             current_query = f"这是执行 '{action}' 的结果 / 环境报错观察 (Observation):\n{observation}\n现在请根据这个观察结果决定你的下一步 thought 和 action。"
             
-        return "很遗憾，已达到系统的最大内部循环配置上限，未能得出最终结论。"
+        recorded_count = max(0, self.get_registered_paper_count() - initial_recorded_count)
+        budget_message = (
+            f"执行预算已用完：实际新增 {recorded_count}/{self.min_new_papers} 篇。"
+            "系统已保存现有结果；继续检索时应从新关键词和下一页开始。"
+        )
+        self._add_trace(
+            thought="系统执行预算耗尽",
+            action="BUDGET_EXHAUSTED",
+            observation=budget_message,
+            error_type="budget_exhausted",
+        )
+        return budget_message
 

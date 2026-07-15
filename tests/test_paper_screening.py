@@ -255,3 +255,206 @@ def test_research_prompt_only_advertises_enabled_tools():
     assert "arxiv_search" in allowed_section
     assert "openalex_search" not in allowed_section
     assert "至少 6 篇" in prompt
+    assert "先逐一处理其中尚未登记" in prompt
+    assert "严禁根据标题自行编造摘要" in prompt
+
+
+def test_search_loop_budget_scales_with_requested_papers():
+    assert agent_routes.effective_search_loop_budget(20, 3) == 25
+    assert agent_routes.effective_search_loop_budget(20, 7) == 45
+    assert agent_routes.effective_search_loop_budget(20, 15) == 80
+    assert agent_routes.effective_search_loop_budget(80, 1) == 80
+
+
+def test_repeated_search_is_automatically_paginated(monkeypatch):
+    class SearchTool:
+        name = "crossref_search"
+        description = "search"
+        parameters = {"query": "query", "rows": "rows", "offset": "offset"}
+
+        def __init__(self):
+            self.calls = []
+
+        def execute(self, **kwargs):
+            self.calls.append(kwargs)
+            return "results"
+
+    class SequenceLLM:
+        def __init__(self):
+            self.responses = [
+                '{"thought":"first","action":"crossref_search","action_input":{"query":"topic","rows":"5"},"final_answer":""}',
+                '{"thought":"again","action":"crossref_search","action_input":{"query":"topic","rows":"5"},"final_answer":""}',
+            ]
+
+        def chat(self, *_args, **_kwargs):
+            return self.responses.pop(0)
+
+    llm = SequenceLLM()
+    monkeypatch.setattr("core.agent.LLMClient", lambda *_args, **_kwargs: llm)
+    tool = SearchTool()
+    agent = BaseAgent(tools=[tool], max_loops=2, paper_progress_getter=lambda: 0)
+    monkeypatch.setattr(agent, "_generate_plan", lambda _query: "")
+
+    result = agent.run("topic")
+
+    assert tool.calls == [
+        {"query": "topic", "rows": "5"},
+        {"query": "topic", "rows": "5", "offset": 5},
+    ]
+    assert "执行预算已用完" in result
+    assert agent.traces[-1]["action"] == "BUDGET_EXHAUSTED"
+
+
+def test_incremental_quality_gate_counts_only_papers_added_this_run(monkeypatch):
+    class SequenceLLM:
+        def __init__(self):
+            self.responses = [
+                '{"thought":"done","action":"finish","action_input":{},"final_answer":"done"}',
+                '{"thought":"stop","action":"missing_tool","action_input":{},"final_answer":""}',
+            ]
+
+        def chat(self, *_args, **_kwargs):
+            return self.responses.pop(0)
+
+    monkeypatch.setattr("core.agent.LLMClient", lambda *_args, **_kwargs: SequenceLLM())
+    agent = BaseAgent(tools=[], max_loops=2, min_new_papers=3, paper_progress_getter=lambda: 5)
+    monkeypatch.setattr(agent, "_generate_plan", lambda _query: "")
+
+    result = agent.run("add three more papers")
+
+    blocked = next(trace for trace in agent.traces if trace["action"] == "FINISH_BLOCKED")
+    assert "0" in blocked["observation"]
+    assert "5" not in blocked["observation"]
+    assert "0/3" in result
+
+
+def test_rate_limited_search_tool_is_disabled_for_the_run(monkeypatch):
+    class LimitedTool:
+        name = "openalex_search"
+        description = "search"
+        parameters = {"query": "query"}
+
+        def __init__(self):
+            self.calls = 0
+
+        def execute(self, **_kwargs):
+            self.calls += 1
+            return "Error executing OpenAlex search: HTTP Error 429: Too Many Requests"
+
+    class SequenceLLM:
+        def __init__(self):
+            self.responses = [
+                '{"thought":"first","action":"openalex_search","action_input":{"query":"topic"},"final_answer":""}',
+                '{"thought":"again","action":"openalex_search","action_input":{"query":"topic"},"final_answer":""}',
+            ]
+
+        def chat(self, *_args, **_kwargs):
+            return self.responses.pop(0)
+
+    monkeypatch.setattr("core.agent.LLMClient", lambda *_args, **_kwargs: SequenceLLM())
+    tool = LimitedTool()
+    agent = BaseAgent(tools=[tool], max_loops=2, paper_progress_getter=lambda: 0)
+    monkeypatch.setattr(agent, "_generate_plan", lambda _query: "")
+
+    agent.run("topic")
+
+    assert tool.calls == 1
+    assert any("本轮已因 HTTP 429 暂停" in trace.get("observation", "") for trace in agent.traces)
+
+
+def test_obvious_single_keyword_topic_drift_is_rejected(tmp_path):
+    tool = PaperRegisterTool(session_id="session", papers_dir=str(tmp_path))
+
+    assert tool._passes_lexical_relevance(
+        "Interactive Mining with Ordered and Unordered Attributes",
+        "Attribute-Based Robotic Grasping with One-Grasp Adaptation",
+        "A robot learns object attributes for grasping and manipulation.",
+    ) is False
+    assert tool._passes_lexical_relevance(
+        "Interactive Mining with Ordered and Unordered Attributes",
+        "SIAS-miner: mining subjectively interesting attributed subgraphs",
+        "Mining attributed patterns with interactive user feedback.",
+    ) is True
+
+
+def test_unpaywall_is_not_called_with_a_placeholder_email(tmp_path, monkeypatch):
+    monkeypatch.delenv("UNPAYWALL_EMAIL", raising=False)
+    monkeypatch.delenv("SCHOLAR_CONTACT_EMAIL", raising=False)
+    monkeypatch.delenv("CROSSREF_MAILTO", raising=False)
+    tool = PaperRegisterTool(session_id="session", papers_dir=str(tmp_path))
+
+    assert tool._unpaywall_sources("10.1000/example") == []
+
+
+def test_duplicate_paper_retries_missing_pdf_and_persists_status(tmp_path, monkeypatch):
+    manager = SessionManager(str(tmp_path))
+    session = manager.create_session("")
+    paper_id = "10.1000_existing"
+    manager.add_paper(session["session_id"], {
+        "paper_id": paper_id,
+        "doi": "10.1000/existing",
+        "title": "Existing paper",
+        "status": "accepted",
+    })
+    papers_dir = tmp_path / session["session_id"] / "papers"
+    recovered_path = papers_dir / f"{paper_id}.pdf"
+    tool = PaperRegisterTool(
+        session_id=session["session_id"],
+        papers_dir=str(papers_dir),
+        session_manager=manager,
+    )
+    monkeypatch.setattr(
+        tool,
+        "_try_download_pdf",
+        lambda *_args, **_kwargs: (True, "✅ PDF 已下载", str(recovered_path)),
+    )
+
+    result = tool.execute(
+        paper_id="10.1000/existing",
+        title="Existing paper",
+        abstract="Existing abstract",
+        arxiv_id="2401.00001",
+    )
+
+    paper = manager.get_papers(session["session_id"])[0]
+    assert "已尝试补全 PDF" in result
+    assert "论文新增成功" not in result
+    assert paper["pdf_status"] == "available"
+    assert paper["pdf_filename"] == recovered_path.name
+    assert paper["arxiv_id"] == "2401.00001"
+
+
+def test_pdf_downloader_uses_official_resolver_candidate(tmp_path, monkeypatch):
+    class PdfResponse:
+        headers = {"Content-Type": "application/pdf"}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self, *_args):
+            return b"%PDF-1.7\n" + (b"valid-pdf-content" * 20)
+
+    tool = PaperRegisterTool(session_id="session", papers_dir=str(tmp_path))
+    monkeypatch.setattr(tool, "_arxiv_title_sources", lambda _title: [])
+    monkeypatch.setattr(tool, "_semantic_scholar_sources", lambda _doi, _title: [])
+    monkeypatch.setattr(tool, "_unpaywall_sources", lambda _doi: [])
+    monkeypatch.setattr(
+        tool,
+        "_crossref_sources",
+        lambda _doi: [("PVLDB official", "https://www.vldb.org/pvldb/paper.pdf")],
+    )
+    monkeypatch.setattr("urllib.request.urlopen", lambda *_args, **_kwargs: PdfResponse())
+
+    ok, message, path = tool._try_download_pdf(
+        "10.14778/example",
+        True,
+        title="Official paper",
+        destination_id="10.14778_example",
+    )
+
+    assert ok is True
+    assert "PVLDB official" in message
+    assert path.endswith("10.14778_example.pdf")

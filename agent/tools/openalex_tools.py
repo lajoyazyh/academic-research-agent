@@ -2,6 +2,7 @@
 import urllib.parse
 import urllib.request
 import urllib.error
+import os
 from typing import Any
 from core.tools import BaseTool
 
@@ -26,11 +27,15 @@ class OpenAlexSearchTool(BaseTool):
             
         encoded_query = urllib.parse.quote(query)
         # OpenAlex API documentation recommends using a polite pool by adding email but it's optional.
+        contact = os.getenv("OPENALEX_EMAIL", "").strip() or os.getenv("SCHOLAR_CONTACT_EMAIL", "").strip()
         url = f"https://api.openalex.org/works?search={encoded_query}&per-page={limit}&page={page}&sort=relevance_score:desc"
+        if contact:
+            url += f"&mailto={urllib.parse.quote(contact)}"
         
-        headers = {
-            "User-Agent": "OpenAlexSearchTool/1.0 (mailto:your_email@example.com)"
-        }
+        user_agent = "AcademicResearchAgent/1.0"
+        if contact:
+            user_agent += f" (mailto:{contact})"
+        headers = {"User-Agent": user_agent, "Accept": "application/json"}
         
         req = urllib.request.Request(url, headers=headers)
         try:
@@ -60,6 +65,7 @@ class OpenAlexSearchTool(BaseTool):
                         # Extract PDF URL if open access
                         oa = work.get("open_access", {})
                         pdf_url = oa.get("oa_url", "") if isinstance(oa, dict) else ""
+                        work_ids = work.get("ids") or {}
                         
                         parsed_results.append({
                             "title": title,
@@ -69,6 +75,7 @@ class OpenAlexSearchTool(BaseTool):
                             "cited_by_count": work.get("cited_by_count", 0),
                             "concepts": concepts,
                             "doi": work.get("doi", ""),
+                            "arxiv_id": str(work_ids.get("arxiv") or "").replace("https://arxiv.org/abs/", ""),
                             "pdf_url": pdf_url
                         })
                     
