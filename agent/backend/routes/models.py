@@ -2,7 +2,7 @@
 共享 Pydantic 模型：被多个路由模块使用。
 """
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class RunRequest(BaseModel):
@@ -72,7 +72,7 @@ class RunPhaseRequest(BaseModel):
     keywords: Optional[list] = None
     paper_ids: Optional[list[str]] = None
     search_mode: str = "auto"
-    target_new_papers: int = 3
+    target_new_papers: int = Field(default=3, ge=1, le=15)
     exclude_ids: Optional[list[str]] = None
     max_loops: int = 20
     min_papers: int = 3

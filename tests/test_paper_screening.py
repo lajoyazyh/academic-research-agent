@@ -1,5 +1,6 @@
 import pytest
 from fastapi import HTTPException
+from pydantic import ValidationError
 
 from backend.session_manager import SessionManager
 from backend.routes import agent as agent_routes
@@ -134,3 +135,14 @@ def test_incremental_search_prompt_excludes_existing_papers_and_targets_real_add
     assert "实际新增 4 篇" in prompt
     assert "2401.00001 | Existing Memory Paper" in prompt
     assert "禁止重复登记" in prompt
+
+
+def test_search_target_accepts_up_to_fifteen_papers():
+    request = RunPhaseRequest(topic="Configurable search", target_new_papers=15)
+    assert request.target_new_papers == 15
+
+
+@pytest.mark.parametrize("target", [0, 16, -1])
+def test_search_target_rejects_values_outside_supported_range(target):
+    with pytest.raises(ValidationError):
+        RunPhaseRequest(topic="Invalid search target", target_new_papers=target)
