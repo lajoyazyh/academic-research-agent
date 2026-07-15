@@ -21,6 +21,7 @@
     analysisEditText: "",
     _autoRunning: false,
     _autoPollTimer: null,
+    _searchLoopCustomized: false,
     lastAction: "",
     provider: {
       provider_id: "zhipu",
@@ -80,6 +81,8 @@
     this.els.consoleStateDot = document.getElementById("consoleStateDot");
     this.els.searchBtn = document.getElementById("searchPaperBtn");
     this.els.searchTargetInput = document.getElementById("searchTargetInput");
+    this.els.searchLoopLimitInput = document.getElementById("searchLoopLimitInput");
+    this.els.searchBudgetHelp = document.getElementById("searchBudgetHelp");
     this.els.addPaperBtn = document.getElementById("addPaperBtn");
     this.els.pdfFileInput = document.getElementById("pdfFileInput");
     this.els.notesBtn = document.getElementById("generateNotesBtn");
@@ -925,6 +928,14 @@
       const value = Number(event.target.value);
       const valid = Number.isInteger(value) && value >= 1 && value <= 15;
       event.target.setCustomValidity(valid ? "" : "请输入 1 到 15 之间的整数");
+      if (valid) this.updateSearchLoopRecommendation(!this.state._searchLoopCustomized);
+    });
+    this.els.searchLoopLimitInput?.addEventListener("input", (event) => {
+      this.state._searchLoopCustomized = true;
+      const value = Number(event.target.value);
+      const valid = Number.isInteger(value) && value >= 1 && value <= 80;
+      event.target.setCustomValidity(valid ? "" : "请输入 1 到 80 之间的整数");
+      this.updateSearchLoopRecommendation(false);
     });
     this.els.cancelSearchBtn?.addEventListener("click", () => this.cancelSearch());
     this.els.autoRunBtn?.addEventListener("click", () => this.startAutoRun());
@@ -953,6 +964,7 @@
     document.querySelectorAll("[data-mobile-panel]").forEach((button) => {
       button.addEventListener("click", () => this.setMobileWorkspacePanel(button.dataset.mobilePanel));
     });
+    this.updateSearchLoopRecommendation(true);
     this.els.statusRetry?.addEventListener("click", () => this.retryLastAction());
     this.els.exportArtifactsBtn?.addEventListener("click", () => this.openExportModal());
     this.els.exportModalClose?.addEventListener("click", () => this.closeExportModal());
@@ -2394,6 +2406,9 @@
     if (this.els.searchTargetInput) {
       this.els.searchTargetInput.disabled = session.state === "searching";
     }
+    if (this.els.searchLoopLimitInput) {
+      this.els.searchLoopLimitInput.disabled = session.state === "searching";
+    }
 
     // 添加论文 按钮
     if (this.els.addPaperBtn) {
@@ -2586,7 +2601,9 @@
     }
     const targetNewPapers = this.getSearchTarget();
     if (targetNewPapers === null) return;
-    if (!confirm(`“自动进行”将先实际新增至少 ${targetNewPapers} 篇论文，再依次生成笔记、分析和综述。未达到数量时流程会停止并提示重试，是否继续？`)) return;
+    const maxSearchLoops = this.getSearchLoopLimit(targetNewPapers);
+    if (maxSearchLoops === null) return;
+    if (!confirm(`“自动进行”将尝试新增至少 ${targetNewPapers} 篇论文，最多执行 ${maxSearchLoops} 轮，再依次生成笔记、分析和综述。若先达到轮数上限，流程会保留已有结果并停止，是否继续？`)) return;
 
     // 如果还在 planning 阶段且无关键词，先自动生成关键词再启动
     if (!session.keywords || !session.keywords.length || session.state === "planning") {
@@ -2637,7 +2654,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(this.withProvider({
           topic,
-          max_loops: Math.min(80, Math.max(20, targetNewPapers * 5 + 10)),
+          max_loops: maxSearchLoops,
           min_papers: targetNewPapers,
         })),
       });
@@ -2769,6 +2786,9 @@
     if (this.els.searchTargetInput) {
       this.els.searchTargetInput.disabled = state === "searching";
     }
+    if (this.els.searchLoopLimitInput) {
+      this.els.searchLoopLimitInput.disabled = state === "searching";
+    }
   },
 
   getSearchTarget() {
@@ -2777,6 +2797,38 @@
     const value = Number(input.value);
     const valid = Number.isInteger(value) && value >= 1 && value <= 15;
     input.setCustomValidity(valid ? "" : "请输入 1 到 15 之间的整数");
+    if (!valid) {
+      input.reportValidity();
+      input.focus();
+      return null;
+    }
+    return value;
+  },
+
+  recommendedSearchLoops(targetNewPapers) {
+    const target = Math.max(1, Math.min(15, Number(targetNewPapers) || 3));
+    return Math.min(80, Math.max(20, target * 5 + 10));
+  },
+
+  updateSearchLoopRecommendation(syncValue = false) {
+    const target = Number(this.els.searchTargetInput?.value);
+    if (!Number.isInteger(target) || target < 1 || target > 15) return;
+    const recommended = this.recommendedSearchLoops(target);
+    const input = this.els.searchLoopLimitInput;
+    if (input && syncValue) input.value = String(recommended);
+    const configured = Number(input?.value);
+    if (!this.els.searchBudgetHelp) return;
+    this.els.searchBudgetHelp.textContent = Number.isInteger(configured) && configured < recommended
+      ? `推荐 ${recommended} 轮；当前上限较低，可能在达到 ${target} 篇前结束。`
+      : `推荐 ${recommended} 轮；系统不会超过你设置的上限。`;
+  },
+
+  getSearchLoopLimit(targetNewPapers = 3) {
+    const input = this.els.searchLoopLimitInput;
+    if (!input) return this.recommendedSearchLoops(targetNewPapers);
+    const value = Number(input.value);
+    const valid = Number.isInteger(value) && value >= 1 && value <= 80;
+    input.setCustomValidity(valid ? "" : "请输入 1 到 80 之间的整数");
     if (!valid) {
       input.reportValidity();
       input.focus();
@@ -3161,6 +3213,8 @@
 
     const targetNewPapers = this.getSearchTarget();
     if (targetNewPapers === null) return;
+    const maxSearchLoops = this.getSearchLoopLimit(targetNewPapers);
+    if (maxSearchLoops === null) return;
 
     try {
       const existingIds = (session.papers || []).map((paper) => paper.paper_id);
@@ -3169,8 +3223,8 @@
       this.setConsoleStatus(
         "searching",
         incremental
-          ? `正在扩展检索，目标新增 ${targetNewPapers} 篇，并自动排除已有论文...`
-          : `正在检索论文，本轮目标 ${targetNewPapers} 篇...`,
+          ? `正在扩展检索，目标新增 ${targetNewPapers} 篇，最多 ${maxSearchLoops} 轮，并自动排除已有论文...`
+          : `正在检索论文，本轮目标 ${targetNewPapers} 篇，最多 ${maxSearchLoops} 轮...`,
       );
       this._setSearchButtons("searching");
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/search`, {
@@ -3183,7 +3237,7 @@
           search_mode: incremental ? "incremental" : "initial",
           target_new_papers: targetNewPapers,
           exclude_ids: existingIds,
-          max_loops: Math.min(80, Math.max(20, targetNewPapers * 5 + 10)),
+          max_loops: maxSearchLoops,
         })),
       });
       const data = await response.json();

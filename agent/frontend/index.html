@@ -51,11 +51,19 @@
         <h2>来源</h2>
       </div>
       <div class="sources-toolbar sources-primary-actions">
-        <label class="search-target-control" for="searchTargetInput">
-          <span>本轮目标新增</span>
-          <input id="searchTargetInput" type="number" min="1" max="15" step="1" value="3" inputmode="numeric" required aria-describedby="searchTargetHelp" />
-          <span id="searchTargetHelp">篇（1–15）</span>
-        </label>
+        <div class="search-run-controls" aria-label="本轮检索设置">
+          <label class="search-target-control" for="searchTargetInput">
+            <span>目标新增</span>
+            <input id="searchTargetInput" type="number" min="1" max="15" step="1" value="3" inputmode="numeric" required aria-label="本轮目标新增论文数，1 到 15" aria-describedby="searchBudgetHelp" />
+            <span>篇</span>
+          </label>
+          <label class="search-loop-control" for="searchLoopLimitInput">
+            <span>最大轮数</span>
+            <input id="searchLoopLimitInput" type="number" min="1" max="80" step="1" value="25" inputmode="numeric" required aria-label="本轮最大检索轮数，1 到 80" aria-describedby="searchBudgetHelp" />
+            <span>轮</span>
+          </label>
+          <small id="searchBudgetHelp">推荐 25 轮；系统不会超过你设置的上限。</small>
+        </div>
         <button class="primary-btn" id="searchPaperBtn"><i class="fa-solid fa-magnifying-glass"></i> 搜索相关论文</button>
         <button class="primary-btn" id="cancelSearchBtn" style="display:none;background:var(--danger);"><i class="fa-solid fa-stop"></i> 停止检索</button>
         <button class="secondary-btn" id="addPaperBtn"><i class="fa-solid fa-plus"></i> 添加论文</button>

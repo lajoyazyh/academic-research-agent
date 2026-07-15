@@ -259,11 +259,23 @@ def test_research_prompt_only_advertises_enabled_tools():
     assert "严禁根据标题自行编造摘要" in prompt
 
 
-def test_search_loop_budget_scales_with_requested_papers():
-    assert agent_routes.effective_search_loop_budget(20, 3) == 25
-    assert agent_routes.effective_search_loop_budget(20, 7) == 45
-    assert agent_routes.effective_search_loop_budget(20, 15) == 80
+def test_search_loop_recommendation_scales_with_requested_papers():
+    assert agent_routes.recommended_search_loop_budget(3) == 25
+    assert agent_routes.recommended_search_loop_budget(7) == 45
+    assert agent_routes.recommended_search_loop_budget(15) == 80
+
+
+def test_search_loop_budget_honors_user_cap():
+    assert agent_routes.effective_search_loop_budget(1, 15) == 1
+    assert agent_routes.effective_search_loop_budget(20, 7) == 20
     assert agent_routes.effective_search_loop_budget(80, 1) == 80
+
+
+def test_search_loop_budget_rejects_values_over_eighty():
+    with pytest.raises(ValidationError):
+        RunPhaseRequest(topic="Too many loops", max_loops=81)
+    with pytest.raises(ValidationError):
+        AutoRunRequest(topic="Too many loops", max_loops=81)
 
 
 def test_repeated_search_is_automatically_paginated(monkeypatch):
