@@ -8,10 +8,12 @@ from llms.client import LLMClient
 from datetime import datetime
 
 class BaseAgent:
-    def __init__(self, tools: List[BaseTool], max_loops: int = 5, provider_config: dict | None = None):
+    def __init__(self, tools: List[BaseTool], max_loops: int = 5, provider_config: dict | None = None,
+                 min_new_papers: int = 3):
         self.llm = LLMClient(provider_config)
         self.tools: Dict[str, BaseTool] = {tool.name: tool for tool in tools}
         self.max_loops = max_loops
+        self.min_new_papers = max(1, int(min_new_papers or 3))
         self.traces = []
         self.error_history = []  # 记录连续同类错误，供给构化 Reflexion 使用
         self._critique_round = False  # Pre-FINISH 自主质检标记
@@ -97,7 +99,7 @@ class BaseAgent:
         else:
             current_query = user_query
 
-        register_actions = {"paper_register", "arxiv_download_pdf"}  # 注册类工具
+        register_actions = {"paper_register"}
         _last_paper_round = -1  # 追踪上一次收录论文的轮次（-1 表示从未收录）
         for loop_count in range(self.max_loops):
             if loop_count > 0 and loop_delay_seconds > 0:
@@ -151,19 +153,18 @@ class BaseAgent:
             # 3. 终局判断（带质量门禁 + Pre-FINISH 自主质检）
             if action.lower() == "finish":
                 # ━━━ 质量门禁：检查是否收录了足够的论文 ━━━
-                recorded_count = sum(1 for t in self.traces if t.get("action") in register_actions)
-
-                _min_papers = 3
-                try:
-                    _min_papers = int(os.environ.get("AGENT_MIN_PAPERS", "3"))
-                except Exception:
-                    pass
+                recorded_count = sum(
+                    1 for t in self.traces
+                    if t.get("action") in register_actions
+                    and "论文新增成功" in str(t.get("observation", ""))
+                )
+                _min_papers = self.min_new_papers
 
                 _should_allow = False
                 _finish_tag = ""
 
                 # 规则 1: 20 轮内零篇 → 允许退出 (no_results)
-                if recorded_count == 0 and loop_count >= self.max_loops:
+                if recorded_count == 0 and loop_count >= self.max_loops - 1:
                     _should_allow = True
                     _finish_tag = "no_results"
 
@@ -226,7 +227,7 @@ class BaseAgent:
                     error_type = "tool_runtime_error"
 
                 # 如果 paper_register 成功收录，更新上次收录轮次
-                if action in register_actions and ("成功" in observation or "✅" in observation):
+                if action in register_actions and "论文新增成功" in observation:
                     _last_paper_round = loop_count
 
             # 记录本轮轨迹，给前台的可视化呈现使用

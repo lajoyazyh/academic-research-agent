@@ -70,6 +70,10 @@ class RunPhaseRequest(BaseModel):
     topic: str
     start_phase: str = "plan"
     keywords: Optional[list] = None
+    paper_ids: Optional[list[str]] = None
+    search_mode: str = "auto"
+    target_new_papers: int = 3
+    exclude_ids: Optional[list[str]] = None
     max_loops: int = 20
     min_papers: int = 3
     provider: ProviderConfig | None = None
@@ -98,6 +102,7 @@ class AutoRunRequest(BaseModel):
 class AnalysisRequest(BaseModel):
     topic: str
     analysis_type: str = "all"
+    paper_ids: Optional[list[str]] = None
     provider: ProviderConfig | None = None
 
 

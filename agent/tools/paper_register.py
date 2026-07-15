@@ -43,10 +43,17 @@ class PaperRegisterTool(BaseTool):
         "abstract": "摘要全文。可选。",
     }
 
-    def __init__(self, session_id: str = "", papers_dir: str = "", provider_config: dict | None = None):
+    def __init__(self, session_id: str = "", papers_dir: str = "", provider_config: dict | None = None,
+                 sessions_root: str = ""):
         self.session_id = session_id
         self.papers_dir = papers_dir
         self.provider_config = provider_config
+        self.sessions_root = sessions_root
+
+    def _session_manager(self):
+        from backend.session_manager import SessionManager
+        root = self.sessions_root or (str(Path(self.papers_dir).parent.parent) if self.papers_dir else "")
+        return SessionManager(root) if root else None
 
     def _is_doi(self, paper_id: str) -> bool:
         """判断 paper_id 是否为 DOI 格式（支持纯 DOI 和 https://doi.org/ 前缀）"""
@@ -135,12 +142,27 @@ class PaperRegisterTool(BaseTool):
         is_doi = self._is_doi(paper_id)
         clean_id = paper_id.split("v")[0] if "v" in paper_id else paper_id
 
+        # Check canonical identifiers before downloading.  The same work may be
+        # returned as an arXiv id, DOI or provider-specific URL on later runs.
+        if self.session_id and self.papers_dir:
+            try:
+                mgr = self._session_manager()
+                duplicate = mgr.find_duplicate_paper(
+                    self.session_id,
+                    {"paper_id": clean_id, "title": title, "doi": clean_id if is_doi else ""},
+                )
+                if duplicate:
+                    return (
+                        "ℹ️ 论文已存在，未新增："
+                        f"{duplicate.get('title') or title} (ID: {duplicate.get('paper_id') or clean_id})"
+                    )
+            except Exception:
+                pass
+
         # ━━━ 主题相关性审核 ━━━
         if abstract and self.session_id:
             try:
-                from backend.session_manager import SessionManager
-                sessions_root = os.path.join(os.path.dirname(os.path.dirname(__file__)), "sessions")
-                mgr = SessionManager(sessions_root)
+                mgr = self._session_manager()
                 session = mgr.load_session(self.session_id)
                 topic = session.get("topic", "") if session else ""
                 if topic:
@@ -164,10 +186,8 @@ class PaperRegisterTool(BaseTool):
             if self.session_id and title:
                 try:
                     safe_id = re.sub(r'[\\/:*?"<>|]', '_', clean_id)
-                    from backend.session_manager import SessionManager
-                    sessions_root = str(Path(self.papers_dir).parent.parent) if self.papers_dir else ""
-                    if sessions_root:
-                        mgr = SessionManager(sessions_root)
+                    mgr = self._session_manager()
+                    if mgr:
                         paper_entry = {
                             "paper_id": safe_id,
                             "title": title,
@@ -183,7 +203,7 @@ class PaperRegisterTool(BaseTool):
                         }
                         mgr.add_paper(self.session_id, paper_entry)
                         return (
-                            f"⚠️ 论文已登记（PDF 下载失败）: {title}\n"
+                            f"✅ 论文新增成功（仅元数据，PDF 下载失败）: {title}\n"
                             f"   ID: {clean_id}\n"
                             f"   {pdf_msg}\n"
                             f"   元数据已保存，后续可手动上传 PDF。"
@@ -199,10 +219,8 @@ class PaperRegisterTool(BaseTool):
         if self.session_id:
             try:
                 safe_id = re.sub(r'[\\/:*?"<>|]', '_', clean_id)
-                from backend.session_manager import SessionManager
-                sessions_root = str(Path(self.papers_dir).parent.parent) if self.papers_dir else ""
-                if sessions_root:
-                    mgr = SessionManager(sessions_root)
+                mgr = self._session_manager()
+                if mgr:
                     paper_entry = {
                         "paper_id": safe_id,
                         "title": title,
@@ -222,7 +240,7 @@ class PaperRegisterTool(BaseTool):
             except Exception as e:
                 reg_msg = f"⚠️ 论文登记失败: {str(e)}"
 
-        summary = f"✅ 论文收录成功: {title}\n   ID: {clean_id} ({'DOI' if is_doi else 'arXiv'})\n   {pdf_msg}"
+        summary = f"✅ 论文新增成功: {title}\n   ID: {clean_id} ({'DOI' if is_doi else 'arXiv'})\n   {pdf_msg}"
         if reg_msg:
             summary += f"\n   {reg_msg}"
         if abstract:

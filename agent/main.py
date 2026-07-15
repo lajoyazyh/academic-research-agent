@@ -1002,7 +1002,14 @@ def run_plan_only(user_topic: str, provider_config: dict | None = None) -> dict:
     }
 
 
-def _build_research_query(topic: str, initial_plan: str, confirmed_keywords: list[dict] = None) -> str:
+def _build_research_query(
+    topic: str,
+    initial_plan: str,
+    confirmed_keywords: list[dict] = None,
+    existing_papers: list[dict] | None = None,
+    target_new_papers: int = 3,
+    search_mode: str = "initial",
+) -> str:
     """构建 Researcher Agent 的研究查询，支持用户确认的关键词"""
     keyword_hint = ""
     if confirmed_keywords:
@@ -1020,19 +1027,37 @@ def _build_research_query(topic: str, initial_plan: str, confirmed_keywords: lis
                 + "\n".join(kw_lines) + "\n"
             )
 
+    target_new_papers = max(1, int(target_new_papers or 3))
+    existing_papers = existing_papers or []
+    existing_lines = []
+    for paper in existing_papers[:40]:
+        existing_lines.append(
+            f"- {paper.get('paper_id', 'unknown')} | {paper.get('title', '')[:120]}"
+        )
+    incremental_hint = ""
+    if existing_lines:
+        incremental_hint = (
+            "\n## ♻️ 增量检索约束\n"
+            f"本轮必须实际新增 {target_new_papers} 篇论文。以下论文已经存在，禁止重复登记：\n"
+            + "\n".join(existing_lines)
+            + "\n请改用同义词、相邻主题、引用链或数据库后续分页扩展覆盖范围；"
+              "如果 paper_register 返回‘已存在，未新增’，该论文不计入本轮成果。\n"
+        )
+
     return (
         f"## 🎯 研究目标\n"
-        f"对《{topic}》进行学术文献调研。你的任务是**搜索并收集**至少 3 篇高质量论文的标题、作者、摘要。\n\n"
+        f"对《{topic}》进行学术文献调研。你的任务是**搜索并新增收集**至少 {target_new_papers} 篇高质量论文的标题、作者、摘要。\n\n"
         "## 📋 硬性完成标准\n"
-        "1. 必须搜索到至少 3 篇相关论文，并获得标题+作者+摘要。\n"
+        f"1. 必须实际新增至少 {target_new_papers} 篇相关论文，并获得标题+作者+摘要。\n"
         "2. 必须至少使用了两个不同的学术数据库。\n"
-        "3. **收集够 3 篇高质量论文后必须立即 FINISH，不要无谓重复搜索！**\n\n"
+        f"3. **本轮新增够 {target_new_papers} 篇高质量论文后必须立即 FINISH，不要无谓重复搜索！**\n\n"
         "## ⛔ 严禁行为（违反直接判定失败）\n"
         "- **禁止用中文关键词搜索任何学术数据库**：所有数据库都只支持英文！必须先将中文翻译为英文！\n"
         "- **禁止调用不存在的工具（wait/sleep/manual/none 等）**：遇到 429 限流直接换数据库，不要等待！\n"
         "- **禁止用同一关键词反复搜索同一个数据库**：最多 2 次，之后必须换关键词或换数据库。\n"
         "- **禁止连续 3 轮用相同参数调用同一个工具**：观察返回是否相同，若是则立即换策略。\n"
         "- **禁止搜索到好论文后还继续搜同一篇**：搜到元数据后换新关键词找下一篇。\n"
+        "- 增量检索时不要只重复数据库第一页；使用工具提供的 start、offset 或 page 参数继续翻页。\n"
         "- **禁止尝试访问 PDF 链接**：OpenAlex 的 pdf_url 往往是 null，不要反复查询。\n\n"
         "## 🧠 自主规划要求\n"
         "你是一个具备自主决策能力的调研员。你的唯一任务是搜索和收集论文元数据，PDF 下载由系统在后台自动完成。\n"
@@ -1057,7 +1082,7 @@ def _build_research_query(topic: str, initial_plan: str, confirmed_keywords: lis
         "- 🔴 所有学术数据库都只支持英文关键词！中文关键词搜不到任何结果！必须在 thought 中将中文翻译为英文后再搜索。\n"
         "- crossref_search 传入论文标题/作者名。\n"
         "- HTTP 429 立即换数据库。\n"
-        + keyword_hint +
+        + keyword_hint + incremental_hint +
         "## 🧭 初始计划草案（供参考，可在 thought 中修订）\n"
         f"{initial_plan}\n\n"
         "现在请开始你的调研。先用 thought 制定检索计划，然后执行。"
@@ -1073,6 +1098,9 @@ def run_search_only(
     session_notes_path: str = None,
     agent_callback=None,
     provider_config: dict | None = None,
+    existing_papers: list[dict] | None = None,
+    target_new_papers: int = 3,
+    search_mode: str = "initial",
 ) -> dict:
     """
     【阶段 2：仅搜索】使用确认后的关键词执行论文搜索和笔记记录。
@@ -1121,13 +1149,30 @@ def run_search_only(
     # paper_register 始终添加（不通过工具注册中心管理）
     session_id = os.path.basename(work_dir) if work_dir else ""
     from tools.paper_register import PaperRegisterTool
-    active_tools.append(PaperRegisterTool(session_id=session_id, papers_dir=papers_dir, provider_config=provider_config))
+    active_tools.append(PaperRegisterTool(
+        session_id=session_id,
+        papers_dir=papers_dir,
+        provider_config=provider_config,
+        sessions_root=os.path.join(os.path.dirname(__file__), "sessions") if session_papers_dir else "",
+    ))
 
-    researcher_agent = BaseAgent(tools=active_tools, max_loops=max_loops, provider_config=provider_config)
+    researcher_agent = BaseAgent(
+        tools=active_tools,
+        max_loops=max_loops,
+        provider_config=provider_config,
+        min_new_papers=target_new_papers,
+    )
     if agent_callback:
         agent_callback(researcher_agent, work_dir)
 
-    research_query = _build_research_query(user_topic, initial_plan, confirmed_keywords)
+    research_query = _build_research_query(
+        user_topic,
+        initial_plan,
+        confirmed_keywords,
+        existing_papers=existing_papers,
+        target_new_papers=target_new_papers,
+        search_mode=search_mode,
+    )
 
     # ━━━ 双通道 Skill 注入：搜索阶段 ━━━
     if session_id:
@@ -1151,27 +1196,39 @@ def run_search_only(
                 f"{skill_content}\n\n"
                 "---\n\n"
                 f"{_MIN_SEARCH_RULES}\n"
-                f"\n研究主题：{user_topic}\n"
+                f"\n研究主题：{user_topic}\n\n"
+                + _build_research_query(
+                    user_topic,
+                    "按用户自定义搜索策略执行。",
+                    confirmed_keywords,
+                    existing_papers=existing_papers,
+                    target_new_papers=target_new_papers,
+                    search_mode=search_mode,
+                )
             )
             print(f"[Skill] Injected search skill: {search_skill_id}")
 
     final_answer = researcher_agent.run(research_query)
 
-    # PDF 自动下载
+    # PDF 兜底下载：只处理本轮真正新增且尚无文件的 arXiv 论文。
+    # paper_register 已负责首选下载，不能再从所有搜索 observation 扫描候选 ID。
     scanned_ids = set()
     download_results = []
     for step in researcher_agent.traces:
         if not isinstance(step, dict):
             continue
-        obs = str(step.get("observation", ""))
-        inp = str(step.get("input", ""))
-        action_input = step.get("action_input", {})
-        content = f"{obs} {inp} {json.dumps(action_input, ensure_ascii=False)}"
-        found_ids = re.findall(r'\b(\d{4}\.\d{4,5})(?:v\d+)?\b', content)
-        scanned_ids.update(found_ids)
+        if step.get("action") != "paper_register" or "论文新增成功" not in str(step.get("observation", "")):
+            continue
+        action_input = step.get("input", {}) or {}
+        paper_id = str(action_input.get("paper_id", ""))
+        match = re.search(r'\b(\d{4}\.\d{4,5})(?:v\d+)?\b', paper_id)
+        if match:
+            scanned_ids.add(match.group(1))
 
     download_tool = ArxivDownloadPdfTool(papers_dir=papers_dir)
     for pid in sorted(scanned_ids):
+        if os.path.exists(os.path.join(papers_dir, f"{pid}.pdf")):
+            continue
         result = download_tool.execute(paper_id=pid)
         download_results.append({"id": pid, "result": result})
 
@@ -1340,6 +1397,9 @@ def run_agent_pipeline_session(
     max_loops: int = 20,
     agent_callback=None,
     provider_config: dict | None = None,
+    existing_papers: list[dict] | None = None,
+    target_new_papers: int = 3,
+    search_mode: str = "initial",
 ) -> dict:
     """
     Session-aware 流水线，支持从指定断点继续执行。
@@ -1388,6 +1448,9 @@ def run_agent_pipeline_session(
             session_notes_path=session_notes_path,
             agent_callback=agent_callback,
             provider_config=provider_config,
+            existing_papers=existing_papers,
+            target_new_papers=target_new_papers,
+            search_mode=search_mode,
         )
         result["session_id"] = session_id
         return result

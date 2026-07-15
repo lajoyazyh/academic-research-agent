@@ -10,6 +10,7 @@ SessionManager - Core: 会话状态管理与数据持久化
 
 import json
 import os
+import re
 import uuid
 import shutil
 import datetime
@@ -17,6 +18,37 @@ from pathlib import Path
 from typing import Any, Optional
 from enum import Enum
 from backend.tenant import tenant_path
+
+
+def paper_identity_keys(paper: dict) -> set[str]:
+    """Return stable identifiers used to deduplicate papers across providers."""
+    keys: set[str] = set()
+    candidates = [paper.get("paper_id"), paper.get("doi"), paper.get("url")]
+    for raw in candidates:
+        value = str(raw or "").strip().lower()
+        if not value:
+            continue
+        value = re.sub(r"^https?://(dx\.)?doi\.org/", "", value)
+        value = re.sub(r"^doi:\s*", "", value)
+        if re.match(r"^10\.\d{4,9}/\S+$", value):
+            keys.add(f"doi:{value.rstrip('.,;')}")
+            continue
+        arxiv_match = re.search(r"(?:arxiv:|arxiv\.org/(?:abs|pdf)/)?(\d{4}\.\d{4,5})(?:v\d+)?", value)
+        if arxiv_match:
+            keys.add(f"arxiv:{arxiv_match.group(1)}")
+        elif value and not value.startswith("http"):
+            keys.add(f"id:{value}")
+
+    title = str(paper.get("title") or "").strip().lower()
+    title_key = re.sub(r"[^\w]+", "", title, flags=re.UNICODE)
+    if len(title_key) >= 16:
+        keys.add(f"title:{title_key[:240]}")
+    return keys
+
+
+def papers_match(left: dict, right: dict) -> bool:
+    left_keys = paper_identity_keys(left)
+    return bool(left_keys and left_keys.intersection(paper_identity_keys(right)))
 
 
 # ━━━━━ 状态机枚举 ━━━━━
@@ -200,6 +232,12 @@ class SessionManager:
         # sessions created before repository research was introduced.
         repositories = self._read_json(session_dir / "repositories" / "sources.json") or []
         review_quality = self._read_json(session_dir / "review" / "quality.json") or {}
+        search_runs = self._read_json(session_dir / "plan" / "search_runs.json") or []
+        accepted_ids = sorted(
+            p.get("paper_id", "") for p in papers if p.get("status") == "accepted" and p.get("paper_id")
+        )
+        referenced_ids = sorted(str(pid) for pid in metadata.get("review_referenced_papers", []) if pid)
+        review_is_stale = bool(review) and accepted_ids != referenced_ids
 
         # 加载聊天历史（多会话模式，自动迁移旧版）
         self._migrate_legacy_chat(session_id)
@@ -226,6 +264,9 @@ class SessionManager:
             "analysis": analysis,
             "repositories": repositories,
             "review_quality": review_quality,
+            "review_is_stale": review_is_stale,
+            "accepted_paper_ids": accepted_ids,
+            "search_runs": search_runs,
             "conversations": conversations,
         }
 
@@ -340,11 +381,10 @@ class SessionManager:
             self._write_json(deleted_list_path, deleted_ids)
 
     def add_paper(self, session_id: str, paper: dict) -> dict:
-        """添加单篇论文到列表（去重 + 标准化字段）"""
+        """添加单篇论文到列表（跨数据源规范化去重 + 标准化字段）"""
         papers = self.get_papers(session_id)
         paper_id = paper.get("paper_id", "")
-        # 去重
-        if not any(p.get("paper_id") == paper_id for p in papers):
+        if not any(papers_match(existing, paper) for existing in papers):
             # 标准化所有字段
             norm = {
                 "paper_id": paper_id,
@@ -360,6 +400,22 @@ class SessionManager:
             }
             papers.append(norm)
             self.save_papers_list(session_id, papers)
+        return self.load_session(session_id)
+
+    def find_duplicate_paper(self, session_id: str, candidate: dict) -> Optional[dict]:
+        """Return the existing canonical paper matching a candidate, if any."""
+        return next((paper for paper in self.get_papers(session_id) if papers_match(paper, candidate)), None)
+
+    def save_search_run(self, session_id: str, run: dict) -> dict:
+        """Append an auditable retrieval run with real new/duplicate counts."""
+        session_dir = self.root / session_id
+        if not session_dir.exists():
+            raise ValueError(f"Session {session_id} 不存在")
+        path = session_dir / "plan" / "search_runs.json"
+        runs = self._read_json(path) or []
+        runs.append(run)
+        self._write_json(path, runs[-50:])
+        self._touch_metadata(session_dir)
         return self.load_session(session_id)
 
     def delete_paper(self, session_id: str, paper_id: str) -> dict:

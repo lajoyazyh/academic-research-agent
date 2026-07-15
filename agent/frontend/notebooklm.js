@@ -83,6 +83,8 @@
     this.els.pdfFileInput = document.getElementById("pdfFileInput");
     this.els.notesBtn = document.getElementById("generateNotesBtn");
     this.els.reviewBtn = document.getElementById("generateReviewBtn");
+    this.els.selectedPaperCount = document.getElementById("selectedPaperCount");
+    this.els.selectionActionHint = document.getElementById("selectionActionHint");
     this.els.paperList = document.getElementById("paperList");
     this.els.paperScrollTrack = document.getElementById("paperScrollTrack");
     this.els.paperScrollThumb = document.getElementById("paperScrollThumb");
@@ -1149,9 +1151,6 @@
     const session = this.state.currentSession;
     if (!session) return;
 
-    // Backfill sessions created before agent-screened papers were persisted as accepted.
-    this.acceptLegacyAgentScreenedPapers(session);
-
     if (this.els.consoleTopic) {
       this.els.consoleTopic.textContent = session.topic || "未命名主题";
     }
@@ -1172,31 +1171,6 @@
     this.renderViewButtons();
     // 静默更新用量条（不重建 DOM）
     this.updateContextMeter();
-  },
-
-  acceptLegacyAgentScreenedPapers(session) {
-    const migrations = this.state._paperStatusMigrations || (this.state._paperStatusMigrations = new Set());
-    const legacyPapers = (session.papers || []).filter((paper) => (
-      paper.status === "pending" && paper.source === "agent_search"
-    ));
-    legacyPapers.forEach((paper) => {
-      const migrationKey = `${session.session_id || this.state.currentSessionId}:${paper.paper_id}`;
-      if (!this.state.currentSessionId || migrations.has(migrationKey)) return;
-      migrations.add(migrationKey);
-      paper.status = "accepted";
-      fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/papers/${encodeURIComponent(paper.paper_id)}/status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "accepted" }),
-      }).then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      }).catch(() => {
-        paper.status = "pending";
-        this.renderPaperList();
-        this.updateActionButtons();
-        this.setConsoleStatus("error", "旧项目的论文纳入状态同步失败，请稍后刷新重试。");
-      });
-    });
   },
 
   updateResearchStage(session) {
@@ -2344,7 +2318,7 @@
     const hasPapers = papers.length > 0;
     const hasDraft = Boolean((session.draft || "").trim());
     const acceptedPapers = papers.filter(p => p.status === "accepted");
-    const effectivePapers = acceptedPapers.length > 0 ? acceptedPapers : papers;
+    const effectivePapers = acceptedPapers;
 
     // 计数：有效选中论文中，有笔记的 / 没笔记的
     const withNotes = effectivePapers.filter(p => p._hasNotes).length;
@@ -2373,7 +2347,7 @@
           this.els.cancelSearchBtn.disabled = false;
         }
       } else {
-        this.els.searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> 重新检索';
+        this.els.searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass-plus"></i> 继续检索';
         this.els.searchBtn.disabled = false;
         this.els.searchBtn.style.display = "";
         if (this.els.cancelSearchBtn) this.els.cancelSearchBtn.style.display = "none";
@@ -2403,6 +2377,25 @@
       }
     }
 
+    if (this.els.selectedPaperCount) {
+      this.els.selectedPaperCount.textContent = acceptedPapers.length
+        ? `已纳入 ${acceptedPapers.length} / ${papers.length} 篇`
+        : "尚未纳入论文";
+    }
+    if (this.els.selectionActionHint) {
+      if (!acceptedPapers.length) {
+        this.els.selectionActionHint.textContent = "请先选择“纳入综述”";
+      } else if (withoutNotes > 0) {
+        this.els.selectionActionHint.textContent = `${withoutNotes} 篇尚无笔记`;
+      } else if (hasDraft && session.review_is_stale) {
+        this.els.selectionActionHint.textContent = "论文选择已变化，建议更新综述";
+      } else if (hasDraft) {
+        this.els.selectionActionHint.textContent = `当前综述基于 ${acceptedPapers.length} 篇论文`;
+      } else {
+        this.els.selectionActionHint.textContent = "已具备综述生成条件";
+      }
+    }
+
     // 生成笔记 按钮
     // 规则：有效选中论文中，有未生成笔记的 → 亮；全都有 → 灰（不能重新生成）
     if (this.els.notesBtn) {
@@ -2422,19 +2415,19 @@
     }
 
     // 生成综述 按钮
-    // 规则：所选全部有笔记 + 无草稿 → 亮；已有草稿 → 灰
+    // 规则：只基于明确纳入的论文；已有草稿时允许生成更新版本
     if (this.els.reviewBtn) {
       if (!notesGenerated) {
         this.els.reviewBtn.disabled = true;
         this.els.reviewBtn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i> 生成综述';
         this.els.reviewBtn.classList.remove("active");
       } else if (hasDraft) {
-        this.els.reviewBtn.disabled = true;
-        this.els.reviewBtn.innerHTML = '<i class="fa-solid fa-check"></i> 综述已生成';
-        this.els.reviewBtn.classList.remove("active");
+        this.els.reviewBtn.disabled = false;
+        this.els.reviewBtn.innerHTML = `<i class="fa-solid fa-rotate"></i> 更新综述 · ${acceptedPapers.length}篇`;
+        this.els.reviewBtn.classList.add("active");
       } else {
         this.els.reviewBtn.disabled = false;
-        this.els.reviewBtn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i> 生成综述';
+        this.els.reviewBtn.innerHTML = `<i class="fa-regular fa-pen-to-square"></i> 生成综述 · ${acceptedPapers.length}篇`;
         this.els.reviewBtn.classList.add("active");
       }
     }
@@ -2448,14 +2441,16 @@
         hint.innerHTML = '<i class="status-dot live"></i>关键词已确认，点击「AI检索论文」开始搜索';
       } else if (session.state === "searching") {
         hint.innerHTML = '<i class="status-dot live"></i>正在检索论文并同步笔记...';
+      } else if (hasDraft && session.review_is_stale) {
+        hint.innerHTML = '<i class="status-dot warn"></i>论文选择已变化，请更新笔记或综述';
       } else if (hasDraft) {
-        hint.innerHTML = '<i class="status-dot ok"></i>综述已生成，可在右侧查看与提问';
+        hint.innerHTML = '<i class="status-dot ok"></i>综述已生成，可继续更新或查看';
       } else if (notesGenerated) {
         hint.innerHTML = '<i class="status-dot ok"></i>选中论文笔记已全部生成，点击「生成综述」撰写初稿';
       } else if (anyNeedNotes) {
         hint.innerHTML = `<i class="status-dot live"></i>${withoutNotes} 篇选中论文未生成笔记，点击「生成笔记」`;
       } else if (hasPapers) {
-        hint.innerHTML = '<i class="status-dot live"></i>请选中论文（✓），然后生成笔记';
+        hint.innerHTML = '<i class="status-dot live"></i>请先将论文纳入综述，然后生成笔记';
       } else {
         hint.innerHTML = '<i class="status-dot live"></i>请先检索论文，再生成笔记与综述';
       }
@@ -2724,7 +2719,11 @@
 
     const papers = session.papers || [];
     const acceptedPapers = papers.filter(p => p.status === "accepted");
-    const effectivePapers = acceptedPapers.length > 0 ? acceptedPapers : papers;
+    const effectivePapers = acceptedPapers;
+    if (!effectivePapers.length) {
+      alert("请先至少纳入一篇论文，再生成笔记。");
+      return;
+    }
     // 只处理未生成笔记的论文
     const needNotes = effectivePapers.filter(p => !p._hasNotes);
     
@@ -2748,17 +2747,6 @@
       }
 
       await this.reloadCurrentSession();
-      // 自动选中刚生成笔记的论文
-      for (const pid of paperIds) {
-        try {
-          await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/papers/${encodeURIComponent(pid)}/status`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status: "accepted" }),
-          });
-        } catch (e) { /* ignore */ }
-      }
-      await this.reloadCurrentSession();
       this.switchViewMode("report");
       this.setConsoleStatus("search_complete", `${data.count || paperIds.length} 篇论文笔记已生成`);
     } catch (error) {
@@ -2769,13 +2757,20 @@
   async generateAnalysisAction() {
     const session = this.state.currentSession;
     if (!session || !this.state.currentSessionId) return;
+    const paperIds = (session.papers || [])
+      .filter((paper) => paper.status === "accepted")
+      .map((paper) => paper.paper_id);
+    if (!paperIds.length) {
+      alert("请先至少纳入一篇论文，再生成分析报告。");
+      return;
+    }
 
     try {
       this.setConsoleStatus("writing", "正在生成深度分析报告...");
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(this.withProvider({ topic: session.topic, analysis_type: "all" })),
+        body: JSON.stringify(this.withProvider({ topic: session.topic, analysis_type: "all", paper_ids: paperIds })),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -3092,7 +3087,10 @@
     }
 
     try {
-      this.setConsoleStatus("searching", "正在检索论文并同步笔记...");
+      const existingIds = (session.papers || []).map((paper) => paper.paper_id);
+      const incremental = existingIds.length > 0;
+      this.state._searchStartPaperIds = existingIds.slice();
+      this.setConsoleStatus("searching", incremental ? "正在扩展检索，自动排除已有论文..." : "正在检索论文...");
       this._setSearchButtons("searching");
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/search`, {
         method: "POST",
@@ -3101,6 +3099,9 @@
           topic: session.topic,
           start_phase: "search",
           keywords: session.keywords || [],
+          search_mode: incremental ? "incremental" : "initial",
+          target_new_papers: 3,
+          exclude_ids: existingIds,
           max_loops: 20,
         })),
       });
@@ -3138,7 +3139,15 @@
             this.state.pollTimer = null;
             this._setSearchButtons("idle");
             this.switchViewMode("summary");
-            this.setConsoleStatus("search_complete", "论文检索完成，可以生成综述");
+            const beforeIds = new Set(this.state._searchStartPaperIds || []);
+            const newCount = (polled.papers || []).filter((paper) => !beforeIds.has(paper.paper_id)).length;
+            this.setConsoleStatus(
+              "search_complete",
+              incremental
+                ? `扩展检索完成，新增 ${newCount} 篇论文${newCount ? "" : "；建议调整关键词后再试"}`
+                : `论文检索完成，共收录 ${(polled.papers || []).length} 篇`,
+            );
+            this.state._searchStartPaperIds = [];
             this.trackProductEvent("first_search_completed");
           }
         } catch (error) {
@@ -3158,13 +3167,22 @@
   async runWritePhase() {
     const session = this.state.currentSession;
     if (!session || !this.state.currentSessionId) return;
+    const paperIds = (session.papers || [])
+      .filter((paper) => paper.status === "accepted")
+      .map((paper) => paper.paper_id);
+    if (!paperIds.length && !(session.repositories || []).length) {
+      alert("请先至少纳入一篇论文，再生成综述。");
+      return;
+    }
+    const actionLabel = (session.draft || "").trim() ? "更新综述" : "生成综述";
+    if (!confirm(`${actionLabel}将严格使用当前纳入的 ${paperIds.length} 篇论文，并保存为新版本。是否继续？`)) return;
 
     try {
       this.setConsoleStatus("writing", "正在生成综述草稿...");
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/write`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(this.withProvider({ topic: session.topic, start_phase: "write" })),
+        body: JSON.stringify(this.withProvider({ topic: session.topic, start_phase: "write", paper_ids: paperIds })),
       });
       const data = await response.json();
       if (!response.ok) {

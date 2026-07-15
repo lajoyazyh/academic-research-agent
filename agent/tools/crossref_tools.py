@@ -67,6 +67,7 @@ class CrossrefSearchTool(BaseTool):
     parameters = {
         "query": "检索关键词，例如 'LLM Agent Memory'",
         "rows": "最大返回数量，默认 5（可选）",
+        "offset": "结果起始偏移量；增量检索时可设为 5、10 等（可选）",
     }
 
     def execute(self, **kwargs) -> Any:
@@ -85,13 +86,17 @@ class CrossrefSearchTool(BaseTool):
             rows = max(1, int(kwargs.get("rows", 5)))
         except (TypeError, ValueError):
             rows = 5
+        try:
+            offset = max(0, int(kwargs.get("offset", 0)))
+        except (TypeError, ValueError):
+            offset = 0
 
         base_url = os.getenv("CROSSREF_API_BASE", "https://api.crossref.org")
         mailto = os.getenv("CROSSREF_MAILTO", "")
         encoded_query = urllib.parse.quote(query)
 
         url = (
-            f"{base_url}/works?query.bibliographic={encoded_query}&rows={rows}"
+            f"{base_url}/works?query.bibliographic={encoded_query}&rows={rows}&offset={offset}"
             "&select=DOI,title,author,container-title,published-print,published-online,type,publisher,URL"
         )
         if mailto:
