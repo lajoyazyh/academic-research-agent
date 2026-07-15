@@ -79,6 +79,7 @@
     this.els.consoleState = document.getElementById("consoleState");
     this.els.consoleStateDot = document.getElementById("consoleStateDot");
     this.els.searchBtn = document.getElementById("searchPaperBtn");
+    this.els.searchTargetInput = document.getElementById("searchTargetInput");
     this.els.addPaperBtn = document.getElementById("addPaperBtn");
     this.els.pdfFileInput = document.getElementById("pdfFileInput");
     this.els.notesBtn = document.getElementById("generateNotesBtn");
@@ -918,6 +919,11 @@
 
   bindConsoleActions() {
     this.els.searchBtn?.addEventListener("click", () => this.primarySourceAction());
+    this.els.searchTargetInput?.addEventListener("input", (event) => {
+      const value = Number(event.target.value);
+      const valid = Number.isInteger(value) && value >= 1 && value <= 15;
+      event.target.setCustomValidity(valid ? "" : "请输入 1 到 15 之间的整数");
+    });
     this.els.cancelSearchBtn?.addEventListener("click", () => this.cancelSearch());
     this.els.autoRunBtn?.addEventListener("click", () => this.startAutoRun());
     this.els.apiConfigBtn?.addEventListener("click", () => { window.location.href = "/app/profile#api"; });
@@ -2353,6 +2359,9 @@
         if (this.els.cancelSearchBtn) this.els.cancelSearchBtn.style.display = "none";
       }
     }
+    if (this.els.searchTargetInput) {
+      this.els.searchTargetInput.disabled = session.state === "searching";
+    }
 
     // 添加论文 按钮
     if (this.els.addPaperBtn) {
@@ -2710,6 +2719,23 @@
     if (this.els.cancelSearchBtn) {
       this.els.cancelSearchBtn.style.display = state === "searching" ? "" : "none";
     }
+    if (this.els.searchTargetInput) {
+      this.els.searchTargetInput.disabled = state === "searching";
+    }
+  },
+
+  getSearchTarget() {
+    const input = this.els.searchTargetInput;
+    if (!input) return 3;
+    const value = Number(input.value);
+    const valid = Number.isInteger(value) && value >= 1 && value <= 15;
+    input.setCustomValidity(valid ? "" : "请输入 1 到 15 之间的整数");
+    if (!valid) {
+      input.reportValidity();
+      input.focus();
+      return null;
+    }
+    return value;
   },
 
   async generateNotesAction() {
@@ -3086,11 +3112,19 @@
       return;
     }
 
+    const targetNewPapers = this.getSearchTarget();
+    if (targetNewPapers === null) return;
+
     try {
       const existingIds = (session.papers || []).map((paper) => paper.paper_id);
       const incremental = existingIds.length > 0;
       this.state._searchStartPaperIds = existingIds.slice();
-      this.setConsoleStatus("searching", incremental ? "正在扩展检索，自动排除已有论文..." : "正在检索论文...");
+      this.setConsoleStatus(
+        "searching",
+        incremental
+          ? `正在扩展检索，目标新增 ${targetNewPapers} 篇，并自动排除已有论文...`
+          : `正在检索论文，本轮目标 ${targetNewPapers} 篇...`,
+      );
       this._setSearchButtons("searching");
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/search`, {
         method: "POST",
@@ -3100,9 +3134,9 @@
           start_phase: "search",
           keywords: session.keywords || [],
           search_mode: incremental ? "incremental" : "initial",
-          target_new_papers: 3,
+          target_new_papers: targetNewPapers,
           exclude_ids: existingIds,
-          max_loops: 20,
+          max_loops: Math.min(45, Math.max(20, targetNewPapers + 10)),
         })),
       });
       const data = await response.json();

@@ -355,7 +355,7 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     keywords = payload.keywords or session.get("keywords", [])
     if not keywords:
         raise HTTPException(status_code=400, detail="关键词不能为空，请先确认关键词")
-    target_new_papers = max(1, min(int(payload.target_new_papers or 3), 10))
+    target_new_papers = max(1, min(int(payload.target_new_papers or 3), 15))
     search_mode = "incremental" if session.get("papers") else "initial"
     if payload.search_mode in {"initial", "incremental"}:
         search_mode = payload.search_mode if session.get("papers") else "initial"

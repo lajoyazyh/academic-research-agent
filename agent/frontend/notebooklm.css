@@ -192,6 +192,36 @@ html, body {
 #generateActions .selection-summary span { font-size: 11px; color: var(--subtle); text-align: right; }
 #generateActions button { min-width: 0; white-space: nowrap; }
 .sources-primary-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+.search-target-control {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 92%, var(--accent) 8%);
+  color: var(--subtle);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.search-target-control > span:first-child { color: var(--text); font-weight: 500; }
+.search-target-control input {
+  width: 54px;
+  min-height: 30px;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+.search-target-control input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.search-target-control input:disabled { cursor: not-allowed; opacity: .6; }
 .sources-primary-actions .primary-btn,
 .sources-primary-actions .secondary-btn,
 .sources-primary-actions .accent-btn { min-width: 0; width: auto; }
