@@ -34,13 +34,13 @@ class PaperRegisterTool(BaseTool):
         "  - paper_id: arXiv ID 或 DOI"
         "  - title: 论文标题（从搜索结果中获取）"
         "  - authors: 作者（可选）"
-        "  - abstract: 摘要文本（可选）"
+        "  - abstract: 摘要全文（必填，用于主题相关性审核）"
     )
     parameters = {
         "paper_id": "论文的 arXiv ID（如 2308.11432）或 DOI（如 10.1177/xxx）。",
         "title": "论文标题。必填。",
         "authors": "作者列表，逗号分隔。可选。",
-        "abstract": "摘要全文。可选。",
+        "abstract": "摘要全文。必填；必须从搜索结果或详情工具中获取。",
     }
 
     def __init__(self, session_id: str = "", papers_dir: str = "", provider_config: dict | None = None,
@@ -49,6 +49,7 @@ class PaperRegisterTool(BaseTool):
         self.papers_dir = papers_dir
         self.provider_config = provider_config
         self.sessions_root = sessions_root
+        self.registered_paper_ids: set[str] = set()
 
     def _session_manager(self):
         from backend.session_manager import SessionManager
@@ -58,6 +59,10 @@ class PaperRegisterTool(BaseTool):
     def _is_doi(self, paper_id: str) -> bool:
         """判断 paper_id 是否为 DOI 格式（支持纯 DOI 和 https://doi.org/ 前缀）"""
         return bool(re.match(r'(https?://doi\.org/)?10\.\d{4,}/', paper_id))
+
+    def get_registered_count(self) -> int:
+        """Return the number of papers durably added by this tool instance."""
+        return len(self.registered_paper_ids)
 
     def _doi_to_url(self, doi: str) -> str:
         """DOI 转 PDF 下载 URL（优先 Unpaywall，回退 Sci-Hub）"""
@@ -137,112 +142,80 @@ class PaperRegisterTool(BaseTool):
         if not paper_id:
             return "❌ paper_register 失败：缺少 paper_id"
         if not title:
-            title = paper_id
+            return "❌ paper_register 失败：缺少 title"
+        if not self.session_id:
+            return "❌ 论文登记失败：未绑定研究项目 Session，不能把下载文件视为已收录论文。"
 
         is_doi = self._is_doi(paper_id)
-        clean_id = paper_id.split("v")[0] if "v" in paper_id else paper_id
+        clean_id = paper_id.replace("https://doi.org/", "") if is_doi else re.sub(r"v\d+$", "", paper_id)
+
+        # Validate the durable destination before downloading anything.  A PDF
+        # file is not a collected paper until its metadata exists in Session.
+        try:
+            mgr = self._session_manager()
+            session = mgr.load_session(self.session_id) if mgr else None
+        except Exception as exc:
+            return f"❌ 论文登记失败：无法访问研究项目 Session：{exc}"
+        if not session:
+            return f"❌ 论文登记失败：Session {self.session_id} 不存在，已停止下载。"
 
         # Check canonical identifiers before downloading.  The same work may be
         # returned as an arXiv id, DOI or provider-specific URL on later runs.
-        if self.session_id and self.papers_dir:
-            try:
-                mgr = self._session_manager()
-                duplicate = mgr.find_duplicate_paper(
-                    self.session_id,
-                    {"paper_id": clean_id, "title": title, "doi": clean_id if is_doi else ""},
-                )
-                if duplicate:
-                    return (
-                        "ℹ️ 论文已存在，未新增："
-                        f"{duplicate.get('title') or title} (ID: {duplicate.get('paper_id') or clean_id})"
-                    )
-            except Exception:
-                pass
+        duplicate = mgr.find_duplicate_paper(
+            self.session_id,
+            {"paper_id": clean_id, "title": title, "doi": clean_id if is_doi else ""},
+        )
+        if duplicate:
+            return (
+                "ℹ️ 论文已存在，未新增："
+                f"{duplicate.get('title') or title} (ID: {duplicate.get('paper_id') or clean_id})"
+            )
+        if not abstract:
+            return "❌ paper_register 失败：缺少 abstract。请先用搜索或详情工具获取摘要，再判断相关性并收录。"
 
         # ━━━ 主题相关性审核 ━━━
-        if abstract and self.session_id:
+        topic = session.get("topic", "")
+        if topic:
             try:
-                mgr = self._session_manager()
-                session = mgr.load_session(self.session_id)
-                topic = session.get("topic", "") if session else ""
-                if topic:
-                    from llms.client import LLMClient
-                    llm = LLMClient(self.provider_config)
-                    answer = llm.chat(
-                        "你只回答 yes 或 no。",
-                        f"研究主题：{topic}\n论文标题：{title[:150]}\n摘要前 300 字：{abstract[:300]}\n\n这篇论文与上述研究主题相关吗？",
-                        []
-                    ).strip().lower()
-                    if answer.startswith("no"):
-                        return f"❌ 审核未通过：摘要与当前研究主题「{topic}」不相关。请继续搜索与主题匹配的论文。"
-            except Exception:
-                pass
+                from llms.client import LLMClient
+                llm = LLMClient(self.provider_config)
+                answer = llm.chat(
+                    "你只回答 yes 或 no。",
+                    f"研究主题：{topic}\n论文标题：{title[:150]}\n摘要前 500 字：{abstract[:500]}\n\n这篇论文与上述研究主题直接相关吗？",
+                    [],
+                ).strip().lower()
+            except Exception as exc:
+                return f"❌ 相关性审核失败：{exc}。本轮未登记该论文，请重试或选择其他论文。"
+            if not answer.startswith(("yes", "是")):
+                return f"❌ 审核未通过：摘要与当前研究主题「{topic}」不直接相关。请继续搜索主题匹配的论文。"
 
-        # Step 1: 下载 PDF
-        pdf_downloaded, pdf_msg, pdf_path = self._try_download_pdf(clean_id, is_doi)
+        # Persist and verify metadata first.  Only this transition is allowed to
+        # produce the success marker consumed by the Agent and UI.
+        safe_id = re.sub(r'[\\/:*?"<>|]', '_', clean_id)
+        paper_entry = {
+            "paper_id": safe_id,
+            "title": title,
+            "authors": authors,
+            "source": "agent_search",
+            "source_type": "doi" if is_doi else "arxiv",
+            "status": "accepted",
+            "abstract": abstract[:1500],
+            "notes": "",
+            "has_notes": False,
+            "added_at": datetime.datetime.now().isoformat(),
+        }
+        try:
+            mgr.add_paper(self.session_id, paper_entry)
+            registered_paper = mgr.find_duplicate_paper(self.session_id, paper_entry)
+        except Exception as exc:
+            return f"❌ 论文登记失败：{title} (ID: {clean_id})\n   原因: {exc}"
+        if not registered_paper:
+            return f"❌ 论文登记失败：{title} (ID: {clean_id})\n   原因: 写入后无法从 Session 读取该论文"
 
-        if not pdf_downloaded:
-            # PDF 下载失败，但仍然登记元数据（至少摘要可用）
-            if self.session_id and title:
-                try:
-                    safe_id = re.sub(r'[\\/:*?"<>|]', '_', clean_id)
-                    mgr = self._session_manager()
-                    if mgr:
-                        paper_entry = {
-                            "paper_id": safe_id,
-                            "title": title,
-                            "authors": authors,
-                            "source": "agent_search",
-                            "source_type": "doi" if is_doi else "arxiv",
-                            # The agent has already screened relevance before invoking this tool.
-                            "status": "accepted",
-                            "abstract": abstract[:1500] if abstract else "",
-                            "notes": "",
-                            "has_notes": False,
-                            "added_at": datetime.datetime.now().isoformat(),
-                        }
-                        mgr.add_paper(self.session_id, paper_entry)
-                        return (
-                            f"✅ 论文新增成功（仅元数据，PDF 下载失败）: {title}\n"
-                            f"   ID: {clean_id}\n"
-                            f"   {pdf_msg}\n"
-                            f"   元数据已保存，后续可手动上传 PDF。"
-                        )
-                except Exception as e:
-                    pass
-
-            return f"❌ 论文收录失败: {title} (ID: {clean_id})\n   原因: {pdf_msg}"
-
-        # Step 2: 登记到 papers_list.json
-        registered = False
-        reg_msg = ""
-        if self.session_id:
-            try:
-                safe_id = re.sub(r'[\\/:*?"<>|]', '_', clean_id)
-                mgr = self._session_manager()
-                if mgr:
-                    paper_entry = {
-                        "paper_id": safe_id,
-                        "title": title,
-                        "authors": authors,
-                        "source": "agent_search",
-                        "source_type": "doi" if is_doi else "arxiv",
-                        # The agent has already screened relevance before invoking this tool.
-                        "status": "accepted",
-                        "abstract": abstract[:1500] if abstract else "",
-                        "notes": "",
-                        "has_notes": False,
-                        "added_at": datetime.datetime.now().isoformat(),
-                    }
-                    mgr.add_paper(self.session_id, paper_entry)
-                    registered = True
-                    reg_msg = "✅ 已登记到论文列表"
-            except Exception as e:
-                reg_msg = f"⚠️ 论文登记失败: {str(e)}"
-
-        summary = f"✅ 论文新增成功: {title}\n   ID: {clean_id} ({'DOI' if is_doi else 'arXiv'})\n   {pdf_msg}"
-        if reg_msg:
-            summary += f"\n   {reg_msg}"
+        self.registered_paper_ids.add(str(registered_paper.get("paper_id") or safe_id))
+        pdf_downloaded, pdf_msg, _pdf_path = self._try_download_pdf(clean_id, is_doi)
+        delivery = pdf_msg if pdf_downloaded else f"{pdf_msg}\n   元数据已保存，后续可手动上传 PDF。"
+        summary = f"✅ 论文新增成功: {title}\n   ID: {clean_id} ({'DOI' if is_doi else 'arXiv'})\n   ✅ 已登记到论文列表\n   {delivery}"
         if abstract:
             summary += f"\n   摘要前 200 字: {abstract[:200]}..."
         return summary

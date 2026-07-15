@@ -83,6 +83,25 @@ def _accepted_papers(session: dict, paper_ids: list[str] | None = None) -> list[
     return papers
 
 
+def classify_search_outcome(new_count: int, target_new_papers: int) -> tuple[str, str]:
+    """Map authoritative Session deltas to a user-facing search outcome/state."""
+    actual = max(0, int(new_count or 0))
+    target = max(1, int(target_new_papers or 1))
+    if actual >= target:
+        return "complete", "search_complete"
+    if actual > 0:
+        return "partial", "search_partial"
+    return "failed", "search_failed"
+
+
+def _search_outcome_message(new_count: int, target_new_papers: int, outcome: str) -> str:
+    if outcome == "complete":
+        return f"检索完成：本轮实际新增 {new_count}/{target_new_papers} 篇论文。"
+    if outcome == "partial":
+        return f"检索部分完成：本轮实际新增 {new_count}/{target_new_papers} 篇，尚未达到目标，可继续检索。"
+    return f"检索失败：本轮实际新增 0/{target_new_papers} 篇。请检查关键词、数据源或登记错误后重试。"
+
+
 def _load_analysis_context_for_writing(session_id: str, paper_ids: list[str] | None = None) -> str:
     """Load saved compare/lineage/gaps analysis as optional writing context."""
     analysis_path = session_mgr.root / session_id / "analysis" / "analysis_results.json"
@@ -314,18 +333,22 @@ def _run_search_in_background(
             "new_paper_ids": [paper.get("paper_id", "") for paper in new_papers],
             "target_new_papers": target_new_papers,
         }
+        outcome, outcome_state = classify_search_outcome(len(new_papers), target_new_papers)
+        search_summary["outcome"] = outcome
+        search_summary["state"] = outcome_state
+        search_summary["message"] = _search_outcome_message(len(new_papers), target_new_papers, outcome)
         result["search_summary"] = search_summary
         session_mgr.save_search_run(session_id, search_summary)
-        # 如果没有被取消，更新状态
         try:
-            session_mgr.update_session_state(session_id, "search_complete")
+            session_mgr.update_session_state(session_id, outcome_state)
         except ValueError:
             pass  # 可能已被取消设置为其他状态
 
         with RUN_LOCK:
             RUNS[_run_key(session_id)] = {
-                "status": "done",
-                "phase": "search_complete",
+                "status": "done" if outcome == "complete" else outcome,
+                "phase": outcome_state,
+                "message": search_summary["message"],
                 "traces": result.get("traces", []),
                 "result": result,
                 "search_summary": search_summary,
@@ -334,10 +357,45 @@ def _run_search_in_background(
     except Exception as exc:
         import traceback
         _stop_flag[0] = True
+        from backend.session_manager import papers_match
+        failed_before = locals().get("before_papers", [])
+        failed_after = session_mgr.get_papers(session_id)
+        failed_new = [
+            paper for paper in failed_after
+            if not any(papers_match(paper, old) for old in failed_before)
+        ]
+        failed_outcome, failed_state = classify_search_outcome(len(failed_new), target_new_papers)
+        if failed_outcome == "complete":
+            failed_outcome, failed_state = "partial", "search_partial"
+        failed_summary = {
+            "mode": search_mode,
+            "started_at": locals().get("search_started_at", datetime.datetime.now().isoformat()),
+            "finished_at": datetime.datetime.now().isoformat(),
+            "keywords": keywords,
+            "before_count": len(failed_before),
+            "after_count": len(failed_after),
+            "new_count": len(failed_new),
+            "new_paper_ids": [paper.get("paper_id", "") for paper in failed_new],
+            "target_new_papers": target_new_papers,
+            "outcome": failed_outcome,
+            "state": failed_state,
+            "message": f"{_search_outcome_message(len(failed_new), target_new_papers, failed_outcome)} 原因：{exc}",
+            "error": str(exc),
+        }
+        try:
+            session_mgr.save_search_run(session_id, failed_summary)
+        except Exception:
+            pass
+        try:
+            session_mgr.update_session_state(session_id, failed_state)
+        except ValueError:
+            pass
         with RUN_LOCK:
             RUNS[_run_key(session_id)] = {
                 "status": "error",
-                "phase": "failed",
+                "phase": failed_state,
+                "message": failed_summary["message"],
+                "search_summary": failed_summary,
                 "error": str(exc),
                 "_traceback": traceback.format_exc(),
             }
@@ -750,12 +808,19 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
 
 
 
-def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int, min_papers: int, provider_config: dict | None = None) -> None:
+def _run_auto_pipeline_in_background(
+    session_id: str,
+    topic: str,
+    max_loops: int,
+    min_papers: int,
+    provider_config: dict | None = None,
+    stop_flag: list[bool] | None = None,
+) -> None:
     """后台自动执行完整流水线：规划 → 搜索 → 笔记 → 分析 → 综述"""
     import time as _time
 
     run_key = _run_key(session_id)
-    _stop_flag = [False]
+    _stop_flag = stop_flag if isinstance(stop_flag, list) else [False]
 
     def _update_run_status(phase: str, status: str, **kwargs):
         with RUN_LOCK:
@@ -823,6 +888,9 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
         _auto_saver_thread = threading.Thread(target=_auto_trace_saver, daemon=True)
         _auto_saver_thread.start()
 
+        from backend.session_manager import papers_match
+        before_papers = session_mgr.get_papers(session_id)
+        search_started_at = datetime.datetime.now().isoformat()
         search_result = run_agent_pipeline_session(
             session_id=session_id,
             user_topic=topic,
@@ -830,9 +898,9 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
             user_keywords=keywords,
             max_loops=max_loops,
             provider_config=provider_config,
-            existing_papers=session_mgr.get_papers(session_id),
+            existing_papers=before_papers,
             target_new_papers=min_papers,
-            search_mode="incremental" if session_mgr.get_papers(session_id) else "initial",
+            search_mode="incremental" if before_papers else "initial",
             agent_callback=lambda agent, wd: _agent_holder.update({"agent": agent}),
         )
 
@@ -843,15 +911,46 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
             session_mgr.save_papers_list(session_id, search_result["papers"])
         if search_result.get("traces"):
             session_mgr.save_traces(session_id, search_result["traces"], append=True)
+        after_papers = session_mgr.get_papers(session_id)
+        new_papers = [
+            paper for paper in after_papers
+            if not any(papers_match(paper, old) for old in before_papers)
+        ]
+        outcome, outcome_state = classify_search_outcome(len(new_papers), min_papers)
+        search_summary = {
+            "mode": "incremental" if before_papers else "initial",
+            "started_at": search_started_at,
+            "finished_at": datetime.datetime.now().isoformat(),
+            "keywords": keywords,
+            "before_count": len(before_papers),
+            "after_count": len(after_papers),
+            "new_count": len(new_papers),
+            "new_paper_ids": [paper.get("paper_id", "") for paper in new_papers],
+            "target_new_papers": min_papers,
+            "outcome": outcome,
+            "state": outcome_state,
+            "message": _search_outcome_message(len(new_papers), min_papers, outcome),
+        }
+        session_mgr.save_search_run(session_id, search_summary)
         try:
-            session_mgr.update_session_state(session_id, "search_complete")
+            session_mgr.update_session_state(session_id, outcome_state)
         except ValueError:
             pass
 
         papers = _accepted_papers(session_mgr.load_session(session_id) or {})
+        if outcome != "complete":
+            _update_run_status(
+                outcome_state,
+                "partial" if outcome == "partial" else "error",
+                message=search_summary["message"],
+                papers=papers,
+                search_summary=search_summary,
+            )
+            return
+
         _update_run_status("search_complete", "running",
-                          message=f"搜索完成，找到 {len(papers)} 篇论文，即将生成笔记...",
-                          papers=papers)
+                          message=f"搜索完成，本轮新增 {len(new_papers)}/{min_papers} 篇，即将生成笔记...",
+                          papers=papers, search_summary=search_summary)
 
         if _stop_flag[0]:
             return
@@ -1045,10 +1144,14 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
         _update_run_status("failed", "error",
                           message=f"自动流程失败：{str(exc)}",
                           error=str(exc))
-        try:
-            session_mgr.update_session_state(session_id, "search_complete")
-        except ValueError:
-            pass
+        current_session = session_mgr.load_session(session_id) or {}
+        if current_session.get("state") == "searching":
+            try:
+                session_mgr.update_session_state(session_id, "search_failed")
+            except ValueError:
+                pass
+    finally:
+        _stop_flag[0] = True
 
 
 @router.post("/{session_id}/run/auto")
@@ -1084,7 +1187,7 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
     # 后台执行
     worker = _tenant_worker(
         _run_auto_pipeline_in_background,
-        session_id, topic, payload.max_loops, payload.min_papers, provider_config,
+        session_id, topic, payload.max_loops, payload.min_papers, provider_config, _stop_flag,
     )
     worker.start()
 

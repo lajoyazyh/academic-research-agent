@@ -1341,13 +1341,15 @@
                     this.renderTraces(session.traces);
                 }
 
-                if (session.state === "search_complete") {
+                if (["search_complete", "search_partial", "search_failed"].includes(session.state)) {
                     if (session.notes) this.researchResult.innerHTML = marked.parse(session.notes);
                     if (session.papers) this.renderSessionPapers(this.currentSessionId, session.papers);
                     if (session.traces && session.traces.length > 0) {
                         this.renderTraces(session.traces);
                     }
-                    this.setStatus("done", "搜索完成！请审核笔记");
+                    const latestRun = (session.search_runs || []).slice(-1)[0] || {};
+                    const stateLabel = session.state === "search_complete" ? "done" : "error";
+                    this.setStatus(stateLabel, latestRun.message || (session.state === "search_partial" ? "检索部分完成，可继续检索" : session.state === "search_failed" ? "检索失败，请调整关键词后重试" : "搜索完成！请审核笔记"));
                     this.showFavoriteBtn(this.currentSessionId);
                     this.loadSessions();
                     this.renderSessionGuide(session);
@@ -1390,6 +1392,9 @@
             this.startBtn.onclick = () => { this.switchTab('research'); };
             // 同时显示撰写按钮
             this.showWriteBtnAfterSearch();
+        } else if (state === "search_partial" || state === "search_failed") {
+            this.startBtn.innerHTML = '<i class="fas fa-search-plus"></i> 继续检索';
+            this.startBtn.onclick = () => this.startSearchPhase();
         } else if (state === "reviewing_notes") {
             this.startBtn.innerHTML = '<i class="fas fa-file-alt"></i> 开始撰写';
             this.startBtn.onclick = () => this.runWritePhase();

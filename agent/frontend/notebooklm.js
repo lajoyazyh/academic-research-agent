@@ -605,6 +605,8 @@
       "plan_confirmed": { label: "关键词已确认", icon: "fa-check-circle" },
       "searching": { label: "搜索中", icon: "fa-magnifying-glass" },
       "search_complete": { label: "搜索完成", icon: "fa-check-double" },
+      "search_partial": { label: "检索部分完成", icon: "fa-triangle-exclamation" },
+      "search_failed": { label: "检索失败", icon: "fa-circle-xmark" },
       "reviewing_notes": { label: "笔记审核", icon: "fa-clipboard-check" },
       "writing": { label: "撰写中", icon: "fa-pen-fancy" },
       "reviewing_draft": { label: "评审中", icon: "fa-comments" },
@@ -1228,6 +1230,8 @@
       plan_confirmed: "检索词已确认",
       searching: "正在检索论文",
       search_complete: "等待筛选论文",
+      search_partial: "检索部分完成，可继续检索",
+      search_failed: "本轮未新增论文，请重试",
       reviewing_notes: "正在整理笔记",
       analysis: "正在综合分析",
       writing: "正在生成综述",
@@ -1246,7 +1250,7 @@
     }
     const statusHint = document.getElementById("statusHint");
     if (statusHint && displayLabel) statusHint.textContent = displayLabel;
-    if (this.els.statusRetry) this.els.statusRetry.hidden = !["error", "failed"].includes(state);
+    if (this.els.statusRetry) this.els.statusRetry.hidden = !["error", "failed", "search_partial", "search_failed"].includes(state);
     if (this.state.currentSession) this.updateResearchStage({ ...this.state.currentSession, state });
     if (!this.els.consoleStateDot) return;
 
@@ -1255,6 +1259,8 @@
       plan_confirmed: "live",
       searching: "live",
       search_complete: "ok",
+      search_partial: "warn",
+      search_failed: "err",
       reviewing_notes: "warn",
       writing: "live",
       reviewing_draft: "warn",
@@ -2450,6 +2456,11 @@
         hint.innerHTML = '<i class="status-dot live"></i>关键词已确认，点击「AI检索论文」开始搜索';
       } else if (session.state === "searching") {
         hint.innerHTML = '<i class="status-dot live"></i>正在检索论文并同步笔记...';
+      } else if (session.state === "search_failed") {
+        hint.innerHTML = '<i class="status-dot err"></i>本轮没有成功新增论文，请调整关键词或检查数据源后重试';
+      } else if (session.state === "search_partial") {
+        const latestRun = (session.search_runs || []).at(-1) || {};
+        hint.innerHTML = `<i class="status-dot warn"></i>本轮新增 ${latestRun.new_count || 0}/${latestRun.target_new_papers || "?"} 篇，尚未达到目标，可继续检索`;
       } else if (hasDraft && session.review_is_stale) {
         hint.innerHTML = '<i class="status-dot warn"></i>论文选择已变化，请更新笔记或综述';
       } else if (hasDraft) {
@@ -2547,7 +2558,9 @@
       alert("主题不能为空");
       return;
     }
-    if (!confirm("“自动进行”将依次完成检索、论文笔记、综合分析和综述初稿。你可以在检索阶段停止任务，是否继续？")) return;
+    const targetNewPapers = this.getSearchTarget();
+    if (targetNewPapers === null) return;
+    if (!confirm(`“自动进行”将先实际新增至少 ${targetNewPapers} 篇论文，再依次生成笔记、分析和综述。未达到数量时流程会停止并提示重试，是否继续？`)) return;
 
     // 如果还在 planning 阶段且无关键词，先自动生成关键词再启动
     if (!session.keywords || !session.keywords.length || session.state === "planning") {
@@ -2596,7 +2609,11 @@
       const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/run/auto`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(this.withProvider({ topic, max_loops: 20, min_papers: 3 })),
+        body: JSON.stringify(this.withProvider({
+          topic,
+          max_loops: Math.min(45, Math.max(20, targetNewPapers + 10)),
+          min_papers: targetNewPapers,
+        })),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || "启动失败");
@@ -2661,6 +2678,8 @@
             planning: "正在规划关键词...",
             searching: "正在检索论文...",
             search_complete: "搜索完成，即将生成笔记...",
+            search_partial: "检索部分完成，尚未达到目标",
+            search_failed: "检索失败，本轮未新增论文",
             reviewing_notes: "正在生成笔记...",
             analysis: "正在生成深度分析报告...",
             writing: "正在撰写综述草稿...",
@@ -2672,7 +2691,7 @@
         }
 
         // 根据阶段切换视图
-        if (phase === "search_complete") {
+        if (["search_complete", "search_partial", "search_failed"].includes(phase)) {
           this.switchViewMode("summary");
         } else if (phase === "reviewing_notes" || phase === "analysis" || phase === "writing") {
           // 保持当前视图
@@ -2684,7 +2703,7 @@
         this.updateActionButtons();
 
         // 检查是否完成
-        if (runStatus === "done" || runStatus === "error" || runStatus === "cancelled") {
+        if (["done", "partial", "error", "cancelled"].includes(runStatus)) {
           clearInterval(this.state._autoPollTimer);
           this.state._autoPollTimer = null;
           this.state._autoRunning = false;
@@ -2695,8 +2714,10 @@
           if (runStatus === "done") {
             this.setConsoleStatus("complete", "🎉 自动流程全部完成！");
             this.trackProductEvent("first_review_generated");
+          } else if (runStatus === "partial") {
+            this.setConsoleStatus("search_partial", status.message || "检索部分完成，尚未达到目标，请继续检索");
           } else if (runStatus === "error") {
-            this.setConsoleStatus("error", `自动流程失败：${status.error || "未知错误"}`);
+            this.setConsoleStatus(status.phase === "search_failed" ? "search_failed" : "error", status.message || `自动流程失败：${status.error || "未知错误"}`);
           }
           this.updateActionButtons();
         }
@@ -3168,21 +3189,26 @@
           this.state.currentSession = polled;
           this.renderConsoleSession();
 
-          if (polled.state === "search_complete") {
+          if (["search_complete", "search_partial", "search_failed"].includes(polled.state)) {
             clearInterval(this.state.pollTimer);
             this.state.pollTimer = null;
             this._setSearchButtons("idle");
             this.switchViewMode("summary");
             const beforeIds = new Set(this.state._searchStartPaperIds || []);
-            const newCount = (polled.papers || []).filter((paper) => !beforeIds.has(paper.paper_id)).length;
-            this.setConsoleStatus(
-              "search_complete",
-              incremental
-                ? `扩展检索完成，新增 ${newCount} 篇论文${newCount ? "" : "；建议调整关键词后再试"}`
-                : `论文检索完成，共收录 ${(polled.papers || []).length} 篇`,
+            const fallbackCount = (polled.papers || []).filter((paper) => !beforeIds.has(paper.paper_id)).length;
+            const latestRun = (polled.search_runs || []).at(-1) || {};
+            const newCount = Number.isInteger(latestRun.new_count) ? latestRun.new_count : fallbackCount;
+            const target = latestRun.target_new_papers || targetNewPapers;
+            const outcomeMessage = latestRun.message || (
+              polled.state === "search_complete"
+                ? `检索完成：本轮实际新增 ${newCount}/${target} 篇论文。`
+                : polled.state === "search_partial"
+                  ? `检索部分完成：本轮实际新增 ${newCount}/${target} 篇，可继续检索。`
+                  : `检索失败：本轮实际新增 0/${target} 篇，请调整关键词或检查数据源后重试。`
             );
+            this.setConsoleStatus(polled.state, outcomeMessage);
             this.state._searchStartPaperIds = [];
-            this.trackProductEvent("first_search_completed");
+            if (polled.state === "search_complete") this.trackProductEvent("first_search_completed");
           }
         } catch (error) {
           clearInterval(this.state.pollTimer);

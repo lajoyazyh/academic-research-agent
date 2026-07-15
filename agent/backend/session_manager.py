@@ -57,6 +57,8 @@ class SessionState(Enum):
     PLAN_CONFIRMED = "plan_confirmed"
     SEARCHING = "searching"
     SEARCH_COMPLETE = "search_complete"
+    SEARCH_PARTIAL = "search_partial"
+    SEARCH_FAILED = "search_failed"
     REVIEWING_NOTES = "reviewing_notes"
     WRITING = "writing"
     REVIEWING_DRAFT = "reviewing_draft"
@@ -67,8 +69,10 @@ class SessionState(Enum):
 VALID_TRANSITIONS = {
     SessionState.PLANNING: [SessionState.PLAN_CONFIRMED],
     SessionState.PLAN_CONFIRMED: [SessionState.SEARCHING, SessionState.PLANNING],
-    SessionState.SEARCHING: [SessionState.SEARCH_COMPLETE],
+    SessionState.SEARCHING: [SessionState.SEARCH_COMPLETE, SessionState.SEARCH_PARTIAL, SessionState.SEARCH_FAILED],
     SessionState.SEARCH_COMPLETE: [SessionState.REVIEWING_NOTES, SessionState.SEARCHING],
+    SessionState.SEARCH_PARTIAL: [SessionState.REVIEWING_NOTES, SessionState.SEARCHING],
+    SessionState.SEARCH_FAILED: [SessionState.SEARCHING],
     SessionState.REVIEWING_NOTES: [SessionState.WRITING, SessionState.SEARCHING, SessionState.SEARCH_COMPLETE, SessionState.COMPLETE],
     SessionState.WRITING: [SessionState.REVIEWING_DRAFT, SessionState.SEARCHING],
     SessionState.REVIEWING_DRAFT: [SessionState.WRITING, SessionState.COMPLETE, SessionState.SEARCHING],
@@ -81,6 +85,8 @@ STATE_LABELS = {
     "plan_confirmed": "关键词已确认",
     "searching": "搜索中",
     "search_complete": "搜索完成",
+    "search_partial": "检索部分完成",
+    "search_failed": "检索失败",
     "reviewing_notes": "笔记审核中",
     "writing": "撰写中",
     "reviewing_draft": "初稿评审中",

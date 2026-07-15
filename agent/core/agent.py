@@ -1,7 +1,7 @@
 ﻿import json
 import os
 import time
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Callable
 from core.tools import BaseTool
 from utils.parser import extract_json
 from llms.client import LLMClient
@@ -9,15 +9,33 @@ from datetime import datetime
 
 class BaseAgent:
     def __init__(self, tools: List[BaseTool], max_loops: int = 5, provider_config: dict | None = None,
-                 min_new_papers: int = 3):
+                 min_new_papers: int = 3,
+                 paper_progress_getter: Callable[[], int] | None = None):
         self.llm = LLMClient(provider_config)
         self.tools: Dict[str, BaseTool] = {tool.name: tool for tool in tools}
         self.max_loops = max_loops
         self.min_new_papers = max(1, int(min_new_papers or 3))
+        self.paper_progress_getter = paper_progress_getter
         self.traces = []
         self.error_history = []  # 记录连续同类错误，供给构化 Reflexion 使用
         self._critique_round = False  # Pre-FINISH 自主质检标记
         self._paper_filter_round = False  # Pre-FINISH 论文筛选标记
+
+    def get_registered_paper_count(self) -> int:
+        """Read authoritative retrieval progress without parsing tool prose."""
+        if self.paper_progress_getter:
+            try:
+                return max(0, int(self.paper_progress_getter()))
+            except Exception:
+                return 0
+        register_tool = self.tools.get("paper_register")
+        getter = getattr(register_tool, "get_registered_count", None)
+        if callable(getter):
+            try:
+                return max(0, int(getter()))
+            except Exception:
+                return 0
+        return 0
 
     def _add_trace(self, thought="", action="", input_data=None, observation="", error_type=""):
         """添加带时间戳的 trace 条目"""
@@ -32,15 +50,21 @@ class BaseAgent:
 
     def _generate_plan(self, user_query: str) -> str:
         """Plan-and-Execute 规划阶段：在 ReAct 循环前，让 LLM 自主产出一个显式的研究计划。"""
+        available_tools = list(self.tools.keys())
+        search_tools = [name for name in available_tools if "search" in name]
         planning_prompt = f"""你即将执行以下研究任务。请你先用一段简洁的文字制定你的研究计划：
 
 {user_query}
 
+本轮实际可用工具：{available_tools}
+可用于检索的数据库工具：{search_tools or ['无']}
+只能规划调用上述真实存在的工具，禁止计划 OpenAlex、Semantic Scholar 等未列出的数据库。
+
 请在你的计划中明确回答：
 1. 你会把中文主题翻译成哪 2-3 组英文学术关键词进行尝试？
-2. 你打算先用哪个学术数据库（arXiv / Semantic Scholar/ OpenAlex）？理由是什么？
+2. 你打算先用哪个已启用的学术数据库工具？理由是什么？
 3. 如果首轮搜索结果不理想，你的备选策略是什么？
-4. 你预计需要搜集几篇论文、阅读到什么深度？
+4. 明确写出本轮必须实际新增至少 {self.min_new_papers} 篇论文，并说明如何验证已登记成功。
 
 直接输出一个纯文本计划，不要用 JSON。控制在 300 字以内。"""
 
@@ -101,6 +125,7 @@ class BaseAgent:
 
         register_actions = {"paper_register"}
         _last_paper_round = -1  # 追踪上一次收录论文的轮次（-1 表示从未收录）
+        _last_recorded_count = self.get_registered_paper_count()
         for loop_count in range(self.max_loops):
             if loop_count > 0 and loop_delay_seconds > 0:
                 print(f"\n[Rate Limit] Cooling {loop_delay_seconds:g}s to avoid 429...")
@@ -153,11 +178,7 @@ class BaseAgent:
             # 3. 终局判断（带质量门禁 + Pre-FINISH 自主质检）
             if action.lower() == "finish":
                 # ━━━ 质量门禁：检查是否收录了足够的论文 ━━━
-                recorded_count = sum(
-                    1 for t in self.traces
-                    if t.get("action") in register_actions
-                    and "论文新增成功" in str(t.get("observation", ""))
-                )
+                recorded_count = self.get_registered_paper_count()
                 _min_papers = self.min_new_papers
 
                 _should_allow = False
@@ -221,14 +242,18 @@ class BaseAgent:
                     if len(observation) > 4500:
                         observation = observation[:4500] + "\n\n...[警告：为防止大模型上下文超限，PDF后续内容已被系统自动截断]..."
                         error_type = "tool_observation_truncated"
+                    elif observation.lstrip().startswith("❌"):
+                        error_type = "tool_reported_failure"
                 except Exception as ex:
                     # 【核心：运行时自我修正 Reflexion】
                     observation = f"目标工具 '{action}' 在执行输入 \n{action_input}\n 时产生了一个异常报错: {str(ex)}。\n请使用 thought 字段反思参数为什么抛出该错误，调整你的算法和参数值并在下一次回答中重试。"
                     error_type = "tool_runtime_error"
 
                 # 如果 paper_register 成功收录，更新上次收录轮次
-                if action in register_actions and "论文新增成功" in observation:
+                current_recorded_count = self.get_registered_paper_count()
+                if action in register_actions and current_recorded_count > _last_recorded_count:
                     _last_paper_round = loop_count
+                _last_recorded_count = max(_last_recorded_count, current_recorded_count)
 
             # 记录本轮轨迹，给前台的可视化呈现使用
             self.traces.append({

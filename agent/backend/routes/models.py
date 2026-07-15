@@ -95,7 +95,7 @@ class ReviseNotesRequest(BaseModel):
 class AutoRunRequest(BaseModel):
     topic: str
     max_loops: int = 20
-    min_papers: int = 3
+    min_papers: int = Field(default=3, ge=1, le=15)
     provider: ProviderConfig | None = None
 
 
