@@ -1028,7 +1028,8 @@ html, body {
 }
 
 .timeline-dot.planning, .timeline-dot.plan_confirmed { background: var(--muted); border-color: var(--muted); }
-.timeline-dot.searching, .timeline-dot.search_complete, .timeline-dot.reviewing_notes { background: var(--warning); border-color: var(--warning); }
+.timeline-dot.searching, .timeline-dot.search_complete, .timeline-dot.search_partial, .timeline-dot.reviewing_notes { background: var(--warning); border-color: var(--warning); }
+.timeline-dot.search_failed { background: var(--danger); border-color: var(--danger); }
 .timeline-dot.writing, .timeline-dot.reviewing_draft { background: var(--accent); border-color: var(--accent); }
 .timeline-dot.complete { background: var(--success); border-color: var(--success); }
 

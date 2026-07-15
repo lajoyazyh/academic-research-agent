@@ -1009,6 +1009,7 @@ def _build_research_query(
     existing_papers: list[dict] | None = None,
     target_new_papers: int = 3,
     search_mode: str = "initial",
+    available_tool_names: list[str] | None = None,
 ) -> str:
     """构建 Researcher Agent 的研究查询，支持用户确认的关键词"""
     keyword_hint = ""
@@ -1028,6 +1029,14 @@ def _build_research_query(
             )
 
     target_new_papers = max(1, int(target_new_papers or 3))
+    available_tool_names = available_tool_names or [
+        "arxiv_search", "arxiv_fetch", "paper_register",
+        "openalex_search", "crossref_search", "crossref_fetch_doi",
+        "semantic_scholar_search", "semantic_scholar_fetch",
+    ]
+    search_tool_names = [name for name in available_tool_names if "search" in name]
+    source_target = 2 if len(search_tool_names) >= 2 else 1
+    tool_hint = "\n".join(f"- {name}" for name in available_tool_names)
     existing_papers = existing_papers or []
     existing_lines = []
     for paper in existing_papers[:40]:
@@ -1049,7 +1058,7 @@ def _build_research_query(
         f"对《{topic}》进行学术文献调研。你的任务是**搜索并新增收集**至少 {target_new_papers} 篇高质量论文的标题、作者、摘要。\n\n"
         "## 📋 硬性完成标准\n"
         f"1. 必须实际新增至少 {target_new_papers} 篇相关论文，并获得标题+作者+摘要。\n"
-        "2. 必须至少使用了两个不同的学术数据库。\n"
+        f"2. 本轮已启用 {len(search_tool_names)} 个检索工具；应使用至少 {source_target} 个不同数据库工具。\n"
         f"3. **本轮新增够 {target_new_papers} 篇高质量论文后必须立即 FINISH，不要无谓重复搜索！**\n\n"
         "## ⛔ 严禁行为（违反直接判定失败）\n"
         "- **禁止用中文关键词搜索任何学术数据库**：所有数据库都只支持英文！必须先将中文翻译为英文！\n"
@@ -1058,29 +1067,23 @@ def _build_research_query(
         "- **禁止连续 3 轮用相同参数调用同一个工具**：观察返回是否相同，若是则立即换策略。\n"
         "- **禁止搜索到好论文后还继续搜同一篇**：搜到元数据后换新关键词找下一篇。\n"
         "- 增量检索时不要只重复数据库第一页；使用工具提供的 start、offset 或 page 参数继续翻页。\n"
-        "- **禁止尝试访问 PDF 链接**：OpenAlex 的 pdf_url 往往是 null，不要反复查询。\n\n"
+        "- **禁止反复尝试搜索结果里的 PDF 链接**：全文交付由 paper_register 处理。\n\n"
         "## 🧠 自主规划要求\n"
         "你是一个具备自主决策能力的调研员。你的唯一任务是搜索和收集论文元数据，PDF 下载由系统在后台自动完成。\n"
         "- **先规划，再执行**：在第一轮，用你的 thought 字段分析主题、拆分关键词策略（中→英学术关键词提取）、决定先用哪个数据库、预计搜索几轮。\n"
-        "- **数据库选择优先级**：CS/AI/理工科优先使用 arxiv_search（结果最完整）；OpenAlex 补充跨学科论文；Semantic Scholar 只在大规模检索或补充时使用（限流严格）。\n"
+        f"- **工具边界**：只能从本轮真实启用的工具 {available_tool_names} 中选择。规划和执行都不得调用未列出的数据库。\n"
+        "- **疑似论文标题的主题**：如果用户主题像一篇完整英文标题，先用完整标题和核心短语做精确检索，再扩展同义词；不要一开始就退化成过于宽泛的 Data Mining 等词。\n"
         "- **动态调整策略**：如果某个关键词没搜到好结果，换同义词/上位词/下位词重试，或切换数据库。同一个数据库连续失败 2 次后换另一个数据库。\n"
         "- **429 错误处理**：返回 HTTP 429（限流），立即切换到另一个数据库，不要反复重试。\n"
         "- **不要尝试下载 PDF**：arxiv_download_pdf 只接受 arXiv ID，而 Crossref 等返回的是 DOI，强行传入 DOI 只会失败。系统会在你收集完元数据后自动下载。\n"
         "- **遇到困难时**：如果某篇论文搜不到详细信息，换更泛化的关键词；如果某个数据库持续失败，果断换另一个。\n\n"
-        "## 🛠 可用工具速览\n"
-        "- arxiv_search：arXiv 搜索（返回标题+作者+摘要，最完整）\n"
-        "- arxiv_fetch：按 arXiv ID 补全信息（仅信息不足时用）\n"
-        "- **paper_register：审核摘要 → 收录论文，一步完成（下载 PDF + 登记到论文列表）**\n"
-        "- arxiv_pdf_reader：读取已下载 PDF 的内容\n"
-        "- openalex_search：OpenAlex 跨学科搜索\n"
-        "- crossref_search / crossref_fetch_doi：Crossref 搜索与 DOI 补全\n"
-        "- semantic_scholar_search / semantic_scholar_fetch：Semantic Scholar 搜索\n\n"
+        "## 🛠 本轮真实可用工具（唯一允许列表）\n"
+        f"{tool_hint}\n\n"
         "## ⚠️ 关键经验\n"
-        "- arxiv_search 返回结果里每条都有 ID、标题、作者、摘要。审核摘要后**必须立即调用 paper_register(paper_id, title, authors, abstract) 来收录论文**。\n"
+        "- 搜索结果获得 ID、标题、作者、摘要后，必须调用 paper_register(paper_id, title, authors, abstract)；abstract 缺失会拒绝登记。\n"
         "- paper_register 支持 arXiv ID 和 DOI 两种格式，OpenAlex 返回的 doi 可以直接使用。\n"
         "- **🔴 遇到 HTTP 429（限流）时，立即换另一个数据库搜索，不要等待、不要重试、不要调用不存在的工具（wait/sleep/manual 都不存在）！**\n"
         "- 🔴 所有学术数据库都只支持英文关键词！中文关键词搜不到任何结果！必须在 thought 中将中文翻译为英文后再搜索。\n"
-        "- crossref_search 传入论文标题/作者名。\n"
         "- HTTP 429 立即换数据库。\n"
         + keyword_hint + incremental_hint +
         "## 🧭 初始计划草案（供参考，可在 thought 中修订）\n"
@@ -1156,11 +1159,27 @@ def run_search_only(
         sessions_root=os.path.join(os.path.dirname(__file__), "sessions") if session_papers_dir else "",
     ))
 
+    paper_progress_getter = None
+    if session_papers_dir and session_id:
+        from backend.session_manager import SessionManager, papers_match
+        progress_manager = SessionManager(os.path.join(os.path.dirname(__file__), "sessions"))
+        baseline_papers = list(existing_papers or [])
+
+        def _registered_progress() -> int:
+            current_papers = progress_manager.get_papers(session_id)
+            return sum(
+                1 for paper in current_papers
+                if not any(papers_match(paper, old) for old in baseline_papers)
+            )
+
+        paper_progress_getter = _registered_progress
+
     researcher_agent = BaseAgent(
         tools=active_tools,
         max_loops=max_loops,
         provider_config=provider_config,
         min_new_papers=target_new_papers,
+        paper_progress_getter=paper_progress_getter,
     )
     if agent_callback:
         agent_callback(researcher_agent, work_dir)
@@ -1172,6 +1191,7 @@ def run_search_only(
         existing_papers=existing_papers,
         target_new_papers=target_new_papers,
         search_mode=search_mode,
+        available_tool_names=list(researcher_agent.tools.keys()),
     )
 
     # ━━━ 双通道 Skill 注入：搜索阶段 ━━━
@@ -1204,6 +1224,7 @@ def run_search_only(
                     existing_papers=existing_papers,
                     target_new_papers=target_new_papers,
                     search_mode=search_mode,
+                    available_tool_names=list(researcher_agent.tools.keys()),
                 )
             )
             print(f"[Skill] Injected search skill: {search_skill_id}")
@@ -1246,7 +1267,11 @@ def run_search_only(
     if session_id:
         try:
             from backend.session_manager import SessionManager
-            sessions_root = os.path.join(os.path.dirname(os.path.dirname(papers_dir)))
+            sessions_root = (
+                os.path.join(os.path.dirname(__file__), "sessions")
+                if session_papers_dir
+                else os.path.join(os.path.dirname(os.path.dirname(papers_dir)))
+            )
             mgr = SessionManager(sessions_root)
             papers_list = mgr.get_papers(session_id) or []
         except Exception:

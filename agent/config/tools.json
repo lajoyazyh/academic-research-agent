@@ -30,17 +30,17 @@
     "config": {}
   },
   "crossref_search": {
-    "enabled": false,
+    "enabled": true,
     "config": {
       "rows": 5
     }
   },
   "crossref_fetch_doi": {
-    "enabled": false,
+    "enabled": true,
     "config": {}
   },
   "openalex_search": {
-    "enabled": false,
+    "enabled": true,
     "config": {
       "limit": 5
     }
