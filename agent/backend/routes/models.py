@@ -74,7 +74,7 @@ class RunPhaseRequest(BaseModel):
     search_mode: str = "auto"
     target_new_papers: int = Field(default=3, ge=1, le=15)
     exclude_ids: Optional[list[str]] = None
-    max_loops: int = 20
+    max_loops: int = Field(default=20, ge=1, le=80)
     min_papers: int = 3
     provider: ProviderConfig | None = None
 
@@ -94,7 +94,7 @@ class ReviseNotesRequest(BaseModel):
 
 class AutoRunRequest(BaseModel):
     topic: str
-    max_loops: int = 20
+    max_loops: int = Field(default=20, ge=1, le=80)
     min_papers: int = Field(default=3, ge=1, le=15)
     provider: ProviderConfig | None = None
 

@@ -94,12 +94,40 @@ def classify_search_outcome(new_count: int, target_new_papers: int) -> tuple[str
     return "failed", "search_failed"
 
 
+def effective_search_loop_budget(requested_loops: int, target_new_papers: int) -> int:
+    """Give each requested paper enough room for search, screening and registration."""
+    target = max(1, min(int(target_new_papers or 1), 15))
+    requested = max(1, int(requested_loops or 1))
+    return min(80, max(requested, 20, target * 5 + 10))
+
+
 def _search_outcome_message(new_count: int, target_new_papers: int, outcome: str) -> str:
     if outcome == "complete":
         return f"检索完成：本轮实际新增 {new_count}/{target_new_papers} 篇论文。"
     if outcome == "partial":
         return f"检索部分完成：本轮实际新增 {new_count}/{target_new_papers} 篇，尚未达到目标，可继续检索。"
     return f"检索失败：本轮实际新增 0/{target_new_papers} 篇。请检查关键词、数据源或登记错误后重试。"
+
+
+def _search_stop_reason(traces: list[dict] | None) -> str:
+    for trace in reversed(traces or []):
+        action = str(trace.get("action") or "")
+        if action == "BUDGET_EXHAUSTED":
+            return "budget_exhausted"
+        if action == "FINISH":
+            return str(trace.get("error_type") or "completed")
+    return "agent_returned"
+
+
+def _pdf_available_count(session_id: str, papers: list[dict]) -> int:
+    papers_dir = session_mgr.root / session_id / "papers"
+    count = 0
+    for paper in papers:
+        paper_id = str(paper.get("paper_id") or "")
+        filename = str(paper.get("pdf_filename") or f"{paper_id}.pdf")
+        if paper.get("pdf_status") == "available" or (filename and (papers_dir / filename).exists()):
+            count += 1
+    return count
 
 
 def _load_analysis_context_for_writing(session_id: str, paper_ids: list[str] | None = None) -> str:
@@ -332,11 +360,16 @@ def _run_search_in_background(
             "new_count": len(new_papers),
             "new_paper_ids": [paper.get("paper_id", "") for paper in new_papers],
             "target_new_papers": target_new_papers,
+            "stop_reason": _search_stop_reason(result.get("traces")),
+            "pdf_available_count": _pdf_available_count(session_id, new_papers),
         }
         outcome, outcome_state = classify_search_outcome(len(new_papers), target_new_papers)
         search_summary["outcome"] = outcome
         search_summary["state"] = outcome_state
         search_summary["message"] = _search_outcome_message(len(new_papers), target_new_papers, outcome)
+        search_summary["message"] += f" 本轮 PDF 可用 {search_summary['pdf_available_count']}/{len(new_papers)} 篇。"
+        if outcome != "complete" and search_summary["stop_reason"] == "budget_exhausted":
+            search_summary["message"] += " 本轮执行预算已耗尽；继续检索将从新结果页开始。"
         result["search_summary"] = search_summary
         session_mgr.save_search_run(session_id, search_summary)
         try:
@@ -414,6 +447,7 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     if not keywords:
         raise HTTPException(status_code=400, detail="关键词不能为空，请先确认关键词")
     target_new_papers = max(1, min(int(payload.target_new_papers or 3), 15))
+    max_loops = effective_search_loop_budget(payload.max_loops, target_new_papers)
     search_mode = "incremental" if session.get("papers") else "initial"
     if payload.search_mode in {"initial", "incremental"}:
         search_mode = payload.search_mode if session.get("papers") else "initial"
@@ -427,7 +461,7 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     # 后台执行
     worker = _tenant_worker(
         _run_search_in_background,
-        session_id, payload.topic.strip(), keywords, payload.max_loops,
+        session_id, payload.topic.strip(), keywords, max_loops,
         search_mode, target_new_papers, provider_config,
     )
     worker.start()
@@ -436,6 +470,7 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         "status": "searching",
         "search_mode": search_mode,
         "target_new_papers": target_new_papers,
+        "max_loops": max_loops,
         "message": "搜索已开始，请通过 GET /api/sessions/{session_id} 轮询状态",
     }
 
@@ -927,10 +962,15 @@ def _run_auto_pipeline_in_background(
             "new_count": len(new_papers),
             "new_paper_ids": [paper.get("paper_id", "") for paper in new_papers],
             "target_new_papers": min_papers,
+            "stop_reason": _search_stop_reason(search_result.get("traces")),
+            "pdf_available_count": _pdf_available_count(session_id, new_papers),
             "outcome": outcome,
             "state": outcome_state,
             "message": _search_outcome_message(len(new_papers), min_papers, outcome),
         }
+        search_summary["message"] += f" 本轮 PDF 可用 {search_summary['pdf_available_count']}/{len(new_papers)} 篇。"
+        if outcome != "complete" and search_summary["stop_reason"] == "budget_exhausted":
+            search_summary["message"] += " 本轮执行预算已耗尽；继续检索将从新结果页开始。"
         session_mgr.save_search_run(session_id, search_summary)
         try:
             session_mgr.update_session_state(session_id, outcome_state)
@@ -1165,6 +1205,7 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
     topic = payload.topic.strip()
     if not topic:
         raise HTTPException(status_code=400, detail="主题不能为空")
+    max_loops = effective_search_loop_budget(payload.max_loops, payload.min_papers)
 
     run_key = _run_key(session_id)
 
@@ -1187,13 +1228,14 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
     # 后台执行
     worker = _tenant_worker(
         _run_auto_pipeline_in_background,
-        session_id, topic, payload.max_loops, payload.min_papers, provider_config, _stop_flag,
+        session_id, topic, max_loops, payload.min_papers, provider_config, _stop_flag,
     )
     worker.start()
 
     return {
         "session_id": session_id,
         "status": "started",
+        "max_loops": max_loops,
         "message": "自动流程已启动，请通过 GET /api/sessions/{session_id}/run/status 轮询进度",
     }
 

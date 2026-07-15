@@ -1921,10 +1921,36 @@
       mount.innerHTML = `
         <i class="fa-solid fa-file-circle-xmark"></i>
         <strong>无法显示这份 PDF</strong>
-        <span>${this.escapeHtml(error?.message || "PDF 加载失败，请稍后重试。")}</span>
-        <button class="secondary-btn" id="pdfRetryButton" type="button"><i class="fa-solid fa-rotate-right"></i> 重新加载</button>
+        <span>${this.escapeHtml(paper?.pdf_error || error?.message || "PDF 加载失败，请稍后重试。")}</span>
+        <button class="secondary-btn" id="pdfRetryButton" type="button"><i class="fa-solid fa-cloud-arrow-down"></i> 重新获取 PDF</button>
       `;
-      document.getElementById("pdfRetryButton")?.addEventListener("click", () => this.loadPDFPreview(paper, session));
+      document.getElementById("pdfRetryButton")?.addEventListener("click", () => this.retryPaperPDF(paper, session));
+    }
+  },
+
+  async retryPaperPDF(paper, session) {
+    const mount = document.getElementById("pdfPreviewMount");
+    const sessionId = String(session?.session_id || "");
+    const paperId = String(paper?.paper_id || "");
+    if (!mount || !sessionId || !paperId) return;
+    mount.className = "pdf-preview-state";
+    mount.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i><strong>正在重新寻找开放全文…</strong><span>依次检查 arXiv 与开放获取来源</span>';
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/papers/${encodeURIComponent(paperId)}/pdf/retry`, { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "重新获取 PDF 失败");
+      if (!data.ok) throw new Error(data.message || "没有找到可合法下载的开放全文");
+      if (data.paper) Object.assign(paper, data.paper);
+      await this.loadPDFPreview(paper, session);
+    } catch (error) {
+      mount.className = "pdf-preview-state error";
+      mount.innerHTML = `
+        <i class="fa-solid fa-file-circle-xmark"></i>
+        <strong>仍未找到开放全文</strong>
+        <span>${this.escapeHtml(error?.message || "请稍后重试或手动上传 PDF。")}</span>
+        <button class="secondary-btn" id="pdfRetryButton" type="button"><i class="fa-solid fa-rotate-right"></i> 再试一次</button>
+      `;
+      document.getElementById("pdfRetryButton")?.addEventListener("click", () => this.retryPaperPDF(paper, session));
     }
   },
 
@@ -2611,7 +2637,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(this.withProvider({
           topic,
-          max_loops: Math.min(45, Math.max(20, targetNewPapers + 10)),
+          max_loops: Math.min(80, Math.max(20, targetNewPapers * 5 + 10)),
           min_papers: targetNewPapers,
         })),
       });
@@ -3157,7 +3183,7 @@
           search_mode: incremental ? "incremental" : "initial",
           target_new_papers: targetNewPapers,
           exclude_ids: existingIds,
-          max_loops: Math.min(45, Math.max(20, targetNewPapers + 10)),
+          max_loops: Math.min(80, Math.max(20, targetNewPapers * 5 + 10)),
         })),
       });
       const data = await response.json();

@@ -59,7 +59,9 @@ class SemanticScholarSearchTool(BaseTool):
         if api_key:
             headers["x-api-key"] = api_key
 
-        max_retries = 5 if not has_api_key else 3
+        # Public requests must fail fast so the Agent can switch providers;
+        # multi-minute sleeps consume the whole background-run budget.
+        max_retries = 3 if has_api_key else 1
         for attempt in range(max_retries):
             try:
                 req = urllib.request.Request(url, headers=headers)
@@ -140,7 +142,7 @@ class SemanticScholarFetchTool(BaseTool):
         if api_key:
             headers["x-api-key"] = api_key
 
-        max_retries = 5 if not has_api_key else 3
+        max_retries = 3 if has_api_key else 1
         for attempt in range(max_retries):
             try:
                 req = urllib.request.Request(url, headers=headers)

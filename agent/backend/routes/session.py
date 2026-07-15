@@ -485,6 +485,33 @@ PDF 文本片段（前 5 页）：
 #    return {"message": "Success", "notes": updated_notes, "draft": session.get("draft", ""), "paper_id": clean_id}
     return {"message": "Success"}
 
+
+@router.post("/{session_id}/papers/{paper_id}/pdf/retry")
+def retry_paper_pdf(session_id: str, paper_id: str) -> dict:
+    """Retry lawful OA/arXiv PDF resolution for a metadata-only paper."""
+    session = session_mgr.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session 不存在")
+    paper = next((item for item in session.get("papers", []) if item.get("paper_id") == paper_id), None)
+    if not paper:
+        raise HTTPException(status_code=404, detail="论文不存在")
+
+    from tools.paper_register import PaperRegisterTool
+    tool = PaperRegisterTool(
+        session_id=session_id,
+        papers_dir=str(session_mgr.root / session_id / "papers"),
+        session_manager=session_mgr,
+    )
+    downloaded, message, _path = tool.retry_pdf(paper)
+    return {
+        "ok": downloaded,
+        "message": message,
+        "paper": next(
+            (item for item in session_mgr.get_papers(session_id) if item.get("paper_id") == paper_id),
+            paper,
+        ),
+    }
+
 # ━━━━━ 笔记管理（第一波基础接口，完整功能在第三波）━━━━━
 
 @router.get("/{session_id}/notes")

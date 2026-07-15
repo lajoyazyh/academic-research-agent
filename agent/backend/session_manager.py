@@ -403,6 +403,12 @@ class SessionManager:
                 "abstract": paper.get("abstract", paper.get("summary", "")),
                 "notes": paper.get("notes", ""),
                 "has_notes": paper.get("has_notes", False),
+                "doi": paper.get("doi", ""),
+                "arxiv_id": paper.get("arxiv_id", ""),
+                "source_url": paper.get("source_url", ""),
+                "pdf_status": paper.get("pdf_status", ""),
+                "pdf_error": paper.get("pdf_error", ""),
+                "pdf_filename": paper.get("pdf_filename", ""),
             }
             papers.append(norm)
             self.save_papers_list(session_id, papers)
@@ -517,6 +523,12 @@ class SessionManager:
             p.setdefault("status", "pending")
             p.setdefault("abstract", "")
             p.setdefault("notes", "")
+            p.setdefault("doi", "")
+            p.setdefault("arxiv_id", "")
+            p.setdefault("source_url", "")
+            p.setdefault("pdf_status", "")
+            p.setdefault("pdf_error", "")
+            p.setdefault("pdf_filename", "")
 
             # Normalize values: if a field is a list, join it. For most fields we then
             # truncate at the first line break (handling literal "\\n" sequences),

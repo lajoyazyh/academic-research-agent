@@ -20,13 +20,13 @@
     "config": {}
   },
   "semantic_scholar_search": {
-    "enabled": false,
+    "enabled": true,
     "config": {
       "limit": 5
     }
   },
   "semantic_scholar_fetch": {
-    "enabled": false,
+    "enabled": true,
     "config": {}
   },
   "crossref_search": {
