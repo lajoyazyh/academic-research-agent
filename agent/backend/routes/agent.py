@@ -94,11 +94,16 @@ def classify_search_outcome(new_count: int, target_new_papers: int) -> tuple[str
     return "failed", "search_failed"
 
 
-def effective_search_loop_budget(requested_loops: int, target_new_papers: int) -> int:
-    """Give each requested paper enough room for search, screening and registration."""
+def recommended_search_loop_budget(target_new_papers: int) -> int:
+    """Return a non-binding UI/default recommendation for the requested paper count."""
     target = max(1, min(int(target_new_papers or 1), 15))
+    return min(80, max(20, target * 5 + 10))
+
+
+def effective_search_loop_budget(requested_loops: int, target_new_papers: int) -> int:
+    """Honor the user's hard execution cap; the target only informs recommendations."""
     requested = max(1, int(requested_loops or 1))
-    return min(80, max(requested, 20, target * 5 + 10))
+    return min(80, requested)
 
 
 def _search_outcome_message(new_count: int, target_new_papers: int, outcome: str) -> str:
@@ -360,6 +365,7 @@ def _run_search_in_background(
             "new_count": len(new_papers),
             "new_paper_ids": [paper.get("paper_id", "") for paper in new_papers],
             "target_new_papers": target_new_papers,
+            "max_loops": max_loops,
             "stop_reason": _search_stop_reason(result.get("traces")),
             "pdf_available_count": _pdf_available_count(session_id, new_papers),
         }
@@ -962,6 +968,7 @@ def _run_auto_pipeline_in_background(
             "new_count": len(new_papers),
             "new_paper_ids": [paper.get("paper_id", "") for paper in new_papers],
             "target_new_papers": min_papers,
+            "max_loops": max_loops,
             "stop_reason": _search_stop_reason(search_result.get("traces")),
             "pdf_available_count": _pdf_available_count(session_id, new_papers),
             "outcome": outcome,
