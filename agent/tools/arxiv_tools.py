@@ -58,9 +58,10 @@ def _build_query_variants(query: str) -> list[str]:
     return _deduplicate_preserve_order(variants)
 
 
-def _fetch_arxiv_entries(query: str, max_results: int, base_url: str, user_agent: str) -> tuple[list[ET.Element], str]:
+def _fetch_arxiv_entries(query: str, max_results: int, base_url: str, user_agent: str,
+                         start: int = 0) -> tuple[list[ET.Element], str]:
     encoded_query = urllib.parse.quote(query)
-    url = f"{base_url}?search_query=all:{encoded_query}&start=0&max_results={max_results}"
+    url = f"{base_url}?search_query=all:{encoded_query}&start={max(0, start)}&max_results={max_results}"
     req = urllib.request.Request(url, headers={"User-Agent": user_agent})
 
     _arxiv_rate_limit_wait()
@@ -77,7 +78,8 @@ class ArxivSearchTool(BaseTool):
     description = "用于在 arXiv 上搜索学术论文，返回论文的 ID、标题和发布时间。当找不到时会提醒更换搜索词。"
     parameters = {
         "query": "搜索关键词，例如 'LLM Agent Evaluation'",
-        "max_results": "最大返回数，默认为5（可选）"
+        "max_results": "最大返回数，默认为5（可选）",
+        "start": "结果起始偏移量；增量检索时可设为 5、10 等（可选）",
     }
 
     def execute(self, **kwargs) -> Any:
@@ -86,6 +88,10 @@ class ArxivSearchTool(BaseTool):
             raise ValueError("ArxivSearchTool 缺少必要的参数: 'query'")
         
         max_results = kwargs.get("max_results", 5)
+        try:
+            start = max(0, int(kwargs.get("start", 0)))
+        except (TypeError, ValueError):
+            start = 0
         base_url = os.getenv("ARXIV_API_BASE", "http://export.arxiv.org/api/query")
         user_agent = os.getenv("ARXIV_USER_AGENT", "AcademicResearchAgent/1.0")
         try:
@@ -104,7 +110,10 @@ class ArxivSearchTool(BaseTool):
                 for attempt in range(max_retries):
                     try:
                         _arxiv_rate_limit_wait()
-                        entries, _ = _fetch_arxiv_entries(candidate, max_results, base_url, user_agent)
+                        if start:
+                            entries, _ = _fetch_arxiv_entries(candidate, max_results, base_url, user_agent, start)
+                        else:
+                            entries, _ = _fetch_arxiv_entries(candidate, max_results, base_url, user_agent)
                         last_error = ""
                         break
                     except urllib.error.HTTPError as cand_http_err:

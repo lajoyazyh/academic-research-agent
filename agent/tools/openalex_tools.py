@@ -10,18 +10,23 @@ class OpenAlexSearchTool(BaseTool):
     description = "用于在 OpenAlex 上检索综合领域论文（包含社科、医学、交叉学科等），返回标题、作者、年份、摘要、引用数及相关概念。⚠️ 仅支持英文关键词，中文关键词无法检索到结果。"
     parameters = {
         "query": "英文搜索关键词，例如 'sociology of artificial intelligence'（请勿使用中文）",
-        "limit": "最大返回数，默认为5（可选）"
+        "limit": "最大返回数，默认为5（可选）",
+        "page": "结果页码；增量检索时可设为 2、3 等（可选）",
     }
 
     def execute(self, **kwargs) -> Any:
         query = kwargs.get("query")
         limit = kwargs.get("limit", 5)
+        try:
+            page = max(1, int(kwargs.get("page", 1)))
+        except (TypeError, ValueError):
+            page = 1
         if not query:
             return {"error": "Missing parameter 'query'"}
             
         encoded_query = urllib.parse.quote(query)
         # OpenAlex API documentation recommends using a polite pool by adding email but it's optional.
-        url = f"https://api.openalex.org/works?search={encoded_query}&per-page={limit}&sort=relevance_score:desc"
+        url = f"https://api.openalex.org/works?search={encoded_query}&per-page={limit}&page={page}&sort=relevance_score:desc"
         
         headers = {
             "User-Agent": "OpenAlexSearchTool/1.0 (mailto:your_email@example.com)"

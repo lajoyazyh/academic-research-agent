@@ -170,6 +170,27 @@ html, body {
 .sources-toolbar .primary-btn { flex: 1; justify-content: center; }
 .sources-toolbar .secondary-btn { flex: 1; justify-content: center; }
 .sources-toolbar .accent-btn { flex: 1; justify-content: center; }
+#generateActions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 8px;
+  padding: 11px 16px 12px;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 -8px 20px color-mix(in srgb, var(--text) 5%, transparent);
+  z-index: 3;
+}
+#generateActions .selection-summary {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+#generateActions .selection-summary strong { font-size: 13px; color: var(--text); }
+#generateActions .selection-summary span { font-size: 11px; color: var(--subtle); text-align: right; }
+#generateActions button { min-width: 0; white-space: nowrap; }
 .sources-primary-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
 .sources-primary-actions .primary-btn,
 .sources-primary-actions .secondary-btn,

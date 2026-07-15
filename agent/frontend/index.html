@@ -75,8 +75,12 @@
         </div>
       </div>
       <div class="sources-toolbar" id="generateActions">
-        <button class="secondary-btn" id="generateNotesBtn" disabled>生成笔记</button>
-        <button class="secondary-btn" id="generateReviewBtn" disabled>生成综述</button>
+        <div class="selection-summary">
+          <strong id="selectedPaperCount">尚未纳入论文</strong>
+          <span id="selectionActionHint">请先在论文卡片中选择“纳入综述”</span>
+        </div>
+        <button class="secondary-btn" id="generateNotesBtn" disabled><i class="fa-regular fa-file-lines"></i> 生成笔记</button>
+        <button class="primary-btn" id="generateReviewBtn" disabled><i class="fa-regular fa-pen-to-square"></i> 生成综述</button>
       </div>
       <div class="status-line" role="status" aria-live="polite"><span id="statusHint">就绪</span><button class="status-retry" id="statusRetry" type="button" hidden><i class="fa-solid fa-rotate-right"></i> 重试</button></div>
       <div class="sources-section" id="reviewBlock"></div>

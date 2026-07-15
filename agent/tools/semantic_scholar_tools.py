@@ -27,6 +27,7 @@ class SemanticScholarSearchTool(BaseTool):
     parameters = {
         "query": "搜索关键词，例如 'LLM Agent Memory'",
         "limit": "最大返回数，默认为5（可选）",
+        "offset": "结果起始偏移量；增量检索时可设为 5、10 等（可选）",
     }
 
     def execute(self, **kwargs) -> Any:
@@ -38,6 +39,10 @@ class SemanticScholarSearchTool(BaseTool):
             limit = int(kwargs.get("limit", 5))
         except (TypeError, ValueError):
             limit = 5
+        try:
+            offset = max(0, int(kwargs.get("offset", 0)))
+        except (TypeError, ValueError):
+            offset = 0
 
         base_url = os.getenv("SEMANTIC_SCHOLAR_API_BASE", "https://api.semanticscholar.org/graph/v1")
         api_key = os.getenv("SEMANTIC_SCHOLAR_API_KEY", "").strip()
@@ -45,7 +50,7 @@ class SemanticScholarSearchTool(BaseTool):
 
         fields = "paperId,title,authors,year,venue,abstract,url,openAccessPdf,externalIds,citationCount"
         encoded_query = urllib.parse.quote(query)
-        url = f"{base_url}/paper/search?query={encoded_query}&limit={limit}&fields={urllib.parse.quote(fields)}"
+        url = f"{base_url}/paper/search?query={encoded_query}&limit={limit}&offset={offset}&fields={urllib.parse.quote(fields)}"
 
         headers = {
             "User-Agent": "AcademicResearchAgent/1.0",

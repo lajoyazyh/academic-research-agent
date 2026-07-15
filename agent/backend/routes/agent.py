@@ -74,7 +74,16 @@ def _build_skill_trace(phase: str, skill_id: str = "", skill_title: str = "", lo
     }
 
 
-def _load_analysis_context_for_writing(session_id: str) -> str:
+def _accepted_papers(session: dict, paper_ids: list[str] | None = None) -> list[dict]:
+    """Resolve the explicit inclusion snapshot used by downstream artifacts."""
+    papers = [paper for paper in session.get("papers", []) if paper.get("status") == "accepted"]
+    if paper_ids is not None:
+        requested = {str(pid).strip() for pid in paper_ids if str(pid).strip()}
+        papers = [paper for paper in papers if paper.get("paper_id") in requested]
+    return papers
+
+
+def _load_analysis_context_for_writing(session_id: str, paper_ids: list[str] | None = None) -> str:
     """Load saved compare/lineage/gaps analysis as optional writing context."""
     analysis_path = session_mgr.root / session_id / "analysis" / "analysis_results.json"
     if not analysis_path.exists():
@@ -83,6 +92,12 @@ def _load_analysis_context_for_writing(session_id: str) -> str:
         data = json.loads(analysis_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return ""
+
+    if paper_ids is not None:
+        expected = sorted(str(pid) for pid in paper_ids if pid)
+        actual = sorted(str(pid) for pid in data.get("paper_ids", []) if pid)
+        if expected != actual:
+            return ""
 
     document = str(data.get("document", "") or "").strip()
     if document:
@@ -113,23 +128,22 @@ def _repository_context_for_writing(session: dict) -> str:
     return "\n\n---\n\n".join(sections)
 
 
-def _collect_notes_for_analysis(session: dict) -> tuple[str, list[dict]]:
-    notes = session.get("notes", "")
-    papers = session.get("papers", [])
-
-    if not notes.strip() and papers:
-        parts = []
-        for paper in papers:
-            paper_notes = (paper.get("notes") or "").strip()
-            if paper_notes:
-                title = paper.get("title") or paper.get("paper_id") or "Unknown"
-                parts.append(f"## {title}\n\n{paper_notes}")
-        notes = "\n\n---\n\n".join(parts)
+def _collect_notes_for_analysis(session: dict, paper_ids: list[str] | None = None) -> tuple[str, list[dict]]:
+    papers = _accepted_papers(session, paper_ids)
+    parts = []
+    for paper in papers:
+        paper_notes = (paper.get("notes") or "").strip()
+        if paper_notes:
+            title = paper.get("title") or paper.get("paper_id") or "Unknown"
+            parts.append(f"## {title}\n\n{paper_notes}")
+    notes = "\n\n---\n\n".join(parts)
 
     return notes, papers
 
 
-def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all", provider_config: dict | None = None) -> dict:
+def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all",
+                          provider_config: dict | None = None,
+                          paper_ids: list[str] | None = None) -> dict:
     session = session_mgr.load_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
@@ -138,11 +152,16 @@ def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all
     if analysis_type not in {"compare", "lineage", "gaps", "all"}:
         raise HTTPException(status_code=400, detail="analysis_type 必须是 compare、lineage、gaps 或 all")
 
-    notes, papers = _collect_notes_for_analysis(session)
+    notes, papers = _collect_notes_for_analysis(session, paper_ids)
+    if not papers:
+        raise HTTPException(status_code=400, detail="请先至少纳入一篇论文")
+    if not notes.strip():
+        raise HTTPException(status_code=400, detail="已纳入论文尚无笔记，请先生成笔记")
 
     from tools.analysis_tools import compare_papers, trace_lineage, find_gaps
 
-    result = {"phase": "analysis", "session_id": session_id}
+    selected_ids = [paper.get("paper_id", "") for paper in papers]
+    result = {"phase": "analysis", "session_id": session_id, "paper_ids": selected_ids}
     if analysis_type in ("compare", "all"):
         result["compare"] = compare_papers(topic, notes, papers, provider_config)
     if analysis_type in ("lineage", "all"):
@@ -204,7 +223,15 @@ def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"规划阶段执行失败: {str(e)}")
 
-def _run_search_in_background(session_id: str, topic: str, keywords: list[dict], max_loops: int, provider_config: dict | None = None) -> None:
+def _run_search_in_background(
+    session_id: str,
+    topic: str,
+    keywords: list[dict],
+    max_loops: int,
+    search_mode: str,
+    target_new_papers: int,
+    provider_config: dict | None = None,
+) -> None:
     """后台执行搜索阶段，周期性保存 traces 供前端实时轮询"""
     import time as _time
     _stop_flag = [False]  # 用列表做可变容器，线程间可共享修改
@@ -231,6 +258,9 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
     _agent_holder = {}  # 用于捕获运行中 Agent 的引用
     
     try:
+        from backend.session_manager import papers_match
+        before_papers = session_mgr.get_papers(session_id)
+        search_started_at = datetime.datetime.now().isoformat()
         # 更新 Session 状态为 searching（端点可能已更新，忽略重复异常）
         try:
             session_mgr.update_session_state(session_id, "searching")
@@ -254,6 +284,9 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
             user_keywords=keywords,
             max_loops=max_loops,
             provider_config=provider_config,
+            existing_papers=before_papers,
+            target_new_papers=target_new_papers,
+            search_mode=search_mode,
             agent_callback=lambda agent, wd: _agent_holder.update({"agent": agent}),
         )
         
@@ -265,6 +298,24 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
         # 保存轨迹（追加模式：不覆盖之前的轨迹）
         if result.get("traces"):
             session_mgr.save_traces(session_id, result["traces"], append=True)
+        after_papers = session_mgr.get_papers(session_id)
+        new_papers = [
+            paper for paper in after_papers
+            if not any(papers_match(paper, old) for old in before_papers)
+        ]
+        search_summary = {
+            "mode": search_mode,
+            "started_at": search_started_at,
+            "finished_at": datetime.datetime.now().isoformat(),
+            "keywords": keywords,
+            "before_count": len(before_papers),
+            "after_count": len(after_papers),
+            "new_count": len(new_papers),
+            "new_paper_ids": [paper.get("paper_id", "") for paper in new_papers],
+            "target_new_papers": target_new_papers,
+        }
+        result["search_summary"] = search_summary
+        session_mgr.save_search_run(session_id, search_summary)
         # 如果没有被取消，更新状态
         try:
             session_mgr.update_session_state(session_id, "search_complete")
@@ -277,6 +328,7 @@ def _run_search_in_background(session_id: str, topic: str, keywords: list[dict],
                 "phase": "search_complete",
                 "traces": result.get("traces", []),
                 "result": result,
+                "search_summary": search_summary,
             }
 
     except Exception as exc:
@@ -303,6 +355,10 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     keywords = payload.keywords or session.get("keywords", [])
     if not keywords:
         raise HTTPException(status_code=400, detail="关键词不能为空，请先确认关键词")
+    target_new_papers = max(1, min(int(payload.target_new_papers or 3), 10))
+    search_mode = "incremental" if session.get("papers") else "initial"
+    if payload.search_mode in {"initial", "incremental"}:
+        search_mode = payload.search_mode if session.get("papers") else "initial"
 
     # 更新状态为 searching
     try:
@@ -310,19 +366,18 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     except ValueError:
         pass  # 状态可能已经是 searching
 
-    # 设置最低论文数环境变量（供 Agent 质量门禁使用）
-    if hasattr(payload, 'min_papers') and payload.min_papers:
-        os.environ["AGENT_MIN_PAPERS"] = str(payload.min_papers)
-
     # 后台执行
     worker = _tenant_worker(
         _run_search_in_background,
-        session_id, payload.topic.strip(), keywords, payload.max_loops, provider_config,
+        session_id, payload.topic.strip(), keywords, payload.max_loops,
+        search_mode, target_new_papers, provider_config,
     )
     worker.start()
     return {
         "session_id": session_id,
         "status": "searching",
+        "search_mode": search_mode,
+        "target_new_papers": target_new_papers,
         "message": "搜索已开始，请通过 GET /api/sessions/{session_id} 轮询状态",
     }
 
@@ -391,16 +446,15 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
     provider_config = ensure_provider_available(payload.provider)
 
-    notes = session.get("notes", "")
-    papers = session.get("papers", [])
-    # 如果 draft_notes.md 为空，尝试从 papers_list.json 中聚合各论文的笔记
-    if not notes.strip():
-        aggregated = []
-        for p in papers:
-            pn = (p.get("notes") or "").strip()
-            if pn:
-                aggregated.append(f"## {p.get('title', p.get('paper_id', ''))}\n\n{pn}")
-        notes = "\n\n---\n\n".join(aggregated)
+    papers = _accepted_papers(session, payload.paper_ids)
+    if not papers and not session.get("repositories"):
+        raise HTTPException(status_code=400, detail="请先至少纳入一篇论文，再生成综述")
+    aggregated = []
+    for p in papers:
+        pn = (p.get("notes") or "").strip()
+        if pn:
+            aggregated.append(f"## {p.get('title', p.get('paper_id', ''))}\n\n{pn}")
+    notes = "\n\n---\n\n".join(aggregated)
 
     repository_context = _repository_context_for_writing(session)
     if repository_context:
@@ -412,7 +466,8 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     previous_review = session.get("review", "")
     feedback = session_mgr.get_feedback(session_id)
     rewrite_count = session.get("rewrite_count", 0)
-    analysis_context = _load_analysis_context_for_writing(session_id)
+    selected_ids = [paper.get("paper_id", "") for paper in papers]
+    analysis_context = _load_analysis_context_for_writing(session_id, selected_ids)
 
     try:
         from main import run_write_from_notes  # noqa
@@ -431,9 +486,7 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
 
         # 保存综述，并记录本次撰写引用了哪些论文
         if result.get("review"):
-            from main import _merge_referenced_papers
-            referenced_papers = _merge_referenced_papers(result["review"], papers)
-            session_mgr.save_review(session_id, result["review"], referenced_papers=referenced_papers)
+            session_mgr.save_review(session_id, result["review"], referenced_papers=selected_ids)
             quality_path = session_mgr.root / session_id / "review" / "quality.json"
             quality_path.write_text(json.dumps(result.get("quality", {}), ensure_ascii=False, indent=2), encoding="utf-8")
         if result.get("traces"):
@@ -467,6 +520,10 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
     paper_ids = [pid.strip() for pid in payload.paper_ids if pid.strip()]
     if not paper_ids:
         raise HTTPException(status_code=400, detail="paper_ids 不能为空")
+    accepted_ids = {paper.get("paper_id") for paper in papers if paper.get("status") == "accepted"}
+    invalid_ids = [pid for pid in paper_ids if pid not in accepted_ids]
+    if invalid_ids:
+        raise HTTPException(status_code=400, detail="只能为已纳入的论文生成笔记")
 
     from llms.client import LLMClient
     from tools.rag_note_generator import RAGNoteGenerator
@@ -645,17 +702,18 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
     if not topic:
         raise HTTPException(status_code=400, detail="topic 不能为空")
 
-    notes = session.get("notes", "")
-    papers = session.get("papers", [])
-
-    if not notes.strip() and papers:
-        parts = []
-        for paper in papers:
-            paper_notes = (paper.get("notes") or "").strip()
-            if paper_notes:
-                title = paper.get("title") or paper.get("paper_id") or "Unknown"
-                parts.append(f"## {title}\n\n{paper_notes}")
-        notes = "\n\n---\n\n".join(parts)
+    papers = _accepted_papers(session, payload.paper_ids)
+    parts = []
+    for paper in papers:
+        paper_notes = (paper.get("notes") or "").strip()
+        if paper_notes:
+            title = paper.get("title") or paper.get("paper_id") or "Unknown"
+            parts.append(f"## {title}\n\n{paper_notes}")
+    notes = "\n\n---\n\n".join(parts)
+    if not papers:
+        raise HTTPException(status_code=400, detail="请先至少纳入一篇论文")
+    if not notes.strip():
+        raise HTTPException(status_code=400, detail="已纳入论文尚无笔记，请先生成笔记")
 
     try:
         from tools.analysis_tools import compare_papers, trace_lineage, find_gaps
@@ -664,7 +722,11 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
         if analysis_type not in {"compare", "lineage", "gaps", "all"}:
             raise HTTPException(status_code=400, detail="analysis_type 必须是 compare、lineage、gaps 或 all")
 
-        result = {"phase": "analysis", "session_id": session_id}
+        result = {
+            "phase": "analysis",
+            "session_id": session_id,
+            "paper_ids": [paper.get("paper_id", "") for paper in papers],
+        }
         if analysis_type in ("compare", "all"):
             result["compare"] = compare_papers(topic, notes, papers, provider_config)
         if analysis_type in ("lineage", "all"):
@@ -768,6 +830,9 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
             user_keywords=keywords,
             max_loops=max_loops,
             provider_config=provider_config,
+            existing_papers=session_mgr.get_papers(session_id),
+            target_new_papers=min_papers,
+            search_mode="incremental" if session_mgr.get_papers(session_id) else "initial",
             agent_callback=lambda agent, wd: _agent_holder.update({"agent": agent}),
         )
 
@@ -783,7 +848,7 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
         except ValueError:
             pass
 
-        papers = search_result.get("papers", [])
+        papers = _accepted_papers(session_mgr.load_session(session_id) or {})
         _update_run_status("search_complete", "running",
                           message=f"搜索完成，找到 {len(papers)} 篇论文，即将生成笔记...",
                           papers=papers)
@@ -897,7 +962,13 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
         # Generate analysis before writing so the final review can use it.
         try:
             _update_run_status("analysis", "running", message="正在生成深度分析报告...")
-            analysis_result = _run_session_analysis(session_id, topic, "all", provider_config)
+            analysis_result = _run_session_analysis(
+                session_id,
+                topic,
+                "all",
+                provider_config,
+                [paper.get("paper_id", "") for paper in papers],
+            )
             _update_run_status(
                 "analysis",
                 "running",
@@ -925,30 +996,29 @@ def _run_auto_pipeline_in_background(session_id: str, topic: str, max_loops: int
 
         # 重新加载 session 获取最新笔记
         session = session_mgr.load_session(session_id)
-        notes = session.get("notes", "")
-        if not notes.strip():
-            papers_data = session.get("papers", [])
-            aggregated = []
-            for p in papers_data:
-                pn = (p.get("notes") or "").strip()
-                if pn:
-                    aggregated.append(f"## {p.get('title', p.get('paper_id', ''))}\n\n{pn}")
-            notes = "\n\n---\n\n".join(aggregated)
+        papers_data = _accepted_papers(session or {})
+        aggregated = []
+        for p in papers_data:
+            pn = (p.get("notes") or "").strip()
+            if pn:
+                aggregated.append(f"## {p.get('title', p.get('paper_id', ''))}\n\n{pn}")
+        notes = "\n\n---\n\n".join(aggregated)
 
         if notes.strip():
             from main import run_write_from_notes  # noqa
-            analysis_context = _load_analysis_context_for_writing(session_id)
+            selected_ids = [paper.get("paper_id", "") for paper in papers_data]
+            analysis_context = _load_analysis_context_for_writing(session_id, selected_ids)
             write_result = run_write_from_notes(
                 user_topic=topic,
                 notes_content=notes,
                 session_id=session_id,
                 analysis_context=analysis_context,
                 provider_config=provider_config,
-                papers_list=session.get("papers", []),
+                papers_list=papers_data,
                 repository_sources=session.get("repositories", []),
             )
             if write_result.get("review"):
-                session_mgr.save_review(session_id, write_result["review"])
+                session_mgr.save_review(session_id, write_result["review"], referenced_papers=selected_ids)
                 quality_path = session_mgr.root / session_id / "review" / "quality.json"
                 quality_path.write_text(json.dumps(write_result.get("quality", {}), ensure_ascii=False, indent=2), encoding="utf-8")
             if write_result.get("traces"):
