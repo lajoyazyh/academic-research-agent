@@ -156,6 +156,7 @@
     var isCustom = providerSelect.value === "custom";
     return {
       provider_id: providerSelect.value,
+      language: window.academicLocale && window.academicLocale.isEnglish() ? "en" : "zh-CN",
       api_key: apiKey.value.trim(),
       base_url: baseUrl.value.trim(),
       chat_model: (isCustom ? customChatModel.value : chatModel.value).trim(),

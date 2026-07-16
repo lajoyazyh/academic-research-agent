@@ -310,9 +310,21 @@ def iterative_search(
         # 取第一轮结果的前 3 个作为上下文
         context_snippets = "\n".join([
             f"- {r.get('text', '')[:200]}" for r in first_results[:3]
-        ]) if first_results else "（无）"
-        
-        expansion_prompt = f"""你是一个学术检索助手。用户提出了一个问题，但初次检索结果不够理想。
+        ]) if first_results else ("None" if llm.language == "en" else "（无）")
+
+        if llm.language == "en":
+            expansion_prompt = f"""The first full-text retrieval pass did not produce enough strong results.
+Generate one or two retrieval queries from different angles using focused English academic terms.
+
+User question: {query}
+
+Existing retrieval excerpts:
+{context_snippets}
+
+Return one query per line with no numbering or explanation. Each query must contain 5–15 English words."""
+            expansion_system = "You generate precise academic full-text retrieval queries. Return only one English query per line."
+        else:
+            expansion_prompt = f"""你是一个学术检索助手。用户提出了一个问题，但初次检索结果不够理想。
 请基于用户的问题和已有检索片段，生成 1-2 个不同角度的检索查询（用英文关键词组合），
 帮助从论文全文中找到更相关的内容。
 
@@ -322,8 +334,9 @@ def iterative_search(
 {context_snippets}
 
 请直接输出检索查询，每行一个，不要加序号或解释。每个查询 5-15 个英文单词。"""
-        
-        raw = llm.chat("你是一个学术检索查询生成器。只输出检索查询，每行一个。", expansion_prompt, [])
+            expansion_system = "你是一个学术检索查询生成器。只输出检索查询，每行一个。"
+
+        raw = llm.chat(expansion_system, expansion_prompt, [])
         expanded_queries = [q.strip() for q in raw.strip().split("\n") if q.strip() and len(q.strip()) > 3]
         
         # 合并去重：用 text 前 80 字符做 key

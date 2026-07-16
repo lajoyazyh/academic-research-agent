@@ -109,6 +109,19 @@ WRITER_SECTION_TITLES = [
     "局限性与未来研究方向",
 ]
 
+WRITER_SECTION_TITLES_EN = [
+    "Introduction and Background",
+    "Comparison of Core Methods",
+    "Experimental Evidence and Practical Implications",
+    "Limitations and Future Research",
+]
+
+DEFAULT_REVIEW_SKILL_EN = """Write an evidence-grounded academic literature review rather than a list of paper summaries.
+Use a transparent structure covering scope and evidence, thematic synthesis, method and evidence comparison,
+areas of consensus and disagreement, limitations, research gaps, and conclusions. Cite only the supplied [P#]
+and [R#] evidence identifiers. Distinguish reported findings from your synthesis, never invent missing results,
+and explicitly state when the available evidence is insufficient."""
+
 
 def _merge_referenced_papers(notes_content: str, papers_list: list[dict] = None) -> list[str]:
     """从笔记内容中提取被实际引用的论文 paper_id 列表"""
@@ -129,7 +142,17 @@ def _merge_referenced_papers(notes_content: str, papers_list: list[dict] = None)
 
 
 def _build_initial_plan(llm: LLMClient, topic: str) -> str:
-    plan_prompt = f"""你是调研规划师。请为主题《{topic}》产出一个“可执行的检索计划”，仅用 Markdown 要点列出：
+    if llm.language == "en":
+        plan_prompt = f"""Create an executable literature-search plan for “{topic}”. Use concise Markdown bullets covering:
+1) Search-concept decomposition and English academic keyword groups
+2) Data-source order: prioritize OpenAlex for medicine, social science, and interdisciplinary work; prioritize arXiv for CS, AI, and engineering; use Semantic Scholar only as a fallback because of strict rate limits
+3) Inclusion and exclusion criteria, including date and conceptual relevance
+4) Fallbacks for zero results, rate limits, and overly broad searches
+5) A three-to-five-step action sequence naming the actual tools to call
+Return only the plan in English."""
+        system_prompt = "You are a rigorous academic research planner. Return only an executable English search plan."
+    else:
+        plan_prompt = f"""你是调研规划师。请为主题《{topic}》产出一个“可执行的检索计划”，仅用 Markdown 要点列出：
 1) 关键词拆分（中英对照）
 2) 数据源与调用顺序（必须明确说明优先级：医学/社科类及跨学科主题优先使用 openalex_search，CS/AI及理工科优先使用 arxiv_search。Semantic Scholar仅作严重缺失时的后备补充且要警惕限流）
 3) 选取/排除标准（例如时间下限、核心概念匹配度）
@@ -137,16 +160,18 @@ def _build_initial_plan(llm: LLMClient, topic: str) -> str:
 5) 预期的3~5步行动序列（每步务必写明要调用的具体工具名，如 openalex_search, arxiv_search, arxiv_download_pdf 等）
 输出只包含计划内容，不要写长段解释。
 """
-    plan = llm.chat("你是严谨的研究规划师。", plan_prompt, []).strip()
+        system_prompt = "你是严谨的研究规划师。"
+    plan = llm.chat(system_prompt, plan_prompt, []).strip()
     if not plan:
-        plan = (
+        plan = ("## Initial plan\n- Keywords: topic title and two focused synonyms\n- Sources: arXiv/OpenAlex, then Crossref for metadata\n- Criteria: direct relevance, credible venue, usable abstract, and open full text when available\n- Fallback: paginate, change synonyms, and switch sources\n- Actions: search, inspect candidates, register evidence, then finish" if llm.language == "en" else
+            (
             "## 初步计划\n"
             "- 关键词：LLM Agent Memory; Agent memory; 记忆机制; context caching\n"
             "- 数据源顺序：arXiv/OpenAlex -> Semantic Scholar -> Crossref 补元数据\n"
             "- 选择标准：近3年；顶会/知名期刊；可获取PDF优先\n"
             "- 回退策略：关键词同义词/上位词；切换源；减少限制项\n"
             "- 行动序列：arxiv_search -> arxiv_fetch/pdf_reader -> openalex_search/semantic_scholar_search -> crossref_fetch_doi -> arxiv_download_pdf\n"
-        )
+        ))
     return plan
 
 
@@ -253,6 +278,26 @@ def _extract_relevant_paragraphs(
 
 
 def _build_writer_outline(llm: LLMClient, topic: str, notes_content: str, skill_content: str = "") -> str:
+    if llm.language == "en":
+        titles = WRITER_SECTION_TITLES_EN
+        requirements = skill_content or DEFAULT_REVIEW_SKILL_EN
+        outline_prompt = f"""You are planning an academic literature review about “{topic}”.
+
+Writing policy:
+{requirements}
+
+Create an English Markdown outline. Every formal section must use `## Section name`, followed only by concise bullets.
+The outline must cover these areas: {', '.join(titles)}. The thematic synthesis may be split into two to four informative sections.
+Do not output a level-one heading, prose paragraphs, a preface, or a code block.
+
+Research notes and evidence:
+{notes_content}
+
+Return only the English outline."""
+        outline = llm.chat("You are a rigorous academic review planner.", outline_prompt, []).strip()
+        if not outline:
+            outline = "\n\n".join(f"## {title}\n- Evidence to synthesize\n- Methods and findings to compare\n- Limitations to assess" for title in titles)
+        return outline
     if skill_content:
         # 通道 A：Skill 优先 — 用 Skill 策略替换固定四标题要求
         outline_prompt = f"""你是学术综述写作规划师。请基于给定调研笔记，为主题《{topic}》生成一份中文 Markdown 大纲。
@@ -286,18 +331,49 @@ def _build_writer_outline(llm: LLMClient, topic: str, notes_content: str, skill_
 
 def _compose_review_by_sections(llm: LLMClient, topic: str, notes_content: str, outline: str, skill_content: str = "") -> str:
     section_texts = []
+    english = llm.language == "en"
     # 如果有 Skill，从 Skill 生成的大纲中提取章节标题；否则使用默认四标题
     if skill_content and outline:
         import re as _re
         _extracted = _re.findall(r'^## (.+)$', outline, _re.MULTILINE)
-        _section_titles = _extracted if _extracted else WRITER_SECTION_TITLES
+        _section_titles = _extracted if _extracted else (WRITER_SECTION_TITLES_EN if english else WRITER_SECTION_TITLES)
     else:
-        _section_titles = WRITER_SECTION_TITLES
+        _section_titles = WRITER_SECTION_TITLES_EN if english else WRITER_SECTION_TITLES
 
     for idx, section_title in enumerate(_section_titles, start=1):
         previous_text = "\n\n".join(section_texts)
         # ━━━ Writer RAG：提取与当前章节相关的段落 ━━━
         relevant_notes = _extract_relevant_paragraphs(notes_content, section_title)
+
+        if english:
+            section_prompt = f"""Write only section {idx} of the academic literature review about “{topic}”: {section_title}.
+
+Writing policy:
+{skill_content or DEFAULT_REVIEW_SKILL_EN}
+
+Strict requirements:
+- Use the exact Markdown heading `## {section_title}`.
+- Write a complete, self-contained section; never use omission markers or refer to missing text.
+- Synthesize across sources instead of listing papers one by one.
+- Support specific methods, samples, metrics, results, and attributions with the supplied [P#] or [R#] identifiers.
+- Clearly distinguish source findings from synthesis and state when evidence is insufficient.
+- Connect to completed sections without repeating them.
+
+Overall outline:
+{outline}
+
+Completed sections:
+{previous_text or '(none)'}
+
+Relevant research notes and evidence:
+{relevant_notes}
+
+Return only this complete English section."""
+            section = llm.chat("You are a rigorous senior academic literature-review writer.", section_prompt, []).strip()
+            if not section.startswith("##"):
+                section = f"## {section_title}\n\n{section}"
+            section_texts.append(section)
+            continue
 
         # ━━━ 公共反省略约束 ━━━
         _no_omit_rule = """【⚠️ 严格禁止省略】
@@ -365,6 +441,11 @@ def _self_repair_review(raw_review: str, skill_content: str, provider_config: di
     llm = LLMClient(provider_config)
 
     # ━━━ 基于 Skill 要求完全重写综述 ━━━
+    omission_examples = (
+        '"content omitted", "same as above", "unchanged from the previous draft", or ellipsis placeholders'
+        if llm.language == "en"
+        else '"(此处省略...)", "(与上一版草稿相同)", "...(略)...", "(同上)", "(详见上文)"'
+    )
     rewrite_prompt = f"""You are a strict formatting enforcer.
 
 Your task: COMPLETELY REWRITE the literature review below according to the formatting requirements. Do NOT adjust the existing format — rewrite following the EXACT structure specified in the requirements.
@@ -376,7 +457,7 @@ CRITICAL RULES:
 4. Remove the outline blockquote section entirely — output only the review body
 5. Preserve ALL academic facts (methods, data, results, comparisons)
 6. Output ONLY the final review — no explanations or code blocks
-7. ⚠️ ABSOLUTELY FORBIDDEN: any omission markers like "(此处省略...)", "(与上一版草稿相同)", "...(略)...", "(同上)", "(详见上文)" — every section must be complete, self-contained text
+7. ABSOLUTELY FORBIDDEN: omission markers such as {omission_examples}; every section must be complete and self-contained
 
 【FORMATTING REQUIREMENTS — THIS IS THE ONLY ALLOWED STRUCTURE】
 {skill_content}
@@ -458,7 +539,27 @@ def _self_critique_review(topic: str, raw_review: str, provider_config: dict | N
             _has_omission = True
             break
 
-    critique_prompt = f"""你是严格的学术综述质检员。请检查以下综述草稿的质量。
+    if llm.language == "en":
+        critique_prompt = f"""Audit and, when needed, directly repair the following academic literature review.
+
+Research topic: {topic}
+
+Quality checks:
+1. It has a coherent scope, thematic synthesis, method/evidence comparison, limitations, research gaps, and conclusion.
+2. Method comparisons name specific papers, methods, and models rather than using vague attributions.
+3. Empirical claims and metrics are specific and evidence-cited when the source material supports them.
+4. It contains no duplicated passages or filler.
+5. It contains no omission placeholders, references to a previous draft, or incomplete sections.
+6. All prose and headings are English, except original paper titles and direct source excerpts.
+
+Review to audit:
+{raw_review}
+
+If there is a problem, output the complete repaired Markdown review. If it already passes, return it unchanged.
+Never add an explanation outside the review and never invent evidence."""
+        critique_system = "You are a strict academic literature-review quality auditor. Return only the complete English review."
+    else:
+        critique_prompt = f"""你是严格的学术综述质检员。请检查以下综述草稿的质量。
 
 研究主题：{topic}
 
@@ -481,9 +582,10 @@ def _self_critique_review(topic: str, raw_review: str, provider_config: dict | N
 - 重复段落：合并或删除
 - {"⚠️ 省略占位符：**必须全部替换为完整的正文内容**。如果原始笔记中缺乏素材，基于已有信息进行合理推断和总结，用「根据现有资料」「初步分析表明」等措辞引导，绝对不允许保留任何省略标记" if _has_omission else "- 省略占位符：如有发现，替换为完整正文"}
 - 不要添加额外解释，只输出最终综述"""
+        critique_system = "你是严格的学术综述质检员。直接输出质检后的完整综述，不做额外说明。"
     try:
         result = llm.chat(
-            "你是严格的学术综述质检员。直接输出质检后的完整综述，不做额外说明。",
+            critique_system,
             critique_prompt, []
         ).strip()
         if result and len(result) > 200:
@@ -527,6 +629,7 @@ def _build_evidence_catalog(
     notes_content: str,
     papers_list: list[dict] | None = None,
     repository_sources: list[dict] | None = None,
+    language: str = "zh-CN",
 ) -> tuple[str, list[dict]]:
     """Build stable citation IDs and compact evidence excerpts for the writer."""
     sources: list[dict] = []
@@ -571,24 +674,34 @@ def _build_evidence_catalog(
         })
 
     blocks = []
+    english = language == "en"
     for source in sources:
         meta = " · ".join(filter(None, [source["authors"], source["year"], source["identifier"]]))
-        blocks.append(
-            f"### [{source['id']}] {source['title']}\n"
-            f"类型：{'论文' if source['kind'] == 'paper' else 'GitHub 仓库'}"
-            f"{('；元数据：' + meta) if meta else ''}\n"
-            f"链接：{source['url'] or '未提供'}\n\n"
-            f"{source['excerpt'] or '当前材料仅包含元数据，不能据此推断研究结果。'}"
-        )
+        if english:
+            blocks.append(
+                f"### [{source['id']}] {source['title']}\n"
+                f"Type: {'paper' if source['kind'] == 'paper' else 'GitHub repository'}"
+                f"{('; metadata: ' + meta) if meta else ''}\n"
+                f"Link: {source['url'] or 'not provided'}\n\n"
+                f"{source['excerpt'] or 'Only metadata is available; research findings cannot be inferred from it.'}"
+            )
+        else:
+            blocks.append(
+                f"### [{source['id']}] {source['title']}\n"
+                f"类型：{'论文' if source['kind'] == 'paper' else 'GitHub 仓库'}"
+                f"{('；元数据：' + meta) if meta else ''}\n"
+                f"链接：{source['url'] or '未提供'}\n\n"
+                f"{source['excerpt'] or '当前材料仅包含元数据，不能据此推断研究结果。'}"
+            )
     return "\n\n---\n\n".join(blocks), sources
 
 
-def _append_verified_references(review: str, sources: list[dict]) -> str:
+def _append_verified_references(review: str, sources: list[dict], language: str = "zh-CN") -> str:
     """Replace model-written references with a deterministic source list."""
-    cleaned = re.sub(r"(?ms)\n##\s+参考来源\s*.*$", "", review).rstrip()
+    cleaned = re.sub(r"(?ms)\n##\s+(?:参考来源|References)\s*.*$", "", review).rstrip()
     if not sources:
         return cleaned
-    lines = ["## 参考来源", ""]
+    lines = ["## References" if language == "en" else "## 参考来源", ""]
     for source in sources:
         detail = ". ".join(filter(None, [source.get("authors", ""), source.get("year", "")]))
         identifier = source.get("identifier", "")
@@ -597,15 +710,16 @@ def _append_verified_references(review: str, sources: list[dict]) -> str:
     return cleaned + "\n\n" + "\n".join(lines) + "\n"
 
 
-def assess_review_quality(review: str, sources: list[dict]) -> dict:
+def assess_review_quality(review: str, sources: list[dict], language: str = "zh-CN") -> dict:
     """Return a transparent, non-LLM quality gate for the generated review."""
     valid_ids = {source["id"] for source in sources}
     cited_ids = set(re.findall(r"\[([PR]\d+)\]", review))
     invalid_ids = sorted(cited_ids - valid_ids)
     used_ids = sorted(cited_ids & valid_ids)
-    required_sections = ["摘要", "研究范围", "主题", "方法", "局限", "结论", "参考来源"]
+    required_sections = (["abstract", "scope", "theme", "method", "limitation", "conclusion", "references"]
+                         if language == "en" else ["摘要", "研究范围", "主题", "方法", "局限", "结论", "参考来源"])
     headings = re.findall(r"(?m)^##\s+(.+)$", review)
-    section_hits = sum(1 for name in required_sections if any(name in heading for heading in headings))
+    section_hits = sum(1 for name in required_sections if any(name.lower() in heading.lower() for heading in headings))
     omission = bool(re.search(r"此处省略|同上|详见上文|与上一版.*相同|\.\.\.\s*[（(]略", review))
     citation_coverage = round(len(used_ids) / max(1, len(valid_ids)), 2)
     score = max(0, min(100, int(section_hits / len(required_sections) * 35 + citation_coverage * 50 + (15 if not omission and not invalid_ids else 0))))
@@ -630,7 +744,25 @@ def _verify_review_against_evidence(
     """Final evidence-grounding pass that may delete, but never invent, claims."""
     if not evidence_catalog.strip():
         return review
-    prompt = f"""你是学术综述的证据审计员。请直接修订全文，使其满足以下要求：
+    if LLMClient(provider_config).language == "en":
+        prompt = f"""Audit and directly revise this literature review against the evidence catalog.
+1. Specific methods, samples, datasets, metrics, numerical results, and attributions must cite a supplied `[P#]` or `[R#]` identifier.
+2. Delete invalid identifiers. Never invent sources, numbers, authors, years, DOIs, pages, or file paths.
+3. Replace unsupported judgments with “The available evidence is insufficient to determine this.”
+4. Preserve cross-source synthesis, consensus, disagreement, limitations, and research gaps instead of reverting to paper-by-paper summaries.
+5. Return the complete English Markdown body only, without an explanation or a references section.
+
+Research topic: {topic}
+
+Evidence catalog:
+{evidence_catalog}
+
+Review to audit:
+{review}
+"""
+        audit_system = "You are a strict evidence auditor. Retain only claims supported by the supplied sources and return the complete English review."
+    else:
+        prompt = f"""你是学术综述的证据审计员。请直接修订全文，使其满足以下要求：
 1. 具体方法、样本、数据、指标、数值与归因判断后必须使用证据目录中的 `[P#]` 或 `[R#]`。
 2. 删除不存在于证据目录中的引用编号；不得创造新的来源、数字、作者、年份、DOI、页码或文件路径。
 3. 证据不足的判断改写为“现有材料不足以判断”。
@@ -645,9 +777,10 @@ def _verify_review_against_evidence(
 【待审计综述】
 {review}
 """
+        audit_system = "你是严格的证据审计员，只保留可由给定材料支持的学术陈述。"
     try:
         verified = LLMClient(provider_config).chat(
-            "你是严格的证据审计员，只保留可由给定材料支持的学术陈述。", prompt, []
+            audit_system, prompt, []
         ).strip()
         return verified or review
     except Exception:
@@ -664,24 +797,26 @@ def compose_review_from_notes(
     repository_sources: list[dict] | None = None,
 ) -> tuple[str, str, dict]:
     llm = LLMClient(provider_config)
+    language = llm.language
     writing_source = _append_analysis_context(notes_content, analysis_context)
     evidence_catalog, evidence_sources = _build_evidence_catalog(
-        writing_source, papers_list=papers_list, repository_sources=repository_sources
+        writing_source, papers_list=papers_list, repository_sources=repository_sources, language=language
     )
     if evidence_catalog:
         writing_source = (
-            f"{writing_source}\n\n---\n\n## 可引用证据目录（引用编号不可更改）\n\n"
+            f"{writing_source}\n\n---\n\n## {'Citable Evidence Catalog (identifiers are fixed)' if language == 'en' else '可引用证据目录（引用编号不可更改）'}\n\n"
             f"{evidence_catalog}"
         )
     notes_content = writing_source
-    effective_skill = write_skill_content or DEFAULT_REVIEW_SKILL
+    effective_skill = DEFAULT_REVIEW_SKILL_EN if language == "en" else (write_skill_content or DEFAULT_REVIEW_SKILL)
 
     # 双通道：大纲 + 逐节正文
     # 修复：body 已包含完整 ## 标题，不再在前面重复 prepend outline
     outline = _build_writer_outline(llm, topic, writing_source, effective_skill)
     body = _compose_review_by_sections(llm, topic, writing_source, outline, effective_skill)
     # outline 作为前置目录，使用引用格式（>）避免与 body 中的 ## 标题重复
-    review = f"> **综述大纲**（由 AI 规划，仅供参考）\n>\n" + "\n".join(f"> {line}" for line in outline.split("\n")) + f"\n\n---\n\n{body}"
+    outline_label = "Review outline (AI-planned, for reference)" if language == "en" else "综述大纲（由 AI 规划，仅供参考）"
+    review = f"> **{outline_label}**\n>\n" + "\n".join(f"> {line}" for line in outline.split("\n")) + f"\n\n---\n\n{body}"
 
     # 自我修复：当有 Skill 时，调用 LLM 检查并修复综述格式和结构
     review = _self_repair_review(review, effective_skill, provider_config)
@@ -690,13 +825,15 @@ def compose_review_from_notes(
     review = _self_critique_review(topic, review, provider_config)
 
     review = _verify_review_against_evidence(topic, review, evidence_catalog, provider_config)
-    review = _append_verified_references(review, evidence_sources)
-    quality = assess_review_quality(review, evidence_sources)
+    review = _append_verified_references(review, evidence_sources, language=language)
+    quality = assess_review_quality(review, evidence_sources, language=language)
 
     return outline, review, quality
 
 
-def _build_fallback_notes_from_traces(topic: str, traces: list[dict]) -> str:
+def _build_fallback_notes_from_traces(
+    topic: str, traces: list[dict], language: str = "zh-CN"
+) -> str:
     """当 Agent 未写入草稿时，从 traces 中提取最低可用笔记，避免整次任务直接失败。"""
     if not traces:
         return ""
@@ -740,14 +877,26 @@ def _build_fallback_notes_from_traces(topic: str, traces: list[dict]) -> str:
     snippets = []
     for idx, (action, obs) in enumerate(observations[:6], start=1):
         normalized = re.sub(r"\n{3,}", "\n\n", obs)
-        snippets.append(f"### 线索 {idx}（{action}）\n{normalized[:1600]}")
+        snippets.append(
+            f"### Evidence clue {idx} ({action})\n{normalized[:1600]}"
+            if language == "en"
+            else f"### 线索 {idx}（{action}）\n{normalized[:1600]}"
+        )
 
-    header = (
-        f"# 自动兜底笔记\n\n"
-        f"主题：{topic}\n\n"
-        "说明：本次运行中 Agent 未正常执行 append_note。"
-        "以下内容由系统从执行轨迹自动提取，用于保障后续 Writer 阶段可继续。\n\n"
-    )
+    if language == "en":
+        header = (
+            f"# Automatically Recovered Notes\n\n"
+            f"Research topic: {topic}\n\n"
+            "The agent did not complete the normal note-writing action. The system extracted the evidence "
+            "below from the execution trace so that the writing stage can continue.\n\n"
+        )
+    else:
+        header = (
+            f"# 自动兜底笔记\n\n"
+            f"主题：{topic}\n\n"
+            "说明：本次运行中 Agent 未正常执行 append_note。"
+            "以下内容由系统从执行轨迹自动提取，用于保障后续 Writer 阶段可继续。\n\n"
+        )
     return header + "\n\n".join(snippets) + "\n"
 
 def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None, provider_config: dict | None = None):
@@ -880,7 +1029,9 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
 
     note_path = os.path.join(work_dir, 'research_notes.md')
     if not os.path.exists(note_path):
-        fallback_notes = _build_fallback_notes_from_traces(user_topic, list(researcher_agent.traces))
+        fallback_notes = _build_fallback_notes_from_traces(
+            user_topic, list(researcher_agent.traces), researcher_agent.language
+        )
         if fallback_notes:
             with open(note_path, 'w', encoding='utf-8') as f:
                 f.write(fallback_notes)
@@ -927,7 +1078,22 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
 def _extract_keywords_from_plan(plan_text: str, provider_config: dict | None = None) -> list[dict]:
     """用 LLM 从规划文本中智能提取关键词三元组（中文→英文→同义词）"""
     llm = LLMClient(provider_config)
-    extract_prompt = f"""从以下研究规划中，提取真正用于学术搜索的关键词。
+    if llm.language == "en":
+        extract_prompt = f"""Extract the actual literature-search concepts from this research plan.
+Return two to five core keyword groups as a JSON array. Each object must contain:
+- `original`: the concept as written in the plan
+- `english`: an English academic search phrase
+- `synonyms`: comma-separated English alternatives
+Do not include step descriptions, data-source names, or strategy prose.
+
+Research plan:
+{plan_text}
+
+Return only JSON with no Markdown fence:
+[{{"original": "concept", "english": "academic term", "synonyms": "synonym 1, synonym 2"}}]"""
+        extract_system = "You extract academic search keywords. Return only valid JSON in English."
+    else:
+        extract_prompt = f"""从以下研究规划中，提取真正用于学术搜索的关键词。
 
 规则：
 1. 只提取搜索关键词本身（如"Table Data Extraction"），不要提取步骤描述、数据源名、策略说明
@@ -940,8 +1106,9 @@ def _extract_keywords_from_plan(plan_text: str, provider_config: dict | None = N
 请直接输出 JSON 数组（不要 markdown 标记）：
 [{{"original": "中文", "english": "English term", "synonyms": "syn1, syn2"}}, ...]
 """
+        extract_system = "你是关键词提取专家。只输出 JSON。"
     try:
-        response = llm.chat("你是关键词提取专家。只输出 JSON。", extract_prompt, [])
+        response = llm.chat(extract_system, extract_prompt, [])
         # 提取 JSON 数组
         match = re.search(r'\[[\s\S]*\]', response)
         if match:
@@ -1010,8 +1177,61 @@ def _build_research_query(
     target_new_papers: int = 3,
     search_mode: str = "initial",
     available_tool_names: list[str] | None = None,
+    language: str = "zh-CN",
 ) -> str:
     """构建 Researcher Agent 的研究查询，支持用户确认的关键词"""
+    if language == "en":
+        available_tool_names = available_tool_names or [
+            "arxiv_search", "arxiv_fetch", "paper_register", "openalex_search",
+            "crossref_search", "crossref_fetch_doi", "semantic_scholar_search", "semantic_scholar_fetch",
+        ]
+        search_tools = [name for name in available_tool_names if "search" in name]
+        source_target = 2 if len(search_tools) >= 2 else 1
+        keyword_lines = []
+        for item in confirmed_keywords or []:
+            keyword_lines.append("- " + " | ".join(filter(None, [
+                str(item.get("english") or "").strip(),
+                str(item.get("original") or "").strip(),
+                str(item.get("synonyms") or "").strip(),
+            ])))
+        existing_lines = [
+            f"- {paper.get('paper_id', 'unknown')} | {str(paper.get('title') or '')[:120]}"
+            for paper in (existing_papers or [])[:40]
+        ]
+        return f"""## Research objective
+Conduct a scholarly literature search on “{topic}”. Add at least {target_new_papers} directly relevant papers with verified title, authors, and an abstract copied from a search or detail source.
+
+## Completion criteria
+1. Register at least {target_new_papers} new papers in this run; existing or duplicate papers do not count.
+2. Use at least {source_target} distinct enabled literature databases when possible.
+3. Finish immediately after the target is met.
+
+## Enabled tools — the only tools you may call
+{chr(10).join('- ' + name for name in available_tool_names)}
+
+## Search and evidence policy
+- Query scholarly databases with focused English academic terms.
+- If the topic resembles an exact paper title, search the full title first, then focused title phrases.
+- Process every relevant, unregistered candidate in the current result batch before issuing another search.
+- Never fabricate an abstract, DOI, arXiv identifier, open-access URL, author, venue, year, or result.
+- Pass an abstract only when it was copied from a tool result. If a source provides an arXiv ID, preserve it and pass it to `paper_register`.
+- Register each accepted candidate with `paper_register(paper_id, title, authors, abstract, arxiv_id?, pdf_url?)`.
+- Do not download PDFs yourself; `paper_register` handles lawful full-text resolution.
+- On HTTP 429, stop using that provider for this run and switch databases immediately.
+- Never repeat the same query on the same result page. Use `start`, `offset`, or `page` to paginate.
+- Reject candidates that match only a broad word but not the research question.
+- Use `finish` only after the target is met or the allowed execution budget is exhausted.
+
+## User-confirmed search concepts
+{chr(10).join(keyword_lines) if keyword_lines else '- Derive two to five focused English concepts from the topic.'}
+
+## Papers already in the project — do not register again
+{chr(10).join(existing_lines) if existing_lines else '- None'}
+
+## Initial plan
+{initial_plan}
+
+Begin by stating a concise English tool-use plan in `thought`, then execute it. All reasoning and status text must be English; preserve original paper titles and source excerpts."""
     keyword_hint = ""
     if confirmed_keywords:
         kw_lines = []
@@ -1196,6 +1416,7 @@ def run_search_only(
         target_new_papers=target_new_papers,
         search_mode=search_mode,
         available_tool_names=list(researcher_agent.tools.keys()),
+        language=researcher_agent.language,
     )
 
     # ━━━ 双通道 Skill 注入：搜索阶段 ━━━
@@ -1205,7 +1426,7 @@ def run_search_only(
         skill_info = _load_skill_info(skill_id=search_skill_id)
         researcher_agent.traces.append(_build_skill_trace("search", skill_info))
         skill_content = skill_info.get("content", "")
-        if skill_content:
+        if skill_content and researcher_agent.language != "en":
             # 通道 A：Skill 优先 — 用 Skill 内容替换默认搜索策略，
             # 仅保留最小核心约束（工具列表 + JSON 格式 + 质量门禁）
             _MIN_SEARCH_RULES = (
@@ -1229,6 +1450,7 @@ def run_search_only(
                     target_new_papers=target_new_papers,
                     search_mode=search_mode,
                     available_tool_names=list(researcher_agent.tools.keys()),
+                    language=researcher_agent.language,
                 )
             )
             print(f"[Skill] Injected search skill: {search_skill_id}")
@@ -1316,17 +1538,21 @@ def run_write_from_notes(
         session_id: Session ID（用于加载 write Skill）
     """
     load_dotenv(find_dotenv(usecwd=True))
-
+    llm = LLMClient(provider_config)
+    language = llm.language
     if rewrite_count >= max_rewrites:
         return {
             "phase": "write",
-            "review": previous_review or "已达到最大修改次数限制，请创建新会话或手动编辑。",
+            "review": previous_review or (
+                "The maximum revision count has been reached. Create a new project or edit the review manually."
+                if language == "en"
+                else "已达到最大修改次数限制，请创建新会话或手动编辑。"
+            ),
             "rewrite_count": rewrite_count,
             "max_rewrites": max_rewrites,
             "can_rewrite": False,
         }
 
-    llm = LLMClient(provider_config)
     writing_source = _append_analysis_context(notes_content, analysis_context)
     notes_content = writing_source
 
@@ -1344,7 +1570,28 @@ def run_write_from_notes(
 
     if user_feedback and previous_review:
         # 带反馈的重写 — 双通道：有 Skill 时替换默认要求
-        if write_skill_content:
+        if language == "en":
+            feedback_prompt = f"""Revise the literature review according to the user's feedback.
+
+Writing and evidence policy:
+{DEFAULT_REVIEW_SKILL_EN}
+
+User feedback:
+{user_feedback}
+
+Previous draft:
+{previous_review}
+
+Research notes and evidence:
+{notes_content}
+
+Apply the feedback without weakening evidence grounding or cross-source synthesis. Return the complete
+revised literature review in English Markdown. Do not output explanations or omission placeholders."""
+            feedback_system = (
+                "You are a rigorous academic literature-review editor. Return a complete, evidence-grounded "
+                "English review and preserve valid [P#] and [R#] citations."
+            )
+        elif write_skill_content:
             feedback_prompt = f"""你是学术综述修改专家。请根据用户反馈修改综述。
 
 {write_skill_content}
@@ -1359,6 +1606,7 @@ def run_write_from_notes(
 {notes_content}
 
 请直接输出完整的修改后综述（Markdown格式）。"""
+            feedback_system = "你是严谨的学术综述修改专家。"
         else:
             feedback_prompt = f"""你是学术综述修改专家。请根据用户反馈修改综述。
 
@@ -1376,7 +1624,8 @@ def run_write_from_notes(
 2. 保持学术严谨性
 3. 直接输出完整的修改后综述（Markdown格式）
 """
-        new_review = llm.chat("你是严谨的学术综述修改专家。", feedback_prompt, []).strip()
+            feedback_system = "你是严谨的学术综述修改专家。"
+        new_review = llm.chat(feedback_system, feedback_prompt, []).strip()
         if not new_review:
             new_review = previous_review
     else:
@@ -1394,13 +1643,16 @@ def run_write_from_notes(
 
     if user_feedback and previous_review:
         evidence_catalog, evidence_sources = _build_evidence_catalog(
-            notes_content, papers_list=papers_list, repository_sources=repository_sources
+            notes_content,
+            papers_list=papers_list,
+            repository_sources=repository_sources,
+            language=language,
         )
         new_review = _verify_review_against_evidence(
             user_topic, new_review, evidence_catalog, provider_config
         )
-        new_review = _append_verified_references(new_review, evidence_sources)
-        quality = assess_review_quality(new_review, evidence_sources)
+        new_review = _append_verified_references(new_review, evidence_sources, language=language)
+        quality = assess_review_quality(new_review, evidence_sources, language=language)
 
     return {
         "phase": "write",

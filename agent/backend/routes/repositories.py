@@ -213,20 +213,46 @@ def research_repository(payload: RepositoryResearchRequest, x_github_token: str 
         if not inspected:
             raise HTTPException(status_code=404, detail="没有找到可调研的 GitHub 仓库")
 
+        llm = LLMClient(provider)
         context_blocks = []
         for repo in inspected:
             files = "\n\n".join(
-                f"### 文件：{item['path']}\nURL: {item['url']}\n```text\n{item['content']}\n```"
+                f"### {'File' if llm.language == 'en' else '文件'}: {item['path']}\nURL: {item['url']}\n```text\n{item['content']}\n```"
                 for item in repo.get("files") or []
             )
-            context_blocks.append(
-                f"## 仓库 {repo['full_name']}\nURL: {repo['html_url']}\n"
-                f"描述: {repo['description']}\n默认分支: {repo['default_branch']}\n"
-                f"Stars: {repo['stars']}，主要语言: {repo['language']}，许可证: {repo['license']}\n\n"
-                f"### README\n{repo.get('readme') or '未提供'}\n\n{files}"
-            )
+            if llm.language == "en":
+                context_blocks.append(
+                    f"## Repository {repo['full_name']}\nURL: {repo['html_url']}\n"
+                    f"Description: {repo['description']}\nDefault branch: {repo['default_branch']}\n"
+                    f"Stars: {repo['stars']}; primary language: {repo['language']}; license: {repo['license']}\n\n"
+                    f"### README\n{repo.get('readme') or 'Not provided'}\n\n{files}"
+                )
+            else:
+                context_blocks.append(
+                    f"## 仓库 {repo['full_name']}\nURL: {repo['html_url']}\n"
+                    f"描述: {repo['description']}\n默认分支: {repo['default_branch']}\n"
+                    f"Stars: {repo['stars']}，主要语言: {repo['language']}，许可证: {repo['license']}\n\n"
+                    f"### README\n{repo.get('readme') or '未提供'}\n\n{files}"
+                )
         context = "\n\n---\n\n".join(context_blocks)
-        prompt = f"""你是一名开源软件研究员。请根据给定的 GitHub 仓库元数据、README 和代码文件回答研究问题。
+        if llm.language == "en":
+            prompt = f"""Answer the research question using only the supplied GitHub repository metadata, README files, and code excerpts.
+
+Research question: {payload.question}
+
+Requirements:
+1. Return Markdown with: executive summary; repository selection and scope; architecture and core flow; key implementation evidence; engineering quality and maintenance signals; applicability boundaries and risks; and recommended follow-up verification.
+2. Every code-level claim must cite a real file path as `[owner/repo:path]`; repository-level claims cite `[owner/repo]`.
+3. Distinguish README claims from facts verified in code. Mark unread areas as “Not verified by the available material.”
+4. Do not treat stars as evidence of research quality. Never fabricate runtime results, performance data, security properties, or license conclusions.
+5. When several repositories are present, explain their selection and compare them across shared dimensions instead of summarizing each mechanically.
+
+Repository evidence:
+{context}
+"""
+            repository_system = "You are a rigorous open-source repository researcher. Draw conclusions only from the supplied repository evidence and write in English."
+        else:
+            prompt = f"""你是一名开源软件研究员。请根据给定的 GitHub 仓库元数据、README 和代码文件回答研究问题。
 
 研究问题：{payload.question}
 
@@ -240,9 +266,8 @@ def research_repository(payload: RepositoryResearchRequest, x_github_token: str 
 【仓库材料】
 {context}
 """
-        report = LLMClient(provider).chat(
-            "你是严谨的开源仓库研究员，只依据提供的仓库材料下结论。", prompt, []
-        ).strip()
+            repository_system = "你是严谨的开源仓库研究员，只依据提供的仓库材料下结论。"
+        report = llm.chat(repository_system, prompt, []).strip()
         saved_sources = []
         for repo in inspected:
             source = {

@@ -5,6 +5,7 @@ import os
 from typing import Any
 
 from fastapi import HTTPException
+from utils.locale import language_from_config
 
 DEFAULT_BASE_URL = "https://open.bigmodel.cn/api/paas/v4/"
 DEFAULT_MODEL = "glm-4-flash"
@@ -80,6 +81,7 @@ def sanitize_provider_config(provider: Any = None) -> dict:
     )
     config = {
         "provider_id": provider_id,
+        "language": _read_field(provider, "language"),
         "api_key": _read_field(provider, "api_key"),
         "base_url": _read_field(provider, "base_url") or preset.get("base_url") or DEFAULT_BASE_URL,
         "chat_model": _read_field(provider, "chat_model") or _read_field(provider, "model") or preset.get("default_chat_model") or DEFAULT_MODEL,
@@ -99,6 +101,14 @@ def ensure_provider_available(provider: Any = None) -> dict:
     config = sanitize_provider_config(provider)
     if config.get("api_key") or server_provider_available():
         return config
+    if language_from_config(config) == "en":
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "An API key is required. Configure your own key in Profile, or ask the site administrator "
+                "to configure a server-side provider key."
+            ),
+        )
     raise HTTPException(
         status_code=400,
         detail=(

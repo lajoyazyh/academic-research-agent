@@ -30,6 +30,11 @@
     var requestInit = Object.assign({}, init || {});
     var rawUrl = typeof input === "string" ? input : input.url;
     var isAgentApi = rawUrl.indexOf("/api/") === 0;
+    var headers = new Headers(requestInit.headers || (typeof input !== "string" ? input.headers : undefined));
+    if (isAgentApi) {
+      headers.set("X-App-Language", window.academicLocale && window.academicLocale.isEnglish() ? "en" : "zh-CN");
+    }
+    requestInit.headers = headers;
 
     if (isAgentApi && apiBase) {
       input = apiBase + rawUrl;
@@ -37,11 +42,9 @@
     if (isAgentApi && client) {
       var result = await client.auth.getSession();
       var session = result.data && result.data.session;
-      var headers = new Headers(requestInit.headers || (typeof input !== "string" ? input.headers : undefined));
       if (session && session.access_token) {
         headers.set("Authorization", "Bearer " + session.access_token);
       }
-      requestInit.headers = headers;
     }
     var response = await originalFetch(input, requestInit);
     if (isAgentApi && response.status === 401 && window.academicAuthRequireLogin) {

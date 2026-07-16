@@ -306,7 +306,18 @@ def add_custom_paper(session_id: str, payload: AddCustomPaperRequest):
         try:
             from llms.client import LLMClient
             llm = LLMClient()
-            extract_prompt = f"""从以下论文文本中提取标题和作者。只输出 JSON，不要其他内容。
+            if llm.language == "en":
+                extract_prompt = f"""Extract the paper title and authors from the text below. Return JSON only.
+
+Paper text excerpt:
+{res_text[:2000]}
+
+Return:
+{{"title": "paper title", "authors": "author list"}}
+"""
+                extract_system = "You are a precise scholarly metadata extractor. Return valid JSON only."
+            else:
+                extract_prompt = f"""从以下论文文本中提取标题和作者。只输出 JSON，不要其他内容。
 
 论文文本片段：
 {res_text[:2000]}
@@ -314,7 +325,8 @@ def add_custom_paper(session_id: str, payload: AddCustomPaperRequest):
 请输出：
 {{"title": "论文标题", "authors": "作者列表"}}
 """
-            raw = llm.chat("你是精确的元数据提取工具。只输出JSON。", extract_prompt, [])
+                extract_system = "你是精确的元数据提取工具。只输出JSON。"
+            raw = llm.chat(extract_system, extract_prompt, [])
             import re as _re
             jmatch = _re.search(r'\{[\s\S]*\}', raw)
             if jmatch:
@@ -424,7 +436,18 @@ async def upload_paper(session_id: str, file: UploadFile = File(...)):
     try:
         from llms.client import LLMClient
         llm = LLMClient()
-        extract_prompt = f"""从以下 PDF 论文文本中提取标题和作者。只输出 JSON，不要其他内容。
+        if llm.language == "en":
+            extract_prompt = f"""Extract the paper title and authors from the PDF text below. Return JSON only.
+
+PDF excerpt (first five pages):
+{res_text[:2000]}
+
+Return:
+{{"title": "paper title", "authors": "author list"}}
+"""
+            extract_system = "You are a precise scholarly metadata extractor. Return valid JSON only."
+        else:
+            extract_prompt = f"""从以下 PDF 论文文本中提取标题和作者。只输出 JSON，不要其他内容。
 
 PDF 文本片段（前 5 页）：
 {res_text[:2000]}
@@ -432,7 +455,8 @@ PDF 文本片段（前 5 页）：
 请输出：
 {{"title": "论文标题", "authors": "作者列表"}}
 """
-        raw = llm.chat("你是精确的元数据提取工具。只输出JSON。", extract_prompt, [])
+            extract_system = "你是精确的元数据提取工具。只输出JSON。"
+        raw = llm.chat(extract_system, extract_prompt, [])
         import re as _re
         jmatch = _re.search(r'\{[\s\S]*\}', raw)
         if jmatch:

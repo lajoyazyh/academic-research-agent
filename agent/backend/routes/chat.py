@@ -18,6 +18,7 @@ from .deps import (
 
 import threading
 from llms.client import LLMClient
+from utils.locale import is_english
 from utils.parser import extract_json
 from backend.session_manager import STATE_LABELS
 from backend.provider import ensure_provider_available, sanitize_provider_config
@@ -49,6 +50,47 @@ def _provider_for_chat(provider) -> dict:
         if getattr(_get_chat_intent_llm, "__module__", __name__) != __name__:
             return sanitize_provider_config(provider)
         raise
+
+
+def _english_chat_prompts(
+    session: dict,
+    view_mode: str,
+    current_name: str,
+    accepted_names: str,
+    ctx: dict,
+    message: str,
+) -> tuple[str, str]:
+    system_prompt = """You are a rigorous and concise academic research assistant.
+Answer the user's question directly from the supplied paper, notes, review, repository reports, PDF passages,
+and conversation history. Never invent missing information. Prefer retrieved PDF passages when available and
+cite the supplied source label or citation number. If the context is insufficient, say so and suggest a concrete
+next step. Resolve pronouns from conversation history. Default to three to six clear English sentences unless the
+user asks for more detail. Never emit omission placeholders or claim that text is unchanged from another draft.
+Preserve original paper titles and direct quotations, but write all analysis and explanation in English."""
+    user_prompt = f"""Research topic: {session.get('topic', '')}
+Current view: {view_mode}
+Current paper: {current_name}
+Included papers: {accepted_names or 'none'}
+
+Paper abstract:
+{ctx.get('abstract') or 'Not available'}
+
+Research notes:
+{ctx.get('notes') or 'Not available'}
+
+Current review:
+{ctx.get('review') or 'Not available'}
+
+Retrieved PDF passages:
+{ctx.get('rag') or 'No relevant passages were retrieved.'}
+
+Recent conversation:
+{ctx.get('history') or 'This is the first message.'}
+
+User question: {message}
+
+Answer in English using only this evidence. Cite retrieved source labels when used."""
+    return system_prompt, user_prompt
 
 
 router = APIRouter(tags=["chat"])
@@ -113,7 +155,12 @@ def _manage_context_window(
     }
 
 
-def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | None = None) -> dict[str, str]:
+def _build_chat_reply(
+    session: dict,
+    view_mode: str,
+    current_paper_id: str | None = None,
+    provider_config: dict | None = None,
+) -> dict[str, str]:
     paper = None
     if current_paper_id:
         for item in session.get("papers", []):
@@ -129,6 +176,12 @@ def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | Non
         accepted_names = "、".join(
             [p.get("title") or p.get("paper_id", "") for p in session.get("papers", []) if p.get("status") == "accepted"]
         )
+        if is_english(provider_config):
+            return {
+                "reply": f"The current review uses {accepted_count} included papers ({accepted_names or 'none yet'}). Tell me which section or paragraph to revise and give three to five actionable changes.",
+                "note": "Review mode: use /revise followed by your instructions to rewrite the review.",
+                "rag_status": "not_attempted",
+            }
         return {
             "reply": f"根据当前综述草稿和 {accepted_count} 篇已选论文（{accepted_names or '暂无'}），请明确要修改的章节或段落，并将修改意见压缩为 3-5 条可执行建议。",
             "note": "综述模式：可直接输入 /修订 + 修改意见 触发综述重写。",
@@ -137,6 +190,12 @@ def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | Non
 
     if view_mode == "report":
         current_name = (paper or {}).get("title") or (paper or {}).get("paper_id") or session.get("topic", "当前论文")
+        if is_english(provider_config):
+            return {
+                "reply": f"I can revise the notes for “{current_name}”. Use /revise followed by your instructions to apply the changes.",
+                "note": "Notes mode: use /revise followed by your instructions to revise the notes.",
+                "rag_status": "not_attempted",
+            }
         return {
             "reply": f"收到你对「{current_name}」笔记的修改意见。你可以直接输入 /修订 + 修改意见，让系统基于反馈修订当前笔记。",
             "note": "笔记模式：可直接输入 /修订 + 修改意见 触发笔记修订。",
@@ -144,6 +203,12 @@ def _build_chat_reply(session: dict, view_mode: str, current_paper_id: str | Non
         }
 
     current_name = (paper or {}).get("title") or (paper or {}).get("paper_id") or session.get("topic", "当前主题")
+    if is_english(provider_config):
+        return {
+            "reply": f"I can answer questions about the abstract for “{current_name}”. To edit content, switch to Notes or Review, select Agent mode, and use /revise.",
+            "note": "Abstract mode answers questions about the current paper only.",
+            "rag_status": "not_attempted",
+        }
     return {
         "reply": f"针对「{current_name}」的摘要内容，我可以继续回答你的问题。若要修改内容，请切换到笔记或综述视图后使用 Agent 模式和 /修订 指令。",
         "note": "当前为摘要模式，仅回答当前论文内容。",
@@ -273,6 +338,11 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
 
 请基于以上资料（特别是检索到的原文段落和对话历史）回答问题。如引用原文，请标注来源。注意理解对话历史中的指代关系。"""
 
+    if is_english(provider_config):
+        system_prompt, user_prompt = _english_chat_prompts(
+            session, view_mode, current_name, accepted_names, ctx, message
+        )
+
     try:
         answer = _chat_llm(provider_config).chat(system_prompt, user_prompt, []).strip()
         if answer:
@@ -285,12 +355,19 @@ def _build_chat_answer(session: dict, message: str, view_mode: str, current_pape
             else:
                 rag_status = "no_results"
                 rag_count = 0
-            note = "基于论文原文生成回答" if rag_context else f"基于当前{'综述' if view_mode == 'review' else '论文'}上下文生成回答"
+            if is_english(provider_config):
+                note = (
+                    "Answer grounded in retrieved paper text"
+                    if rag_context
+                    else f"Answer grounded in the current {'review' if view_mode == 'review' else 'paper'} context"
+                )
+            else:
+                note = "基于论文原文生成回答" if rag_context else f"基于当前{'综述' if view_mode == 'review' else '论文'}上下文生成回答"
             return {"reply": answer, "note": note, "rag_status": rag_status, "rag_count": rag_count}
     except Exception:
         pass
 
-    return _build_chat_reply(session, view_mode, current_paper_id)
+    return _build_chat_reply(session, view_mode, current_paper_id, provider_config)
 
 
 def _parse_explicit_chat_revision(message: str, view_mode: str) -> dict[str, str] | None:
@@ -298,15 +375,19 @@ def _parse_explicit_chat_revision(message: str, view_mode: str) -> dict[str, str
     if not text:
         return None
 
-    if text.startswith("/修订"):
-        content = re.sub(r"^/修订\s*", "", text).strip()
+    if text.startswith("/修订") or text.lower().startswith("/revise"):
+        content = re.sub(r"^(?:/修订|/revise)\s*", "", text, flags=re.IGNORECASE).strip()
         if not content:
             return None
-        target_match = re.match(r"^(笔记|综述|report|review)\s+([\s\S]+)$", content, flags=re.IGNORECASE)
+        target_match = re.match(r"^(笔记|综述|notes?|report|review)\s+([\s\S]+)$", content, flags=re.IGNORECASE)
         if target_match:
             raw_target = target_match.group(1).lower()
             target = "review" if raw_target in ("综述", "review") else "report"
-            return target, target_match.group(2).strip()
+            return {
+                "target": target,
+                "feedback": target_match.group(2).strip(),
+                "source": "explicit",
+            }
         return {"target": "review" if view_mode == "review" else "report", "feedback": content, "source": "explicit"}
 
     return None
@@ -418,6 +499,26 @@ JSON 格式如下：
 
 请进行意图分类，并严格按 JSON 输出。"""
 
+    if is_english(provider_config):
+        english_content_type = "review draft" if view_mode == "review" else "paper notes" if view_mode == "report" else "notes or abstract"
+        system_prompt = f"""Classify whether the user's message requests a revision of the current {english_content_type}.
+Do not answer the question and do not revise content. Return only strict JSON:
+{{
+  "intent": "revise" | "chat" | "clarify",
+  "target": "report" | "review" | "none",
+  "confidence": 0.0,
+  "reason": "brief English reason",
+  "feedback": "concise revision instruction when intent is revise, otherwise empty"
+}}
+In Agent mode, requests to add, delete, rewrite, reorganize, shorten, expand, or otherwise alter the current content are revisions.
+Questions seeking explanation without requesting a content change are chat. Prefer revise over clarify when a change request is plausible."""
+        user_prompt = f"""Current view: {view_mode}
+Session state: {session.get('state', '')}
+Current paper title: {paper_title or 'none'}
+User message: {text}
+
+Return the JSON classification only."""
+
     try:
         raw_response = _chat_llm(provider_config).chat(system_prompt, user_prompt, [])
         result = extract_json(raw_response)
@@ -474,6 +575,7 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
     provider_config = _provider_for_chat(payload.provider)
+    english_mode = is_english(provider_config)
 
     message = payload.message.strip()
     if not message:
@@ -506,9 +608,14 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
             revision = None  # 重置，让后续走普通问答逻辑
         # Agent 模式下：LLM 调用失败 / 无法判断 → 引导用户明确修改意图
         elif not revision:
-            content_type = "综述草稿" if payload.view_mode == "review" else "笔记"
-            reply = f"当前是 Agent 模式，专用于修改{content_type}。请明确说出你想要修改的内容，例如「请补充XX部分」「删除YY段落」「重写ZZ章节」。如有疑问也可以先切换到对话模式再提问。"
-            note = "Agent 模式下未识别到明确的修改意图，等待用户进一步指示。"
+            if english_mode:
+                content_type = "review draft" if payload.view_mode == "review" else "notes"
+                reply = f"Agent mode edits the current {content_type}. State the requested change explicitly—for example, add a section, remove a paragraph, or rewrite a subsection. Switch to Chat mode if you only want to ask a question."
+                note = "No clear revision instruction was detected in Agent mode."
+            else:
+                content_type = "综述草稿" if payload.view_mode == "review" else "笔记"
+                reply = f"当前是 Agent 模式，专用于修改{content_type}。请明确说出你想要修改的内容，例如「请补充XX部分」「删除YY段落」「重写ZZ章节」。如有疑问也可以先切换到对话模式再提问。"
+                note = "Agent 模式下未识别到明确的修改意图，等待用户进一步指示。"
             _save_chat_exchange(session_id, message, reply, note, payload.view_mode, conv_id)
             return {
                 "conv_id": conv_id,
@@ -522,8 +629,15 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
             }
 
     if revision and revision.get("intent") == "clarify":
-        reply = "我还不能确定你是不是在请求修改内容。你可以直接说出要改哪里，或者用 /修订 + 修改意见 明确告诉我。"
-        note = revision.get("reason", "需要你进一步澄清修改意图。")
+        reply = (
+            "I cannot yet tell whether you want to revise the content. State what to change, or use /revise followed by your instructions."
+            if english_mode
+            else "我还不能确定你是不是在请求修改内容。你可以直接说出要改哪里，或者用 /修订 + 修改意见 明确告诉我。"
+        )
+        note = revision.get(
+            "reason",
+            "Please clarify the revision intent." if english_mode else "需要你进一步澄清修改意图。",
+        )
         _save_chat_exchange(session_id, message, reply, note, payload.view_mode, conv_id)
         return {
             "conv_id": conv_id,
@@ -542,8 +656,16 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
         source = revision.get("source", "explicit")
 
         if source == "semantic" or source == "ai":
-            reply = "我判断你这条消息像是在请求修改内容。请在对话里确认后再执行，我会按你的确认内容进行修订。"
-            note = "已识别到修改意图，等待你确认后执行。"
+            reply = (
+                "This looks like a request to revise the content. Confirm it in the conversation and I will apply the proposed changes."
+                if english_mode
+                else "我判断你这条消息像是在请求修改内容。请在对话里确认后再执行，我会按你的确认内容进行修订。"
+            )
+            note = (
+                "Revision intent detected; waiting for confirmation."
+                if english_mode
+                else "已识别到修改意图，等待你确认后执行。"
+            )
             _save_chat_exchange(session_id, message, reply, note, payload.view_mode, conv_id)
             return {
                 "conv_id": conv_id,
@@ -577,8 +699,8 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
             except ValueError:
                 pass
             fresh_session = session_mgr.load_session(session_id) or session
-            reply = "综述已根据你的反馈重新生成。"
-            note = "综述修订已完成。"
+            reply = "The review has been regenerated from your feedback." if english_mode else "综述已根据你的反馈重新生成。"
+            note = "Review revision complete." if english_mode else "综述修订已完成。"
             _save_chat_exchange(session_id, message, reply, note, payload.view_mode, conv_id)
             return {
                 "conv_id": conv_id,
@@ -612,8 +734,8 @@ def chat_message(session_id: str, payload: ChatMessageRequest) -> dict:
         except ValueError:
             pass
         fresh_session = session_mgr.load_session(session_id) or session
-        reply = "笔记已根据你的反馈修订。"
-        note = "笔记修订已完成。"
+        reply = "The notes have been revised from your feedback." if english_mode else "笔记已根据你的反馈修订。"
+        note = "Notes revision complete." if english_mode else "笔记修订已完成。"
         _save_chat_exchange(session_id, message, reply, note, payload.view_mode, conv_id)
         return {
             "conv_id": conv_id,
@@ -786,6 +908,11 @@ async def chat_message_stream(session_id: str, payload: ChatMessageRequest):
 
 请基于以上资料（特别是检索到的原文段落和对话历史）回答问题。如引用原文，请标注来源编号。注意理解对话历史中的指代关系。"""
 
+    if is_english(provider_config):
+        system_prompt, user_prompt = _english_chat_prompts(
+            session, payload.view_mode, current_name, accepted_names, ctx, message
+        )
+
     async def generate_sse():
         full_reply = ""
         try:
@@ -880,15 +1007,26 @@ def compress_context(session_id: str, conv_id: str = "default") -> dict:
         for m in to_compress
     )
 
-    compress_prompt = f"""请将以下对话历史压缩为一段简洁的摘要（不超过 300 字），保留关键信息和上下文：
+    if is_english():
+        compress_prompt = f"""Compress this conversation history into a concise English summary of at most 220 words.
+Preserve research questions, evidence, decisions, references, unresolved issues, and context needed for follow-up questions.
+
+Conversation history:
+{history_text}
+
+Return only the English summary with no prefix or explanation."""
+        compress_system = "You create concise, accurate English conversation summaries."
+    else:
+        compress_prompt = f"""请将以下对话历史压缩为一段简洁的摘要（不超过 300 字），保留关键信息和上下文：
 
 {history_text}
 
 只输出摘要文本，不要加任何前缀或解释。"""
+        compress_system = "你是简洁的对话摘要助手。"
 
     try:
         llm = _chat_llm()
-        summary = llm.chat("你是简洁的对话摘要助手。", compress_prompt, []).strip()
+        summary = llm.chat(compress_system, compress_prompt, []).strip()
     except Exception as e:
         return {"status": "error", "message": f"压缩失败: {str(e)}"}
 

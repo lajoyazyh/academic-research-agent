@@ -17,11 +17,13 @@ def test_provider_config_keeps_model_alias_compatible():
         "provider_id": "openai",
         "api_key": "secret",
         "model": "gpt-4.1-mini",
+        "language": "en",
     })
     assert config["chat_model"] == "gpt-4.1-mini"
     assert config["model"] == "gpt-4.1-mini"
     assert config["embedding_model"] == "text-embedding-3-small"
     assert config["base_url"] == "https://api.openai.com/v1/"
+    assert config["language"] == "en"
 
 
 def test_custom_provider_does_not_invent_embedding_model():

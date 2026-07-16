@@ -439,11 +439,17 @@ class PaperRegisterTool(BaseTool):
             try:
                 from llms.client import LLMClient
                 llm = LLMClient(self.provider_config)
-                answer = llm.chat(
-                    "你只回答 yes 或 no。",
-                    f"研究主题：{topic}\n论文标题：{title[:150]}\n摘要前 500 字：{abstract[:500]}\n\n这篇论文与上述研究主题直接相关吗？",
-                    [],
-                ).strip().lower()
+                if llm.language == "en":
+                    relevance_system = "Judge topical relevance conservatively. Answer only yes or no."
+                    relevance_prompt = (
+                        f"Research topic: {topic}\nPaper title: {title[:150]}\n"
+                        f"First 500 characters of the abstract: {abstract[:500]}\n\n"
+                        "Is this paper directly relevant to the research topic?"
+                    )
+                else:
+                    relevance_system = "你只回答 yes 或 no。"
+                    relevance_prompt = f"研究主题：{topic}\n论文标题：{title[:150]}\n摘要前 500 字：{abstract[:500]}\n\n这篇论文与上述研究主题直接相关吗？"
+                answer = llm.chat(relevance_system, relevance_prompt, []).strip().lower()
             except Exception as exc:
                 return f"❌ 相关性审核失败：{exc}。本轮未登记该论文，请重试或选择其他论文。"
             if not answer.startswith(("yes", "是")):

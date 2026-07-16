@@ -3,6 +3,7 @@ import os
 import httpx
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
+from utils.locale import english_system_prompt, english_user_envelope, language_from_config
 
 
 class LLMClient:
@@ -20,6 +21,7 @@ class LLMClient:
         request_model = str(provider_config.get("chat_model") or provider_config.get("model") or "").strip()
         request_embedding_model = str(provider_config.get("embedding_model") or "").strip()
         self.provider_id = str(provider_config.get("provider_id") or "zhipu").strip()
+        self.language = language_from_config(provider_config)
 
         # BYOK: request-scoped keys are used only inside this client instance.
         self.api_key = request_key or os.getenv("ZHIPU_API_KEY") or os.getenv("OPENAI_API_KEY") or "your-api-key-here"
@@ -50,6 +52,9 @@ class LLMClient:
 
     def chat(self, system_prompt: str, user_query: str, history: list) -> str:
         self._ensure_configured()
+        if self.language == "en":
+            system_prompt = english_system_prompt(system_prompt)
+            user_query = english_user_envelope(user_query)
         messages = [{"role": "system", "content": system_prompt}]
         messages.extend(history)
         if user_query:
@@ -64,6 +69,9 @@ class LLMClient:
     def chat_stream(self, system_prompt: str, user_query: str, history: list):
         """流式对话，逐 token yield 返回内容。"""
         self._ensure_configured()
+        if self.language == "en":
+            system_prompt = english_system_prompt(system_prompt)
+            user_query = english_user_envelope(user_query)
         messages = [{"role": "system", "content": system_prompt}]
         messages.extend(history)
         if user_query:
