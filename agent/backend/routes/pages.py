@@ -22,6 +22,7 @@ from backend.auth import auth_enabled
 
 from fastapi.responses import HTMLResponse
 from backend.provider import ensure_provider_available, public_provider_catalog, public_provider_status
+from utils.locale import language_from_config
 from .models import ProviderConfig
 
 router = APIRouter(tags=["pages"])
@@ -136,27 +137,34 @@ class ProviderTestRequest(ProviderConfig):
     pass
 
 
-def _provider_test_error(exc: Exception, capability: str) -> tuple[str, str]:
+def _provider_test_error(exc: Exception, capability: str, language: str = "zh-CN") -> tuple[str, str]:
     """Map SDK errors to safe, actionable messages without returning provider payloads."""
     error_name = exc.__class__.__name__.lower()
     status_code = getattr(exc, "status_code", None)
     error_text = str(exc).lower()
+    english = language == "en"
 
     if status_code in {401, 403} or any(term in error_name for term in ("authentication", "permission")):
         if capability == "embedding":
-            return "embedding_permission_denied", "聊天模型可用，但当前 API Key 没有向量模型权限。请检查账号权限或暂时关闭向量检索。"
-        return "invalid_key", "API Key 无效，或没有访问聊天模型的权限。"
+            return "embedding_permission_denied", (
+                "The chat model works, but this API key cannot access the embedding model. Check account permissions or disable semantic retrieval."
+                if english else "聊天模型可用，但当前 API Key 没有向量模型权限。请检查账号权限或暂时关闭向量检索。"
+            )
+        return "invalid_key", "The API key is invalid or cannot access the chat model." if english else "API Key 无效，或没有访问聊天模型的权限。"
     if status_code in {402, 429} or any(term in error_text for term in ("quota", "balance", "credit", "insufficient", "余额", "额度")):
-        label = "向量模型" if capability == "embedding" else "聊天模型"
-        return "quota_exceeded", f"{label}请求被额度或频率限制。请检查提供商余额、套餐与调用限额。"
+        label = ("Embedding model" if capability == "embedding" else "Chat model") if english else ("向量模型" if capability == "embedding" else "聊天模型")
+        return "quota_exceeded", (f"{label} request was blocked by quota or rate limits. Check the provider balance, plan, and request limits." if english else f"{label}请求被额度或频率限制。请检查提供商余额、套餐与调用限额。")
     if "timeout" in error_name or "timed out" in error_text:
-        return "timeout", "连接超时，请检查网络、Base URL 或稍后重试。"
+        return "timeout", "Connection timed out. Check the network and Base URL, or retry later." if english else "连接超时，请检查网络、Base URL 或稍后重试。"
     if status_code == 404 or "notfound" in error_name or "not found" in error_text:
-        label = "向量模型" if capability == "embedding" else "聊天模型"
-        return "model_not_found", f"没有找到填写的{label}，请检查模型名称与 Base URL。"
+        label = ("embedding model" if capability == "embedding" else "chat model") if english else ("向量模型" if capability == "embedding" else "聊天模型")
+        return "model_not_found", (f"The configured {label} was not found. Check the model name and Base URL." if english else f"没有找到填写的{label}，请检查模型名称与 Base URL。")
     if capability == "embedding":
-        return "embedding_unavailable", "聊天模型可用，但向量模型请求失败。可改用推荐模型，或暂时关闭向量检索继续使用关键词检索。"
-    return "connection_failed", "聊天模型连接失败，请检查提供商、地址和模型名称。"
+        return "embedding_unavailable", (
+            "The chat model works, but the embedding request failed. Use a recommended embedding model or disable semantic retrieval and continue with keyword search."
+            if english else "聊天模型可用，但向量模型请求失败。可改用推荐模型，或暂时关闭向量检索继续使用关键词检索。"
+        )
+    return "connection_failed", "Chat model connection failed. Check the provider, Base URL, and model name." if english else "聊天模型连接失败，请检查提供商、地址和模型名称。"
 
 
 @router.post("/api/provider/test")
@@ -166,6 +174,7 @@ def test_provider(payload: ProviderTestRequest) -> dict:
 
     started_at = time.perf_counter()
     config = ensure_provider_available(payload)
+    language = language_from_config(config)
     capabilities = {"chat": False, "embedding": False}
     try:
         llm = LLMClient(config)
@@ -177,7 +186,7 @@ def test_provider(payload: ProviderTestRequest) -> dict:
         )
         capabilities["chat"] = True
     except Exception as exc:
-        error_code, message = _provider_test_error(exc, "chat")
+        error_code, message = _provider_test_error(exc, "chat", language)
         return {
             "ok": False,
             "capabilities": capabilities,
@@ -191,7 +200,7 @@ def test_provider(payload: ProviderTestRequest) -> dict:
             llm.client.embeddings.create(model=llm.embedding_model, input=["connection test"])
             capabilities["embedding"] = True
         except Exception as exc:
-            error_code, message = _provider_test_error(exc, "embedding")
+            error_code, message = _provider_test_error(exc, "embedding", language)
             return {
                 "ok": False,
                 "capabilities": capabilities,
@@ -204,7 +213,15 @@ def test_provider(payload: ProviderTestRequest) -> dict:
         "ok": True,
         "capabilities": capabilities,
         "latency_ms": round((time.perf_counter() - started_at) * 1000),
-        "message": "聊天和向量模型连接正常。" if capabilities["embedding"] else "聊天模型连接正常；当前使用关键词检索，不启用向量模型。",
+        "message": (
+            "Chat and embedding model connections are working."
+            if language == "en" and capabilities["embedding"]
+            else "Chat model connection is working; semantic retrieval is disabled, so keyword retrieval will be used."
+            if language == "en"
+            else "聊天和向量模型连接正常。"
+            if capabilities["embedding"]
+            else "聊天模型连接正常；当前使用关键词检索，不启用向量模型。"
+        ),
     }
 
 

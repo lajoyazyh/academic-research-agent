@@ -18,6 +18,7 @@ from .deps import (
 from backend.provider import ensure_provider_available
 from backend.cloud_persistence import SupabaseWorkspaceStore
 from backend.tenant import get_current_user, reset_current_user, set_current_user, tenant_key
+from utils.locale import is_english, language_from_config
 
 import threading
 from main import run_agent_pipeline, run_agent_pipeline_session  # noqa
@@ -106,7 +107,24 @@ def effective_search_loop_budget(requested_loops: int, target_new_papers: int) -
     return min(80, requested)
 
 
-def _search_outcome_message(new_count: int, target_new_papers: int, outcome: str) -> str:
+def _search_outcome_message(
+    new_count: int,
+    target_new_papers: int,
+    outcome: str,
+    language: str = "zh-CN",
+) -> str:
+    if language == "en":
+        if outcome == "complete":
+            return f"Search complete: added {new_count}/{target_new_papers} papers in this run."
+        if outcome == "partial":
+            return (
+                f"Search partially complete: added {new_count}/{target_new_papers} papers. "
+                "The target has not been reached; you can continue searching."
+            )
+        return (
+            f"Search failed: added 0/{target_new_papers} papers. "
+            "Check the keywords, data sources, or registration errors and retry."
+        )
     if outcome == "complete":
         return f"检索完成：本轮实际新增 {new_count}/{target_new_papers} 篇论文。"
     if outcome == "partial":
@@ -168,15 +186,14 @@ def _load_analysis_context_for_writing(session_id: str, paper_ids: list[str] | N
     return "\n\n".join(sections)
 
 
-def _repository_context_for_writing(session: dict) -> str:
+def _repository_context_for_writing(session: dict, language: str = "zh-CN") -> str:
     repositories = session.get("repositories") or []
     sections = []
     for index, repo in enumerate(repositories, start=1):
         report = str(repo.get("report") or "").strip()
         if report:
-            sections.append(
-                f"## GitHub 仓库证据 R{index}：{repo.get('full_name', 'repository')}\n\n{report}"
-            )
+            label = "GitHub repository evidence" if language == "en" else "GitHub 仓库证据"
+            sections.append(f"## {label} R{index}: {repo.get('full_name', 'repository')}\n\n{report}")
     return "\n\n---\n\n".join(sections)
 
 
@@ -220,7 +237,9 @@ def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all
         result["lineage"] = trace_lineage(topic, notes, papers, provider_config)
     if analysis_type in ("gaps", "all"):
         result["gaps"] = find_gaps(topic, notes, papers, provider_config)
-    result["document"] = _analysis_result_to_markdown(result, topic)
+    result["document"] = _analysis_result_to_markdown(
+        result, topic, language_from_config(provider_config)
+    )
 
     analysis_dir = session_mgr.root / session_id / "analysis"
     os.makedirs(analysis_dir, exist_ok=True)
@@ -231,17 +250,32 @@ def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all
     return result
 
 
-def _analysis_result_to_markdown(result: dict, topic: str) -> str:
+def _analysis_result_to_markdown(result: dict, topic: str, language: str = "zh-CN") -> str:
     sections = []
+    labels = (
+        {
+            "compare": "Comparative Evidence Analysis",
+            "lineage": "Research Lineage",
+            "gaps": "Research Gaps",
+            "title": "In-depth Analysis",
+        }
+        if language == "en"
+        else {
+            "compare": "文献对比分析",
+            "lineage": "研究脉络梳理",
+            "gaps": "研究空白发现",
+            "title": "深度分析",
+        }
+    )
     if str(result.get("compare", "") or "").strip():
-        sections.append(f"## 文献对比分析\n\n{result['compare']}")
+        sections.append(f"## {labels['compare']}\n\n{result['compare']}")
     if str(result.get("lineage", "") or "").strip():
-        sections.append(f"## 研究脉络梳理\n\n{result['lineage']}")
+        sections.append(f"## {labels['lineage']}\n\n{result['lineage']}")
     if str(result.get("gaps", "") or "").strip():
-        sections.append(f"## 研究空白发现\n\n{result['gaps']}")
+        sections.append(f"## {labels['gaps']}\n\n{result['gaps']}")
     if not sections:
         return ""
-    return f"# 深度分析：{topic}\n\n" + "\n\n---\n\n".join(sections)
+    return f"# {labels['title']}: {topic}\n\n" + "\n\n---\n\n".join(sections)
 
 @router.post("/{session_id}/run/plan")
 def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
@@ -372,10 +406,21 @@ def _run_search_in_background(
         outcome, outcome_state = classify_search_outcome(len(new_papers), target_new_papers)
         search_summary["outcome"] = outcome
         search_summary["state"] = outcome_state
-        search_summary["message"] = _search_outcome_message(len(new_papers), target_new_papers, outcome)
-        search_summary["message"] += f" 本轮 PDF 可用 {search_summary['pdf_available_count']}/{len(new_papers)} 篇。"
+        language = language_from_config(provider_config)
+        search_summary["message"] = _search_outcome_message(
+            len(new_papers), target_new_papers, outcome, language
+        )
+        search_summary["message"] += (
+            f" PDF available for {search_summary['pdf_available_count']}/{len(new_papers)} papers."
+            if language == "en"
+            else f" 本轮 PDF 可用 {search_summary['pdf_available_count']}/{len(new_papers)} 篇。"
+        )
         if outcome != "complete" and search_summary["stop_reason"] == "budget_exhausted":
-            search_summary["message"] += " 本轮执行预算已耗尽；继续检索将从新结果页开始。"
+            search_summary["message"] += (
+                " The execution budget was exhausted; continuing will resume from a new results page."
+                if language == "en"
+                else " 本轮执行预算已耗尽；继续检索将从新结果页开始。"
+            )
         result["search_summary"] = search_summary
         session_mgr.save_search_run(session_id, search_summary)
         try:
@@ -418,7 +463,10 @@ def _run_search_in_background(
             "target_new_papers": target_new_papers,
             "outcome": failed_outcome,
             "state": failed_state,
-            "message": f"{_search_outcome_message(len(failed_new), target_new_papers, failed_outcome)} 原因：{exc}",
+            "message": (
+                f"{_search_outcome_message(len(failed_new), target_new_papers, failed_outcome, language_from_config(provider_config))} "
+                f"{'Reason' if is_english(provider_config) else '原因'}: {exc}"
+            ),
             "error": str(exc),
         }
         try:
@@ -555,7 +603,9 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
             aggregated.append(f"## {p.get('title', p.get('paper_id', ''))}\n\n{pn}")
     notes = "\n\n---\n\n".join(aggregated)
 
-    repository_context = _repository_context_for_writing(session)
+    repository_context = _repository_context_for_writing(
+        session, language_from_config(provider_config)
+    )
     if repository_context:
         notes = f"{notes}\n\n---\n\n{repository_context}" if notes.strip() else repository_context
     
@@ -758,12 +808,35 @@ def revise_notes_phase(session_id: str, payload: ReviseNotesRequest) -> dict:
                     if pp.get("paper_id") == pid_p:
                         tit = pp.get("title", "")[:60]
                         break
-                parts.append(f"【{tit or pid_p} (第{pg}页)】\n{p['text']}")
+                citation_label = (
+                    f"[{tit or pid_p} (page {pg})]"
+                    if llm.language == "en"
+                    else f"【{tit or pid_p} (第{pg}页)】"
+                )
+                parts.append(f"{citation_label}\n{p['text']}")
             rag_context = "\n\n---\n\n".join(parts)
     except Exception:
         pass
 
-    revise_prompt = f"""你是一名严谨的学术研究员。请根据用户的反馈意见，对现有的研究笔记进行修订。
+    if llm.language == "en":
+        revise_prompt = f"""Revise the existing research notes according to the user's feedback.
+
+Research topic: {payload.topic}
+
+User feedback:
+{payload.feedback}
+
+Existing research notes:
+{notes}
+
+Additional retrieved evidence:
+{rag_context or "No additional evidence was retrieved."}
+
+Return the complete revised notes in Markdown. Preserve accurate source citations, do not use ellipses
+to stand in for unchanged content, and do not add commentary outside the notes."""
+        revise_system = "You are a rigorous academic research-note editor. Write the complete result in English."
+    else:
+        revise_prompt = f"""你是一名严谨的学术研究员。请根据用户的反馈意见，对现有的研究笔记进行修订。
     
 研究主题：{payload.topic}
 
@@ -775,15 +848,19 @@ def revise_notes_phase(session_id: str, payload: ReviseNotesRequest) -> dict:
 
 请按照用户的反馈意见修改现有研究笔记，输出修改后的完整笔记内容，不要保留未修改部分的省略号，不要输出额外的解释。
 """
+        revise_system = "你是学术笔记修改专家。"
     try:
-        new_notes = llm.chat("你是学术笔记修改专家。", revise_prompt, []).strip()
+        new_notes = llm.chat(revise_system, revise_prompt, []).strip()
         
         if is_paper_notes and payload.paper_id:
             session_mgr.batch_update_paper_notes(session_id, {payload.paper_id: new_notes})
         else:
             session_mgr.save_notes(session_id, new_notes)
             
-        return {"notes": new_notes, "message": "笔记已根据反馈修订"}
+        return {
+            "notes": new_notes,
+            "message": "Notes revised from your feedback" if llm.language == "en" else "笔记已根据反馈修订",
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"笔记修订执行失败: {str(e)}")
 
@@ -832,7 +909,9 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
             result["lineage"] = trace_lineage(topic, notes, papers, provider_config)
         if analysis_type in ("gaps", "all"):
             result["gaps"] = find_gaps(topic, notes, papers, provider_config)
-        result["document"] = _analysis_result_to_markdown(result, topic)
+        result["document"] = _analysis_result_to_markdown(
+            result, topic, language_from_config(provider_config)
+        )
 
         analysis_dir = session_mgr.root / session_id / "analysis"
         os.makedirs(analysis_dir, exist_ok=True)
@@ -973,11 +1052,22 @@ def _run_auto_pipeline_in_background(
             "pdf_available_count": _pdf_available_count(session_id, new_papers),
             "outcome": outcome,
             "state": outcome_state,
-            "message": _search_outcome_message(len(new_papers), min_papers, outcome),
+            "message": _search_outcome_message(
+                len(new_papers), min_papers, outcome, language_from_config(provider_config)
+            ),
         }
-        search_summary["message"] += f" 本轮 PDF 可用 {search_summary['pdf_available_count']}/{len(new_papers)} 篇。"
+        language = language_from_config(provider_config)
+        search_summary["message"] += (
+            f" PDF available for {search_summary['pdf_available_count']}/{len(new_papers)} papers."
+            if language == "en"
+            else f" 本轮 PDF 可用 {search_summary['pdf_available_count']}/{len(new_papers)} 篇。"
+        )
         if outcome != "complete" and search_summary["stop_reason"] == "budget_exhausted":
-            search_summary["message"] += " 本轮执行预算已耗尽；继续检索将从新结果页开始。"
+            search_summary["message"] += (
+                " The execution budget was exhausted; continuing will resume from a new results page."
+                if language == "en"
+                else " 本轮执行预算已耗尽；继续检索将从新结果页开始。"
+            )
         session_mgr.save_search_run(session_id, search_summary)
         try:
             session_mgr.update_session_state(session_id, outcome_state)

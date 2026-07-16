@@ -37,6 +37,7 @@ from backend.routes.deps import init_deps
 from backend.auth import auth_enabled, validate_access_token
 from backend.cloud_persistence import SupabaseWorkspaceStore
 from backend.tenant import reset_current_user, set_current_user
+from utils.locale import reset_current_language, set_current_language
 
 # ━━━ 路径常量 ━━━
 BASE_DIR = Path(__file__).resolve().parent
@@ -90,6 +91,7 @@ async def authenticated_tenant(request, call_next):
             return JSONResponse(status_code=status_code, content={"detail": detail})
 
     context_token = set_current_user(user_id)
+    language_token = set_current_language(request.headers.get("x-app-language", "zh-CN"))
     try:
         response = await call_next(request)
         if auth_enabled() and user_id != "local" and request.method in {"POST", "PUT", "PATCH", "DELETE"}:
@@ -102,6 +104,7 @@ async def authenticated_tenant(request, call_next):
                 print(f"[WorkspaceSync] {user_id}: {exc}")
         return response
     finally:
+        reset_current_language(language_token)
         reset_current_user(context_token)
 
 if FRONTEND_DIR.exists():

@@ -43,6 +43,7 @@ class ProviderConfig(BaseModel):
     model: str | None = None
     chat_model: str | None = None
     embedding_model: str | None = None
+    language: str | None = None
 
 
 class ChatMessageRequest(BaseModel):

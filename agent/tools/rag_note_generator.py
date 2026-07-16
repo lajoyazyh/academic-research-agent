@@ -8,6 +8,7 @@ RAG 笔记生成器 — RAG upgrade
 """
 
 import numpy as np
+import re
 from typing import Any
 
 from tools.pdf_tools import extract_full_text_from_pdf
@@ -89,6 +90,18 @@ class RAGNoteGenerator:
         self.llm = LLMClient(provider_config)
         self._embedding_failed = False  # 标记 Embedding API 是否已不可用
 
+    def _section_name(self, section: dict) -> str:
+        if self.llm.language != "en":
+            return section["name"]
+        return {
+            "研究背景": "Research Background",
+            "核心方法": "Core Method",
+            "实验设置": "Experimental Setup",
+            "关键结果": "Key Results",
+            "消融与分析": "Ablations and Analysis",
+            "亮点与不足": "Contributions and Limitations",
+        }.get(section["name"], section["name"])
+
     def _try_embed(self, texts: list[str]) -> np.ndarray | None:
         """尝试调用 Embedding API，失败时返回 None 并标记不可用"""
         if self._embedding_failed:
@@ -125,6 +138,11 @@ class RAGNoteGenerator:
         Returns:
             Markdown 格式的完整学术笔记
         """
+        if self.llm.language == "en" and re.search(r"[\u4e00-\u9fff]", skill_content or ""):
+            # A Chinese custom skill must not leak Chinese operational
+            # instructions into an English-mode model request.
+            skill_content = ""
+
         # 1. 全量提取段落
         blocks = extract_full_text_from_pdf(pdf_path)
         if not blocks:
@@ -160,7 +178,12 @@ class RAGNoteGenerator:
                     for idx in top_indices:
                         if float(scores[idx]) > 0.3:
                             b = blocks[idx]
-                            all_passages.append(f"【第{b['page']}页·{section['name']}相关】{b['text'][:500]}")
+                            passage_label = (
+                                f"[page {b['page']} · relevant to {self._section_name(section)}]"
+                                if self.llm.language == "en"
+                                else f"【第{b['page']}页·{section['name']}相关】"
+                            )
+                            all_passages.append(f"{passage_label}{b['text'][:500]}")
                 except Exception:
                     pass
             if all_passages:
@@ -169,7 +192,23 @@ class RAGNoteGenerator:
                 all_rag_text = abstract
 
             # 一次性生成整篇笔记，完全按照 Skill 结构
-            full_prompt = f"""你是严谨的学术研究员。请为以下论文生成完整的学术笔记。
+            if self.llm.language == "en":
+                full_prompt = f"""Write complete evidence-grounded academic notes for this paper.
+
+Paper title: {paper_title}
+Research topic: {topic}
+
+User-selected note skill:
+{skill_content}
+
+Retrieved full-text passages:
+{all_rag_text}
+
+Follow the selected skill's exact structure and section names. Use only facts supported by the supplied
+passages, mark missing information as “Not reported,” and return only the complete English notes."""
+                full_system = "You are a rigorous academic research-note writer. Follow the selected skill and return only complete English notes."
+            else:
+                full_prompt = f"""你是严谨的学术研究员。请为以下论文生成完整的学术笔记。
 
 论文标题：{paper_title}
 研究主题：{topic}
@@ -184,15 +223,17 @@ class RAGNoteGenerator:
 - 如果 Skill 指定了具体章节名，必须完全使用这些章节名
 - 信息不足处标注"未提及"，不编造内容
 - 只输出笔记本身，不要加额外说明"""
+                full_system = "你是严谨的学术研究员。严格按照Skill格式输出完整笔记，不添加额外说明。"
             try:
                 result = self.llm.chat(
-                    "你是严谨的学术研究员。严格按照Skill格式输出完整笔记，不添加额外说明。",
+                    full_system,
                     full_prompt, []
                 ).strip()
                 if result:
                     # 自检自修
                     result = self._self_repair_notes(result, skill_content)
-                    return f"## 论文笔记：{paper_title}\n\n{result}"
+                    heading = "Paper Notes" if self.llm.language == "en" else "论文笔记"
+                    return f"## {heading}: {paper_title}\n\n{result}"
             except Exception:
                 pass
             # 自生成失败时，回退到下面逐节生成
@@ -204,7 +245,7 @@ class RAGNoteGenerator:
             section_text = self._generate_section(
                 section, blocks, embeddings, paper_title, abstract, topic, skill_content
             )
-            sections_output.append(f"- **{section['name']}**：{section_text}")
+            sections_output.append(f"- **{self._section_name(section)}**: {section_text}" if self.llm.language == "en" else f"- **{section['name']}**：{section_text}")
 
         body = "\n\n".join(sections_output)
 
@@ -215,7 +256,7 @@ class RAGNoteGenerator:
         # ━━━ 通用自审 (Self-Critique) ━━━
         body = self._self_critique(paper_title, topic, body)
 
-        return f"## 论文笔记：{paper_title}\n\n{body}"
+        return f"## {'Paper Notes' if self.llm.language == 'en' else '论文笔记'}: {paper_title}\n\n{body}"
 
     def _generate_section(
         self,
@@ -247,14 +288,35 @@ class RAGNoteGenerator:
                 for idx in top_indices:
                     if float(scores[idx]) > 0.3:
                         b = blocks[idx]
-                        passages.append(
-                            f"【第{b['page']}页】{b['text'][:500]}"
+                        page_label = (
+                            f"[page {b['page']}]"
+                            if self.llm.language == "en"
+                            else f"【第{b['page']}页】"
                         )
+                        passages.append(f"{page_label}{b['text'][:500]}")
                 rag_text = "\n\n".join(passages) if passages else abstract
         except Exception:
             rag_text = abstract or "（无法检索原文）"
 
         # LLM 生成 — 双通道：有 Skill 时替换默认格式要求，无 Skill 时使用完整默认
+        if self.llm.language == "en":
+            section_name = self._section_name(section)
+            prompt = f"""Write the “{section_name}” portion of evidence-grounded notes for this paper.
+
+Research topic: {topic}
+Paper title: {paper_title}
+
+Retrieved source passages:
+{rag_text}
+
+Write a coherent English paragraph grounded only in the supplied passages. Name specific methods, datasets,
+experimental settings, metrics, and findings when they are present. If evidence is absent, state “Not reported
+in the available text.” Do not invent details. Return only the note content without a heading."""
+            try:
+                result = self.llm.chat("You are a rigorous academic research-note writer.", prompt, []).strip()
+                return result
+            except Exception:
+                return "Generation failed."
         if skill_content:
             # 通道 A：Skill 优先 — 用 Skill 内容替换默认写作要求，仅保留最小核心约束
             channel = "A"
@@ -310,6 +372,9 @@ class RAGNoteGenerator:
             修复后的笔记（修复失败时返回原文）
         """
         # ━━━ 第一轮：基于 Skill 要求完全重写 ━━━
+        missing_label = "Not reported" if self.llm.language == "en" else "未提及"
+        requirements_label = "FORMATTING REQUIREMENTS" if self.llm.language == "en" else "格式要求"
+        original_label = "ORIGINAL NOTES" if self.llm.language == "en" else "原始笔记"
         rewrite_prompt = f"""You are a strict formatting enforcer.
 
 Your task: COMPLETELY REWRITE the notes below according to the formatting requirements. Do NOT just adjust the existing format — rewrite from scratch following the EXACT structure specified in the requirements.
@@ -318,13 +383,13 @@ CRITICAL RULES:
 1. The skill requirements OVERRIDE any existing structure in the notes
 2. Output structure MUST match the skill requirements EXACTLY — section names, heading levels, bullet style, everything
 3. Preserve ALL academic facts from the original notes (methods, data, results)
-4. If a required section has no data, write "未提及" (not mentioned) — do NOT invent content
+4. If a required section has no data, write "{missing_label}" — do NOT invent content
 5. Output ONLY the final formatted notes — no explanations, no markdown code blocks, no commentary
 
-【FORMATTING REQUIREMENTS — THIS IS THE ONLY ALLOWED STRUCTURE】
+[{requirements_label} — THIS IS THE ONLY ALLOWED STRUCTURE]
 {skill_content}
 
-【ORIGINAL NOTES — EXTRACT ALL FACTS FROM HERE】
+[{original_label} — EXTRACT ALL FACTS FROM HERE]
 {raw_notes}
 
 CRITICAL: Output ONLY the fully rewritten notes. The output must be the final notes text directly."""
@@ -345,16 +410,16 @@ CRITICAL: Output ONLY the fully rewritten notes. The output must be the final no
 
 CHECK the notes below against EVERY requirement in the skill. For each formatting requirement, verify compliance. If anything is wrong, fix it.
 
-【REQUIREMENTS】
+[REQUIREMENTS]
 {skill_content}
 
-【NOTES TO VERIFY】
+[NOTES TO VERIFY]
 {repaired}
 
 IMPORTANT:
 - If section names don't match the requirements, rename them
 - If bullet style is wrong, fix it
-- If required sections are missing, add them with "未提及"
+- If required sections are missing, add them with "{missing_label}"
 - Output ONLY the verified/fixed notes text"""
         try:
             result = self.llm.chat(
@@ -379,7 +444,24 @@ IMPORTANT:
 
         发现不合格项时自动调用 LLM 补全/修复，最多 1 轮自审。
         """
-        critique_prompt = f"""你是严格的学术笔记质检员。请检查以下笔记的质量。
+        if self.llm.language == "en":
+            critique_prompt = f"""Audit and directly repair these academic paper notes.
+
+Paper title: {paper_title}
+Research topic: {topic}
+
+Check that the notes cover background, core method, experimental setup, key results, ablations or analysis,
+and contributions or limitations; use specific names and metrics only when supported; remain relevant to the
+paper; contain no repetition; and use English headings and prose. Mark unavailable information as “Not reported
+in the available text.” Never invent details.
+
+Notes to audit:
+{raw_notes}
+
+Return only the complete repaired English notes, or the original notes unchanged when they already pass."""
+            critique_system = "You are a strict academic research-note quality auditor. Return only complete English notes."
+        else:
+            critique_prompt = f"""你是严格的学术笔记质检员。请检查以下笔记的质量。
 
 论文标题：{paper_title}
 研究主题：{topic}
@@ -402,9 +484,10 @@ IMPORTANT:
 - 空泛描述：用更具体的表述替代，或标注"原文未提供详情"
 - 重复段落：合并或删除
 - 不要添加额外解释，只输出最终笔记"""
+            critique_system = "你是严格的学术笔记质检员。直接输出质检后的完整笔记，不做额外说明。"
         try:
             result = self.llm.chat(
-                "你是严格的学术笔记质检员。直接输出质检后的完整笔记，不做额外说明。",
+                critique_system,
                 critique_prompt, []
             ).strip()
             if result and len(result) > 100:
@@ -415,6 +498,20 @@ IMPORTANT:
 
     def _fallback(self, paper_title: str, abstract: str, topic: str, skill_content: str = "") -> str:
         """PDF 不可用时的降级"""
+        if self.llm.language == "en":
+            prompt = f"""Write concise English academic notes using only the available abstract.
+
+Research topic: {topic}
+Paper title: {paper_title}
+Abstract: {abstract or 'Not available'}
+
+Use these sections: Research Background, Core Method, Experimental Setup, Key Results, Relevance to the Research Topic,
+and Contributions and Limitations. State “Not reported in the abstract” where evidence is missing. Never invent details.
+Return only the complete Markdown notes."""
+            try:
+                return self.llm.chat("You are a rigorous academic research-note writer.", prompt, []).strip()
+            except Exception:
+                return f"## Paper Notes: {paper_title}\n\n- **Key findings**: {abstract or 'No abstract is available.'}"
         if skill_content:
             # 通道 A：Skill 优先 — 仅给 Skill + 摘要，不附加默认格式
             prompt = f"""你是严谨的学术研究员。请基于论文的摘要信息，撰写学术笔记。
@@ -469,10 +566,25 @@ IMPORTANT:
             query = f"{paper_title} {abstract[:200]} {topic} {' '.join(section['query_keywords'])}"
             passages = retriever.search(query, top_k=3)
             rag_text = "\n\n".join(
-                f"【第{p['page']}页】{p['text'][:400]}" for p in passages
+                (
+                    f"[page {p['page']}]{p['text'][:400]}"
+                    if self.llm.language == "en"
+                    else f"【第{p['page']}页】{p['text'][:400]}"
+                )
+                for p in passages
             ) if passages else abstract
 
-            if skill_content:
+            if self.llm.language == "en":
+                section_name = self._section_name(section)
+                prompt = f"""Write the “{section_name}” section of English academic notes for “{paper_title}”.
+Research topic: {topic}
+
+Source passages:
+{rag_text}
+
+Use only the passages, include specific methods, data, and conclusions when available, and state when details are not reported.
+Return one coherent paragraph without a heading."""
+            elif skill_content:
                 # 通道 A：Skill 优先 — 替换默认写作要求
                 prompt = f"""你是学术研究员。请为论文《{paper_title}》撰写「{section['name']}」笔记。
 
@@ -495,10 +607,10 @@ IMPORTANT:
 
 要求：以一段连贯的文字输出（{section['min_words']}字），引用原文中的具体方法/数据/结论。只输出笔记内容，不要编号列表。"""
             try:
-                note = self.llm.chat("你是严谨的学术研究员。", prompt, []).strip()
+                note = self.llm.chat("You are a rigorous academic research-note writer." if self.llm.language == "en" else "你是严谨的学术研究员。", prompt, []).strip()
             except Exception:
-                note = "（生成失败）"
-            sections_out.append(f"- **{section['name']}**：{note}")
+                note = "Generation failed." if self.llm.language == "en" else "（生成失败）"
+            sections_out.append(f"- **{self._section_name(section)}**: {note}" if self.llm.language == "en" else f"- **{section['name']}**：{note}")
 
-        return f"## 论文笔记：{paper_title}\n\n" + "\n\n".join(sections_out)
+        return f"## {'Paper Notes' if self.llm.language == 'en' else '论文笔记'}: {paper_title}\n\n" + "\n\n".join(sections_out)
 

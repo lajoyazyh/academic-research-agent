@@ -12,6 +12,7 @@ class BaseAgent:
                  min_new_papers: int = 3,
                  paper_progress_getter: Callable[[], int] | None = None):
         self.llm = LLMClient(provider_config)
+        self.language = getattr(self.llm, "language", "zh-CN")
         self.tools: Dict[str, BaseTool] = {tool.name: tool for tool in tools}
         self.max_loops = max_loops
         self.min_new_papers = max(1, int(min_new_papers or 3))
@@ -52,7 +53,25 @@ class BaseAgent:
         """Plan-and-Execute 规划阶段：在 ReAct 循环前，让 LLM 自主产出一个显式的研究计划。"""
         available_tools = list(self.tools.keys())
         search_tools = [name for name in available_tools if "search" in name]
-        planning_prompt = f"""你即将执行以下研究任务。请你先用一段简洁的文字制定你的研究计划：
+        if self.language == "en":
+            planning_prompt = f"""Create a concise, executable research plan for the following task:
+
+{user_query}
+
+Tools actually enabled for this run: {available_tools}
+Available literature-search tools: {search_tools or ['none']}
+Plan only with tools in these lists. Do not plan to use a database that is not enabled.
+
+State explicitly:
+1. Two or three English academic keyword groups to try.
+2. Which enabled database to query first and why.
+3. A fallback strategy if the first results are weak.
+4. That this run must add at least {self.min_new_papers} papers, and how successful registration will be verified.
+
+Return plain English text, not JSON, in at most 220 words."""
+            planning_system = "You are an academic research strategist. Return only the research plan in English, without JSON."
+        else:
+            planning_prompt = f"""你即将执行以下研究任务。请你先用一段简洁的文字制定你的研究计划：
 
 {user_query}
 
@@ -67,10 +86,11 @@ class BaseAgent:
 4. 明确写出本轮必须实际新增至少 {self.min_new_papers} 篇论文，并说明如何验证已登记成功。
 
 直接输出一个纯文本计划，不要用 JSON。控制在 300 字以内。"""
+            planning_system = "你是一个擅长制定研究策略的 AI 学术助手。请直接输出研究计划，不要用 JSON 包裹。"
 
         try:
             plan_text = self.llm.chat(
-                "你是一个擅长制定研究策略的 AI 学术助手。请直接输出研究计划，不要用 JSON 包裹。",
+                planning_system,
                 planning_prompt,
                 []
             )
@@ -81,6 +101,23 @@ class BaseAgent:
         
     def build_system_prompt(self) -> str:
         """构建系统级底层 Prompt，告知大模型工具可用性及 JSON 输出规约"""
+        if self.language == "en":
+            tool_descriptions = "\n".join(
+                f"- {name}; parameters: {list(tool.parameters.keys())}"
+                for name, tool in self.tools.items()
+            )
+            return f"""You are an autonomous academic research agent with tool-use capabilities.
+You may use only these tools:
+{tool_descriptions}
+
+Every response must be one valid JSON object and contain no surrounding prose or code fence:
+{{
+  "thought": "Brief English reasoning and error recovery plan",
+  "action": "One enabled tool name, or finish",
+  "action_input": {{"parameter": "value"}},
+  "final_answer": "English final answer only when action is finish; otherwise an empty string"
+}}
+All reasoning, observations you generate, and final prose must be English. Preserve source titles and quotations in their original language."""
         tool_descriptions = "\n".join(
             [f"- {name}: {t.description}\n  参数: {json.dumps(t.parameters, ensure_ascii=False)}" 
              for name, t in self.tools.items()]
@@ -102,6 +139,7 @@ class BaseAgent:
 
     def run(self, user_query: str) -> str:
         """Plan-and-Execute + ReAct + Reflexion：先规划，再执行，运行中自我修正"""
+        english = self.language == "en"
         system_prompt = self.build_system_prompt()
         history = []
         try:
@@ -113,13 +151,17 @@ class BaseAgent:
         plan = self._generate_plan(user_query)
         if plan:
             self.traces.append({
-                "thought": f"[规划阶段 Plan-and-Execute]\n{plan}",
+                "thought": f"[Planning · Plan-and-Execute]\n{plan}" if english else f"[规划阶段 Plan-and-Execute]\n{plan}",
                 "action": "PLAN",
                 "input": {},
-                "observation": "研究计划已生成，下面进入执行阶段。",
+                "observation": "Research plan generated; starting execution." if english else "研究计划已生成，下面进入执行阶段。",
                 "error_type": "",
             })
-            current_query = f"这是你之前制定的研究计划：\n\n{plan}\n\n---\n\n{user_query}\n\n现在请按照你的计划开始执行。"
+            current_query = (
+                f"Your research plan is below:\n\n{plan}\n\n---\n\n{user_query}\n\nExecute the plan now."
+                if english
+                else f"这是你之前制定的研究计划：\n\n{plan}\n\n---\n\n{user_query}\n\n现在请按照你的计划开始执行。"
+            )
         else:
             current_query = user_query
 
@@ -138,7 +180,10 @@ class BaseAgent:
             try:
                 llm_response_str = self.llm.chat(system_prompt, current_query, history)
             except Exception as e:
-                observation_error = f"LLM 请求失败：{str(e)}"
+                observation_error = (
+                    f"LLM request failed: {str(e)}"
+                    if english else f"LLM 请求失败：{str(e)}"
+                )
                 self.traces.append({
                     "thought": "ERROR: LLM_REQUEST",
                     "action": "LLM_REQUEST_ERROR",
@@ -162,7 +207,11 @@ class BaseAgent:
             except ValueError as e:
                 # 【核心：输出异常自我修正 Reflexion】
                 # 没有中断主循环！将其塞成环境报错丢给大模型强迫其改正格式重做
-                observation_error = f"JSON 提取或格式解析严重失败！报错日志：{str(e)}。强制要求：下一轮请端正格式严格重新输出合法的 JSON 结构。"
+                observation_error = (
+                    f"JSON extraction or schema parsing failed: {str(e)}. Return one strictly valid JSON object on the next turn."
+                    if english
+                    else f"JSON 提取或格式解析严重失败！报错日志：{str(e)}。强制要求：下一轮请端正格式严格重新输出合法的 JSON 结构。"
+                )
                 self.traces.append({
                     "thought": "ERROR: FORMATTING",
                     "action": "JSON_PARSE_ERROR",
@@ -205,9 +254,14 @@ class BaseAgent:
 
                 if not _should_allow:
                     gate_msg = (
-                        f"⚠️ 质量门禁拦截：你目前只收录了 {recorded_count} 篇论文，"
-                        f"但需要至少 {_min_papers} 篇。请用 paper_register 收录论文（自动下载 PDF 并登记），"
-                        "然后再 FINISH。不要在没收录够的情况下结束。"
+                        f"Quality gate: only {recorded_count} papers have been registered, but at least {_min_papers} are required. "
+                        "Use paper_register for relevant candidates before finishing."
+                        if english
+                        else (
+                            f"⚠️ 质量门禁拦截：你目前只收录了 {recorded_count} 篇论文，"
+                            f"但需要至少 {_min_papers} 篇。请用 paper_register 收录论文（自动下载 PDF 并登记），"
+                            "然后再 FINISH。不要在没收录够的情况下结束。"
+                        )
                     )
                     self.traces.append({
                         "thought": thought,
@@ -262,16 +316,28 @@ class BaseAgent:
                     action_input["offset"] = max(0, _safe_int(action_input.get("offset", 0), 0)) + page_size * repeated_count
                 else:
                     action_input["page"] = max(1, _safe_int(action_input.get("page", 1), 1)) + repeated_count
-                pagination_note = f"系统检测到重复检索，已自动翻到新的结果页：{action_input}。\n"
+                pagination_note = (
+                    f"A repeated search was advanced to a new results page automatically: {action_input}.\n"
+                    if english
+                    else f"系统检测到重复检索，已自动翻到新的结果页：{action_input}。\n"
+                )
 
             if action not in self.tools:
                 # 工具调用名不存在 -> 交由反思池
-                observation = f"你尝试调用的工具名称 '{action}' 并不存在。允许调用的工具有：{list(self.tools.keys())}。"
+                observation = (
+                    f"Tool '{action}' does not exist. Enabled tools: {list(self.tools.keys())}."
+                    if english
+                    else f"你尝试调用的工具名称 '{action}' 并不存在。允许调用的工具有：{list(self.tools.keys())}。"
+                )
                 error_type = "unknown_tool"
             elif action in rate_limited_tools:
                 observation = (
-                    f"❌ {action} 本轮已因 HTTP 429 暂停，禁止再次调用。"
-                    "请立即改用其他检索工具，并处理上一轮结果中尚未登记的候选论文。"
+                    f"{action} is disabled for this run after HTTP 429. Switch to another search tool and process unregistered candidates from the previous result batch."
+                    if english
+                    else (
+                        f"❌ {action} 本轮已因 HTTP 429 暂停，禁止再次调用。"
+                        "请立即改用其他检索工具，并处理上一轮结果中尚未登记的候选论文。"
+                    )
                 )
                 error_type = "provider_rate_limited"
             else:
@@ -281,7 +347,11 @@ class BaseAgent:
                     raw_observation = str(tool.execute(**action_input))
                     observation = pagination_note + raw_observation  # 【核心修复：防止 Token 爆炸导致 TPM 限流】
                     if len(observation) > 4500:
-                        observation = observation[:4500] + "\n\n...[警告：为防止大模型上下文超限，PDF后续内容已被系统自动截断]..."
+                        observation = observation[:4500] + (
+                            "\n\n...[The remaining tool output was truncated to stay within the model context limit]..."
+                            if english
+                            else "\n\n...[警告：为防止大模型上下文超限，PDF后续内容已被系统自动截断]..."
+                        )
                         error_type = "tool_observation_truncated"
                     elif raw_observation.lstrip().startswith("❌"):
                         error_type = "tool_reported_failure"
@@ -290,7 +360,12 @@ class BaseAgent:
                         error_type = "provider_rate_limited"
                 except Exception as ex:
                     # 【核心：运行时自我修正 Reflexion】
-                    observation = f"目标工具 '{action}' 在执行输入 \n{action_input}\n 时产生了一个异常报错: {str(ex)}。\n请使用 thought 字段反思参数为什么抛出该错误，调整你的算法和参数值并在下一次回答中重试。"
+                    observation = (
+                        f"Tool '{action}' failed for input\n{action_input}\nwith error: {str(ex)}. "
+                        "Use the thought field to diagnose the parameters, then retry with a corrected strategy."
+                        if english
+                        else f"目标工具 '{action}' 在执行输入 \n{action_input}\n 时产生了一个异常报错: {str(ex)}。\n请使用 thought 字段反思参数为什么抛出该错误，调整你的算法和参数值并在下一次回答中重试。"
+                    )
                     error_type = "tool_runtime_error"
 
                 # 如果 paper_register 成功收录，更新上次收录轮次
@@ -316,12 +391,16 @@ class BaseAgent:
                 if len(recent) >= 3 and len(set(recent)) == 1:
                     # 连续 3 次同一类错误 → 注入深度反思提示
                     deep_reflection = (
-                        f"🔴 深度反思警报：你已经连续 3 次遇到同一类错误（{error_type}）。"
-                        "请暂时停下当前策略，在你的 thought 中深刻分析：\n"
-                        "1. 这个错误的根本原因是什么？\n"
-                        "2. 你之前的策略为什么反复失败？\n"
-                        "3. 有哪些根本不同的替代方案可以尝试？\n"
-                        "然后在下一次行动中采用全新的策略，不要再重复之前的做法。"
+                        f"Reflection alert: the same error ({error_type}) occurred three times. In your next thought, identify the root cause, explain why the prior strategy failed, and choose a materially different alternative."
+                        if english
+                        else (
+                            f"🔴 深度反思警报：你已经连续 3 次遇到同一类错误（{error_type}）。"
+                            "请暂时停下当前策略，在你的 thought 中深刻分析：\n"
+                            "1. 这个错误的根本原因是什么？\n"
+                            "2. 你之前的策略为什么反复失败？\n"
+                            "3. 有哪些根本不同的替代方案可以尝试？\n"
+                            "然后在下一次行动中采用全新的策略，不要再重复之前的做法。"
+                        )
                     )
                     self.error_history.clear()
                     # 把反思提示追加到 current_query
@@ -334,15 +413,23 @@ class BaseAgent:
                 self.error_history.clear()
             
             # 把当前回合的环境事实结果交由下一轮 user 对话的输入，驱动 ReAct 前进
-            current_query = f"这是执行 '{action}' 的结果 / 环境报错观察 (Observation):\n{observation}\n现在请根据这个观察结果决定你的下一步 thought 和 action。"
+            current_query = (
+                f"Observation from executing '{action}':\n{observation}\nChoose the next thought and action from this evidence."
+                if english
+                else f"这是执行 '{action}' 的结果 / 环境报错观察 (Observation):\n{observation}\n现在请根据这个观察结果决定你的下一步 thought 和 action。"
+            )
             
         recorded_count = max(0, self.get_registered_paper_count() - initial_recorded_count)
         budget_message = (
-            f"执行预算已用完：实际新增 {recorded_count}/{self.min_new_papers} 篇。"
-            "系统已保存现有结果；继续检索时应从新关键词和下一页开始。"
+            f"Execution budget exhausted: added {recorded_count}/{self.min_new_papers} papers. Existing results were saved; continue with new keywords and the next results page."
+            if english
+            else (
+                f"执行预算已用完：实际新增 {recorded_count}/{self.min_new_papers} 篇。"
+                "系统已保存现有结果；继续检索时应从新关键词和下一页开始。"
+            )
         )
         self._add_trace(
-            thought="系统执行预算耗尽",
+            thought="Execution budget exhausted" if english else "系统执行预算耗尽",
             action="BUDGET_EXHAUSTED",
             observation=budget_message,
             error_type="budget_exhausted",

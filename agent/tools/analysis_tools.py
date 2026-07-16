@@ -31,17 +31,17 @@ def _parse_papers_from_notes(notes_content: str, papers_list: list[dict] = None)
     return papers
 
 
-def _build_paper_summary(papers: list[dict]) -> str:
+def _build_paper_summary(papers: list[dict], language: str = "zh-CN") -> str:
     """构建论文摘要文本"""
     lines = []
     for i, p in enumerate(papers, 1):
         lines.append(f"{i}. {p.get('title', 'Unknown')}")
         if p.get('authors'):
-            lines.append(f"   作者: {p['authors']}")
+            lines.append(f"   {'Authors' if language == 'en' else '作者'}: {p['authors']}")
         if p.get('year'):
-            lines.append(f"   年份: {p['year']}")
+            lines.append(f"   {'Year' if language == 'en' else '年份'}: {p['year']}")
         if p.get('abstract'):
-            lines.append(f"   摘要: {p['abstract'][:200]}")
+            lines.append(f"   {'Abstract' if language == 'en' else '摘要'}: {p['abstract'][:200]}")
     return "\n".join(lines)
 
 
@@ -52,7 +52,32 @@ def compare_papers(topic: str, notes_content: str, papers_list: list[dict] = Non
     """
     llm = LLMClient(provider_config)
     papers = _parse_papers_from_notes(notes_content, papers_list)
-    paper_summary = _build_paper_summary(papers)
+    paper_summary = _build_paper_summary(papers, llm.language)
+    if llm.language == "en":
+        prompt = f"""Compare the following papers about “{topic}” with precision. Return English Markdown with:
+
+## Core Method Comparison
+| Paper | Method or model | Core contribution | Experimental setup | Key metrics |
+|---|---|---|---|---|
+
+## Strengths and Limitations Matrix
+| Paper | Strengths | Limitations | Suitable settings |
+|---|---|---|---|
+
+## Cross-paper Synthesis
+- Shared assumptions and important differences
+- Which settings each approach suits
+- Complementary or composable ideas
+
+Paper list:
+{paper_summary}
+
+Research notes:
+{notes_content[:6000]}
+
+Use only supplied evidence. Return at most 1,000 English words."""
+        result = llm.chat("You are a rigorous academic comparison analyst.", prompt, []).strip()
+        return result or "Comparison analysis could not be generated; verify that the paper notes are complete."
     
     prompt = f"""你是资深学术研究员。请对以下关于「{topic}」的论文进行精确对比分析。
 
@@ -92,7 +117,28 @@ def trace_lineage(topic: str, notes_content: str, papers_list: list[dict] = None
     """
     llm = LLMClient(provider_config)
     papers = _parse_papers_from_notes(notes_content, papers_list)
-    paper_summary = _build_paper_summary(papers)
+    paper_summary = _build_paper_summary(papers, llm.language)
+    if llm.language == "en":
+        prompt = f"""Trace the development of research on “{topic}” from the supplied papers. Return English Markdown with:
+
+## Research Timeline
+Order the papers by time and identify foundational, incremental, review, or application work.
+
+## Technical Evolution
+Explain major changes in methods, representative contributions, and branches or convergences in the field.
+
+## Textual Lineage Map
+Use a compact arrow-based map connecting the works by identifier and year.
+
+Paper list:
+{paper_summary}
+
+Research notes:
+{notes_content[:6000]}
+
+Do not invent chronology or relationships absent from the evidence. Return at most 1,000 English words."""
+        result = llm.chat("You are a rigorous research-lineage analyst.", prompt, []).strip()
+        return result or "Research lineage could not be generated; verify that the paper notes are complete."
     
     prompt = f"""你是学术研究脉络分析师。请基于以下关于「{topic}」的论文，梳理该领域的研究发展脉络。
 
@@ -131,7 +177,28 @@ def find_gaps(topic: str, notes_content: str, papers_list: list[dict] = None, pr
     """
     llm = LLMClient(provider_config)
     papers = _parse_papers_from_notes(notes_content, papers_list)
-    paper_summary = _build_paper_summary(papers)
+    paper_summary = _build_paper_summary(papers, llm.language)
+    if llm.language == "en":
+        prompt = f"""Identify research gaps and future directions for “{topic}” using only the supplied papers. Return English Markdown with:
+
+## Areas Covered by Current Evidence
+Map each paper to the subtopics it actually addresses.
+
+## Underexplored Directions
+Assess methodological, dataset/evaluation, application, and interdisciplinary gaps. Clearly distinguish a demonstrated gap from an absence in this limited evidence set.
+
+## Prioritized Future Research
+For each short- or long-term direction, explain its value, a plausible entry point, and expected challenges.
+
+Paper list:
+{paper_summary}
+
+Research notes:
+{notes_content[:6000]}
+
+Never claim the entire field lacks something merely because these papers omit it. Return at most 1,000 English words."""
+        result = llm.chat("You are a rigorous research-gap analyst.", prompt, []).strip()
+        return result or "Research gaps could not be generated; verify that the paper notes are complete."
     
     prompt = f"""你是学术前沿洞察专家。请基于以下关于「{topic}」的论文，分析当前研究中的空白和未来方向。
 

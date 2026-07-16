@@ -197,6 +197,7 @@
       model: String(provider.chat_model || provider.model || "glm-4-flash").trim(),
       chat_model: String(provider.chat_model || provider.model || "glm-4-flash").trim(),
       embedding_model: String(provider.embedding_model || "").trim(),
+      language: window.academicLocale?.isEnglish() ? "en" : "zh-CN",
     };
     if (!payload.api_key) delete payload.api_key;
     return payload;
