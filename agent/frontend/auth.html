@@ -63,11 +63,12 @@
         <button class="github-auth-button" id="githubAuthButton" type="button">
           <i class="fa-brands fa-github" aria-hidden="true"></i><span>使用 GitHub 继续</span>
         </button>
-        <p class="github-auth-note">授权包含仓库读写权限，用于调研仓库及把产物导出到你选择的仓库；Token 不会写入项目数据库。</p>
+        <p class="github-auth-note">此处仅用于身份登录，不请求仓库读写权限。需要调研或导出仓库时，可在个人中心单独授权。</p>
       </section>
     </main>
   </div>
 
+  <script src="/static/product-analytics.js"></script>
   <script src="/static/locale.js"></script>
   <script src="/static/runtime-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

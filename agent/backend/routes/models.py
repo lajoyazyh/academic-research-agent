@@ -100,6 +100,10 @@ class AutoRunRequest(BaseModel):
     provider: ProviderConfig | None = None
 
 
+class RetryRunRequest(BaseModel):
+    provider: ProviderConfig | None = None
+
+
 class AnalysisRequest(BaseModel):
     topic: str
     analysis_type: str = "all"

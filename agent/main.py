@@ -644,6 +644,10 @@ def _build_evidence_catalog(
             "year": str(paper.get("year") or paper.get("published") or "").strip()[:4],
             "identifier": str(paper.get("doi") or paper.get("paper_id") or "").strip(),
             "url": str(paper.get("url") or paper.get("pdf_url") or "").strip(),
+            "evidence_basis": str(
+                paper.get("evidence_basis")
+                or ("full_text" if paper.get("pdf_status") == "available" else "abstract")
+            ),
             "excerpt": paper_notes[:5000],
         })
 
@@ -658,6 +662,7 @@ def _build_evidence_catalog(
             sources.append({
                 "id": f"P{index}", "kind": "paper", "title": lines[0].strip(),
                 "authors": "", "year": "", "identifier": "", "url": "",
+                "evidence_basis": "legacy_notes",
                 "excerpt": "\n".join(lines[1:])[:5000],
             })
 
@@ -670,6 +675,7 @@ def _build_evidence_catalog(
             "year": "",
             "identifier": str(repo.get("default_branch") or ""),
             "url": str(repo.get("html_url") or repo.get("url") or ""),
+            "evidence_basis": "repository_snapshot",
             "excerpt": str(repo.get("report") or repo.get("summary") or repo.get("readme") or "")[:6000],
         })
 
@@ -683,6 +689,7 @@ def _build_evidence_catalog(
                 f"Type: {'paper' if source['kind'] == 'paper' else 'GitHub repository'}"
                 f"{('; metadata: ' + meta) if meta else ''}\n"
                 f"Link: {source['url'] or 'not provided'}\n\n"
+                f"Evidence basis: {source.get('evidence_basis') or 'unknown'}\n\n"
                 f"{source['excerpt'] or 'Only metadata is available; research findings cannot be inferred from it.'}"
             )
         else:
@@ -691,6 +698,7 @@ def _build_evidence_catalog(
                 f"类型：{'论文' if source['kind'] == 'paper' else 'GitHub 仓库'}"
                 f"{('；元数据：' + meta) if meta else ''}\n"
                 f"链接：{source['url'] or '未提供'}\n\n"
+                f"证据基础：{source.get('evidence_basis') or 'unknown'}\n\n"
                 f"{source['excerpt'] or '当前材料仅包含元数据，不能据此推断研究结果。'}"
             )
     return "\n\n---\n\n".join(blocks), sources
@@ -722,7 +730,32 @@ def assess_review_quality(review: str, sources: list[dict], language: str = "zh-
     section_hits = sum(1 for name in required_sections if any(name.lower() in heading.lower() for heading in headings))
     omission = bool(re.search(r"此处省略|同上|详见上文|与上一版.*相同|\.\.\.\s*[（(]略", review))
     citation_coverage = round(len(used_ids) / max(1, len(valid_ids)), 2)
-    score = max(0, min(100, int(section_hits / len(required_sections) * 35 + citation_coverage * 50 + (15 if not omission and not invalid_ids else 0))))
+    body = re.sub(r"(?ms)^##\s+(?:参考来源|References)\s*.*$", "", review)
+    sentences = [item.strip() for item in re.split(r"(?<=[。！？.!?])\s+|\n+", body) if len(item.strip()) >= 20]
+    claim_pattern = re.compile(
+        r"(?:\d+(?:\.\d+)?\s*%|\b\d{2,}\b|method|model|dataset|sample|result|accuracy|"
+        r"方法|模型|数据集|样本|结果|准确率|召回率|显著)",
+        re.IGNORECASE,
+    )
+    substantive_claims = [sentence for sentence in sentences if claim_pattern.search(sentence)]
+    unsupported_claims = [
+        sentence[:240] for sentence in substantive_claims
+        if not re.search(r"\[[PR]\d+\]", sentence)
+    ]
+    claim_citation_coverage = round(
+        (len(substantive_claims) - len(unsupported_claims)) / max(1, len(substantive_claims)), 2
+    )
+    abstract_only_sources = sorted(
+        source["id"] for source in sources if source.get("evidence_basis") == "abstract"
+    )
+    base_score = int(
+        section_hits / len(required_sections) * 35
+        + citation_coverage * 35
+        + claim_citation_coverage * 15
+        + (15 if not omission and not invalid_ids else 0)
+    )
+    score = max(0, min(100, base_score))
+    passed = score >= 75 and not invalid_ids and not omission and not unsupported_claims
     return {
         "score": score,
         "source_count": len(valid_ids),
@@ -730,8 +763,11 @@ def assess_review_quality(review: str, sources: list[dict], language: str = "zh-
         "citation_coverage": citation_coverage,
         "invalid_citations": invalid_ids,
         "section_coverage": round(section_hits / len(required_sections), 2),
+        "claim_citation_coverage": claim_citation_coverage,
+        "unsupported_claims": unsupported_claims[:20],
+        "abstract_only_sources": abstract_only_sources,
         "has_omission_markers": omission,
-        "status": "passed" if score >= 75 and not invalid_ids and not omission else "needs_review",
+        "status": "passed" if passed else "needs_review",
     }
 
 
@@ -1178,6 +1214,7 @@ def _build_research_query(
     search_mode: str = "initial",
     available_tool_names: list[str] | None = None,
     language: str = "zh-CN",
+    previous_queries: list[dict] | None = None,
 ) -> str:
     """构建 Researcher Agent 的研究查询，支持用户确认的关键词"""
     if language == "en":
@@ -1196,7 +1233,13 @@ def _build_research_query(
             ])))
         existing_lines = [
             f"- {paper.get('paper_id', 'unknown')} | {str(paper.get('title') or '')[:120]}"
-            for paper in (existing_papers or [])[:40]
+            for paper in (existing_papers or [])[:80]
+        ]
+        previous_lines = [
+            f"- {item.get('source', 'source')}: {item.get('query', '')}"
+            + (f" (page/offset {item.get('page')})" if item.get("page") not in {None, ""} else "")
+            for item in (previous_queries or [])[-30:]
+            if str(item.get("query") or "").strip()
         ]
         return f"""## Research objective
 Conduct a scholarly literature search on “{topic}”. Add at least {target_new_papers} directly relevant papers with verified title, authors, and an abstract copied from a search or detail source.
@@ -1227,6 +1270,10 @@ Conduct a scholarly literature search on “{topic}”. Add at least {target_new
 
 ## Papers already in the project — do not register again
 {chr(10).join(existing_lines) if existing_lines else '- None'}
+
+## Queries already executed in earlier runs
+{chr(10).join(previous_lines) if previous_lines else '- None'}
+Do not repeat an identical source/query/page combination. Use a new synonym, a neighboring concept, citation-chain expansion, or a later result page.
 
 ## Initial plan
 {initial_plan}
@@ -1259,7 +1306,7 @@ Begin by stating a concise English tool-use plan in `thought`, then execute it. 
     tool_hint = "\n".join(f"- {name}" for name in available_tool_names)
     existing_papers = existing_papers or []
     existing_lines = []
-    for paper in existing_papers[:40]:
+    for paper in existing_papers[:80]:
         existing_lines.append(
             f"- {paper.get('paper_id', 'unknown')} | {paper.get('title', '')[:120]}"
         )
@@ -1271,6 +1318,19 @@ Begin by stating a concise English tool-use plan in `thought`, then execute it. 
             + "\n".join(existing_lines)
             + "\n请改用同义词、相邻主题、引用链或数据库后续分页扩展覆盖范围；"
               "如果 paper_register 返回‘已存在，未新增’，该论文不计入本轮成果。\n"
+        )
+    previous_lines = [
+        f"- {item.get('source', 'source')}: {item.get('query', '')}"
+        + (f"（页码/偏移 {item.get('page')}）" if item.get("page") not in {None, ""} else "")
+        for item in (previous_queries or [])[-30:]
+        if str(item.get("query") or "").strip()
+    ]
+    previous_query_hint = ""
+    if previous_lines:
+        previous_query_hint = (
+            "\n## 🧾 历史检索账本\n以下数据库、关键词和页码组合已经执行，禁止原样重复：\n"
+            + "\n".join(previous_lines)
+            + "\n请改用新的同义词、相邻概念、引用链扩展或后续结果页。\n"
         )
 
     return (
@@ -1309,7 +1369,7 @@ Begin by stating a concise English tool-use plan in `thought`, then execute it. 
         "- **🔴 遇到 HTTP 429（限流）时，立即换另一个数据库搜索，不要等待、不要重试、不要调用不存在的工具（wait/sleep/manual 都不存在）！**\n"
         "- 🔴 所有学术数据库都只支持英文关键词！中文关键词搜不到任何结果！必须在 thought 中将中文翻译为英文后再搜索。\n"
         "- HTTP 429 立即换数据库。\n"
-        + keyword_hint + incremental_hint +
+        + keyword_hint + incremental_hint + previous_query_hint +
         "## 🧭 初始计划草案（供参考，可在 thought 中修订）\n"
         f"{initial_plan}\n\n"
         "现在请开始你的调研。先用 thought 制定检索计划，然后执行。"
@@ -1351,6 +1411,18 @@ def run_search_only(
         os.makedirs(work_dir, exist_ok=True)
 
     os.makedirs(papers_dir, exist_ok=True)
+
+    previous_queries: list[dict] = []
+    if session_papers_dir:
+        runs_path = os.path.join(work_dir, "plan", "search_runs.json")
+        try:
+            with open(runs_path, "r", encoding="utf-8") as handle:
+                prior_runs = json.load(handle)
+            for prior_run in prior_runs[-20:]:
+                ledger = prior_run.get("retrieval_ledger") or {}
+                previous_queries.extend(ledger.get("queries") or [])
+        except (OSError, ValueError, TypeError):
+            previous_queries = []
 
     # ━━━ 从工具注册中心加载已启用的工具 ━━━
     tool_config_path = os.path.join(os.path.dirname(__file__), "config", "tools.json")
@@ -1417,6 +1489,7 @@ def run_search_only(
         search_mode=search_mode,
         available_tool_names=list(researcher_agent.tools.keys()),
         language=researcher_agent.language,
+        previous_queries=previous_queries,
     )
 
     # ━━━ 双通道 Skill 注入：搜索阶段 ━━━
@@ -1451,6 +1524,7 @@ def run_search_only(
                     search_mode=search_mode,
                     available_tool_names=list(researcher_agent.tools.keys()),
                     language=researcher_agent.language,
+                    previous_queries=previous_queries,
                 )
             )
             print(f"[Skill] Injected search skill: {search_skill_id}")

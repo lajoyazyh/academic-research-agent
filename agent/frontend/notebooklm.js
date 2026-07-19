@@ -41,7 +41,9 @@
     this.bindCommonElements();
     this.loadThemePreference();
     this.loadProviderConfig();
-    window.addEventListener("academic-auth-changed", () => this.loadProviderConfig());
+    window.addEventListener("academic-auth-changed", () => {
+      if (!this.state._providerAuthWaitBound) this.loadProviderConfig();
+    });
 
     // 为所有页面绑定主题切换按钮
     this.els.themeToggle = document.getElementById("themeToggle");
@@ -154,6 +156,17 @@
   },
 
   loadProviderConfig() {
+    if (window.academicAuth?.configured && !window.academicAuthUserId) {
+      this.refreshProviderStatus();
+      if (!this.state._providerAuthWaitBound) {
+        this.state._providerAuthWaitBound = true;
+        (window.academicAuthReady || Promise.resolve()).finally(() => {
+          this.state._providerAuthWaitBound = false;
+          this.loadProviderConfig();
+        });
+      }
+      return;
+    }
     const defaults = {
       provider_id: "zhipu",
       api_key: "",
@@ -172,20 +185,46 @@
     } catch (error) {
       this.state.provider = defaults;
     }
-    fetch("/api/provider/status")
-      .then((res) => res.json())
-      .then((status) => {
+    const applyStatus = (status) => {
+      if (!status) return;
         this.state.provider.server_available = !!status.server_provider_available;
         this.state.provider.base_url = this.state.provider.base_url || status.default_base_url || defaults.base_url;
         this.state.provider.model = this.state.provider.model || status.default_model || defaults.model;
         this.refreshProviderStatus();
-      })
-      .catch(() => this.refreshProviderStatus());
+    };
+    // Saved BYOK configuration is available synchronously; do not wait for the
+    // server capability check before painting the status in the navigation.
+    this.refreshProviderStatus();
+    (async () => {
+      const cached = await window.academicCache?.getEntry("provider", "status", { maxAgeMs: 5 * 60 * 1000 });
+      if (cached) applyStatus(cached.value);
+      if (cached && cached.ageMs < 60 * 1000) return;
+      try {
+        const response = await fetch("/api/provider/status");
+        const status = await response.json();
+        if (!response.ok) throw new Error("provider status unavailable");
+        applyStatus(status);
+        window.academicCache?.set("provider", "status", status);
+      } catch (_error) {
+        this.refreshProviderStatus();
+      }
+    })();
   },
 
   providerStorageKey() {
     const userId = window.academicAuthUserId || "local";
     return `academic-agent:provider:${userId}`;
+  },
+
+  cacheSessionSnapshot(sessionId, session) {
+    if (!sessionId || !session) return;
+    const snapshot = {
+      ...session,
+      // The newest trace steps are enough for an immediate paint. A background
+      // refresh restores the complete execution history.
+      traces: Array.isArray(session.traces) ? session.traces.slice(-80) : [],
+    };
+    window.academicCache?.set("session", sessionId, snapshot);
   },
 
   getProviderPayload() {
@@ -321,7 +360,13 @@
       this.els.keywordInput.addEventListener("input", () => this.syncKeywordPlanHint());
     }
     if (this.els.topicInput) {
-      this.els.topicInput.addEventListener("input", () => this.syncKeywordPlanHint());
+      this.els.topicInput.addEventListener("input", () => {
+        this.syncKeywordPlanHint();
+        this.syncTopicSubmitState();
+      });
+      this.els.topicInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !this.els.topicSubmit?.disabled) this.createTopicFromModal();
+      });
     }
 
     await this.loadHomeSessions();
@@ -330,29 +375,22 @@
 
   async loadHomeSessions() {
     if (!this.els.homeRail) return;
-
-    this.els.homeRail.innerHTML = '<div class="loading-state">正在加载历史综述...</div>';
+    const cached = await window.academicCache?.getEntry("workspace", "sessions", { maxAgeMs: 30 * 60 * 1000 });
+    if (cached && Array.isArray(cached.value)) {
+      this.state.sessions = cached.value;
+      this.renderHomeSessions();
+      if (cached.ageMs < 20 * 1000) return;
+    } else {
+      this.els.homeRail.innerHTML = '<div class="loading-state">正在加载历史综述...</div>';
+    }
     try {
       const response = await fetch("/api/sessions/list");
       const sessions = await response.json();
       this.state.sessions = Array.isArray(sessions) ? sessions : [];
-      // Enrich sessions with quick metadata (paper/note sizes) by calling session summary endpoints in parallel (best-effort)
-      const enriched = await Promise.all(this.state.sessions.slice(0,10).map(async (s) => {
-        try {
-          const res = await fetch(`/api/sessions/${encodeURIComponent(s.session_id)}`);
-          if (!res.ok) return s;
-          const detail = await res.json();
-          s.paper_count = Array.isArray(detail.papers) ? detail.papers.length : (detail.papers || []).length || 0;
-          s.note_size = detail.notes ? detail.notes.length : 0;
-        } catch (e) {
-          // ignore
-        }
-        return s;
-      }));
-      this.state.sessions = enriched.concat(this.state.sessions.slice(10));
       this.renderHomeSessions();
+      window.academicCache?.set("workspace", "sessions", this.state.sessions);
     } catch (error) {
-      this.els.homeRail.innerHTML = '<div class="empty-state">暂时无法加载最近项目，请刷新页面重试。</div>';
+      if (!cached) this.els.homeRail.innerHTML = '<div class="empty-state">暂时无法加载最近项目，请刷新页面重试。</div>';
     }
   },
 
@@ -512,16 +550,25 @@
     const statsGrid = document.getElementById("statsGrid");
     if (!statsGrid) return;
 
-    statsGrid.innerHTML = '<div class="stats-loading">加载中...</div>';
+    const cached = await window.academicCache?.getEntry("workspace", "stats", { maxAgeMs: 30 * 60 * 1000 });
+    if (cached?.value) {
+      this.renderHomeStats(cached.value);
+      if (cached.ageMs < 20 * 1000) return;
+    } else {
+      statsGrid.innerHTML = '<div class="stats-loading">加载中...</div>';
+    }
     try {
       const response = await fetch("/api/stats");
       if (!response.ok) throw new Error("API error");
       const stats = await response.json();
       this.renderHomeStats(stats);
+      window.academicCache?.set("workspace", "stats", stats);
     } catch (error) {
-      statsGrid.innerHTML = '<div class="stats-loading">暂时无法加载工作台概览。</div>';
-      const timelineBox = document.getElementById("timelineBox");
-      if (timelineBox) timelineBox.innerHTML = '<div class="timeline-empty">暂时无法加载最近活动。</div>';
+      if (!cached) {
+        statsGrid.innerHTML = '<div class="stats-loading">暂时无法加载工作台概览。</div>';
+        const timelineBox = document.getElementById("timelineBox");
+        if (timelineBox) timelineBox.innerHTML = '<div class="timeline-empty">暂时无法加载最近活动。</div>';
+      }
     }
   },
 
@@ -676,6 +723,7 @@
     }
     this.renderHomeKeywordPlan([]);
     this.syncKeywordPlanHint();
+    this.syncTopicSubmitState();
     const advanced = document.getElementById("createAdvancedSettings");
     if (advanced) advanced.open = false;
     // 加载 Skills 选择器选项
@@ -727,10 +775,13 @@
       }
 
       this.closeTopicModal();
+      window.academicCache?.remove("workspace", "sessions");
+      window.academicCache?.remove("workspace", "stats");
 
       this.trackProductEvent("project_created");
 
-      window.location.href = `/app/console?sessionId=${encodeURIComponent(data.session_id)}`;
+      // 只有刚创建项目时自动启动一次关键词规划；以后重新打开项目不再重复消耗模型请求。
+      window.location.href = `/app/console?sessionId=${encodeURIComponent(data.session_id)}&start=plan`;
     } catch (error) {
       alert(`创建失败：${error.message}`);
     } finally {
@@ -745,7 +796,7 @@
   trackProductEvent(name) {
     const safeEvents = new Set(["project_created", "first_search_completed", "first_review_generated", "provider_test_succeeded"]);
     if (!safeEvents.has(name)) return;
-    if (window.va && typeof window.va.track === "function") window.va.track(name);
+    if (typeof window.academicTrack === "function") window.academicTrack(name);
     window.dispatchEvent(new CustomEvent("academic-product-event", { detail: { name } }));
   },
 
@@ -846,6 +897,9 @@
 
       this.state.sessions = (this.state.sessions || []).filter((session) => session.session_id !== sessionId);
       this.renderHomeSessions();
+      window.academicCache?.set("workspace", "sessions", this.state.sessions);
+      window.academicCache?.remove("workspace", "stats");
+      window.academicCache?.remove("session", sessionId);
     } catch (error) {
       alert(`删除失败：${error.message}`);
     }
@@ -912,6 +966,8 @@
 
   async initConsole() {
     this.bindConsoleActions();
+    const searchAdvanced = document.getElementById("searchAdvanced");
+    if (searchAdvanced && window.matchMedia("(max-width: 720px)").matches) searchAdvanced.removeAttribute("open");
     this.setMobileWorkspacePanel("sources");
     this.updateChatPlaceholder();
     const params = new URLSearchParams(window.location.search);
@@ -964,6 +1020,11 @@
     });
     document.querySelectorAll("[data-mobile-panel]").forEach((button) => {
       button.addEventListener("click", () => this.setMobileWorkspacePanel(button.dataset.mobilePanel));
+    });
+    document.getElementById("mobileStageSummary")?.addEventListener("click", (event) => {
+      const progress = event.currentTarget.closest(".research-progress");
+      const expanded = progress?.classList.toggle("expanded") || false;
+      event.currentTarget.setAttribute("aria-expanded", String(expanded));
     });
     this.updateSearchLoopRecommendation(true);
     this.els.statusRetry?.addEventListener("click", () => this.retryLastAction());
@@ -1066,12 +1127,109 @@
     });
   },
 
-  retryLastAction() {
+  async retryLastAction() {
     const action = this.state.lastAction;
+    if (action === "resumeRun" && this.state.retryRunId && this.state.currentSessionId) {
+      const sessionId = this.state.currentSessionId;
+      try {
+        this.setConsoleStatus("searching", "正在从最近的检查点重新启动任务...");
+        const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/runs/${encodeURIComponent(this.state.retryRunId)}/retry`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(this.withProvider({})),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || data.message || "任务重试失败");
+        this.state.retryRunId = null;
+        this.state.activeRunId = data.run_id || null;
+        this.recoverActiveRun({ ...data, status: "running" });
+      } catch (error) {
+        this.setConsoleStatus("error", `任务重试失败：${error.message}`);
+      }
+      return;
+    }
     if (action === "auto") return this.startAutoRun();
     if (action === "notes") return this.generateNotesAction();
     if (action === "review") return this.generateReviewAction();
     return this.runSearchPhase();
+  },
+
+  syncTopicSubmitState() {
+    if (!this.els.topicSubmit) return;
+    const hasTopic = Boolean((this.els.topicInput?.value || "").trim());
+    this.els.topicSubmit.disabled = !hasTopic;
+    this.els.topicInput?.setAttribute("aria-invalid", String(!hasTopic && Boolean(this.els.topicInput.value)));
+  },
+
+  async restoreLatestRunStatus() {
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId) return;
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/run/status`);
+      const run = await response.json();
+      if (!response.ok || !run?.run_id || run.status === "unknown") return;
+      this.state.activeRunId = run.run_id;
+      if (run.status === "running") {
+        this.recoverActiveRun(run);
+        return;
+      }
+      if (run.status === "interrupted" || (run.retryable && ["error", "partial", "cancelled"].includes(run.status))) {
+        this.state.lastAction = "resumeRun";
+        this.state.retryRunId = run.run_id;
+        this.setConsoleStatus("interrupted", run.message || "任务已中断，已完成的结果仍然保留。可以使用当前模型配置重试。");
+      }
+    } catch (error) {
+      console.warn("恢复任务状态失败：", error);
+    }
+  },
+
+  recoverActiveRun(run = {}) {
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId) return;
+    const isAuto = run.kind === "auto";
+    this.state.lastAction = isAuto ? "auto" : "search";
+    this.state._autoRunning = isAuto;
+    this._setSearchButtons(isAuto ? "idle" : "searching");
+    this.setConsoleStatus(run.phase || "searching", run.message || "任务正在运行，已恢复进度跟踪...");
+    this.updateActionButtons();
+    if (this.state._recoveryPollTimer) clearInterval(this.state._recoveryPollTimer);
+
+    this.state._recoveryPollTimer = setInterval(async () => {
+      try {
+        const [statusResponse, sessionResponse] = await Promise.all([
+          fetch(`/api/sessions/${encodeURIComponent(sessionId)}/run/status`),
+          fetch(`/api/sessions/${encodeURIComponent(sessionId)}`),
+        ]);
+        const status = await statusResponse.json();
+        const session = await sessionResponse.json();
+        if (sessionResponse.ok) {
+          if (status.traces?.length) session.traces = status.traces;
+          if (status.analysis) session._analysis = status.analysis;
+          this.state.currentSession = session;
+          this.renderConsoleSession();
+        }
+        this.setConsoleStatus(status.phase || "searching", status.message || "任务正在运行...");
+
+        if (["done", "partial", "error", "cancelled", "interrupted"].includes(status.status)) {
+          clearInterval(this.state._recoveryPollTimer);
+          this.state._recoveryPollTimer = null;
+          this.state._autoRunning = false;
+          this._setSearchButtons("idle");
+          if (status.status === "interrupted" || status.retryable) {
+            this.state.lastAction = "resumeRun";
+            this.state.retryRunId = status.run_id;
+            this.setConsoleStatus("interrupted", status.message || "任务已停止，已有结果已保留，可以重试。");
+          } else if (status.status === "done") {
+            this.setConsoleStatus(status.phase || "complete", status.message || "任务已完成");
+          } else {
+            this.setConsoleStatus(status.phase || "error", status.message || "任务未能完成");
+          }
+          this.updateActionButtons();
+        }
+      } catch (error) {
+        console.warn("恢复任务轮询失败：", error);
+      }
+    }, 2500);
   },
 
   initChatResize() {
@@ -1111,12 +1269,31 @@
   },
 
   async loadSession(sessionId) {
+    let cached = null;
+    try {
+      cached = await window.academicCache?.getEntry("session", sessionId, { maxAgeMs: 10 * 60 * 1000 });
+      if (cached?.value) {
+        const cachedSession = cached.value;
+        this.state.currentSessionId = sessionId;
+        this.state.currentSession = cachedSession;
+        this.state.conversations = cachedSession.conversations || [];
+        const cachedPaperExists = this.state.currentPaperId && cachedSession.papers?.some((paper) => paper.paper_id === this.state.currentPaperId);
+        this.state.currentPaperId = cachedPaperExists ? this.state.currentPaperId : (cachedSession.papers?.[0]?.paper_id || null);
+        this.renderChatTabs();
+        this.renderConsoleSession();
+        document.body.classList.add("session-from-cache");
+      }
+    } catch (_error) {
+      cached = null;
+    }
     try {
       const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`);
       const session = await response.json();
       if (!response.ok) {
         throw new Error(session.detail || "加载会话失败");
       }
+      document.body.classList.remove("session-from-cache");
+      this.cacheSessionSnapshot(sessionId, session);
 
       this.state.currentSessionId = sessionId;
       this.state.currentSession = session;
@@ -1142,8 +1319,13 @@
       // 首次加载时渲染 tabs（含用量条），后续轮询通过 updateContextMeter 静默更新
       this.renderChatTabs();
       this.renderConsoleSession();
+      await this.restoreLatestRunStatus();
 
-      if (session.state === "planning" && (!session.keywords || session.keywords.length === 0)) {
+      const currentUrl = new URL(window.location.href);
+      const shouldAutoPlan = currentUrl.searchParams.get("start") === "plan";
+      if (session.state === "planning" && (!session.keywords || session.keywords.length === 0) && shouldAutoPlan) {
+        currentUrl.searchParams.delete("start");
+        window.history.replaceState({}, "", currentUrl.pathname + currentUrl.search);
         await this.runPlanPhase();
         return;
       }
@@ -1152,11 +1334,18 @@
         this.openKeywordModal(session.topic, session.keywords);
       }
     } catch (error) {
-      this.setConsoleStatus("error", `加载失败：${error.message}`);
+      if (cached?.value) {
+        this.setConsoleStatus("interrupted", `已显示上次缓存，后台刷新失败：${error.message}`);
+      } else {
+        this.setConsoleStatus("error", `加载失败：${error.message}`);
+      }
     }
   },
 
   setConsoleEmptyState() {
+    document.body.classList.add("console-no-session");
+    const consoleState = document.getElementById("consoleState");
+    if (consoleState) consoleState.textContent = "请选择研究项目";
     if (this.els.detailContent) {
       this.els.detailContent.innerHTML = '<div class="empty-state empty-state--action"><i class="fa-solid fa-lightbulb"></i><strong>从一个研究问题开始</strong><span>创建项目后，这里会显示论文摘要、笔记和 PDF 原文。</span><a class="primary-btn" href="/app">返回工作台新建研究</a></div>';
     }
@@ -1171,6 +1360,7 @@
   renderConsoleSession() {
     const session = this.state.currentSession;
     if (!session) return;
+    document.body.classList.remove("console-no-session");
 
     if (this.els.consoleTopic) {
       this.els.consoleTopic.textContent = session.topic || "未命名主题";
@@ -1216,6 +1406,9 @@
       if (index === activeIndex) item.setAttribute("aria-current", "step");
       else item.removeAttribute("aria-current");
     });
+    const activeStage = this.els.researchStages.querySelectorAll("[data-stage]")[activeIndex];
+    const mobileLabel = document.getElementById("mobileStageLabel");
+    if (mobileLabel && activeStage) mobileLabel.textContent = `${activeIndex + 1} / 6 · ${activeStage.textContent.replace(/^\s*\d+\s*/, "").trim()}`;
   },
 
   displaySource(value, sourceType) {
@@ -1251,6 +1444,7 @@
       reviewing_draft: "综述初稿已生成",
       complete: "研究已完成",
       failed: "任务失败",
+      interrupted: "任务已中断，可重试",
       error: "发生错误",
     };
     return label && label !== state ? label : (labels[state] || "就绪");
@@ -1263,7 +1457,7 @@
     }
     const statusHint = document.getElementById("statusHint");
     if (statusHint && displayLabel) statusHint.textContent = displayLabel;
-    if (this.els.statusRetry) this.els.statusRetry.hidden = !["error", "failed", "search_partial", "search_failed"].includes(state);
+    if (this.els.statusRetry) this.els.statusRetry.hidden = !["error", "failed", "search_partial", "search_failed", "interrupted"].includes(state);
     if (this.state.currentSession) this.updateResearchStage({ ...this.state.currentSession, state });
     if (!this.els.consoleStateDot) return;
 
@@ -1278,6 +1472,7 @@
       writing: "live",
       reviewing_draft: "warn",
       complete: "ok",
+      interrupted: "err",
       error: "err",
     };
 
@@ -1400,6 +1595,7 @@
     const hasDraft = Boolean(draft.trim());
     const topic = this.state.currentSession?.topic || "综述";
     const quality = this.state.currentSession?.review_quality || {};
+    const qualityPassed = quality.status === "passed" || quality.passed === true;
 
     if (hasDraft) {
       const outputFile = this.state.currentSessionId;
@@ -1414,7 +1610,25 @@
           <span style="font-size:0.82rem;color:var(--subtle);">点击查看完整综述 →</span>
         </div>
         <div style="margin-top:8px;" id="favBtnArea"></div>
-        ${quality.score !== undefined ? `<div class="review-quality"><i class="fa-solid fa-shield-halved"></i><span class="quality-score">证据质量 ${this.escapeHtml(String(quality.score))}/100</span><span>引用覆盖 ${this.escapeHtml(String(Math.round((quality.citation_coverage || 0) * 100)))}%</span></div>` : ""}
+        ${quality.score !== undefined ? `
+          <div class="review-quality ${qualityPassed ? "quality-pass" : "quality-warn"}">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span class="quality-score">证据质量 ${this.escapeHtml(String(quality.score))}/100</span>
+            <span>来源覆盖 ${this.escapeHtml(String(Math.round((quality.citation_coverage || 0) * 100)))}%</span>
+            <span>论断覆盖 ${this.escapeHtml(String(Math.round((quality.claim_citation_coverage || 0) * 100)))}%</span>
+            <strong>${qualityPassed ? "已通过质量门禁" : "建议复核后导出"}</strong>
+          </div>
+          ${!qualityPassed ? `
+            <details class="quality-findings">
+              <summary>查看质量风险</summary>
+              <div>
+                ${(quality.unsupported_claims || []).length ? `<p><strong>缺少引用的实质论断：</strong>${this.escapeHtml(String(quality.unsupported_claims.length))} 处</p>` : ""}
+                ${(quality.invalid_citations || []).length ? `<p><strong>无法验证的引用：</strong>${this.escapeHtml((quality.invalid_citations || []).join("、"))}</p>` : ""}
+                ${(quality.abstract_only_sources || []).length ? `<p><strong>仅基于摘要的来源：</strong>${this.escapeHtml((quality.abstract_only_sources || []).join("、"))}</p>` : ""}
+                <p>优先补齐全文或删除无法由来源支持的表述，再重新生成综述。</p>
+              </div>
+            </details>` : ""}
+        ` : ""}
       `;
       const link = document.getElementById("reviewTitleLink");
       if (link) {
@@ -1970,6 +2184,9 @@
   renderTraceView(session) {
     const traces = session?.traces || [];
     const topic = session?.topic || "当前会话";
+    const latestSearch = (session?.search_runs || []).at(-1) || {};
+    const ledger = latestSearch.retrieval_ledger || {};
+    const sourceEntries = Object.entries(ledger.source_counts || {});
 
     // 收集 SECTION markers 做目录
     const sections = [];
@@ -1986,6 +2203,18 @@
         <div class="lead">共 ${traces.length} 步 · ${sections.length > 0 ? sections.length + ' 个调研阶段 · ' : ''}当前状态：${session.state_label || session.state || "未知"}</div>
       </div>
     `;
+
+    if (latestSearch.started_at) {
+      html += `
+        <div class="retrieval-ledger" aria-label="本轮检索覆盖">
+          <div><small>本轮新增</small><strong>${this.escapeHtml(String(latestSearch.new_count || 0))} / ${this.escapeHtml(String(latestSearch.target_new_papers || "?"))}</strong></div>
+          <div><small>实际查询</small><strong>${this.escapeHtml(String((ledger.queries || []).length))}</strong></div>
+          <div><small>尝试登记</small><strong>${this.escapeHtml(String(ledger.registered_attempts || 0))}</strong></div>
+          <div><small>重复候选</small><strong>${this.escapeHtml(String(ledger.duplicate_attempts || 0))}</strong></div>
+          <div class="retrieval-ledger-sources"><small>来源覆盖</small><span>${sourceEntries.length ? sourceEntries.map(([name, count]) => `${this.escapeHtml(name)} · ${this.escapeHtml(String(count))}`).join("　") : "暂无来源调用记录"}</span></div>
+        </div>
+      `;
+    }
 
     // 目录导航
     if (sections.length > 0) {
@@ -2125,8 +2354,15 @@
     const sessionId = this.state.currentSessionId;
     if (!sessionId) { fill.style.width = "0%"; stats.textContent = ""; return; }
 
+    const convId = this.state.currentConvId || "default";
+    const requestKey = `${sessionId}:${convId}`;
+    const now = Date.now();
+    // renderChatContext 会在一次渲染中被多个面板调用；短暂去重可避免同一统计接口连发。
+    if (this._contextMeterRequestKey === requestKey && now - (this._contextMeterRequestedAt || 0) < 3000) return;
+    this._contextMeterRequestKey = requestKey;
+    this._contextMeterRequestedAt = now;
+
     try {
-      const convId = this.state.currentConvId || "default";
       const resp = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/context/stats?conv_id=${encodeURIComponent(convId)}`);
       const data = resp.ok ? await resp.json() : null;
 
@@ -2661,6 +2897,7 @@
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || "启动失败");
+      this.state.activeRunId = data.run_id || null;
     } catch (error) {
       this.state._autoRunning = false;
       this.setConsoleStatus("error", `自动模式启动失败：${error.message}`);
@@ -2747,7 +2984,7 @@
         this.updateActionButtons();
 
         // 检查是否完成
-        if (["done", "partial", "error", "cancelled"].includes(runStatus)) {
+        if (["done", "partial", "error", "cancelled", "interrupted"].includes(runStatus)) {
           clearInterval(this.state._autoPollTimer);
           this.state._autoPollTimer = null;
           this.state._autoRunning = false;
@@ -2762,6 +2999,10 @@
             this.setConsoleStatus("search_partial", status.message || "检索部分完成，尚未达到目标，请继续检索");
           } else if (runStatus === "error") {
             this.setConsoleStatus(status.phase === "search_failed" ? "search_failed" : "error", status.message || `自动流程失败：${status.error || "未知错误"}`);
+          } else if (runStatus === "interrupted") {
+            this.state.lastAction = "resumeRun";
+            this.state.retryRunId = status.run_id;
+            this.setConsoleStatus("interrupted", status.message || "自动流程已中断，已有结果已保留，可以重试。");
           }
           this.updateActionButtons();
         }
@@ -2820,8 +3061,8 @@
     const configured = Number(input?.value);
     if (!this.els.searchBudgetHelp) return;
     this.els.searchBudgetHelp.textContent = Number.isInteger(configured) && configured < recommended
-      ? `推荐 ${recommended} 轮；当前上限较低，可能在达到 ${target} 篇前结束。`
-      : `推荐 ${recommended} 轮；系统不会超过你设置的上限。`;
+      ? `目标 ${target} 篇，推荐 ${recommended} 轮；当前 ${configured} 轮上限可能提前结束。`
+      : `目标 ${target} 篇；最多执行 ${configured || recommended} 轮模型决策，达到目标后会提前结束。`;
   },
 
   getSearchLoopLimit(targetNewPapers = 3) {
@@ -3245,6 +3486,7 @@
       if (!response.ok) {
         throw new Error(data.detail || "搜索失败");
       }
+      this.state.activeRunId = data.run_id || null;
 
       if (this.state.pollTimer) {
         clearInterval(this.state.pollTimer);
@@ -3347,6 +3589,7 @@
       throw new Error(session.detail || "刷新失败");
     }
     this.state.currentSession = session;
+      this.cacheSessionSnapshot(this.state.currentSessionId, session);
     if (session.papers?.length && !this.state.currentPaperId) {
       this.state.currentPaperId = session.papers[0].paper_id;
     }
@@ -4000,6 +4243,8 @@
     const theme = localStorage.getItem("notebooklm:theme");
     if (theme === "dark") {
       document.body.dataset.theme = "dark";
+    } else {
+      document.body.dataset.theme = "";
     }
     this.updateThemeIcon();
   },
@@ -4029,7 +4274,11 @@
     if (btn) {
       btn.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
       btn.title = isDark ? "切换浅色模式" : "切换深色模式";
+      btn.setAttribute("aria-label", btn.title);
+      btn.setAttribute("aria-pressed", String(isDark));
     }
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) themeColor.content = isDark ? "#1e1e1e" : "#0b57d0";
   },
 
   escapeHtml(text) {
@@ -4728,9 +4977,7 @@ var GlobalCopilot = {
       overlay.addEventListener("click", function () { self.close(); });
     }
 
-    // 加载统计信息
-    this._loadStats();
-    this.loadKnowledgeSessions();
+    // 知识库数据只在用户真正打开侧栏时加载，避免每次进入工作台都发起额外请求。
   },
 
   toggle: function () {

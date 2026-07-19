@@ -1,0 +1,27 @@
+# Vercel hosts only the static frontend. Keep the upload small and leave the
+# Python research service, tests, local data, and deployment documentation out.
+.github/
+agent/backend/
+agent/config/
+agent/core/
+agent/llms/
+agent/prompts/
+agent/sessions/
+agent/tools/
+agent/utils/
+agent/*.py
+agent/*.md
+docs/
+evaluation/
+supabase/
+tests/
+
+DEPLOYMENT.md
+PROJECT_PAGE.md
+README.md
+SECURITY.md
+Dockerfile
+docker-compose.yml
+render.yaml
+requirements.txt
+.env.example

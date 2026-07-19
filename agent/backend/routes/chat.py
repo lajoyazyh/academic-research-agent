@@ -1038,7 +1038,7 @@ Return only the English summary with no prefix or explanation."""
     # 保存压缩后的消息
     conv_path = session_mgr.root / session_id / "chats" / f"{conv_id}.json"
     try:
-        conv_path.write_text(json.dumps(compressed, ensure_ascii=False, indent=2), encoding="utf-8")
+        session_mgr._write_json(conv_path, compressed)
     except Exception:
         pass
 

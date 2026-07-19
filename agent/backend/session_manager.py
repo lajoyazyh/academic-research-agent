@@ -14,6 +14,8 @@ import re
 import uuid
 import shutil
 import datetime
+import threading
+import tempfile
 from pathlib import Path
 from typing import Any, Optional
 from enum import Enum
@@ -104,6 +106,7 @@ class SessionManager:
         """
         self._base_root = Path(sessions_root)
         self._base_root.mkdir(parents=True, exist_ok=True)
+        self._io_lock = threading.RLock()
 
     @property
     def root(self) -> Path:
@@ -352,7 +355,7 @@ class SessionManager:
         session_dir = self.root / session_id
         if not session_dir.exists():
             raise ValueError(f"Session {session_id} 不存在")
-        (session_dir / "plan" / "initial_plan.md").write_text(plan_md, encoding="utf-8")
+        self._write_text(session_dir / "plan" / "initial_plan.md", plan_md)
 
     # ━━━━━ 论文管理 ━━━━━
 
@@ -501,7 +504,12 @@ class SessionManager:
         self.save_papers_list(session_id, papers)
         return self.load_session(session_id)
 
-    def batch_update_paper_notes(self, session_id: str, paper_notes_map: dict) -> dict:
+    def batch_update_paper_notes(
+        self,
+        session_id: str,
+        paper_notes_map: dict,
+        evidence_basis_map: dict | None = None,
+    ) -> dict:
         """批量更新多篇论文的笔记：{paper_id: notes_text}"""
         papers = self.get_papers(session_id)
         for p in papers:
@@ -509,6 +517,9 @@ class SessionManager:
             if pid in paper_notes_map:
                 p["notes"] = paper_notes_map[pid]
                 p["has_notes"] = bool(paper_notes_map[pid].strip())
+                if evidence_basis_map and pid in evidence_basis_map:
+                    p["evidence_basis"] = evidence_basis_map[pid]
+                    p["evidence_updated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
         self.save_papers_list(session_id, papers)
         return self.load_session(session_id)
 
@@ -529,6 +540,8 @@ class SessionManager:
             p.setdefault("pdf_status", "")
             p.setdefault("pdf_error", "")
             p.setdefault("pdf_filename", "")
+            p.setdefault("evidence_basis", "")
+            p.setdefault("evidence_updated_at", "")
 
             # Normalize values: if a field is a list, join it. For most fields we then
             # truncate at the first line break (handling literal "\\n" sequences),
@@ -626,7 +639,7 @@ class SessionManager:
             if old_content.strip() != content.strip():
                 ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 backup_path = history_dir / f"notes_v{ts}.md"
-                backup_path.write_text(old_content, encoding="utf-8")
+                self._write_text(backup_path, old_content)
                 # 记录编辑历史
                 edit_log = {
                     "timestamp": ts,
@@ -639,7 +652,7 @@ class SessionManager:
                 logs.append(edit_log)
                 self._write_json(log_path, logs)
 
-        notes_path.write_text(content, encoding="utf-8")
+        self._write_text(notes_path, content)
         self._touch_metadata(session_dir)
         return self.load_session(session_id)
 
@@ -716,12 +729,12 @@ class SessionManager:
             version = len(existing) + 1
 
         review_path = review_dir / f"review_v{version}.md"
-        review_path.write_text(content, encoding="utf-8")
+        self._write_text(review_path, content)
 
         # 额外写入一份 current_review.md，便于前端快速获取最新综述
         try:
             current_path = review_dir / "current_review.md"
-            current_path.write_text(content, encoding="utf-8")
+            self._write_text(current_path, content)
         except Exception:
             pass
 
@@ -729,8 +742,8 @@ class SessionManager:
         try:
             draft_dir = session_dir / "draft"
             draft_dir.mkdir(parents=True, exist_ok=True)
-            (draft_dir / f"draft_v{version}.md").write_text(content, encoding="utf-8")
-            (draft_dir / "current_draft.md").write_text(content, encoding="utf-8")
+            self._write_text(draft_dir / f"draft_v{version}.md", content)
+            self._write_text(draft_dir / "current_draft.md", content)
         except Exception:
             pass
 
@@ -759,7 +772,7 @@ class SessionManager:
             raise ValueError(f"Session {session_id} 不存在")
 
         feedback_path = session_dir / "review" / "user_feedback.md"
-        feedback_path.write_text(feedback, encoding="utf-8")
+        self._write_text(feedback_path, feedback)
         return self.load_session(session_id)
 
     def get_feedback(self, session_id: str) -> str:
@@ -913,8 +926,22 @@ class SessionManager:
         return None
 
     def _write_json(self, path: Path, data: Any) -> None:
+        self._write_text(path, json.dumps(data, ensure_ascii=False, indent=2))
+
+    def _write_text(self, path: Path, content: str) -> None:
+        """Atomically replace a project artifact so readers never see partial data."""
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        with self._io_lock:
+            fd, temp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent))
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8", newline="") as handle:
+                    handle.write(content)
+                    handle.flush()
+                    os.fsync(handle.fileno())
+                os.replace(temp_name, path)
+            finally:
+                if os.path.exists(temp_name):
+                    os.unlink(temp_name)
 
     def _touch_metadata(self, session_dir: Path) -> None:
         metadata = self._read_json(session_dir / "metadata.json") or {}

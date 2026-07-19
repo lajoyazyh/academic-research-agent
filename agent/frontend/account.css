@@ -177,6 +177,9 @@ a { color: inherit; }
 .profile-meta { margin-top: 4px; color: var(--account-subtle); font-size: 12px; }
 .account-actions { display: flex; justify-content: flex-end; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--account-line); }
 .api-status { display: flex; align-items: flex-start; gap: 10px; margin: 4px 0 20px; padding: 12px 13px; border-radius: 10px; background: #f1f3f4; color: var(--account-subtle); font-size: 13px; line-height: 1.5; }
+.api-status-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px; margin-bottom: 20px; }
+.api-status-row .api-status { margin: 4px 0 0; }
+.compact-action { min-height: 38px; padding: 0 12px; white-space: nowrap; }
 .api-status.ok { color: var(--account-success); background: #e6f4ea; }
 .api-status.warn { color: #8a4b00; background: #fef7e0; }
 .provider-model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -212,6 +215,9 @@ a { color: inherit; }
   .auth-card, .profile-card { padding: 20px; border-radius: 16px; }
   .auth-points { display: none; }
   .api-form-actions { align-items: stretch; flex-direction: column-reverse; }
-  .api-form-actions > div { display: grid; grid-template-columns: 1fr 1fr; }
+  .api-form-actions > div { display: grid; grid-template-columns: 1fr; }
+  .api-form-actions button { width: 100%; white-space: nowrap; }
   .provider-model-grid { grid-template-columns: 1fr; gap: 0; }
+  .api-status-row { grid-template-columns: 1fr; }
+  .compact-action { width: 100%; }
 }

@@ -141,7 +141,7 @@ def _save_repository_source(session_id: str, source: dict) -> None:
         sources = []
     sources = [item for item in sources if item.get("full_name") != source.get("full_name")]
     sources.append(source)
-    path.write_text(json.dumps(sources, ensure_ascii=False, indent=2), encoding="utf-8")
+    session_mgr._write_json(path, sources)
 
 
 @router.get("/status")

@@ -165,7 +165,7 @@ def auto_fix_session_state(session_id: str) -> dict:
         meta = json.loads((session_dir / "metadata.json").read_text(encoding="utf-8"))
         meta["state"] = new_state
         meta["updated_at"] = datetime.datetime.now().isoformat()
-        (session_dir / "metadata.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        session_mgr._write_json(session_dir / "metadata.json", meta)
 
     return {"status": "fixed", "message": f"状态已从 '{state}' 修复为 '{new_state}'", "state": new_state}
 
@@ -183,7 +183,7 @@ def update_session(session_id: str, payload: dict) -> dict:
         if "topic" in payload:
             meta["topic"] = payload["topic"]
         meta["updated_at"] = datetime.datetime.now().isoformat()
-        metadata_path.write_text(_json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        session_mgr._write_json(metadata_path, meta)
     return session_mgr.load_session(session_id)
 
 
@@ -385,7 +385,6 @@ async def upload_paper(session_id: str, file: UploadFile = File(...)):
         raise HTTPException(status_code=404, detail="Session 不存在")
     
     import os
-    import shutil
     import hashlib
     session_dir = session_mgr.root / session_id
     papers_dir = session_dir / "papers"
@@ -395,23 +394,59 @@ async def upload_paper(session_id: str, file: UploadFile = File(...)):
     # paper id so preview/delete routes use the same stable filename and an
     # uploaded filename can never escape the papers directory.
     safe_filename = Path(file.filename or "uploaded-paper.pdf").name
-    clean_id = "paper_" + hashlib.md5(safe_filename.encode('utf-8')).hexdigest()[:8]
-    
-    stored_filename = f"{clean_id}.pdf"
-    file_path = papers_dir / stored_filename
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    if not safe_filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=415, detail="仅支持 PDF 文件")
+    if file.content_type and file.content_type.lower() not in {"application/pdf", "application/octet-stream"}:
+        raise HTTPException(status_code=415, detail="文件类型不是 PDF")
+    # Preserve the legacy filename-derived id so existing links and imported
+    # workspaces keep resolving, while still storing the content digest below
+    # for integrity and future content-level de-duplication.
+    clean_id = "paper_" + hashlib.md5(safe_filename.encode("utf-8")).hexdigest()[:8]
+
+    max_bytes = max(1, int(os.getenv("MAX_PDF_UPLOAD_MB", "30"))) * 1024 * 1024
+    digest = hashlib.sha256()
+    total_bytes = 0
+    temp_path = papers_dir / f".upload-{hashlib.sha256(os.urandom(24)).hexdigest()[:16]}.tmp"
+    try:
+        with open(temp_path, "wb") as buffer:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                total_bytes += len(chunk)
+                if total_bytes > max_bytes:
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"PDF 超过 {max_bytes // (1024 * 1024)} MB 上传限制",
+                    )
+                digest.update(chunk)
+                buffer.write(chunk)
+        if total_bytes < 5:
+            raise HTTPException(status_code=400, detail="PDF 文件为空或不完整")
+        with open(temp_path, "rb") as source:
+            if source.read(5) != b"%PDF-":
+                raise HTTPException(status_code=415, detail="文件内容不是有效 PDF")
+        stored_filename = f"{clean_id}.pdf"
+        file_path = papers_dir / stored_filename
+        os.replace(temp_path, file_path)
+    finally:
+        if temp_path.exists():
+            temp_path.unlink()
         
     try:
         import fitz
     except ImportError:
         raise HTTPException(status_code=500, detail="缺少依赖 PyMuPDF")
 
+    doc = None
     try:
         doc = fitz.open(str(file_path))
         total_pages = len(doc)
         if total_pages == 0:
             raise ValueError("PDF 为空。")
+        max_pages = max(1, int(os.getenv("MAX_PDF_PAGES", "500")))
+        if total_pages > max_pages:
+            raise ValueError(f"PDF 页数超过 {max_pages} 页限制")
 
         text_blocks = []
         pages_to_read = list(range(min(5, total_pages)))
@@ -423,7 +458,12 @@ async def upload_paper(session_id: str, file: UploadFile = File(...)):
         if not res_text.strip():
             raise ValueError("无法从 PDF 提取文本内容")
     except Exception as e:
+        if file_path.exists():
+            file_path.unlink()
         raise HTTPException(status_code=400, detail=f"解析 PDF 失败：{str(e)}")
+    finally:
+        if doc is not None:
+            doc.close()
 
     session_papers = session.get("papers", [])
     paper_title = f"{safe_filename}"
@@ -480,6 +520,7 @@ PDF 文本片段（前 5 页）：
         "source_type": "pdf",
         "original_filename": safe_filename,
         "pdf_filename": stored_filename,
+        "content_sha256": digest.hexdigest(),
         "status": "accepted",
         "added_at": datetime.datetime.now().isoformat(),
     })
@@ -589,10 +630,7 @@ def save_analysis(session_id: str, payload: dict) -> dict:
 
     analysis_dir = session_mgr.root / session_id / "analysis"
     analysis_dir.mkdir(parents=True, exist_ok=True)
-    (analysis_dir / "analysis_results.json").write_text(
-        json.dumps(analysis, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    session_mgr._write_json(analysis_dir / "analysis_results.json", analysis)
     return {"message": "Success", "analysis": analysis}
 
 

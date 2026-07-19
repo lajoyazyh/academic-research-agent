@@ -24,6 +24,9 @@ def validate_access_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Missing bearer token")
     now = time.time()
     with _cache_lock:
+        if len(_cache) > 2000:
+            for stale_token in [key for key, value in _cache.items() if value[0] <= now]:
+                _cache.pop(stale_token, None)
         cached = _cache.get(token)
         if cached and cached[0] > now:
             return cached[1]

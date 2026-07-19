@@ -72,6 +72,10 @@
   });
 
   auth.client.auth.onAuthStateChange(function (event, session) {
+    var previousUserId = window.academicAuthUserId;
+    if (event === "SIGNED_OUT" && window.academicCache) {
+      window.academicCache.clearScope(previousUserId);
+    }
     publishSession(session);
     if (event === "SIGNED_OUT") {
       Object.keys(sessionStorage).forEach(function (key) {

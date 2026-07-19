@@ -62,7 +62,7 @@
         <section class="profile-card" id="api" aria-labelledby="apiTitle">
           <h2 id="apiTitle">模型 API</h2>
           <p class="card-description">选择模型提供商并测试连接。密钥默认只保留到当前浏览器会话结束。</p>
-          <div class="api-status" id="apiStatus"><i class="fa-solid fa-circle-notch fa-spin"></i><span>正在检查配置…</span></div>
+          <div class="api-status-row"><div class="api-status" id="apiStatus"><i class="fa-solid fa-circle-notch fa-spin"></i><span>正在检查配置…</span></div><button class="secondary-action compact-action" id="reloadProviderCatalog" type="button"><i class="fa-solid fa-rotate"></i> 重新加载模型</button></div>
           <form id="apiForm">
             <div class="form-field">
               <label for="providerSelect">模型提供商</label>
@@ -121,11 +121,13 @@
     </main>
   </div>
 
+  <script src="/static/product-analytics.js"></script>
   <script src="/static/locale.js"></script>
   <script src="/static/runtime-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/static/api-client.js"></script>
   <script src="/static/auth-ui.js"></script>
+  <script src="/static/cache.js"></script>
   <script src="/static/profile-page.js"></script>
 </body>
 </html>

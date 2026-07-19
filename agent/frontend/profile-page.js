@@ -20,6 +20,26 @@
   var user = null;
   var githubConnection = document.getElementById("githubConnection");
   var connectGithubButton = document.getElementById("connectGithubButton");
+  var reloadCatalogButton = document.getElementById("reloadProviderCatalog");
+  var lastVerifiedFingerprint = "";
+
+  function withTimeout(promise, timeoutMs, label) {
+    var timeout;
+    var guard = new Promise(function (_resolve, reject) {
+      timeout = setTimeout(function () { reject(new Error(label || "timeout")); }, timeoutMs);
+    });
+    return Promise.race([promise, guard]).finally(function () { clearTimeout(timeout); });
+  }
+
+  function configFingerprint(config) {
+    return [config.provider_id, config.base_url, config.chat_model, config.embedding_model, config.api_key].join("|");
+  }
+
+  function markUnverified() {
+    if (!user) return;
+    lastVerifiedFingerprint = "";
+    setStatus("配置已修改，保存前建议重新测试连接。", "warn", "fa-triangle-exclamation");
+  }
 
   function githubHeaders() {
     return window.academicGitHubHeaders ? window.academicGitHubHeaders() : {};
@@ -173,15 +193,8 @@
     return "";
   }
 
-  async function loadCatalog() {
-    try {
-      var response = await fetch("/api/provider/catalog");
-      if (!response.ok) throw new Error("catalog unavailable");
-      var data = await response.json();
-      catalog = Array.isArray(data.providers) && data.providers.length ? data.providers : fallbackCatalog;
-    } catch (_error) {
-      catalog = fallbackCatalog;
-    }
+  function applyCatalogData(providers) {
+    catalog = Array.isArray(providers) && providers.length ? providers : fallbackCatalog;
     // Keep the client compatible while an independently hosted API rolls out its catalog update.
     catalog = catalog.map(function (provider) {
       if (provider.id !== "zhipu") return provider;
@@ -202,6 +215,32 @@
     });
   }
 
+  async function loadCatalog(notifyFailure, forceRefresh) {
+    var cached = await window.academicCache?.getEntry("provider", "catalog", {
+      storage: "local",
+      maxAgeMs: 24 * 60 * 60 * 1000
+    });
+    if (cached && !forceRefresh) {
+      applyCatalogData(cached.value);
+      if (cached.ageMs < 6 * 60 * 60 * 1000) return;
+    }
+    try {
+      var response = await withTimeout(fetch("/api/provider/catalog"), 8000, "catalog timeout");
+      if (!response.ok) throw new Error("catalog unavailable");
+      var data = await response.json();
+      applyCatalogData(data.providers);
+      window.academicCache?.set("provider", "catalog", data.providers, { storage: "local" });
+    } catch (_error) {
+      if (!cached) applyCatalogData(fallbackCatalog);
+      if (notifyFailure) showMessage(
+        cached
+          ? "模型目录刷新超时，已继续使用上次缓存的目录。"
+          : "模型目录加载超时，已使用内置目录。你仍可选择自定义提供商手动填写模型。",
+        "error"
+      );
+    }
+  }
+
   async function loadConfig() {
     await loadCatalog();
     var saved = readStoredConfig();
@@ -215,7 +254,23 @@
   providerSelect.addEventListener("change", function () {
     applyProvider(providerSelect.value, null);
     showMessage("");
+    markUnverified();
   });
+
+  [apiKey, baseUrl, chatModel, customChatModel, embeddingModel, customEmbeddingModel].forEach(function (element) {
+    if (element) element.addEventListener("input", markUnverified);
+  });
+
+  if (reloadCatalogButton) {
+    reloadCatalogButton.addEventListener("click", async function () {
+      this.disabled = true;
+      setStatus("正在重新加载模型目录…", "", "fa-circle-notch fa-spin");
+      await loadCatalog(true, true);
+      applyProvider(providerSelect.value || "zhipu", readStoredConfig());
+      setStatus("模型目录已加载，请确认模型并测试连接。", "warn", "fa-circle-info");
+      this.disabled = false;
+    });
+  }
 
   document.getElementById("apiKeyToggle").addEventListener("click", function () {
     var visible = apiKey.type === "text";
@@ -236,18 +291,19 @@
     setStatus("正在测试聊天和向量模型…", "", "fa-circle-notch fa-spin");
     showMessage("");
     try {
-      var response = await fetch("/api/provider/test", {
+      var response = await withTimeout(fetch("/api/provider/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config)
-      });
+      }), 30000, "provider test timeout");
       var data = await response.json();
       if (!response.ok) throw new Error(data.detail || "连接测试失败");
       if (data.ok) {
+        lastVerifiedFingerprint = configFingerprint(config);
         var capabilityText = data.capabilities && data.capabilities.embedding ? "聊天与向量模型均可用" : "聊天模型可用，向量模型未启用";
         setStatus(capabilityText + " · " + data.latency_ms + "ms", "ok", "fa-circle-check");
         showMessage(data.message || "连接测试成功。", "success");
-        if (window.va && typeof window.va.track === "function") window.va.track("provider_test_succeeded");
+      if (typeof window.academicTrack === "function") window.academicTrack("provider_test_succeeded");
       } else {
         setStatus("模型连接需要检查", "warn", "fa-triangle-exclamation");
         var failureMessage = data.message || "连接失败，请检查配置。";
@@ -281,8 +337,16 @@
       sessionStorage.setItem(storageKey(), JSON.stringify(config));
       localStorage.removeItem(storageKey());
     }
-    setStatus(config.save_local ? "配置已保存在此设备。" : "配置仅在当前浏览器会话中有效。", "ok", "fa-circle-check");
-    showMessage("配置已保存。现在可以返回工作台开始研究。", "success");
+    var verified = lastVerifiedFingerprint === configFingerprint(config);
+    setStatus(
+      verified ? "配置已验证并保存。" : "配置已保存，但尚未通过连接测试。",
+      verified ? "ok" : "warn",
+      verified ? "fa-circle-check" : "fa-triangle-exclamation"
+    );
+    showMessage(
+      verified ? "配置已保存，可以返回工作台开始研究。" : "配置已保存。建议先测试连接，避免研究任务启动后才发现模型不可用。",
+      verified ? "success" : "error"
+    );
   });
 
   document.getElementById("clearApiButton").addEventListener("click", function () {
@@ -323,10 +387,21 @@
     });
   }
 
-  if (!auth || !auth.configured || !auth.client) return;
-  (window.academicAuthReady || auth.client.auth.getSession().then(function (result) { return result.data.session; }))
+  if (!auth || !auth.configured || !auth.client) {
+    loadCatalog(true).then(function () { applyProvider("zhipu", {}); });
+    setStatus("登录服务未配置，当前只能查看模型目录。", "warn", "fa-triangle-exclamation");
+    return;
+  }
+  withTimeout(
+    window.academicAuthReady || auth.client.auth.getSession().then(function (result) { return result.data.session; }),
+    8000,
+    "auth timeout"
+  )
     .then(function (session) {
-      if (!session || !session.user) return;
+      if (!session || !session.user) {
+        window.location.replace("/auth?next=" + encodeURIComponent(window.location.pathname + window.location.hash));
+        return;
+      }
       user = session.user;
       var email = String(user.email || "用户");
       var displayName = user.user_metadata && user.user_metadata.display_name;
@@ -335,5 +410,10 @@
       document.getElementById("profileMeta").textContent = displayName ? email : "已安全登录";
       refreshGithubStatus();
       loadConfig();
+    })
+    .catch(function () {
+      setStatus("无法读取登录状态，请重新登录后重试。", "warn", "fa-triangle-exclamation");
+      showMessage("登录状态检查超时。模型目录仍可重新加载，但保存配置前需要重新登录。", "error");
+      loadCatalog(true).then(function () { applyProvider("zhipu", {}); });
     });
 })();

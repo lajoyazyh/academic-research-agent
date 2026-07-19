@@ -73,7 +73,7 @@
           provider: "github",
           options: {
             redirectTo: window.location.origin + destination(),
-            scopes: "repo read:user user:email"
+            scopes: "read:user user:email"
           }
         });
         if (result.error) throw result.error;
@@ -143,10 +143,10 @@
       }
       if (result.error) throw result.error;
       if (result.data && result.data.session) {
-        if (mode === "signup" && window.va && typeof window.va.track === "function") window.va.track("signup_completed");
+        if (mode === "signup" && typeof window.academicTrack === "function") window.academicTrack("signup_completed");
         window.location.replace(destination());
       } else {
-        if (mode === "signup" && window.va && typeof window.va.track === "function") window.va.track("signup_completed");
+      if (mode === "signup" && typeof window.academicTrack === "function") window.academicTrack("signup_completed");
         showMessage("注册成功。请打开验证邮件完成确认，然后返回登录。", "success");
       }
     } catch (error) {

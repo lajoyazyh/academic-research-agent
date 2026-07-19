@@ -15,6 +15,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+import hashlib
 from pathlib import Path
 
 from backend.tenant import tenant_key, tenant_path
@@ -28,6 +29,8 @@ class SupabaseWorkspaceStore:
         self.bucket = os.getenv("SUPABASE_STORAGE_BUCKET", "research-workspaces")
         self._hydrated: set[str] = set()
         self._lock = threading.RLock()
+        self._last_fingerprint: dict[str, str] = {}
+        self._pending: dict[str, threading.Timer] = {}
 
     @property
     def enabled(self) -> bool:
@@ -79,6 +82,49 @@ class SupabaseWorkspaceStore:
                     if resolved_target not in destination.parents and destination != resolved_target:
                         raise ValueError("Invalid workspace archive path")
                 bundle.extractall(target)
+            self._last_fingerprint[key] = self._fingerprint(target)
+
+    @staticmethod
+    def _workspace_files(source: Path):
+        for path in source.rglob("*"):
+            if not path.is_file() or ".embed_cache" in path.parts or path.name.endswith(".tmp"):
+                continue
+            yield path
+
+    def _fingerprint(self, source: Path) -> str:
+        digest = hashlib.sha256()
+        if not source.exists():
+            return digest.hexdigest()
+        for path in sorted(self._workspace_files(source), key=lambda item: item.as_posix()):
+            stat = path.stat()
+            digest.update(path.relative_to(source).as_posix().encode("utf-8"))
+            digest.update(str(stat.st_size).encode("ascii"))
+            digest.update(str(stat.st_mtime_ns).encode("ascii"))
+        return digest.hexdigest()
+
+    def schedule_sync(self, user_id: str, delay_seconds: float = 0.8) -> None:
+        """Coalesce bursts of mutations without blocking the HTTP response."""
+        if not self.enabled or user_id == "local":
+            return
+        key = tenant_key(user_id)
+        with self._lock:
+            previous = self._pending.pop(key, None)
+            if previous:
+                previous.cancel()
+
+            def flush():
+                try:
+                    self.sync(user_id)
+                except Exception as exc:
+                    print(f"[WorkspaceSync] scheduled sync failed for {key}: {exc}")
+                finally:
+                    with self._lock:
+                        self._pending.pop(key, None)
+
+            timer = threading.Timer(max(0.1, delay_seconds), flush)
+            timer.daemon = True
+            self._pending[key] = timer
+            timer.start()
 
     def sync(self, user_id: str) -> None:
         if not self.enabled or user_id == "local":
@@ -86,12 +132,18 @@ class SupabaseWorkspaceStore:
         key = tenant_key(user_id)
         source = tenant_path(self.sessions_root, user_id)
         with self._lock:
+            fingerprint = self._fingerprint(source)
+            if self._last_fingerprint.get(key) == fingerprint:
+                return
             buffer = io.BytesIO()
             with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as bundle:
-                for path in source.rglob("*"):
-                    if not path.is_file() or ".embed_cache" in path.parts:
-                        continue
+                for path in self._workspace_files(source):
                     bundle.write(path, path.relative_to(source).as_posix())
+            max_snapshot_bytes = max(1, int(os.getenv("MAX_WORKSPACE_SNAPSHOT_MB", "200"))) * 1024 * 1024
+            if buffer.tell() > max_snapshot_bytes:
+                raise ValueError(
+                    f"Workspace snapshot exceeds {max_snapshot_bytes // (1024 * 1024)} MB; move PDFs to object storage"
+                )
             object_path = urllib.parse.quote(f"{key}/workspace.zip", safe="/")
             url = f"{self.url}/storage/v1/object/{self.bucket}/{object_path}"
             with self._request(
@@ -102,6 +154,7 @@ class SupabaseWorkspaceStore:
                 extra_headers={"x-upsert": "true"},
             ):
                 pass
+            self._last_fingerprint[key] = fingerprint
 
             # Maintain a small relational index for administration and cleanup.
             metadata_url = f"{self.url}/rest/v1/research_workspaces?on_conflict=user_id"
@@ -117,3 +170,15 @@ class SupabaseWorkspaceStore:
                 extra_headers={"Prefer": "resolution=merge-duplicates"},
             ):
                 pass
+
+
+_STORE_INSTANCES: dict[str, SupabaseWorkspaceStore] = {}
+_STORE_INSTANCES_LOCK = threading.Lock()
+
+
+def get_workspace_store(sessions_root: str | Path) -> SupabaseWorkspaceStore:
+    key = str(Path(sessions_root).resolve())
+    with _STORE_INSTANCES_LOCK:
+        if key not in _STORE_INSTANCES:
+            _STORE_INSTANCES[key] = SupabaseWorkspaceStore(sessions_root)
+        return _STORE_INSTANCES[key]

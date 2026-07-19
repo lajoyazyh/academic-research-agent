@@ -34,6 +34,7 @@
   </header>
 
   <nav class="research-progress" aria-label="研究进度">
+    <button class="mobile-stage-summary" id="mobileStageSummary" type="button" aria-expanded="false" aria-controls="researchStages"><span><small>当前阶段</small><strong id="mobileStageLabel">1 / 6 · 研究问题</strong></span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
     <ol id="researchStages">
       <li data-stage="question"><span>1</span>研究问题</li>
       <li data-stage="search"><span>2</span>检索</li>
@@ -57,12 +58,17 @@
             <input id="searchTargetInput" type="number" min="1" max="15" step="1" value="3" inputmode="numeric" required aria-label="本轮目标新增论文数，1 到 15" aria-describedby="searchBudgetHelp" />
             <span>篇</span>
           </label>
-          <label class="search-loop-control" for="searchLoopLimitInput">
-            <span>最大轮数</span>
-            <input id="searchLoopLimitInput" type="number" min="1" max="80" step="1" value="25" inputmode="numeric" required aria-label="本轮最大检索轮数，1 到 80" aria-describedby="searchBudgetHelp" />
-            <span>轮</span>
-          </label>
-          <small id="searchBudgetHelp">推荐 25 轮；系统不会超过你设置的上限。</small>
+          <details class="search-advanced" id="searchAdvanced" open>
+            <summary><i class="fa-solid fa-sliders" aria-hidden="true"></i> 检索高级设置</summary>
+            <div class="search-advanced-body">
+              <label class="search-loop-control" for="searchLoopLimitInput">
+                <span>最大轮数</span>
+                <input id="searchLoopLimitInput" type="number" min="1" max="80" step="1" value="25" inputmode="numeric" required aria-label="本轮最大检索轮数，1 到 80" aria-describedby="searchBudgetHelp" />
+                <span>轮</span>
+              </label>
+              <small id="searchBudgetHelp">目标 3 篇；最多执行 25 轮模型决策。</small>
+            </div>
+          </details>
         </div>
         <button class="primary-btn" id="searchPaperBtn"><i class="fa-solid fa-magnifying-glass"></i> 搜索相关论文</button>
         <button class="primary-btn" id="cancelSearchBtn" style="display:none;background:var(--danger);"><i class="fa-solid fa-stop"></i> 停止检索</button>
@@ -284,11 +290,13 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="/static/product-analytics.js"></script>
   <script src="/static/locale.js"></script>
   <script src="/static/runtime-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/static/api-client.js"></script>
   <script src="/static/auth-ui.js"></script>
+  <script src="/static/cache.js"></script>
   <script src="/static/notebooklm.js"></script>
 </body>
 </html>

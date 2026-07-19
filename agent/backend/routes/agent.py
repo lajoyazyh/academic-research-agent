@@ -3,6 +3,7 @@ import json
 import os
 import datetime
 import re
+import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -16,7 +17,8 @@ from .deps import (
     FAVORITES_FILE,
 )
 from backend.provider import ensure_provider_available
-from backend.cloud_persistence import SupabaseWorkspaceStore
+from backend.cloud_persistence import get_workspace_store
+from backend.run_store import PersistentRunStore, TERMINAL_STATUSES
 from backend.tenant import get_current_user, reset_current_user, set_current_user, tenant_key
 from utils.locale import is_english, language_from_config
 
@@ -25,10 +27,14 @@ from main import run_agent_pipeline, run_agent_pipeline_session  # noqa
 from .models import (
     RunPhaseRequest, RunNotesRequest, ReviseNotesRequest,
     AutoRunRequest, AnalysisRequest,
+    RetryRunRequest,
 )
 
 router = APIRouter(prefix="/api/sessions", tags=["agent"])
-_workspace_store = SupabaseWorkspaceStore(SESSIONS_DIR)
+_workspace_store = get_workspace_store(SESSIONS_DIR)
+_run_store = PersistentRunStore(SESSIONS_DIR)
+_checkpoint_sync_at: dict[str, float] = {}
+_checkpoint_sync_lock = threading.Lock()
 
 
 def _tenant_worker(target, *args) -> threading.Thread:
@@ -51,6 +57,38 @@ def _tenant_worker(target, *args) -> threading.Thread:
 
 def _run_key(session_id: str) -> str:
     return f"{tenant_key()}:{session_id}"
+
+
+def _public_run(run: dict | None) -> dict:
+    if not run:
+        return {"status": "unknown", "message": "无运行记录"}
+    return {key: value for key, value in run.items() if not key.startswith("_")}
+
+
+def _persist_run(session_id: str, run: dict) -> None:
+    run_id = str(run.get("run_id") or "")
+    if not run_id:
+        return
+    _run_store.update(session_id, run_id, **_public_run(run))
+    # A Render restart can discard its local disk before the worker's final
+    # snapshot. Persist a bounded checkpoint during long runs without uploading
+    # the whole workspace on every trace update.
+    user_id = get_current_user()
+    if user_id != "local" and _workspace_store.enabled:
+        now = time.monotonic()
+        with _checkpoint_sync_lock:
+            previous = _checkpoint_sync_at.get(user_id, 0.0)
+            if now - previous >= 20:
+                _checkpoint_sync_at[user_id] = now
+                _workspace_store.schedule_sync(user_id, delay_seconds=0.5)
+
+
+def _create_run(session_id: str, kind: str, payload: dict) -> dict:
+    durable = _run_store.create(session_id, kind, payload)
+    live = dict(durable)
+    with RUN_LOCK:
+        RUNS[_run_key(session_id)] = live
+    return live
 
 
 def _build_skill_trace(phase: str, skill_id: str = "", skill_title: str = "", loaded: bool = False,
@@ -140,6 +178,40 @@ def _search_stop_reason(traces: list[dict] | None) -> str:
         if action == "FINISH":
             return str(trace.get("error_type") or "completed")
     return "agent_returned"
+
+
+def _retrieval_ledger(traces: list[dict] | None) -> dict:
+    """Summarize real tool activity so later searches can expand instead of repeat."""
+    queries: list[dict] = []
+    source_counts: dict[str, int] = {}
+    registered_attempts = 0
+    duplicate_attempts = 0
+    seen = set()
+    for trace in traces or []:
+        if not isinstance(trace, dict):
+            continue
+        action = str(trace.get("action") or "")
+        action_input = trace.get("input") if isinstance(trace.get("input"), dict) else {}
+        if "search" in action:
+            source = action.replace("_search", "").replace("search_", "") or action
+            source_counts[source] = source_counts.get(source, 0) + 1
+            query = str(action_input.get("query") or action_input.get("keywords") or "").strip()
+            page = action_input.get("page", action_input.get("offset", action_input.get("start", "")))
+            identity = (source, query.casefold(), str(page))
+            if query and identity not in seen:
+                seen.add(identity)
+                queries.append({"source": source, "query": query, "page": page})
+        elif action == "paper_register":
+            registered_attempts += 1
+            observation = str(trace.get("observation") or "").lower()
+            if "已存在" in observation or "duplicate" in observation or "already exists" in observation:
+                duplicate_attempts += 1
+    return {
+        "queries": queries[-40:],
+        "source_counts": source_counts,
+        "registered_attempts": registered_attempts,
+        "duplicate_attempts": duplicate_attempts,
+    }
 
 
 def _pdf_available_count(session_id: str, papers: list[dict]) -> int:
@@ -243,10 +315,7 @@ def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all
 
     analysis_dir = session_mgr.root / session_id / "analysis"
     os.makedirs(analysis_dir, exist_ok=True)
-    (analysis_dir / "analysis_results.json").write_text(
-        json.dumps(result, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    session_mgr._write_json(analysis_dir / "analysis_results.json", result)
     return result
 
 
@@ -317,6 +386,7 @@ def _run_search_in_background(
     search_mode: str,
     target_new_papers: int,
     provider_config: dict | None = None,
+    run_id: str = "",
 ) -> None:
     """后台执行搜索阶段，周期性保存 traces 供前端实时轮询"""
     import time as _time
@@ -334,9 +404,13 @@ def _run_search_in_background(
                         traces = list(RUNS.get(_run_key(session_id), {}).get("traces", []))
                 if traces:
                     # 只更新 RUNS 内存，供前端轮询 /api/sessions/{id}/run/status
+                    live_run = None
                     with RUN_LOCK:
                         if _run_key(session_id) in RUNS:
                             RUNS[_run_key(session_id)]["traces"] = traces
+                            live_run = dict(RUNS[_run_key(session_id)])
+                    if run_id and live_run:
+                        _persist_run(session_id, live_run)
             except Exception:
                 pass
     
@@ -355,11 +429,18 @@ def _run_search_in_background(
         
         with RUN_LOCK:
             RUNS[_run_key(session_id)] = {
+                "run_id": run_id,
+                "session_id": session_id,
+                "kind": "search",
                 "status": "running",
                 "phase": "searching",
+                "checkpoint": "searching",
+                "retryable": False,
                 "traces": [],
                 "_stop_flag": _stop_flag,  # 暴露终止标志供 cancel API 使用
             }
+            live_run = dict(RUNS[_run_key(session_id)])
+        _persist_run(session_id, live_run)
         
         _saver_thread.start()
 
@@ -402,6 +483,7 @@ def _run_search_in_background(
             "max_loops": max_loops,
             "stop_reason": _search_stop_reason(result.get("traces")),
             "pdf_available_count": _pdf_available_count(session_id, new_papers),
+            "retrieval_ledger": _retrieval_ledger(result.get("traces")),
         }
         outcome, outcome_state = classify_search_outcome(len(new_papers), target_new_papers)
         search_summary["outcome"] = outcome
@@ -430,13 +512,20 @@ def _run_search_in_background(
 
         with RUN_LOCK:
             RUNS[_run_key(session_id)] = {
+                "run_id": run_id,
+                "session_id": session_id,
+                "kind": "search",
                 "status": "done" if outcome == "complete" else outcome,
                 "phase": outcome_state,
+                "checkpoint": outcome_state,
+                "retryable": outcome != "complete",
                 "message": search_summary["message"],
                 "traces": result.get("traces", []),
                 "result": result,
                 "search_summary": search_summary,
             }
+            live_run = dict(RUNS[_run_key(session_id)])
+        _persist_run(session_id, live_run)
 
     except Exception as exc:
         import traceback
@@ -468,6 +557,9 @@ def _run_search_in_background(
                 f"{'Reason' if is_english(provider_config) else '原因'}: {exc}"
             ),
             "error": str(exc),
+            "retrieval_ledger": _retrieval_ledger(
+                (locals().get("result") or {}).get("traces") if isinstance(locals().get("result"), dict) else []
+            ),
         }
         try:
             session_mgr.save_search_run(session_id, failed_summary)
@@ -479,13 +571,21 @@ def _run_search_in_background(
             pass
         with RUN_LOCK:
             RUNS[_run_key(session_id)] = {
+                "run_id": run_id,
+                "session_id": session_id,
+                "kind": "search",
                 "status": "error",
                 "phase": failed_state,
+                "checkpoint": failed_state,
+                "retryable": True,
+                "error_code": "search_failed",
                 "message": failed_summary["message"],
                 "search_summary": failed_summary,
                 "error": str(exc),
                 "_traceback": traceback.format_exc(),
             }
+            live_run = dict(RUNS[_run_key(session_id)])
+        _persist_run(session_id, live_run)
 
 
 @router.post("/{session_id}/run/search")
@@ -506,6 +606,22 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     if payload.search_mode in {"initial", "incremental"}:
         search_mode = payload.search_mode if session.get("papers") else "initial"
 
+    run_key = _run_key(session_id)
+    with RUN_LOCK:
+        existing = RUNS.get(run_key)
+        if existing and existing.get("status") == "running":
+            raise HTTPException(status_code=409, detail="该项目已有正在运行的任务，请等待完成或取消后再试")
+
+    run = _create_run(session_id, "search", {
+        "topic": payload.topic.strip(),
+        "keywords": keywords,
+        "max_loops": max_loops,
+        "search_mode": search_mode,
+        "target_new_papers": target_new_papers,
+        "provider": provider_config,
+        "language": language_from_config(provider_config),
+    })
+
     # 更新状态为 searching
     try:
         session_mgr.update_session_state(session_id, "searching")
@@ -516,11 +632,12 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     worker = _tenant_worker(
         _run_search_in_background,
         session_id, payload.topic.strip(), keywords, max_loops,
-        search_mode, target_new_papers, provider_config,
+        search_mode, target_new_papers, provider_config, run["run_id"],
     )
     worker.start()
     return {
         "session_id": session_id,
+        "run_id": run["run_id"],
         "status": "searching",
         "search_mode": search_mode,
         "target_new_papers": target_new_papers,
@@ -534,9 +651,80 @@ def get_session_run_status(session_id: str) -> dict:
     run_key = _run_key(session_id)
     with RUN_LOCK:
         run = RUNS.get(run_key)
-    if not run:
-        return {"status": "unknown", "message": "无正在运行的任务"}
-    return run
+    if run:
+        return _public_run(run)
+    durable = _run_store.latest(session_id)
+    if durable and durable.get("status") == "running":
+        durable = _run_store.mark_interrupted(session_id, durable["run_id"])
+    return _public_run(durable)
+
+
+@router.get("/{session_id}/runs")
+def list_session_runs(session_id: str, limit: int = 30) -> dict:
+    if not session_mgr.load_session(session_id):
+        raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
+    return {"runs": [_public_run(run) for run in _run_store.list(session_id, limit)]}
+
+
+@router.get("/{session_id}/runs/{run_id}")
+def get_session_run(session_id: str, run_id: str) -> dict:
+    run_key = _run_key(session_id)
+    with RUN_LOCK:
+        live = RUNS.get(run_key)
+    if live and live.get("run_id") == run_id:
+        return _public_run(live)
+    durable = _run_store.get(session_id, run_id)
+    if durable and durable.get("status") == "running":
+        durable = _run_store.mark_interrupted(session_id, run_id)
+    if not durable:
+        raise HTTPException(status_code=404, detail="运行记录不存在")
+    return _public_run(durable)
+
+
+@router.post("/{session_id}/runs/{run_id}/retry")
+def retry_session_run(session_id: str, run_id: str, request: RetryRunRequest) -> dict:
+    """Start a replacement run from durable, credential-free run metadata."""
+    previous = _run_store.get(session_id, run_id)
+    if not previous:
+        raise HTTPException(status_code=404, detail="运行记录不存在")
+    if previous.get("status") == "running":
+        with RUN_LOCK:
+            live = RUNS.get(_run_key(session_id))
+        if live and live.get("run_id") == run_id:
+            raise HTTPException(status_code=409, detail="任务仍在运行，无需重试")
+        previous = _run_store.mark_interrupted(session_id, run_id) or previous
+    if previous.get("status") not in TERMINAL_STATUSES:
+        raise HTTPException(status_code=409, detail="当前运行状态不可重试")
+
+    saved = previous.get("payload") or {}
+    kind = previous.get("kind")
+    if kind == "search":
+        response = run_search_phase(session_id, RunPhaseRequest(
+            topic=str(saved.get("topic") or ""),
+            start_phase="search",
+            keywords=saved.get("keywords") or None,
+            search_mode="incremental",
+            target_new_papers=int(saved.get("target_new_papers") or 3),
+            max_loops=int(saved.get("max_loops") or 20),
+            provider=request.provider,
+        ))
+    elif kind == "auto":
+        response = run_auto_pipeline(session_id, AutoRunRequest(
+            topic=str(saved.get("topic") or ""),
+            min_papers=int(saved.get("min_papers") or 3),
+            max_loops=int(saved.get("max_loops") or 20),
+            provider=request.provider,
+        ))
+    else:
+        raise HTTPException(status_code=400, detail="该类型任务暂不支持自动重试")
+
+    _run_store.update(
+        session_id,
+        run_id,
+        retried_as=response.get("run_id", ""),
+        retryable=False,
+    )
+    return response
 
 
 @router.post("/{session_id}/run/cancel")
@@ -547,6 +735,17 @@ def cancel_session_run(session_id: str) -> dict:
         run = RUNS.get(run_key)
     
     if not run:
+        durable = _run_store.latest(session_id)
+        if durable and durable.get("status") in {"running", "interrupted"}:
+            _run_store.update(
+                session_id,
+                durable["run_id"],
+                status="cancelled",
+                phase="cancelled",
+                checkpoint=durable.get("checkpoint", "queued"),
+                retryable=True,
+                message="任务已取消；已完成的阶段和部分结果仍然保留。",
+            )
         # RUNS 里没有（可能是服务器重启过），检查磁盘状态
         session = session_mgr.load_session(session_id)
         if session and session.get("state") in {"searching", "writing"}:
@@ -559,7 +758,7 @@ def cancel_session_run(session_id: str) -> dict:
                 session_dir = session_mgr.root / session_id
                 meta = json.loads((session_dir / "metadata.json").read_text(encoding="utf-8"))
                 meta["state"] = new_state
-                (session_dir / "metadata.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+                session_mgr._write_json(session_dir / "metadata.json", meta)
             return {"status": "fixed", "message": f"卡住状态已修复：{session['state']} → {new_state}"}
         raise HTTPException(status_code=404, detail="没有正在运行的任务，且状态未卡住")
 
@@ -572,6 +771,9 @@ def cancel_session_run(session_id: str) -> dict:
     with RUN_LOCK:
         RUNS[run_key]["status"] = "cancelled"
         RUNS[run_key]["phase"] = "cancelled"
+        RUNS[run_key]["retryable"] = True
+        live_run = dict(RUNS[run_key])
+    _persist_run(session_id, live_run)
 
     # 回退 Session 状态
     try:
@@ -637,7 +839,7 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         if result.get("review"):
             session_mgr.save_review(session_id, result["review"], referenced_papers=selected_ids)
             quality_path = session_mgr.root / session_id / "review" / "quality.json"
-            quality_path.write_text(json.dumps(result.get("quality", {}), ensure_ascii=False, indent=2), encoding="utf-8")
+            session_mgr._write_json(quality_path, result.get("quality", {}))
         if result.get("traces"):
             session_mgr.save_traces(session_id, result["traces"], append=True)
 
@@ -724,6 +926,7 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
         notes_skill_content = str(skill_mgr.get_defaults().get("notes", {}).get("content", ""))
 
     notes_map = {}
+    evidence_basis_map = {}
 
     for paper in papers:
         pid = paper.get("paper_id", "")
@@ -733,6 +936,7 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
         title = paper.get("title", pid)
         abstract = paper.get("abstract", "")
         source_info = paper.get("source", "")
+        paper_path = None
         if source_info == "agent_search":
             paper_path = session_mgr.get_agent_search_paper_path(session_id, pid)
         elif source_info == "user_custom":
@@ -750,11 +954,13 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
                 skill_content=notes_skill_content,
             )
             notes_map[pid] = note_text
+            evidence_basis_map[pid] = "full_text" if paper_path and Path(paper_path).exists() else "abstract"
         except Exception:
             notes_map[pid] = f"## 论文笔记：{title}\n\n生成笔记时出错"
+            evidence_basis_map[pid] = "generation_error"
 
     if notes_map:
-        session_mgr.batch_update_paper_notes(session_id, notes_map)
+        session_mgr.batch_update_paper_notes(session_id, notes_map, evidence_basis_map)
     session_mgr.save_traces(session_id, [notes_skill_trace], append=True)
 
     return {
@@ -915,10 +1121,7 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
 
         analysis_dir = session_mgr.root / session_id / "analysis"
         os.makedirs(analysis_dir, exist_ok=True)
-        (analysis_dir / "analysis_results.json").write_text(
-            json.dumps(result, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        session_mgr._write_json(analysis_dir / "analysis_results.json", result)
         return result
     except HTTPException:
         raise
@@ -935,6 +1138,7 @@ def _run_auto_pipeline_in_background(
     min_papers: int,
     provider_config: dict | None = None,
     stop_flag: list[bool] | None = None,
+    run_id: str = "",
 ) -> None:
     """后台自动执行完整流水线：规划 → 搜索 → 笔记 → 分析 → 综述"""
     import time as _time
@@ -948,7 +1152,22 @@ def _run_auto_pipeline_in_background(
                 entry = RUNS[run_key]
                 entry["phase"] = phase
                 entry["status"] = status
+                entry["checkpoint"] = phase
+                entry["retryable"] = status in {"partial", "error", "interrupted", "cancelled"}
                 entry.update(kwargs)
+                live_run = dict(entry)
+            else:
+                live_run = {
+                    "run_id": run_id,
+                    "session_id": session_id,
+                    "kind": "auto",
+                    "phase": phase,
+                    "status": status,
+                    "checkpoint": phase,
+                    "retryable": status in {"partial", "error", "interrupted", "cancelled"},
+                    **kwargs,
+                }
+        _persist_run(session_id, live_run)
 
     try:
         # ━━ 阶段 1：规划 ━━
@@ -1055,6 +1274,7 @@ def _run_auto_pipeline_in_background(
             "message": _search_outcome_message(
                 len(new_papers), min_papers, outcome, language_from_config(provider_config)
             ),
+            "retrieval_ledger": _retrieval_ledger(search_result.get("traces")),
         }
         language = language_from_config(provider_config)
         search_summary["message"] += (
@@ -1107,6 +1327,7 @@ def _run_auto_pipeline_in_background(
             llm = LLMClient(provider_config)
             rag = RAGNoteGenerator(provider_config)
             notes_map = {}
+            evidence_basis_map = {}
 
             # ━━━ Skill 注入：加载 notes 类型的自定义提示词 ━━━
             _auto_notes_skill = ""
@@ -1183,11 +1404,13 @@ def _run_auto_pipeline_in_background(
                         skill_content=_auto_notes_skill,
                     )
                     notes_map[pid] = note_text
+                    evidence_basis_map[pid] = "full_text" if paper_path and Path(paper_path).exists() else "abstract"
                 except Exception as exc:
                     notes_map[pid] = f"## 论文笔记：{title}\n\n生成笔记时出错：{str(exc)}"
+                    evidence_basis_map[pid] = "generation_error"
 
             if notes_map:
-                session_mgr.batch_update_paper_notes(session_id, notes_map)
+                session_mgr.batch_update_paper_notes(session_id, notes_map, evidence_basis_map)
 
         _update_run_status("reviewing_notes", "running",
                           message=f"笔记生成完成，共 {len(notes_map) if papers else 0} 篇，即将生成深度分析...")
@@ -1256,7 +1479,7 @@ def _run_auto_pipeline_in_background(
             if write_result.get("review"):
                 session_mgr.save_review(session_id, write_result["review"], referenced_papers=selected_ids)
                 quality_path = session_mgr.root / session_id / "review" / "quality.json"
-                quality_path.write_text(json.dumps(write_result.get("quality", {}), ensure_ascii=False, indent=2), encoding="utf-8")
+                session_mgr._write_json(quality_path, write_result.get("quality", {}))
             if write_result.get("traces"):
                 session_mgr.save_traces(session_id, write_result["traces"], append=True)
                 with RUN_LOCK:
@@ -1280,7 +1503,7 @@ def _run_auto_pipeline_in_background(
     except Exception as exc:
         _update_run_status("failed", "error",
                           message=f"自动流程失败：{str(exc)}",
-                          error=str(exc))
+                          error=str(exc), error_code="auto_pipeline_failed", retryable=True)
         current_session = session_mgr.load_session(session_id) or {}
         if current_session.get("state") == "searching":
             try:
@@ -1312,25 +1535,40 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
         if existing and existing.get("status") == "running":
             raise HTTPException(status_code=409, detail="该 Session 已有正在运行的任务，请等待完成或取消后再试")
 
-    # 初始化运行状态
+    # 初始化运行状态；持久化 payload 会自动移除 API Key。
     _stop_flag = [False]
+    run = _create_run(session_id, "auto", {
+        "topic": topic,
+        "max_loops": max_loops,
+        "min_papers": payload.min_papers,
+        "provider": provider_config,
+        "language": language_from_config(provider_config),
+    })
     with RUN_LOCK:
-        RUNS[run_key] = {
+        RUNS[run_key].update({
+            "run_id": run["run_id"],
+            "session_id": session_id,
+            "kind": "auto",
             "status": "running",
             "phase": "queued",
+            "checkpoint": "queued",
+            "retryable": False,
             "message": "自动流程已启动...",
             "_stop_flag": _stop_flag,
-        }
+        })
+        live_run = dict(RUNS[run_key])
+    _persist_run(session_id, live_run)
 
     # 后台执行
     worker = _tenant_worker(
         _run_auto_pipeline_in_background,
-        session_id, topic, max_loops, payload.min_papers, provider_config, _stop_flag,
+        session_id, topic, max_loops, payload.min_papers, provider_config, _stop_flag, run["run_id"],
     )
     worker.start()
 
     return {
         "session_id": session_id,
+        "run_id": run["run_id"],
         "status": "started",
         "max_loops": max_loops,
         "message": "自动流程已启动，请通过 GET /api/sessions/{session_id}/run/status 轮询进度",
