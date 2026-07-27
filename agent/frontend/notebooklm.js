@@ -196,15 +196,18 @@
     // server capability check before painting the status in the navigation.
     this.refreshProviderStatus();
     (async () => {
-      const cached = await window.academicCache?.getEntry("provider", "status", { maxAgeMs: 5 * 60 * 1000 });
+      const cached = await window.academicCache?.getEntry("provider", "status", {
+        storage: "local",
+        maxAgeMs: 24 * 60 * 60 * 1000,
+      });
       if (cached) applyStatus(cached.value);
-      if (cached && cached.ageMs < 60 * 1000) return;
+      if (cached && cached.ageMs < 30 * 60 * 1000) return;
       try {
         const response = await fetch("/api/provider/status");
         const status = await response.json();
         if (!response.ok) throw new Error("provider status unavailable");
         applyStatus(status);
-        window.academicCache?.set("provider", "status", status);
+        window.academicCache?.set("provider", "status", status, { storage: "local" });
       } catch (_error) {
         this.refreshProviderStatus();
       }
@@ -369,17 +372,22 @@
       });
     }
 
-    await this.loadHomeSessions();
-    await this.loadHomeStats();
+    await Promise.all([
+      this.loadHomeSessions(),
+      this.loadHomeStats(),
+    ]);
   },
 
   async loadHomeSessions() {
     if (!this.els.homeRail) return;
-    const cached = await window.academicCache?.getEntry("workspace", "sessions", { maxAgeMs: 30 * 60 * 1000 });
+    const cached = await window.academicCache?.getEntry("workspace", "sessions", {
+      storage: "local",
+      maxAgeMs: 24 * 60 * 60 * 1000,
+    });
     if (cached && Array.isArray(cached.value)) {
       this.state.sessions = cached.value;
       this.renderHomeSessions();
-      if (cached.ageMs < 20 * 1000) return;
+      if (cached.ageMs < 5 * 60 * 1000) return;
     } else {
       this.els.homeRail.innerHTML = '<div class="loading-state">正在加载历史综述...</div>';
     }
@@ -388,7 +396,7 @@
       const sessions = await response.json();
       this.state.sessions = Array.isArray(sessions) ? sessions : [];
       this.renderHomeSessions();
-      window.academicCache?.set("workspace", "sessions", this.state.sessions);
+      window.academicCache?.set("workspace", "sessions", this.state.sessions, { storage: "local" });
     } catch (error) {
       if (!cached) this.els.homeRail.innerHTML = '<div class="empty-state">暂时无法加载最近项目，请刷新页面重试。</div>';
     }
@@ -550,10 +558,13 @@
     const statsGrid = document.getElementById("statsGrid");
     if (!statsGrid) return;
 
-    const cached = await window.academicCache?.getEntry("workspace", "stats", { maxAgeMs: 30 * 60 * 1000 });
+    const cached = await window.academicCache?.getEntry("workspace", "stats", {
+      storage: "local",
+      maxAgeMs: 24 * 60 * 60 * 1000,
+    });
     if (cached?.value) {
       this.renderHomeStats(cached.value);
-      if (cached.ageMs < 20 * 1000) return;
+      if (cached.ageMs < 5 * 60 * 1000) return;
     } else {
       statsGrid.innerHTML = '<div class="stats-loading">加载中...</div>';
     }
@@ -562,7 +573,7 @@
       if (!response.ok) throw new Error("API error");
       const stats = await response.json();
       this.renderHomeStats(stats);
-      window.academicCache?.set("workspace", "stats", stats);
+      window.academicCache?.set("workspace", "stats", stats, { storage: "local" });
     } catch (error) {
       if (!cached) {
         statsGrid.innerHTML = '<div class="stats-loading">暂时无法加载工作台概览。</div>';
@@ -775,8 +786,8 @@
       }
 
       this.closeTopicModal();
-      window.academicCache?.remove("workspace", "sessions");
-      window.academicCache?.remove("workspace", "stats");
+      window.academicCache?.remove("workspace", "sessions", { storage: "local" });
+      window.academicCache?.remove("workspace", "stats", { storage: "local" });
 
       this.trackProductEvent("project_created");
 
@@ -897,8 +908,8 @@
 
       this.state.sessions = (this.state.sessions || []).filter((session) => session.session_id !== sessionId);
       this.renderHomeSessions();
-      window.academicCache?.set("workspace", "sessions", this.state.sessions);
-      window.academicCache?.remove("workspace", "stats");
+      window.academicCache?.set("workspace", "sessions", this.state.sessions, { storage: "local" });
+      window.academicCache?.remove("workspace", "stats", { storage: "local" });
       window.academicCache?.remove("session", sessionId);
     } catch (error) {
       alert(`删除失败：${error.message}`);

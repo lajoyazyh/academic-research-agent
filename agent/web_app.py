@@ -13,6 +13,8 @@ Academic Agent Web — FastAPI 入口
 
 import sys
 import os
+import time
+import urllib.parse
 import uuid
 from pathlib import Path
 
@@ -101,18 +103,22 @@ app.add_middleware(
 
 @app.middleware("http")
 async def authenticated_tenant(request, call_next):
-    """Validate Supabase sessions and bind all filesystem access to one user."""
+    """Validate auth, prepare only the requested tenant data, and expose timings."""
+    request_started = time.perf_counter()
     public_api_paths = {"/api/health", "/api/provider/status", "/api/provider/catalog"}
     requires_auth = request.url.path.startswith("/api/") and request.url.path not in public_api_paths
     request.state.request_id = request.headers.get("x-request-id", "").strip()[:128] or uuid.uuid4().hex
     user_id = "local"
+    auth_started = time.perf_counter()
+    auth_ms = 0.0
+    persistence_ms = 0.0
+    session_id = None
     if auth_enabled() and requires_auth and request.method != "OPTIONS":
         authorization = request.headers.get("authorization", "")
         token = authorization[7:].strip() if authorization.lower().startswith("bearer ") else ""
         try:
             user = validate_access_token(token)
             user_id = user["id"]
-            workspace_store.hydrate(user_id)
         except Exception as exc:
             status_code = getattr(exc, "status_code", 503)
             detail = getattr(exc, "detail", "Authentication failed")
@@ -127,6 +133,48 @@ async def authenticated_tenant(request, call_next):
                     "trace_id": request.state.request_id,
                 },
             )
+        auth_ms = (time.perf_counter() - auth_started) * 1000
+
+        path = request.url.path
+        parts = path.split("/")
+        if len(parts) >= 4 and parts[1:3] == ["api", "sessions"]:
+            candidate = urllib.parse.unquote(parts[3])
+            if candidate not in {"create", "list", "state-machine"} and Path(candidate).name == candidate:
+                session_id = candidate
+        elif len(parts) >= 5 and parts[1:4] == ["api", "agent", "document"]:
+            candidate = urllib.parse.unquote(parts[4])
+            if Path(candidate).name == candidate:
+                session_id = candidate
+
+        persistence_started = time.perf_counter()
+        try:
+            if path in {"/api/sessions/list", "/api/stats"}:
+                workspace_store.ensure_index(user_id)
+            elif session_id:
+                needs_paper_files = any(
+                    marker in path
+                    for marker in ("/run/notes", "/run/auto", "/chat", "/context/")
+                )
+                workspace_store.hydrate_session(
+                    user_id,
+                    session_id,
+                    include_files=needs_paper_files,
+                )
+            elif path.startswith(("/api/knowledge/", "/api/copilot/", "/api/skills")):
+                workspace_store.hydrate(user_id, include_files=path.startswith("/api/knowledge/"))
+        except Exception as exc:
+            return JSONResponse(
+                status_code=503,
+                headers={"X-Request-ID": request.state.request_id},
+                content={
+                    "detail": "Research workspace is temporarily unavailable",
+                    "message": "研究数据暂时无法加载，请稍后重试",
+                    "error_code": "workspace_restore_failed",
+                    "retryable": True,
+                    "trace_id": request.state.request_id,
+                },
+            )
+        persistence_ms = (time.perf_counter() - persistence_started) * 1000
 
     policy = policy_for(request.url.path, request.method)
     if policy:
@@ -152,9 +200,14 @@ async def authenticated_tenant(request, call_next):
     try:
         response = await call_next(request)
         response.headers["X-Request-ID"] = request.state.request_id
+        total_ms = (time.perf_counter() - request_started) * 1000
+        response.headers["Server-Timing"] = (
+            f"auth;dur={auth_ms:.1f}, persistence;dur={persistence_ms:.1f}, "
+            f"app;dur={total_ms:.1f}"
+        )
         if auth_enabled() and user_id != "local" and request.method in {"POST", "PUT", "PATCH", "DELETE"}:
             try:
-                workspace_store.schedule_sync(user_id)
+                workspace_store.schedule_sync(user_id, session_id=session_id)
                 response.headers["X-Workspace-Sync"] = "scheduled"
             except Exception as exc:
                 # Do not discard a successful agent response if remote persistence

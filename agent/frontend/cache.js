@@ -85,6 +85,11 @@
         if (key.indexOf(prefix) === 0) sessionStorage.removeItem(key);
       });
     } catch (_error) {}
+    try {
+      Object.keys(localStorage).forEach(function (key) {
+        if (key.indexOf(prefix) === 0) localStorage.removeItem(key);
+      });
+    } catch (_error) {}
   }
 
   window.academicCache = {

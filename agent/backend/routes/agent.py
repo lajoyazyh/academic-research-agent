@@ -40,6 +40,7 @@ _checkpoint_sync_lock = threading.Lock()
 def _tenant_worker(target, *args) -> threading.Thread:
     """Carry request identity into long-running agent threads and persist on exit."""
     user_id = get_current_user()
+    session_id = str(args[0]) if args else None
 
     def runner():
         token = set_current_user(user_id)
@@ -47,7 +48,7 @@ def _tenant_worker(target, *args) -> threading.Thread:
             target(*args)
         finally:
             try:
-                _workspace_store.sync(user_id)
+                _workspace_store.sync(user_id, session_id=session_id)
             except Exception as exc:
                 print(f"[WorkspaceSync] background sync failed: {exc}")
             reset_current_user(token)
@@ -80,7 +81,11 @@ def _persist_run(session_id: str, run: dict) -> None:
             previous = _checkpoint_sync_at.get(user_id, 0.0)
             if now - previous >= 20:
                 _checkpoint_sync_at[user_id] = now
-                _workspace_store.schedule_sync(user_id, delay_seconds=0.5)
+                _workspace_store.schedule_sync(
+                    user_id,
+                    session_id=session_id,
+                    delay_seconds=0.5,
+                )
 
 
 def _create_run(session_id: str, kind: str, payload: dict) -> dict:

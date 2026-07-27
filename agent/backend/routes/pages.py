@@ -17,7 +17,8 @@ from .deps import (
     RUNS, RUN_LOCK, SESSIONS_DIR, DOCS_DIR, FRONTEND_DIR,
     FAVORITES_FILE,
 )
-from backend.tenant import tenant_path
+from backend.tenant import get_current_user, tenant_path
+from backend.cloud_persistence import get_workspace_store
 from backend.auth import auth_enabled
 
 from fastapi.responses import HTMLResponse
@@ -26,6 +27,7 @@ from utils.locale import language_from_config
 from .models import ProviderConfig
 
 router = APIRouter(tags=["pages"])
+workspace_store = get_workspace_store(SESSIONS_DIR)
 
 def _load_favorites() -> list[dict]:
     favorites_file = tenant_path(SESSIONS_DIR) / ".favorites.json"
@@ -120,6 +122,8 @@ def health() -> Dict[str, str]:
         "status": "ok",
         "auth_mode": "supabase" if auth_enabled() else "local",
         "workspace_persistence": "supabase" if persistence_enabled else "local",
+        "session_store": "postgres+storage" if persistence_enabled else "filesystem",
+        "storage_layout": "per-session" if persistence_enabled else "local",
     }
 
 
@@ -240,6 +244,11 @@ def extract_keywords(payload: dict) -> dict:
 @router.get("/api/stats")
 def get_stats() -> dict:
     """获取全局统计信息（首页仪表盘用）"""
+    user_id = get_current_user()
+    if user_id != "local" and workspace_store.enabled:
+        remote_stats = workspace_store.get_stats(user_id)
+        if remote_stats is not None:
+            return remote_stats
     sessions = session_mgr.list_sessions()
     total_sessions = len(sessions)
 
@@ -475,6 +484,15 @@ def get_pdf(filename: str, pdf_name: str) -> FileResponse:
 
     # 先检查 Session 目录（current version新路径）
     pdf_path = tenant_path(SESSIONS_DIR) / filename / "papers" / pdf_name
+    user_id = get_current_user()
+    if not pdf_path.exists() and user_id != "local" and workspace_store.enabled:
+        restored = workspace_store.hydrate_file(
+            user_id,
+            filename,
+            f"papers/{pdf_name}",
+        )
+        if restored:
+            pdf_path = restored
     if pdf_path.exists():
         return FileResponse(pdf_path, media_type="application/pdf")
 

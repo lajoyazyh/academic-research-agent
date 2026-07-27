@@ -17,10 +17,13 @@ from .deps import (
 )
 
 from backend.session_manager import SessionState, STATE_LABELS, VALID_TRANSITIONS
+from backend.cloud_persistence import get_workspace_store
+from backend.tenant import get_current_user
 from functools import lru_cache
 from llms.client import LLMClient
 
 router = APIRouter(prefix="/api/sessions", tags=["sessions"])
+workspace_store = get_workspace_store(SESSIONS_DIR)
 
 
 class CreateSessionRequest(BaseModel):
@@ -100,6 +103,11 @@ def create_session(payload: dict) -> dict:
 @router.get("/list")
 def list_sessions() -> list[dict]:
     """获取所有 Session 摘要列表"""
+    user_id = get_current_user()
+    if user_id != "local" and workspace_store.enabled:
+        remote_sessions = workspace_store.list_sessions(user_id)
+        if remote_sessions is not None:
+            return remote_sessions
     return session_mgr.list_sessions()
 
 
@@ -128,6 +136,9 @@ def get_session(session_id: str) -> dict:
 @router.delete("/{session_id}")
 def delete_session(session_id: str) -> dict:
     """删除 Session"""
+    user_id = get_current_user()
+    if user_id != "local" and workspace_store.enabled:
+        workspace_store.delete_session(user_id, session_id)
     if not session_mgr.delete_session(session_id):
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
     return {"status": "deleted", "session_id": session_id}
