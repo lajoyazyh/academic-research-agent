@@ -1,147 +1,212 @@
+<div align="center">
+
+[English](README.md) · [简体中文](README.zh-CN.md)
+
 # Academic Research Agent
 
-An interactive LLM agent for academic literature research and literature review drafting.
+### Turn a research question into an evidence-grounded literature review.
 
-Academic Research Agent turns a research topic into a traceable research workspace: it plans search keywords, retrieves papers, generates RAG-based notes, produces comparative analysis, drafts a Markdown literature review, and keeps every intermediate artifact editable.
+Search, screen, read, synthesize, and write in one traceable AI research workspace.
 
-## Highlights
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Try_it_now-2563EB?style=for-the-badge)](https://academic-research-agent-two.vercel.app)
+[![CI](https://img.shields.io/github/actions/workflow/status/lajoyazyh/academic-research-agent/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/lajoyazyh/academic-research-agent/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/lajoyazyh/academic-research-agent?style=for-the-badge)](LICENSE)
 
-- **Interactive research workflow**: review and edit keywords, papers, notes, analysis cards, and final drafts.
-- **One-click automation**: run `planning -> search -> notes -> analysis -> review` end to end.
-- **Plan + ReAct + Reflexion**: explicit planning, tool-based search loops, retries, quality gates, and fallback paths.
-- **RAG notes**: generate structured notes from paper abstracts or PDF text with BM25 / embedding retrieval fallback.
-- **Deep analysis cards**: method comparison, research lineage, and research gaps feed into the final review writer.
-- **Editable Markdown workspace**: notes, analysis cards, and review drafts use a Markdown editor in the web UI.
-- **Trace observability**: inspect tool calls, errors, fallback decisions, and active Skill status.
-- **Custom Skills**: configure search, note-taking, and writing behavior per workspace.
-- **Cross-session Copilot**: ask questions across saved research sessions, optionally scoped to selected sessions.
-- **Market-ready BYOK onboarding**: visitors choose a supported provider, test chat and embedding capabilities, and decide whether the browser should remember the key; the server does not persist it.
-- **Responsive research workspace**: desktop keeps the two-panel workflow while mobile provides dedicated Papers, Content, and Chat views.
-- **Evidence-first review writing**: stable source IDs, cross-paper synthesis, citation auditing, deterministic references, and a visible quality score.
-- **GitHub research workflow**: sign in with GitHub, inspect a specified public/private repository, or autonomously discover and compare repositories.
-- **Portable outputs**: export Markdown, Word, PDF, HTML, JSON, or a ZIP package, and commit selected artifacts directly to a GitHub repository.
+[Try the live product](https://academic-research-agent-two.vercel.app) ·
+[Quick start](#quick-start) ·
+[Deployment guide](DEPLOYMENT.md) ·
+[Report an issue](https://github.com/lajoyazyh/academic-research-agent/issues)
 
-## Screens and Workflow
+</div>
 
-```text
-Create session
-  -> plan keywords
-  -> search papers
-  -> generate RAG notes
-  -> generate compare / lineage / gaps analysis
-  -> draft literature review
-  -> revise via Markdown editor or chat
+![Academic Research Agent product preview](docs/assets/product-home.png)
+
+## Why this project?
+
+Literature reviews are rarely a single prompt. Researchers need to discover the right papers, decide what belongs, inspect the evidence, compare findings, track citations, and revise the final narrative.
+
+Academic Research Agent turns that process into an editable workspace. Every stage remains visible and every artifact can be reviewed before it feeds the next step.
+
+| Research need | What the product provides |
+| --- | --- |
+| Discover relevant work | Agentic search across arXiv, Crossref, OpenAlex, and Semantic Scholar |
+| Keep sources trustworthy | Stable source IDs, inclusion decisions, citation auditing, and deterministic references |
+| Read beyond metadata | PDF ingestion plus RAG notes from abstracts or full text |
+| Understand a field | Comparison, research-lineage, and gap-analysis cards |
+| Produce a useful draft | Editable Markdown review with evidence-quality indicators |
+| Stay in control | Manual checkpoints or one-click automation, with tool traces and fallback visibility |
+| Reuse the work | Cross-project Copilot and export to Markdown, Word, PDF, HTML, JSON, or ZIP |
+
+## Product tour
+
+### 1. Research dashboard
+
+![Research project dashboard](docs/assets/workspace-home.png)
+
+Start a new question or continue an existing workspace from one place. The dashboard keeps recent projects, onboarding progress, shortcuts, activity, and workspace statistics together so returning researchers can immediately see where to continue.
+
+### 2. Evidence-centered research workbench
+
+![Evidence-centered research workbench](docs/assets/research-workbench.png)
+
+The main workbench follows six explicit stages: research question, search, screening, reading and notes, synthesis, and review. Sources and inclusion decisions stay on the left; paper evidence, traces, notes, analysis, review, and PDF views share the central editor; contextual chat remains available without leaving the project.
+
+### 3. Portable research outputs
+
+![Research artifact export center](docs/assets/export-center.png)
+
+Export only the final review or package the complete research record—including notes, analysis, sources, and repository findings—as Markdown, Word, PDF, HTML, JSON, or ZIP. GitHub-connected users can commit the Markdown output directly to a selected repository and branch.
+
+### 4. Cross-project Copilot
+
+![Cross-project research Copilot](docs/assets/cross-project-copilot.png)
+
+Select one or more workspaces as the knowledge scope, then ask questions across their papers, notes, and reviews. The sidebar also exposes conversation history, index refresh, and optional research-tool context.
+
+## From question to review
+
+```mermaid
+flowchart LR
+    A["Research question"] --> B["Plan search terms"]
+    B --> C["Search & screen papers"]
+    C --> D["Read PDFs & create RAG notes"]
+    D --> E["Compare methods, lineage & gaps"]
+    E --> F["Draft & audit the review"]
+    F --> G["Edit, export or commit to GitHub"]
 ```
 
-The app supports both manual checkpoints and full automation. Manual mode is useful when users want to curate papers and edit intermediate artifacts; automatic mode is useful for quick demos and first-pass research exploration.
+Use the guided workflow when you want to curate each decision, or run the complete pipeline for a fast first pass. Intermediate notes, analysis cards, and drafts stay editable in both modes.
 
-## Repository Layout
+## Product highlights
 
-```text
-academic-research-agent/
-├── agent/                 # FastAPI app, frontend, Agent pipeline, tools
-├── docs/                  # Requirements, design notes, API and architecture docs
-├── evaluation/            # Optional evaluation runner and scoring utilities
-├── tests/                 # Pytest tests
-├── requirements.txt       # Main runtime dependencies
-├── .env.example           # Environment variable template
-├── Dockerfile             # Container deployment
-└── DEPLOYMENT.md          # Deployment notes
-```
+- **Evidence-first writing** — claims stay connected to source records, with source coverage and citation-quality checks.
+- **Agentic literature search** — planning, tool use, retry logic, quality gates, and fallback paths are visible rather than hidden.
+- **RAG research notes** — structured notes use PDF text when available and fall back safely to abstracts.
+- **Bring your own key** — use Zhipu AI, OpenAI, or another OpenAI-compatible provider without storing request keys on the server.
+- **Custom research strategies** — configure search, note-taking, and review-writing Skills per workspace.
+- **GitHub research workflow** — inspect public or authorized private repositories and commit selected research artifacts.
+- **Built for real work** — responsive UI, persistent multi-user workspaces, Markdown editing, and portable exports.
+- **Chinese and English UI** — switch languages directly in the product.
 
-Runtime sessions are stored under `agent/sessions/`. This directory is intentionally ignored by Git, except for a `.gitkeep` placeholder.
+## Quick start
 
-## Quick Start
+### Run locally
 
-### 1. Install
+Requirements: Python 3.11+ and a supported model API key.
 
 ```bash
+git clone https://github.com/lajoyazyh/academic-research-agent.git
+cd academic-research-agent
+
 python -m venv .venv
-.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # macOS / Linux
-
-python -m pip install -r requirements.txt
 ```
 
-### 2. Configure
+Activate the environment:
 
-For local private use, create `.env` in the repository root or in `agent/.env`:
-
-```env
-ZHIPU_API_KEY=your_key_here
-ZHIPU_MODEL=glm-4-flash
-ZHIPU_BASE_URL=https://open.bigmodel.cn/api/paas/v4/
-
-AGENT_MIN_PAPERS=3
-AGENT_LOOP_DELAY_SEC=3
-ARXIV_SEARCH_RETRY_LIMIT=3
+```powershell
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
 ```
-
-You can also use an OpenAI-compatible provider by setting `OPENAI_API_KEY`, `ZHIPU_BASE_URL`, and `ZHIPU_MODEL` appropriately.
-
-For public demos, leave `ZHIPU_API_KEY` unset and configure a provider in **Profile -> Model API**. The browser sends the key only with model requests. By default it is kept in `sessionStorage`; users can explicitly opt in to remembering it in `localStorage`. The backend never writes request keys to sessions, traces, metadata, notes, analysis, reviews, or analytics events.
-
-Built-in presets include Zhipu AI and OpenAI, plus an advanced OpenAI-compatible option. Chat and embedding models are tested separately before research begins.
-
-```text
-Base URL: https://open.bigmodel.cn/api/paas/v4/
-Model: glm-4-flash
-```
-
-### 3. Run the Web App
 
 ```bash
-cd agent
-python web_app.py
+# macOS / Linux
+source .venv/bin/activate
 ```
 
-Open:
+Install and start:
+
+```bash
+python -m pip install -r requirements.txt
+python -m uvicorn web_app:app --app-dir agent --host 127.0.0.1 --port 8000
+```
+
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+You can configure a provider in **Profile → Model API** after opening the app. For private local use, you may instead copy `.env.example` to `.env` and set a server-side fallback key.
+
+### Run with Docker
+
+```bash
+docker compose up --build
+```
+
+Then open [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+## Architecture
 
 ```text
-http://127.0.0.1:8000/
+Browser
+  ├─ Static responsive UI + Markdown workspace
+  ├─ Supabase Auth
+  └─ Request-scoped BYOK credentials
+             │
+             ▼
+FastAPI backend
+  ├─ Plan / ReAct / Reflexion agent loop
+  ├─ Academic search and PDF tools
+  ├─ RAG notes, analysis, review, and export
+  └─ Background run recovery and observability
+             │
+             ▼
+Supabase Postgres + private Storage
 ```
 
-The public product page is served at `/`, the authenticated dashboard at `/app`, and account/provider settings at `/app/profile`.
+The production setup serves the frontend on Vercel and the long-running FastAPI agent on a Docker host, with Supabase providing authentication and workspace persistence. The app also supports a local, single-user filesystem mode.
 
-### 4. Run Tests
+## Privacy and BYOK
+
+Public deployments are designed for bring-your-own-key usage:
+
+- model keys are sent only with model-related requests;
+- the backend uses them in memory and does not persist them in sessions, traces, notes, reviews, or analytics;
+- browser storage is opt-in: session-only by default, with an explicit “remember” option;
+- GitHub provider tokens remain browser-scoped and are sent only for explicit repository or export actions.
+
+Never commit `.env`, API keys, tokens, downloaded papers, or generated sessions. See [SECURITY.md](SECURITY.md) for the full security model.
+
+## Development
+
+Run the test suite:
 
 ```bash
 python -m pytest tests -q
 ```
 
-## Docker
+Build the static frontend:
 
 ```bash
-docker build -t academic-research-agent .
-docker run --env-file .env -p 8000:8000 academic-research-agent
+npm run build
 ```
 
-Then open `http://127.0.0.1:8000/`.
+Repository map:
 
-## Deployment
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for Render, Railway, Fly.io, VPS, Docker, and personal website portfolio notes.
-
-For a public demo, prefer BYOK mode and do not configure your private paid LLM key on the server.
+```text
+academic-research-agent/
+├── agent/          # FastAPI backend, agent pipeline, tools, and frontend
+├── docs/           # Product, API, architecture, and migration notes
+├── evaluation/     # Optional evaluation runner and scoring utilities
+├── scripts/        # Frontend build scripts
+├── supabase/       # Database migrations
+├── tests/          # Pytest suite
+├── Dockerfile
+└── DEPLOYMENT.md
+```
 
 ## Documentation
 
-- [Requirements](docs/Agent需求文档.md)
-- [System Design](docs/Agent详细设计文档.md)
-- [API Reference](docs/API接口文档.md)
-- [Optimization Report](docs/Agent优化文档.md)
-- [Architecture Analysis](docs/项目架构分析.md)
+- [Deployment guide](DEPLOYMENT.md)
+- [Requirements (Chinese)](docs/Agent需求文档.md)
+- [System design (Chinese)](docs/Agent详细设计文档.md)
+- [API reference (Chinese)](docs/API接口文档.md)
+- [Architecture analysis (Chinese)](docs/项目架构分析.md)
+- [Evaluation toolkit](evaluation/README.md)
 
-## Evaluation
+## Contributing
 
-The `evaluation/` directory contains an optional standalone evaluation runner and fallback scoring utilities. It can be used to compare generated answers or reviews against reference data, even when some third-party evaluation dependencies are unavailable.
+Ideas, bug reports, and pull requests are welcome. Please [open an issue](https://github.com/lajoyazyh/academic-research-agent/issues) with a reproducible description and never include private research data or credentials.
 
-## Security Notes
-
-- Never commit `.env`, API keys, tokens, session data, or downloaded PDFs.
-- `agent/sessions/` is ignored because it may contain user prompts, generated drafts, traces, and paper PDFs.
-- Check copyright before redistributing downloaded papers or generated datasets.
+If this project is useful to you, consider giving it a ⭐ — it helps more researchers discover the project.
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+Released under the [MIT License](LICENSE).
