@@ -15,7 +15,13 @@ import datetime
 from pathlib import Path
 from typing import Optional
 from backend.tenant import tenant_path
-from prompts.review_skills import DEFAULT_REVIEW_SKILL, REVIEW_PRESETS
+from prompts.review_skills import (
+    DEFAULT_REVIEW_SKILL,
+    DEFAULT_REVIEW_SKILL_EN,
+    REVIEW_PRESETS,
+    REVIEW_PRESETS_EN,
+)
+from backend.scientific_review import SCIENTIFIC_SKILL_MANIFESTS
 
 
 class SkillManager:
@@ -238,6 +244,13 @@ class SkillManager:
     def get_presets(self) -> dict:
         """Return immutable built-in presets that users can copy and adapt."""
         return dict(REVIEW_PRESETS)
+
+    def get_scientific_manifests(self) -> list[dict]:
+        """Return immutable, versioned pipeline contracts."""
+        return [dict(item) for item in SCIENTIFIC_SKILL_MANIFESTS]
+
+    def get_localized_review_presets(self, language: str = "zh-CN") -> dict:
+        return dict(REVIEW_PRESETS_EN if str(language).lower().startswith("en") else REVIEW_PRESETS)
 
     # ━━━━━ 文件操作 ━━━━━
 

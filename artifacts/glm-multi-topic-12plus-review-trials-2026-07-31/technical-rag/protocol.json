@@ -1,0 +1,13 @@
+{
+  "mode": "technical",
+  "question": "检索增强生成系统在检索器、生成器耦合、训练方式、评价框架、事实可靠性与计算成本方面有哪些主要技术路线和证据边界？",
+  "sources": [
+    "OpenAlex candidate discovery",
+    "original open-access full text"
+  ],
+  "candidate_count": 52,
+  "target_included": 12,
+  "included_count": 12,
+  "status": "focused_high_load_validation",
+  "systematic_review_claim_allowed": false
+}

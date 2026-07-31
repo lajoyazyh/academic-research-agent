@@ -19,8 +19,10 @@ from .deps import (
 from backend.provider import ensure_provider_available
 from backend.cloud_persistence import get_workspace_store
 from backend.run_store import PersistentRunStore, TERMINAL_STATUSES
+from backend.scientific_review import ScientificReviewService, deterministic_evidence_seed
 from backend.tenant import get_current_user, reset_current_user, set_current_user, tenant_key
 from utils.locale import is_english, language_from_config
+from utils.parser import extract_json
 
 import threading
 from main import run_agent_pipeline, run_agent_pipeline_session  # noqa
@@ -197,15 +199,36 @@ def _retrieval_ledger(traces: list[dict] | None) -> dict:
             continue
         action = str(trace.get("action") or "")
         action_input = trace.get("input") if isinstance(trace.get("input"), dict) else {}
-        if "search" in action:
+        if "search" in action or "citation" in action:
             source = action.replace("_search", "").replace("search_", "") or action
             source_counts[source] = source_counts.get(source, 0) + 1
-            query = str(action_input.get("query") or action_input.get("keywords") or "").strip()
+            query = str(
+                action_input.get("query")
+                or action_input.get("keywords")
+                or action_input.get("work_id")
+                or ""
+            ).strip()
             page = action_input.get("page", action_input.get("offset", action_input.get("start", "")))
+            observation = str(trace.get("observation") or "")
+            failed = bool(
+                trace.get("error_type")
+                or re.search(
+                    r"(?:http\s*429|too many requests|error executing|request failed|检索请求失败|限流)",
+                    observation,
+                    flags=re.I,
+                )
+            )
             identity = (source, query.casefold(), str(page))
             if query and identity not in seen:
                 seen.add(identity)
-                queries.append({"source": source, "query": query, "page": page})
+                queries.append({
+                    "source": source,
+                    "query": query,
+                    "page": page,
+                    "direction": action_input.get("direction"),
+                    "success": not failed,
+                    "error": observation[:500] if failed else None,
+                })
         elif action == "paper_register":
             registered_attempts += 1
             observation = str(trace.get("observation") or "").lower()
@@ -287,6 +310,89 @@ def _collect_notes_for_analysis(session: dict, paper_ids: list[str] | None = Non
     return notes, papers
 
 
+def _extract_scientific_evidence(
+    llm,
+    *,
+    topic: str,
+    paper: dict,
+    notes: str,
+    appraisal_profile: str,
+) -> tuple[dict, dict]:
+    """Convert one evidence note into typed extraction and appraisal records."""
+    schema = {
+        "extraction": {
+            "study_design": None,
+            "population_or_dataset": None,
+            "intervention_or_method": None,
+            "comparator_or_baseline": None,
+            "sample_size": None,
+            "outcomes_and_metrics": [],
+            "main_results": [{"statement": "", "metric": None, "value": None, "location": None}],
+            "uncertainty": None,
+            "limitations": [],
+            "funding_and_conflicts": None,
+            "evidence_locations": [{"section": None, "page": None, "excerpt": ""}],
+            "computer_ai": {
+                "dataset_provenance": None,
+                "split_and_leakage_risk": None,
+                "baseline_fairness": None,
+                "variance_or_significance": None,
+                "ablation_reported": None,
+                "code_data_environment": None,
+                "external_validity": None,
+                "compute_cost": None,
+            },
+            "confidence": 0.0,
+        },
+        "appraisal": {
+            "profile": appraisal_profile,
+            "study_design": None,
+            "domains": [{
+                "name": "",
+                "judgement": "low|some_concerns|high|unclear",
+                "reason": "",
+                "evidence": "",
+            }],
+            "overall_judgement": "low|some_concerns|high|unclear",
+            "rationale": "",
+        },
+    }
+    is_en = getattr(llm, "language", "zh-CN") == "en"
+    system = (
+        "You are a conservative evidence extraction and study-appraisal engine. "
+        "Return one JSON object only. Never infer absent information; use null or []. "
+        "Every quantitative result needs its metric, comparison and evidence location. "
+        "A single overall score without domain-level reasons is forbidden."
+        if is_en else
+        "你是保守的结构化证据提取与研究质量评价引擎。只返回一个 JSON 对象。"
+        "笔记中未提供的信息必须使用 null 或 []，禁止依据常识补齐。"
+        "每个定量结果必须保留指标、比较对象和证据位置。禁止只给没有逐领域理由的总分。"
+    )
+    labels = (
+        ("Research question", "Paper", "Evidence basis", "Appraisal profile", "Evidence note",
+         "Return JSON matching this shape")
+        if is_en else
+        ("研究问题", "论文", "证据基础", "评价配置", "证据笔记", "返回符合以下结构的 JSON")
+    )
+    prompt = (
+        f"{labels[0]}：{topic}\n"
+        f"{labels[1]}：{paper.get('title')}（{paper.get('paper_id')}）\n"
+        f"{labels[2]}：{paper.get('evidence_basis') or 'unknown'}\n"
+        f"{labels[3]}：{appraisal_profile}\n\n"
+        f"{labels[4]}：\n{notes[:18000]}\n\n"
+        f"{labels[5]}：\n{json.dumps(schema, ensure_ascii=False)}"
+    )
+    parsed = extract_json(llm.chat(system, prompt, []))
+    extraction = parsed.get("extraction") if isinstance(parsed.get("extraction"), dict) else {}
+    appraisal = parsed.get("appraisal") if isinstance(parsed.get("appraisal"), dict) else {}
+    extraction["evidence_basis"] = paper.get("evidence_basis") or (
+        "full_text" if paper.get("pdf_status") == "available" else "abstract"
+    )
+    extraction["review_status"] = "ai_draft"
+    appraisal["review_status"] = "ai_draft"
+    return extraction, appraisal
+
+
 def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all",
                           provider_config: dict | None = None,
                           paper_ids: list[str] | None = None) -> dict:
@@ -304,10 +410,36 @@ def _run_session_analysis(session_id: str, topic: str, analysis_type: str = "all
     if not notes.strip():
         raise HTTPException(status_code=400, detail="已纳入论文尚无笔记，请先生成笔记")
 
+    scientific = ScientificReviewService(session_mgr)
+    selected_ids = {paper.get("paper_id", "") for paper in papers}
+    protocol = scientific.ensure_protocol(session_id, topic=topic)
+    extraction_rows = [
+        item for item in scientific._read(session_id, "extractions.json", [])
+        if item.get("protocol_id") == protocol.get("protocol_id")
+        and item.get("paper_id") in selected_ids
+    ]
+    appraisal_rows = [
+        item for item in scientific._read(session_id, "appraisals.json", [])
+        if item.get("protocol_id") == protocol.get("protocol_id")
+        and item.get("paper_id") in selected_ids
+    ]
+    if extraction_rows:
+        synthesis_groups = scientific.build_synthesis_groups(session_id, selected_ids)
+        notes = (
+            "## Structured evidence matrix (source of truth)\n\n"
+            f"```json\n{json.dumps(extraction_rows, ensure_ascii=False, indent=2)}\n```\n\n"
+            "## Study appraisal records\n\n"
+            f"```json\n{json.dumps(appraisal_rows, ensure_ascii=False, indent=2)}\n```\n\n"
+            "## Predefined synthesis groups\n\n"
+            f"```json\n{json.dumps(synthesis_groups, ensure_ascii=False, indent=2)}\n```\n\n"
+            "---\n\n"
+            + notes
+        )
+
     from tools.analysis_tools import compare_papers, trace_lineage, find_gaps
 
-    selected_ids = [paper.get("paper_id", "") for paper in papers]
-    result = {"phase": "analysis", "session_id": session_id, "paper_ids": selected_ids}
+    selected_ids_list = [paper.get("paper_id", "") for paper in papers]
+    result = {"phase": "analysis", "session_id": session_id, "paper_ids": selected_ids_list}
     if analysis_type in ("compare", "all"):
         result["compare"] = compare_papers(topic, notes, papers, provider_config)
     if analysis_type in ("lineage", "all"):
@@ -426,6 +558,10 @@ def _run_search_in_background(
         from backend.session_manager import papers_match
         before_papers = session_mgr.get_papers(session_id)
         search_started_at = datetime.datetime.now().isoformat()
+        scientific_service = ScientificReviewService(session_mgr)
+        scientific_state = scientific_service.audit_summary(session_id)
+        review_protocol = scientific_state.get("protocol") or {}
+        search_query_plan = scientific_state.get("search_queries") or []
         # 更新 Session 状态为 searching（端点可能已更新，忽略重复异常）
         try:
             session_mgr.update_session_state(session_id, "searching")
@@ -459,6 +595,8 @@ def _run_search_in_background(
             existing_papers=before_papers,
             target_new_papers=target_new_papers,
             search_mode=search_mode,
+            review_protocol=review_protocol,
+            search_query_plan=search_query_plan,
             agent_callback=lambda agent, wd: _agent_holder.update({"agent": agent}),
         )
         
@@ -509,6 +647,32 @@ def _run_search_in_background(
                 else " 本轮执行预算已耗尽；继续检索将从新结果页开始。"
             )
         result["search_summary"] = search_summary
+        session_mgr.save_search_run(session_id, search_summary)
+        reconciled_queries = scientific_service.reconcile_search_ledger(
+            session_id, search_summary["retrieval_ledger"]
+        )
+        search_summary["protocol_search"] = {
+            "completed": sum(item.get("status") == "completed" for item in reconciled_queries),
+            "planned": len(reconciled_queries),
+            "items": reconciled_queries,
+        }
+        flow = scientific_service.flow_counts(session_id)
+        protocol_stopping_condition_met = bool(reconciled_queries) and all(
+            item.get("status") == "completed" for item in reconciled_queries
+        )
+        protocol_stopping_condition_met = protocol_stopping_condition_met or (
+            flow.get("unique_candidates", 0) >= int(review_protocol.get("candidate_cap") or 100)
+        )
+        if not protocol_stopping_condition_met and outcome == "complete":
+            outcome = "partial"
+            outcome_state = "search_partial"
+            search_summary["outcome"] = outcome
+            search_summary["state"] = outcome_state
+            search_summary["message"] += (
+                " The requested batch size was reached, but protocol search coverage remains incomplete."
+                if language == "en"
+                else " 已达到本轮篇数目标，但协议检索覆盖尚未完成。"
+            )
         session_mgr.save_search_run(session_id, search_summary)
         try:
             session_mgr.update_session_state(session_id, outcome_state)
@@ -600,6 +764,32 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {session_id} 不存在")
     provider_config = ensure_provider_available(payload.provider)
+    scientific = ScientificReviewService(session_mgr)
+    protocol = scientific.ensure_protocol(
+        session_id,
+        topic=session.get("topic", payload.topic.strip()),
+        language=language_from_config(provider_config),
+    )
+    if protocol.get("status") != "confirmed":
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error_code": "protocol_confirmation_required",
+                "message": "请先确认研究协议，再开始检索",
+                "protocol": protocol,
+                "retryable": False,
+            },
+        )
+    flow = scientific.flow_counts(session_id)
+    if flow.get("unique_candidates", 0) >= int(protocol.get("candidate_cap", 100)):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error_code": "candidate_cap_reached",
+                "message": f"候选文献已达到协议上限 {protocol.get('candidate_cap')} 条",
+                "retryable": False,
+            },
+        )
 
     # 获取用户确认的关键词
     keywords = payload.keywords or session.get("keywords", [])
@@ -647,6 +837,9 @@ def run_search_phase(session_id: str, payload: RunPhaseRequest) -> dict:
         "search_mode": search_mode,
         "target_new_papers": target_new_papers,
         "max_loops": max_loops,
+        "protocol_id": protocol.get("protocol_id"),
+        "protocol_version": protocol.get("version"),
+        "candidate_cap": protocol.get("candidate_cap"),
         "message": "搜索已开始，请通过 GET /api/sessions/{session_id} 轮询状态",
     }
 
@@ -823,7 +1016,55 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     feedback = session_mgr.get_feedback(session_id)
     rewrite_count = session.get("rewrite_count", 0)
     selected_ids = [paper.get("paper_id", "") for paper in papers]
+    scientific = ScientificReviewService(session_mgr)
+    protocol = scientific.ensure_protocol(
+        session_id,
+        topic=session.get("topic", payload.topic.strip()),
+        language=language_from_config(provider_config),
+    )
+    snapshot = scientific.latest_inclusion_snapshot(session_id)
+    if not snapshot:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error_code": "inclusion_confirmation_required",
+                "message": "请先确认最终纳入论文，再生成综述",
+                "selected_paper_ids": selected_ids,
+                "retryable": False,
+            },
+        )
+    existing_extractions = {
+        item.get("paper_id")
+        for item in scientific._read(session_id, "extractions.json", [])
+        if item.get("protocol_id") == protocol.get("protocol_id")
+    }
+    for paper in papers:
+        if paper.get("paper_id") not in existing_extractions:
+            scientific.save_extraction(
+                session_id,
+                paper.get("paper_id", ""),
+                deterministic_evidence_seed(paper),
+            )
+    gate = scientific.quality_gate(session_id, requested_paper_ids=selected_ids)
+    if not gate.get("ok"):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error_code": "scientific_quality_gate_failed",
+                "message": "科学质量门禁未通过，请先完成协议、最终纳入确认和证据提取",
+                "quality_gate": gate,
+                "retryable": False,
+            },
+        )
     analysis_context = _load_analysis_context_for_writing(session_id, selected_ids)
+    methodology_context = scientific.build_methodology_context(
+        session_id, language_from_config(provider_config)
+    )
+    analysis_context = (
+        f"{methodology_context}\n\n{analysis_context}"
+        if analysis_context.strip()
+        else methodology_context
+    )
 
     try:
         from main import run_write_from_notes  # noqa
@@ -838,13 +1079,51 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
             provider_config=provider_config,
             papers_list=papers,
             repository_sources=session.get("repositories", []),
+            review_mode=protocol.get("mode", "rapid"),
         )
 
         # 保存综述，并记录本次撰写引用了哪些论文
         if result.get("review"):
+            result["review"] = scientific.enforce_review_label(
+                session_id,
+                result["review"],
+                gate,
+                language_from_config(provider_config),
+            )
+            claim_audit = scientific.audit_review_claims(
+                session_id, result["review"], papers
+            )
+            effective_gate = gate
+            if not claim_audit.get("passed"):
+                effective_gate = {
+                    **gate,
+                    "ok": False,
+                    "can_claim_systematic": False,
+                    "output_label": "incomplete_research_draft",
+                    "blockers": list(dict.fromkeys(
+                        list(gate.get("blockers") or []) + ["citation_claim_audit_failed"]
+                    )),
+                }
+                if gate.get("can_claim_systematic"):
+                    result["review"] = scientific.enforce_review_label(
+                        session_id,
+                        result["review"],
+                        effective_gate,
+                        language_from_config(provider_config),
+                    )
             session_mgr.save_review(session_id, result["review"], referenced_papers=selected_ids)
             quality_path = session_mgr.root / session_id / "review" / "quality.json"
-            session_mgr._write_json(quality_path, result.get("quality", {}))
+            combined_quality = {
+                **result.get("quality", {}),
+                "scientific_gate": effective_gate,
+                "output_label": effective_gate.get("output_label"),
+                "claim_audit": claim_audit,
+            }
+            session_mgr._write_json(quality_path, combined_quality)
+            result["quality"] = combined_quality
+            result["review_version"] = scientific.write_review_version(
+                session_id, result["review"], effective_gate
+            )
         if result.get("traces"):
             session_mgr.save_traces(session_id, result["traces"], append=True)
 
@@ -966,12 +1245,46 @@ def run_notes_phase(session_id: str, payload: RunNotesRequest) -> dict:
 
     if notes_map:
         session_mgr.batch_update_paper_notes(session_id, notes_map, evidence_basis_map)
+        refreshed_papers = {
+            paper.get("paper_id"): paper
+            for paper in session_mgr.get_papers(session_id)
+        }
+        scientific = ScientificReviewService(session_mgr)
+        protocol = scientific.ensure_protocol(
+            session_id,
+            topic=topic,
+            language=language_from_config(provider_config),
+        )
+        for paper_id, note_text in notes_map.items():
+            paper = refreshed_papers.get(paper_id, {"paper_id": paper_id})
+            try:
+                extraction, appraisal = _extract_scientific_evidence(
+                    llm,
+                    topic=topic,
+                    paper=paper,
+                    notes=note_text,
+                    appraisal_profile=protocol.get("appraisal_profile", "general"),
+                )
+            except Exception:
+                extraction = deterministic_evidence_seed(paper)
+                appraisal = {
+                    "profile": protocol.get("appraisal_profile", "general"),
+                    "study_design": None,
+                    "domains": [],
+                    "overall_judgement": "unclear",
+                    "rationale": "Structured appraisal generation failed; human review is required.",
+                    "review_status": "generation_error",
+                }
+            scientific.save_extraction(session_id, paper_id, extraction)
+            scientific.save_appraisal(session_id, paper_id, appraisal)
     session_mgr.save_traces(session_id, [notes_skill_trace], append=True)
 
     return {
         "phase": "notes",
         "notes_map": notes_map,
         "count": len(notes_map),
+        "extractions": scientific._read(session_id, "extractions.json", []) if notes_map else [],
+        "appraisals": scientific._read(session_id, "appraisals.json", []) if notes_map else [],
         "traces": [notes_skill_trace],
     }
 
@@ -1089,45 +1402,14 @@ def run_analysis_phase(session_id: str, payload: AnalysisRequest) -> dict:
     if not topic:
         raise HTTPException(status_code=400, detail="topic 不能为空")
 
-    papers = _accepted_papers(session, payload.paper_ids)
-    parts = []
-    for paper in papers:
-        paper_notes = (paper.get("notes") or "").strip()
-        if paper_notes:
-            title = paper.get("title") or paper.get("paper_id") or "Unknown"
-            parts.append(f"## {title}\n\n{paper_notes}")
-    notes = "\n\n---\n\n".join(parts)
-    if not papers:
-        raise HTTPException(status_code=400, detail="请先至少纳入一篇论文")
-    if not notes.strip():
-        raise HTTPException(status_code=400, detail="已纳入论文尚无笔记，请先生成笔记")
-
     try:
-        from tools.analysis_tools import compare_papers, trace_lineage, find_gaps
-
-        analysis_type = payload.analysis_type
-        if analysis_type not in {"compare", "lineage", "gaps", "all"}:
-            raise HTTPException(status_code=400, detail="analysis_type 必须是 compare、lineage、gaps 或 all")
-
-        result = {
-            "phase": "analysis",
-            "session_id": session_id,
-            "paper_ids": [paper.get("paper_id", "") for paper in papers],
-        }
-        if analysis_type in ("compare", "all"):
-            result["compare"] = compare_papers(topic, notes, papers, provider_config)
-        if analysis_type in ("lineage", "all"):
-            result["lineage"] = trace_lineage(topic, notes, papers, provider_config)
-        if analysis_type in ("gaps", "all"):
-            result["gaps"] = find_gaps(topic, notes, papers, provider_config)
-        result["document"] = _analysis_result_to_markdown(
-            result, topic, language_from_config(provider_config)
+        return _run_session_analysis(
+            session_id,
+            topic,
+            payload.analysis_type,
+            provider_config,
+            payload.paper_ids,
         )
-
-        analysis_dir = session_mgr.root / session_id / "analysis"
-        os.makedirs(analysis_dir, exist_ok=True)
-        session_mgr._write_json(analysis_dir / "analysis_results.json", result)
-        return result
     except HTTPException:
         raise
     except Exception as e:
@@ -1144,6 +1426,7 @@ def _run_auto_pipeline_in_background(
     provider_config: dict | None = None,
     stop_flag: list[bool] | None = None,
     run_id: str = "",
+    resume_from: str = "plan",
 ) -> None:
     """后台自动执行完整流水线：规划 → 搜索 → 笔记 → 分析 → 综述"""
     import time as _time
@@ -1175,6 +1458,57 @@ def _run_auto_pipeline_in_background(
         _persist_run(session_id, live_run)
 
     try:
+        if resume_from == "notes":
+            session = session_mgr.load_session(session_id) or {}
+            included = _accepted_papers(session)
+            paper_ids = [paper.get("paper_id", "") for paper in included]
+            if not paper_ids:
+                raise ValueError("No studies are present in the confirmed inclusion set")
+            _update_run_status(
+                "reviewing_notes",
+                "running",
+                message=f"最终纳入已确认，正在为 {len(paper_ids)} 篇论文生成结构化证据笔记...",
+            )
+            run_notes_phase(
+                session_id,
+                RunNotesRequest(topic=topic, paper_ids=paper_ids, provider=provider_config),
+            )
+            refreshed = session_mgr.load_session(session_id) or {}
+            scientific = ScientificReviewService(session_mgr)
+            for paper in _accepted_papers(refreshed):
+                scientific.save_extraction(
+                    session_id,
+                    paper.get("paper_id", ""),
+                    deterministic_evidence_seed(paper),
+                )
+            _update_run_status("analysis", "running", message="正在进行证据比较与质量分析...")
+            run_analysis_phase(
+                session_id,
+                AnalysisRequest(
+                    topic=topic,
+                    analysis_type="all",
+                    paper_ids=paper_ids,
+                    provider=provider_config,
+                ),
+            )
+            _update_run_status("writing", "running", message="正在按综述模式撰写并审计引用...")
+            write_result = run_write_phase(
+                session_id,
+                RunPhaseRequest(
+                    topic=topic,
+                    start_phase="write",
+                    paper_ids=paper_ids,
+                    provider=provider_config,
+                ),
+            )
+            _update_run_status(
+                "complete",
+                "done",
+                message="自动流程已完成：证据笔记、分析和综述草稿均已生成。",
+                result=write_result,
+            )
+            return
+
         # ━━ 阶段 1：规划 ━━
         _update_run_status("planning", "running", message="正在生成关键词规划...")
 
@@ -1191,6 +1525,7 @@ def _run_auto_pipeline_in_background(
             session_mgr.save_initial_plan(session_id, plan_result["initial_plan"])
         if plan_result.get("keywords"):
             session_mgr.save_keywords(session_id, plan_result["keywords"])
+            ScientificReviewService(session_mgr).refresh_unstarted_search_queries(session_id)
         if plan_result.get("traces"):
             session_mgr.save_traces(session_id, plan_result["traces"])
 
@@ -1235,6 +1570,10 @@ def _run_auto_pipeline_in_background(
         from backend.session_manager import papers_match
         before_papers = session_mgr.get_papers(session_id)
         search_started_at = datetime.datetime.now().isoformat()
+        scientific_service = ScientificReviewService(session_mgr)
+        scientific_state = scientific_service.audit_summary(session_id)
+        review_protocol = scientific_state.get("protocol") or {}
+        search_query_plan = scientific_state.get("search_queries") or []
         search_result = run_agent_pipeline_session(
             session_id=session_id,
             user_topic=topic,
@@ -1245,6 +1584,8 @@ def _run_auto_pipeline_in_background(
             existing_papers=before_papers,
             target_new_papers=min_papers,
             search_mode="incremental" if before_papers else "initial",
+            review_protocol=review_protocol,
+            search_query_plan=search_query_plan,
             agent_callback=lambda agent, wd: _agent_holder.update({"agent": agent}),
         )
 
@@ -1293,6 +1634,31 @@ def _run_auto_pipeline_in_background(
                 if language == "en"
                 else " 本轮执行预算已耗尽；继续检索将从新结果页开始。"
             )
+        reconciled_queries = scientific_service.reconcile_search_ledger(
+            session_id, search_summary["retrieval_ledger"]
+        )
+        search_summary["protocol_search"] = {
+            "completed": sum(item.get("status") == "completed" for item in reconciled_queries),
+            "planned": len(reconciled_queries),
+            "items": reconciled_queries,
+        }
+        flow = scientific_service.flow_counts(session_id)
+        stopping_condition_met = bool(reconciled_queries) and all(
+            item.get("status") == "completed" for item in reconciled_queries
+        )
+        stopping_condition_met = stopping_condition_met or (
+            flow.get("unique_candidates", 0) >= int(review_protocol.get("candidate_cap") or 100)
+        )
+        if not stopping_condition_met and outcome == "complete":
+            outcome = "partial"
+            outcome_state = "search_partial"
+            search_summary["outcome"] = outcome
+            search_summary["state"] = outcome_state
+            search_summary["message"] += (
+                " The requested batch size was reached, but protocol search coverage remains incomplete."
+                if language == "en"
+                else " 已达到本轮篇数目标，但协议检索覆盖尚未完成。"
+            )
         session_mgr.save_search_run(session_id, search_summary)
         try:
             session_mgr.update_session_state(session_id, outcome_state)
@@ -1310,12 +1676,26 @@ def _run_auto_pipeline_in_background(
             )
             return
 
-        _update_run_status("search_complete", "running",
-                          message=f"搜索完成，本轮新增 {len(new_papers)}/{min_papers} 篇，即将生成笔记...",
-                          papers=papers, search_summary=search_summary)
+        _update_run_status(
+            "screening",
+            "waiting_for_confirmation",
+            message=(
+                f"搜索完成，本轮新增 {len(new_papers)}/{min_papers} 篇候选文献。"
+                "请检查候选记录并确认最终纳入集合。"
+            ),
+            papers=session_mgr.get_papers(session_id),
+            search_summary=search_summary,
+            flow=ScientificReviewService(session_mgr).flow_counts(session_id),
+            required_action="confirm_inclusion_snapshot",
+        )
 
         if _stop_flag[0]:
             return
+
+        # The automatic pipeline deliberately pauses at the second human
+        # checkpoint. Resuming with ``resume_from=notes`` continues from the
+        # confirmed inclusion snapshot without repeating discovery.
+        return
 
         # ━━ 阶段 3：生成笔记 ━━
         try:
@@ -1530,6 +1910,34 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
     topic = payload.topic.strip()
     if not topic:
         raise HTTPException(status_code=400, detail="主题不能为空")
+    if payload.resume_from not in {"plan", "notes"}:
+        raise HTTPException(status_code=400, detail="resume_from 必须是 plan 或 notes")
+    scientific = ScientificReviewService(session_mgr)
+    protocol = scientific.ensure_protocol(
+        session_id,
+        topic=topic,
+        language=language_from_config(provider_config),
+    )
+    if protocol.get("status") != "confirmed":
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error_code": "protocol_confirmation_required",
+                "message": "请先确认研究协议，再启动自动流程",
+                "protocol": protocol,
+                "retryable": False,
+            },
+        )
+    inclusion_snapshot = scientific.latest_inclusion_snapshot(session_id)
+    if payload.resume_from == "notes" and not inclusion_snapshot:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error_code": "inclusion_confirmation_required",
+                "message": "请先确认最终纳入论文，再继续自动生成",
+                "retryable": False,
+            },
+        )
     max_loops = effective_search_loop_budget(payload.max_loops, payload.min_papers)
 
     run_key = _run_key(session_id)
@@ -1548,6 +1956,9 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
         "min_papers": payload.min_papers,
         "provider": provider_config,
         "language": language_from_config(provider_config),
+        "resume_from": payload.resume_from,
+        "protocol_version": protocol.get("version"),
+        "inclusion_snapshot_id": (inclusion_snapshot or {}).get("snapshot_id"),
     })
     with RUN_LOCK:
         RUNS[run_key].update({
@@ -1567,7 +1978,8 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
     # 后台执行
     worker = _tenant_worker(
         _run_auto_pipeline_in_background,
-        session_id, topic, max_loops, payload.min_papers, provider_config, _stop_flag, run["run_id"],
+        session_id, topic, max_loops, payload.min_papers, provider_config,
+        _stop_flag, run["run_id"], payload.resume_from,
     )
     worker.start()
 
@@ -1575,6 +1987,8 @@ def run_auto_pipeline(session_id: str, payload: AutoRunRequest) -> dict:
         "session_id": session_id,
         "run_id": run["run_id"],
         "status": "started",
+        "resume_from": payload.resume_from,
+        "protocol_version": protocol.get("version"),
         "max_loops": max_loops,
         "message": "自动流程已启动，请通过 GET /api/sessions/{session_id}/run/status 轮询进度",
     }

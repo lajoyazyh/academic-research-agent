@@ -51,6 +51,24 @@
       <div class="sources-head">
         <h2>来源</h2>
       </div>
+      <section class="protocol-card" id="protocolCard" aria-live="polite">
+        <div class="protocol-card-main">
+          <span class="protocol-status-dot" id="protocolStatusDot"></span>
+          <div>
+            <strong id="protocolModeLabel">快速证据综述</strong>
+            <small id="protocolStatusLabel">研究协议待确认</small>
+          </div>
+        </div>
+        <button class="secondary-btn compact-btn" id="protocolEditBtn" type="button">
+          <i class="fa-solid fa-clipboard-check"></i><span>研究协议</span>
+        </button>
+        <div class="protocol-flow" id="protocolFlow" aria-label="文献筛选流程统计">
+          <span><strong id="flowCandidates">0</strong><small id="flowCandidatesLabel">候选</small></span>
+          <span><strong id="flowDeduplicated">0</strong><small id="flowDeduplicatedLabel">去重后</small></span>
+          <span><strong id="flowScreened">0</strong><small id="flowScreenedLabel">已初筛</small></span>
+          <span><strong id="flowIncluded">0</strong><small id="flowIncludedLabel">已纳入</small></span>
+        </div>
+      </section>
       <div class="sources-toolbar sources-primary-actions">
         <div class="search-run-controls" aria-label="本轮检索设置">
           <label class="search-target-control" for="searchTargetInput">
@@ -166,6 +184,59 @@
       <div class="modal-foot">
         <button class="secondary-btn" id="keywordAdd"><i class="fa-solid fa-plus"></i> 添加关键词</button>
         <button class="primary-btn" id="keywordConfirm"><i class="fa-solid fa-check"></i> 确认并开始搜索</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="protocolModal">
+    <div class="modal-box protocol-modal-box">
+      <div class="modal-head">
+        <div>
+          <h3 id="protocolModalTitle"><i class="fa-solid fa-clipboard-check"></i> 研究协议</h3>
+          <p class="modal-hint" id="protocolModalHint">协议确认后才能检索；开始检索后修改模式会创建新版本并要求重新筛选。</p>
+        </div>
+        <button class="ghost-btn" id="protocolModalClose" aria-label="关闭研究协议窗口"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="protocol-grid">
+        <label>
+          <span id="protocolModeFieldLabel">综述模式</span>
+          <select id="protocolMode">
+            <option value="rapid">快速证据综述</option>
+            <option value="systematic">严格系统综述</option>
+            <option value="scoping">范围综述 / 系统映射</option>
+            <option value="technical">计算机与 AI 技术综述</option>
+          </select>
+        </label>
+        <label>
+          <span id="protocolCapFieldLabel">候选文献上限</span>
+          <input id="protocolCandidateCap" type="number" min="30" max="2000" step="10" value="100">
+        </label>
+      </div>
+      <label class="protocol-field">
+        <span id="protocolQuestionFieldLabel">研究问题</span>
+        <textarea id="protocolQuestion" rows="3"></textarea>
+      </label>
+      <label class="protocol-field">
+        <span id="protocolSourcesFieldLabel">数据源（逗号分隔）</span>
+        <input id="protocolSources" value="arXiv, OpenAlex, Crossref, Semantic Scholar, DBLP">
+      </label>
+      <div class="protocol-grid protocol-criteria-grid">
+        <label class="protocol-field">
+          <span id="protocolInclusionFieldLabel">纳入标准（每行一条）</span>
+          <textarea id="protocolInclusion" rows="6"></textarea>
+        </label>
+        <label class="protocol-field">
+          <span id="protocolExclusionFieldLabel">排除标准（每行一条）</span>
+          <textarea id="protocolExclusion" rows="6"></textarea>
+        </label>
+      </div>
+      <div class="protocol-checkpoint-note">
+        <i class="fa-solid fa-circle-info"></i>
+        <span id="protocolCheckpointText">确认后将锁定本版本。后续修改会创建新版协议并保留原始候选记录，但旧筛选结论不会自动沿用。</span>
+      </div>
+      <div class="modal-foot">
+        <span class="form-message protocol-message" id="protocolMessage" role="status"></span>
+        <button class="secondary-btn" id="protocolSaveDraft" type="button">保存草案</button>
+        <button class="primary-btn" id="protocolConfirm" type="button"><i class="fa-solid fa-check"></i><span>确认协议</span></button>
       </div>
     </div>
   </div>

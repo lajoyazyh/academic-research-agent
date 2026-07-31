@@ -3,6 +3,8 @@ import os
 from typing import Any
 from core.tools import BaseTool
 
+_PDF_REQUEST_TIMEOUT_SEC = float(os.getenv("PDF_REQUEST_TIMEOUT_SEC", "45.0"))
+
 class ArxivPdfReaderTool(BaseTool):
     name = "arxiv_pdf_reader"
     description = "用于根据 arXiv 论文 ID 下载并解析 PDF 全文"
@@ -34,7 +36,11 @@ class ArxivPdfReaderTool(BaseTool):
             ctx.verify_mode = ssl.CERT_NONE
 
             req = urllib.request.Request(pdf_url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, context=ctx) as response:
+            with urllib.request.urlopen(
+                req,
+                context=ctx,
+                timeout=_PDF_REQUEST_TIMEOUT_SEC,
+            ) as response:
                 pdf_bytes = response.read()
 
             msg = ""
@@ -101,7 +107,11 @@ class ArxivDownloadPdfTool(BaseTool):
 
             headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
             req = urllib.request.Request(pdf_url, headers=headers)
-            with urllib.request.urlopen(req, context=ctx) as response:
+            with urllib.request.urlopen(
+                req,
+                context=ctx,
+                timeout=_PDF_REQUEST_TIMEOUT_SEC,
+            ) as response:
                 pdf_bytes = response.read()
 
             save_msg = ""

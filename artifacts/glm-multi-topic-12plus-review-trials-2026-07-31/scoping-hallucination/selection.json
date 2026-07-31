@@ -1,0 +1,848 @@
+{
+  "selection_rationale": "The selection prioritizes papers that directly address the definition, taxonomy, evaluation, detection, and mitigation of hallucinations in LLMs. It includes foundational surveys for context, specific benchmarks for evaluation, and methodological papers for detection and mitigation. Duplicate entries and overly broad surveys were removed to ensure a high-quality, focused set of references.",
+  "anticipated_gaps": [
+    "Specific empirical studies on hallucination in code generation or software engineering.",
+    "Longitudinal studies tracking hallucination rates as models scale or are updated.",
+    "Detailed analysis of hallucination in low-resource languages or under-resourced domains.",
+    "Quantitative comparison of the effectiveness of different hallucination mitigation strategies across diverse benchmarks.",
+    "Investigation into the root causes of hallucination at the token/prediction level (beyond general taxonomy)."
+  ],
+  "ranked": [
+    {
+      "paper_id": "2303.18223",
+      "arxiv_id": "2303.18223",
+      "openalex_id": "W4362515116",
+      "doi": "https://doi.org/10.1007/s11704-026-60308-3",
+      "pdf_url": "https://arxiv.org/pdf/2303.18223",
+      "title": "A Survey of Large Language Models",
+      "authors": "Wayne Xin Zhao, Kun Zhou, Junyi Li, Tianyi Tang, Zican Dong, Yupeng Hou, Beichen Zhang, Yingqian Min, Junjie Zhang, Peiyu Liu, Xiaolei Wang, Yifan Du, Yushuo Chen, Yushuo Chen, Zhipeng Chen, Jinhao Jiang, Ruiyang Ren, Yifan Li, Xinyu Tang, Peiyu Liu, Yiwen Hu, Jian‐Yun Nie, Ji-Rong Wen",
+      "publication_year": 2026,
+      "source_url": "https://arxiv.org/abs/2303.18223",
+      "screening": {
+        "paper_id": "2303.18223",
+        "decision": "include",
+        "reason": "Foundational survey covering pre-training, post-training, utilization, and evaluation methods. Provides the necessary context for understanding LLM capabilities and limitations.",
+        "coverage_role": "Foundational Context",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2309.01219",
+      "arxiv_id": "2309.01219",
+      "openalex_id": "W4386501849",
+      "doi": "https://doi.org/10.48550/arxiv.2309.01219",
+      "pdf_url": "https://arxiv.org/pdf/2309.01219",
+      "title": "Siren's Song in the AI Ocean: A Survey on Hallucination in Large Language Models",
+      "authors": "Yue Zhang, Yafu Li, Leyang Cui, Deng Cai, Lemao Liu, Tingchen Fu, Xinting Huang, Enbo Zhao, Yu Zhang, Xu, Chen, Yulong Chen, Longyue Wang, Anh Tuan Luu, Wei Bi, Freda Shi, Shuming Shi",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2309.01219",
+      "screening": {
+        "paper_id": "2309.01219",
+        "decision": "include",
+        "reason": "Comprehensive survey on hallucination taxonomy, detection, explanation, and mitigation. Directly addresses the research question's core themes.",
+        "coverage_role": "Taxonomy & Mitigation Overview",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2311.05232",
+      "arxiv_id": "2311.05232",
+      "openalex_id": "W4388585881",
+      "doi": "https://doi.org/10.48550/arxiv.2311.05232",
+      "pdf_url": "https://arxiv.org/pdf/2311.05232",
+      "title": "A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions",
+      "authors": "Lei Huang, Weijiang Yu, Weitao Ma, Wei‐Hong Zhong, Zhangyin Feng, Haotian Wang, Qianglong Chen, Weihua Peng, Xiaocheng Feng, Bing Qin, Ting Liu",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2311.05232",
+      "screening": {
+        "paper_id": "2311.05232",
+        "decision": "include",
+        "reason": "Detailed survey on hallucination principles, taxonomy, challenges, and open questions. Offers a structured framework for understanding the problem space.",
+        "coverage_role": "Taxonomy & Challenges",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2401.01313",
+      "arxiv_id": "2401.01313",
+      "openalex_id": "W4390602555",
+      "doi": "https://doi.org/10.48550/arxiv.2401.01313",
+      "pdf_url": "https://arxiv.org/pdf/2401.01313",
+      "title": "A Comprehensive Survey of Hallucination Mitigation Techniques in Large Language Models",
+      "authors": "S. M Towhidul Islam Tonmoy, S M Mehedi Zaman, Vinija Jain, Anku Rani, Vipula Rawte, Aman Chadha, Amitava Das",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2401.01313",
+      "screening": {
+        "paper_id": "2401.01313",
+        "decision": "include",
+        "reason": "Comprehensive survey of hallucination mitigation techniques, categorizing methods by dataset, task, feedback, and retriever types. Essential for understanding solution space.",
+        "coverage_role": "Mitigation Taxonomy",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4389518784",
+      "arxiv_id": "",
+      "openalex_id": "W4389518784",
+      "doi": "https://doi.org/10.18653/v1/2023.emnlp-main.397",
+      "pdf_url": "https://aclanthology.org/2023.emnlp-main.397.pdf",
+      "title": "HaluEval: A Large-Scale Hallucination Evaluation Benchmark for Large Language Models",
+      "authors": "Junyi Li, Xiaoxue Cheng, Xin Zhao, Jian‐Yun Nie, Ji-Rong Wen",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.397",
+      "screening": {
+        "paper_id": "W4389518784",
+        "decision": "include",
+        "reason": "Introduces HalluEval, a large-scale hallucination evaluation benchmark. Critical for understanding how hallucination is measured and evaluated.",
+        "coverage_role": "Evaluation Benchmark",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4402670429",
+      "arxiv_id": "",
+      "openalex_id": "W4402670429",
+      "doi": "https://doi.org/10.18653/v1/2024.findings-acl.212",
+      "pdf_url": "https://aclanthology.org/2024.findings-acl.212.pdf",
+      "title": "Chain-of-Verification Reduces Hallucination in Large Language Models",
+      "authors": "Shehzaad Dhuliawala, Mojtaba Komeili, Jing Xu, Roberta Răileanu, Xian Li, Aslı Çelikyılmaz, Jason Weston",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.18653/v1/2024.findings-acl.212",
+      "screening": {
+        "paper_id": "W4402670429",
+        "decision": "include",
+        "reason": "Presents Chain-of-Verification (COVE), a specific and effective method for reducing hallucination. Provides a concrete example of a mitigation technique.",
+        "coverage_role": "Mitigation Methodology",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4399803256",
+      "arxiv_id": "",
+      "openalex_id": "W4399803256",
+      "doi": "https://doi.org/10.1038/s41586-024-07421-0",
+      "pdf_url": "https://www.nature.com/articles/s41586-024-07421-0.pdf",
+      "title": "Detecting hallucinations in large language models using semantic entropy",
+      "authors": "Sebastian Farquhar, Jannik Kossen, Lorenz Kuhn, Yarin Gal",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1038/s41586-024-07421-0",
+      "screening": {
+        "paper_id": "W4399803256",
+        "decision": "include",
+        "reason": "Proposes semantic entropy for detecting hallucinations, offering a novel statistical approach to uncertainty estimation.",
+        "coverage_role": "Detection Methodology",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4389520749",
+      "arxiv_id": "",
+      "openalex_id": "W4389520749",
+      "doi": "https://doi.org/10.18653/v1/2023.emnlp-main.557",
+      "pdf_url": "https://aclanthology.org/2023.emnlp-main.557.pdf",
+      "title": "SelfCheckGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models",
+      "authors": "Potsawee Manakul, Adian Liusie, Mark Gales",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.557",
+      "screening": {
+        "paper_id": "W4389520749",
+        "decision": "include",
+        "reason": "Introduces SelfCheckGPT, a zero-resource black-box hallucination detection method. Important for understanding detection without external knowledge.",
+        "coverage_role": "Detection Methodology",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4389519928",
+      "arxiv_id": "",
+      "openalex_id": "W4389519928",
+      "doi": "https://doi.org/10.18653/v1/2023.findings-emnlp.123",
+      "pdf_url": "https://aclanthology.org/2023.findings-emnlp.123.pdf",
+      "title": "Towards Mitigating LLM Hallucination via Self Reflection",
+      "authors": "Ziwei Ji, Tiezheng Yu, Yan Xu, Nayeon Lee, Etsuko Ishii, Pascale Fung",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.findings-emnlp.123",
+      "screening": {
+        "paper_id": "W4389519928",
+        "decision": "include",
+        "reason": "Focuses on self-reflection for mitigating hallucination in medical QA. Addresses a specific high-stakes application scenario.",
+        "coverage_role": "Mitigation in Medical Domain",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4389523832",
+      "arxiv_id": "",
+      "openalex_id": "W4389523832",
+      "doi": "https://doi.org/10.18653/v1/2023.emnlp-main.20",
+      "pdf_url": "https://aclanthology.org/2023.emnlp-main.20.pdf",
+      "title": "Evaluating Object Hallucination in Large Vision-Language Models",
+      "authors": "Yifan Li, Yifan Du, Kun Zhou, Jinpeng Wang, Zhao Xin, Ji-Rong Wen",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.20",
+      "screening": {
+        "paper_id": "W4389523832",
+        "decision": "include",
+        "reason": "Studies object hallucination in Large Vision-Language Models (LVLMs). Expands the scope of hallucination beyond text to multimodal contexts.",
+        "coverage_role": "Multimodal Hallucination",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4393147129",
+      "arxiv_id": "",
+      "openalex_id": "W4393147129",
+      "doi": "https://doi.org/10.1609/aaai.v38i16.29728",
+      "pdf_url": "https://ojs.aaai.org/index.php/AAAI/article/download/29728/31250",
+      "title": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+      "authors": "Jiawei Chen, Hongyu Lin, Xianpei Han, Le Sun",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1609/aaai.v38i16.29728",
+      "screening": {
+        "paper_id": "W4393147129",
+        "decision": "include",
+        "reason": "Evaluates Retrieval-Augmented Generation (RAG) benchmarks, highlighting limitations in noise robustness and information integration. Addresses the effectiveness of a major mitigation strategy.",
+        "coverage_role": "Evaluation of RAG",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4414677042",
+      "arxiv_id": "",
+      "openalex_id": "W4414677042",
+      "doi": "https://doi.org/10.3389/frai.2025.1622292",
+      "pdf_url": "https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2025.1622292/pdf",
+      "title": "Survey and analysis of hallucinations in large language models: attribution to prompting strategies or model behavior",
+      "authors": "Dang Anh-Hoang, Vu Tran, Le-Minh Nguyen",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.3389/frai.2025.1622292",
+      "screening": {
+        "paper_id": "W4414677042",
+        "decision": "include",
+        "reason": "Survey and analysis of hallucination attribution, distinguishing between prompting strategies and model behavior. Addresses the root causes of hallucination.",
+        "coverage_role": "Attribution Analysis",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4384071683",
+      "arxiv_id": "",
+      "openalex_id": "W4384071683",
+      "doi": "https://doi.org/10.1038/s41586-023-06291-2",
+      "pdf_url": "https://www.nature.com/articles/s41586-023-06291-2.pdf",
+      "title": "Large language models encode clinical knowledge",
+      "authors": "Karan Singhal, Shekoofeh Azizi, Tao Tu, S. Sara Mahdavi, Jason Lee, Hyung Won Chung, Nathan Scales, Ajay Kumar Tanwani, Heather Cole-Lewis, Stephen Pfohl, Perry W. Payne, Martin Seneviratne, Paul Gamble, Christopher Kelly, Abubakr Babiker, Nathanael Schärli, Aakanksha Chowdhery, P. Mansfield, Dina Demner‐Fushman, Blaise Agüera y Arcas, Dale R. Webster, Greg S. Corrado, Yossi Matias, Katherine Chou, Juraj Gottweis, Nenad Tomašev, Yun Liu, Alvin Rajkomar, Joëlle Barral, Christopher Semturs, Alan Karthikesalingam, Vivek Natarajan",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1038/s41586-023-06291-2",
+      "screening": {
+        "paper_id": "W4384071683",
+        "decision": "include",
+        "reason": "Demonstrates clinical knowledge encoding and limitations in LLMs (Med-PaLM). Provides evidence of hallucination in a critical real-world application (medicine).",
+        "coverage_role": "Evidence in Medical Domain",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4401484139",
+      "arxiv_id": "",
+      "openalex_id": "W4401484139",
+      "doi": "https://doi.org/10.1007/s10462-024-10896-y",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s10462-024-10896-y.pdf",
+      "title": "Towards trustworthy LLMs: a review on debiasing and dehallucinating in large language models",
+      "authors": "Zichao Lin, Shuyan Guan, Wending Zhang, Huiyan Zhang, Huiyan Zhang, Yugang Li, Huaping Zhang, Huaping Zhang",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1007/s10462-024-10896-y",
+      "screening": {
+        "paper_id": "W4401484139",
+        "decision": "include",
+        "reason": "Review on debiasing and dehallucinating in LLMs. Provides a comparative analysis of mitigation strategies and benchmarks.",
+        "coverage_role": "Mitigation Review",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4389518833",
+      "arxiv_id": "",
+      "openalex_id": "W4389518833",
+      "doi": "https://doi.org/10.18653/v1/2023.findings-emnlp.256",
+      "pdf_url": "https://aclanthology.org/2023.findings-emnlp.256.pdf",
+      "title": "A New Benchmark and Reverse Validation Method for Passage-level Hallucination Detection",
+      "authors": "Shiping Yang, Renliang Sun, Xiaojun Wan",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.findings-emnlp.256",
+      "screening": {
+        "paper_id": "W4389518833",
+        "decision": "include",
+        "reason": "Proposes a reverse validation method for passage-level hallucination detection. Offers a specific technical approach to the detection problem.",
+        "coverage_role": "Detection Methodology",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2403.06710",
+      "arxiv_id": "2403.06710",
+      "openalex_id": "W4392736278",
+      "doi": "https://doi.org/10.1145/3613904.3642428",
+      "pdf_url": "https://arxiv.org/pdf/2403.06710",
+      "title": "HILL: A Hallucination Identifier for Large Language Models",
+      "authors": "Florian Leiser, Sven Eckhardt, Valentin Leuthe, Merlin Knaeble, Alexander Maedche, Gerhard Schwabe, Ali Sunyaev",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2403.06710",
+      "screening": {
+        "paper_id": "2403.06710",
+        "decision": "include",
+        "reason": "Introduces HILL, a hallucination identifier interface. Addresses the user-centric aspect of hallucination detection and handling.",
+        "coverage_role": "User-Centric Detection",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4392669753",
+      "arxiv_id": "",
+      "openalex_id": "W4392669753",
+      "doi": "https://doi.org/10.18653/v1/2023.ijcnlp-main.45",
+      "pdf_url": "https://aclanthology.org/2023.ijcnlp-main.45.pdf",
+      "title": "A Multitask, Multilingual, Multimodal Evaluation of ChatGPT on Reasoning, Hallucination, and Interactivity",
+      "authors": "Yejin Bang, Samuel Cahyawijaya, Nayeon Lee, Wenliang Dai, Dan Su, Bryan Wilie, Holy Lovenia, Ziwei Ji, Tiezheng Yu, Willy Chung, V. Quyet, Yan Xu, Pascale Fung",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.ijcnlp-main.45",
+      "screening": {
+        "paper_id": "W4392669753",
+        "decision": "reserve",
+        "reason": "Duplicate entry for the same paper (Multitask, Multilingual, Multimodal Evaluation). Included once in ranked list.",
+        "coverage_role": "Evaluation Benchmark",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2302.04023",
+      "arxiv_id": "2302.04023",
+      "openalex_id": "W4319793302",
+      "doi": "https://doi.org/10.48550/arxiv.2302.04023",
+      "pdf_url": "https://arxiv.org/pdf/2302.04023",
+      "title": "A Multitask, Multilingual, Multimodal Evaluation of ChatGPT on Reasoning, Hallucination, and Interactivity",
+      "authors": "Yejin Bang, Samuel Cahyawijaya, Nayeon Lee, Wenliang Dai, Dan Su, Bryan Wilie, Holy Lovenia, Ziwei Ji, Tiezheng Yu, Willy Chung, Quyet V. Do, Yan Xu, Pascale Fung",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2302.04023",
+      "screening": {
+        "paper_id": "2302.04023",
+        "decision": "reserve",
+        "reason": "Duplicate entry for the same paper (Multitask, Multilingual, Multimodal Evaluation). Included once in ranked list.",
+        "coverage_role": "Evaluation Benchmark",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2305.11747",
+      "arxiv_id": "2305.11747",
+      "openalex_id": "W4377866048",
+      "doi": "https://doi.org/10.48550/arxiv.2305.11747",
+      "pdf_url": "https://arxiv.org/pdf/2305.11747",
+      "title": "HaluEval: A Large-Scale Hallucination Evaluation Benchmark for Large Language Models",
+      "authors": "Junyi Li, Xiaoxue Cheng, Wayne Xin Zhao, Jian‐Yun Nie, Ji-Rong Wen",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2305.11747",
+      "screening": {
+        "paper_id": "2305.11747",
+        "decision": "reserve",
+        "reason": "Duplicate entry for HalluEval benchmark. Included once in ranked list.",
+        "coverage_role": "Evaluation Benchmark",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4391855109",
+      "arxiv_id": "",
+      "openalex_id": "W4391855109",
+      "doi": "https://doi.org/10.1109/access.2024.3365742",
+      "pdf_url": "https://ieeexplore.ieee.org/ielx7/6287639/6514899/10433480.pdf",
+      "title": "A Review on Large Language Models: Architectures, Applications, Taxonomies, Open Issues and Challenges",
+      "authors": "Mohaimenul Azam Khan Raiaan, Md. Saddam Hossain Mukta, Kaniz Fatema, Nur Mohammad Fahad, Sadman Sakib, Most. Marufatul Jannat Mim, Jubaer Ahmad, Mohammed Eunus Ali, Sami Azam",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1109/access.2024.3365742",
+      "screening": {
+        "paper_id": "W4391855109",
+        "decision": "exclude",
+        "reason": "Broad survey on LLMs covering many topics. While it mentions hallucination, it is too general and does not provide specific evidence or deep analysis on hallucination compared to dedicated papers.",
+        "coverage_role": "General Context",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4388994228",
+      "arxiv_id": "",
+      "openalex_id": "W4388994228",
+      "doi": "https://doi.org/10.1145/3604237.3626869",
+      "pdf_url": "https://dl.acm.org/doi/pdf/10.1145/3604237.3626869",
+      "title": "Large Language Models in Finance: A Survey",
+      "authors": "Yinheng Li, Shaofei Wang, Han Ding, Hang Chen",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1145/3604237.3626869",
+      "screening": {
+        "paper_id": "W4388994228",
+        "decision": "exclude",
+        "reason": "Specific survey on LLMs in Finance. While relevant to applications, it does not provide sufficient depth on hallucination mechanisms, detection, or mitigation to be a primary source for this specific review.",
+        "coverage_role": "Application Context",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4406152279",
+      "arxiv_id": "",
+      "openalex_id": "W4406152279",
+      "doi": "https://doi.org/10.1038/s41591-024-03423-7",
+      "pdf_url": "https://www.nature.com/articles/s41591-024-03423-7.pdf",
+      "title": "Toward expert-level medical question answering with large language models",
+      "authors": "K. K. Singhal, Tao Tu, Juraj Gottweis, Rory Sayres, Ellery Wulczyn, Mohamed Amin, Le Hou, Kevin Clark, Stephen Pfohl, Heather Cole-Lewis, Darlene Neal, Qazi Mamunur Rashid, Mike Schaekermann, Amy Wang, Dev Dash, Jonathan H. Chen, Nigam H. Shah, Sami Lachgar, P. Mansfield, Sushant Prakash, Bradley Green, Ewa Dominowska, Blaise Agüera y Arcas, Nenad Tomašev, Yun Liu, Renee Wong, Christopher Semturs, S. Sara Mahdavi, Joëlle Barral, Dale R. Webster, Greg S. Corrado, Yossi Matias, Shekoofeh Azizi, Alan Karthikesalingam, Vivek Natarajan",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.1038/s41591-024-03423-7",
+      "screening": {
+        "paper_id": "W4406152279",
+        "decision": "exclude",
+        "reason": "Focuses on Med-PaLM 2 for medical QA. While it contains hallucination evidence, it is a specific model paper rather than a survey or methodological study on hallucination itself.",
+        "coverage_role": "Model Evidence",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4383737134",
+      "arxiv_id": "",
+      "openalex_id": "W4383737134",
+      "doi": "https://doi.org/10.36227/techrxiv.23589741.v1",
+      "pdf_url": "https://www.techrxiv.org/doi/pdf/10.36227/techrxiv.23589741.v1",
+      "title": "A Survey on Large Language Models: Applications, Challenges, Limitations, and Practical Usage",
+      "authors": "Muhammad Usman Hadi, qasem al tashi, Rizwan Qureshi, Abbas Shah, Amgad Muneer, Muhammad Irfan, Anas Zafar, Muhammad Bilal Shaikh, Naveed Akhtar, Syed Zohaib Hassan, Maged Shoman, Jia Wu, Seyedali Mirjalili, Mubarak Shah",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.36227/techrxiv.23589741.v1",
+      "screening": {
+        "paper_id": "W4383737134",
+        "decision": "exclude",
+        "reason": "Broad survey on LLMs. Lacks specific focus on hallucination mechanisms, evaluation, or mitigation.",
+        "coverage_role": "General Context",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4401671778",
+      "arxiv_id": "",
+      "openalex_id": "W4401671778",
+      "doi": "https://doi.org/10.1007/s10462-024-10888-y",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s10462-024-10888-y.pdf",
+      "title": "Large language models (LLMs): survey, technical frameworks, and future challenges",
+      "authors": "Pranjal Kumar",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1007/s10462-024-10888-y",
+      "screening": {
+        "paper_id": "W4401671778",
+        "decision": "exclude",
+        "reason": "Broad survey on LLMs. Lacks specific focus on hallucination mechanisms, evaluation, or mitigation.",
+        "coverage_role": "General Context",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4404239715",
+      "arxiv_id": "",
+      "openalex_id": "W4404239715",
+      "doi": "https://doi.org/10.1007/s11704-024-40555-y",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s11704-024-40555-y.pdf",
+      "title": "Large language models for generative information extraction: a survey",
+      "authors": "Derong Xu, Wei Chen, Wenjun Peng, Chao Zhang, Tong Xu, Xiangyu Zhao, Xian Wu, Yefeng Zheng, Yan Wang, Enhong Chen",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1007/s11704-024-40555-y",
+      "screening": {
+        "paper_id": "W4404239715",
+        "decision": "exclude",
+        "reason": "Survey on LLMs for Information Extraction. Does not focus on hallucination mechanisms, evaluation, or mitigation.",
+        "coverage_role": "Application Context",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4389636360",
+      "arxiv_id": "",
+      "openalex_id": "W4389636360",
+      "doi": "https://doi.org/10.1162/coli_a_00502",
+      "pdf_url": "https://direct.mit.edu/coli/article-pdf/doi/10.1162/coli_a_00502/2191886/coli_a_00502.pdf",
+      "title": "Can Large Language Models Transform Computational Social Science?",
+      "authors": "Caleb Ziems, William A. Held, Omar Ahmed Shaikh, Jiaao Chen, Zhehao Zhang, Diyi Yang",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1162/coli_a_00502",
+      "screening": {
+        "paper_id": "W4389636360",
+        "decision": "exclude",
+        "reason": "Survey on LLMs in Computational Social Science. Does not focus on hallucination mechanisms, evaluation, or mitigation.",
+        "coverage_role": "Application Context",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4416037109",
+      "arxiv_id": "",
+      "openalex_id": "W4416037109",
+      "doi": "https://doi.org/10.18653/v1/2025.emnlp-main.138",
+      "pdf_url": "https://aclanthology.org/2025.emnlp-main.138.pdf",
+      "title": "From Generation to Judgment: Opportunities and Challenges of LLM-as-a-judge",
+      "authors": "Da-Wei Li, Bohan Jiang, Lili Huang, Alimohammad Beigi, Chengshuai Zhao, Zhen Tan, Amrita Bhattacharjee, Yuxuan Jiang, Canyu Chen, Tianhao Wu, Kan Shu, Lu Cheng, H.L. Liu",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.18653/v1/2025.emnlp-main.138",
+      "screening": {
+        "paper_id": "W4416037109",
+        "decision": "exclude",
+        "reason": "Paper title suggests a conference proceeding abstract without full content available in the provided list. Cannot be fully evaluated.",
+        "coverage_role": "N/A",
+        "confidence": 0.5
+      }
+    },
+    {
+      "paper_id": "W4321351832",
+      "arxiv_id": "",
+      "openalex_id": "W4321351832",
+      "doi": "https://doi.org/10.7759/cureus.35179",
+      "pdf_url": "https://assets.cureus.com/uploads/editorial/pdf/138667/20230219-28928-6kcyip.pdf",
+      "title": "Artificial Hallucinations in ChatGPT: Implications in Scientific Writing",
+      "authors": "Hussam Alkaissi, Samy I. McFarlane",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.7759/cureus.35179",
+      "screening": {
+        "paper_id": "W4321351832",
+        "decision": "exclude",
+        "reason": "Case study on ChatGPT in scientific writing. While it discusses hallucinations, it is a specific case report rather than a survey or methodological study.",
+        "coverage_role": "Case Study",
+        "confidence": 0.8
+      }
+    },
+    {
+      "paper_id": "W4393065402",
+      "arxiv_id": "",
+      "openalex_id": "W4393065402",
+      "doi": "https://doi.org/10.1007/s11704-024-40231-1",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s11704-024-40231-1.pdf",
+      "title": "A survey on large language model based autonomous agents",
+      "authors": "Lei Wang, Chen Ma, Xueyang Feng, Zeyu Zhang, Hao Yang, Jingsen Zhang, Zhiyuan Chen, Jiakai Tang, Xu Chen, Yankai Lin, Wayne Xin Zhao, Zhewei Wei, Ji-Rong Wen",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1007/s11704-024-40231-1",
+      "screening": {
+        "paper_id": "W4393065402",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4390490761",
+      "arxiv_id": "",
+      "openalex_id": "W4390490761",
+      "doi": "https://doi.org/10.1145/3639372",
+      "pdf_url": "https://dl.acm.org/doi/pdf/10.1145/3639372",
+      "title": "Explainability for Large Language Models: A Survey",
+      "authors": "Haiyan Zhao, Hanjie Chen, Fan Yang, Ninghao Liu, Huiqi Deng, Hengyi Cai, Shuaiqiang Wang, Dawei Yin, Mengnan Du",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1145/3639372",
+      "screening": {
+        "paper_id": "W4390490761",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4412158322",
+      "arxiv_id": "",
+      "openalex_id": "W4412158322",
+      "doi": "https://doi.org/10.1162/coli.a.16",
+      "pdf_url": "https://direct.mit.edu/coli/article-pdf/doi/10.1162/coli.a.16/2535477/coli.a.16.pdf",
+      "title": "🧜Siren’s Song in the AI Ocean: A Survey on Hallucination in Large Language Models",
+      "authors": "Yue Zhang, Yafu Li, Leyang Cui, Cai Deng, Lemao Liu, Tingchen Fu, Xinting Huang, Enbo Zhao, Yanwen Zhang, Yulong Chen, Longyue Wang, Ahn Tuan Luu, Wei Bi, Freda Shi, Shuming Shi",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.1162/coli.a.16",
+      "screening": {
+        "paper_id": "W4412158322",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2402.06196",
+      "arxiv_id": "2402.06196",
+      "openalex_id": "W4391766565",
+      "doi": "https://doi.org/10.48550/arxiv.2402.06196",
+      "pdf_url": "https://arxiv.org/pdf/2402.06196",
+      "title": "Large Language Models: A Survey",
+      "authors": "Shervin Minaee, Tomas Mikolov, Nikzad, Narjes, Meysam Chenaghlu, Richard Socher, Xavier Amatriain, Jianfeng Gao",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2402.06196",
+      "screening": {
+        "paper_id": "2402.06196",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2401.11817",
+      "arxiv_id": "2401.11817",
+      "openalex_id": "W4391158659",
+      "doi": "https://doi.org/10.48550/arxiv.2401.11817",
+      "pdf_url": "https://arxiv.org/pdf/2401.11817",
+      "title": "Hallucination is Inevitable: An Innate Limitation of Large Language Models",
+      "authors": "Ziwei Xu, Sanjay Jain, Mohan Kankanhalli",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2401.11817",
+      "screening": {
+        "paper_id": "2401.11817",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2304.10592",
+      "arxiv_id": "2304.10592",
+      "openalex_id": "W4366850747",
+      "doi": "https://doi.org/10.48550/arxiv.2304.10592",
+      "pdf_url": "https://arxiv.org/pdf/2304.10592",
+      "title": "MiniGPT-4: Enhancing Vision-Language Understanding with Advanced Large Language Models",
+      "authors": "Deyao Zhu, Jun Chen, Xiaoqian Shen, Xiang Li, Mohamed Elhoseiny",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2304.10592",
+      "screening": {
+        "paper_id": "2304.10592",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2307.03109",
+      "arxiv_id": "2307.03109",
+      "openalex_id": "W4383605161",
+      "doi": "https://doi.org/10.48550/arxiv.2307.03109",
+      "pdf_url": "https://arxiv.org/pdf/2307.03109",
+      "title": "A Survey on Evaluation of Large Language Models",
+      "authors": "Yupeng Chang, Xu Wang, Jindong Wang, Yuan-Hsuan Wu, Linyi Yang, Kaijie Zhu, Hao Chen, Xiaoyuan Yi, Cunxiang Wang, Yidong Wang, Wei Ye, Yue Zhang, Yi Chang, Philip S. Yu, Qiang Yang, Xing Xie",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2307.03109",
+      "screening": {
+        "paper_id": "2307.03109",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2204.14198",
+      "arxiv_id": "2204.14198",
+      "openalex_id": "W4225323055",
+      "doi": "https://doi.org/10.48550/arxiv.2204.14198",
+      "pdf_url": "https://arxiv.org/pdf/2204.14198",
+      "title": "Flamingo: a Visual Language Model for Few-Shot Learning",
+      "authors": "Alayrac, Jean-Baptiste, Jeff Donahue, Pauline Luc, Antoine Miech, Iain Barr, Yana Hasson, Karel Lenc, Arthur Mensch, Katie Millican, Malcolm Reynolds, Roman Ring, Eliza Rutherford, Serkan Cabi, Tengda Han, Zhitao Gong, Sina Samangooei, Marianne Monteiro, Jacob Menick, Sebastian Borgeaud, Andrew Brock, Aida Nematzadeh, Sahand Sharifzadeh, Mikołaj Bińkowski, Ricardo Barreira, Oriol Vinyals, Andrew Zisserman, Karen Simonyan",
+      "publication_year": 2022,
+      "source_url": "https://arxiv.org/abs/2204.14198",
+      "screening": {
+        "paper_id": "2204.14198",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W3155807546",
+      "arxiv_id": "",
+      "openalex_id": "W3155807546",
+      "doi": "https://doi.org/10.18653/v1/2021.findings-emnlp.320",
+      "pdf_url": "https://aclanthology.org/2021.findings-emnlp.320.pdf",
+      "title": "Retrieval Augmentation Reduces Hallucination in Conversation",
+      "authors": "Kurt Shuster, Spencer Poff, Moya Chen, Douwe Kiela, Jason Weston",
+      "publication_year": 2021,
+      "source_url": "https://doi.org/10.18653/v1/2021.findings-emnlp.320",
+      "screening": {
+        "paper_id": "W3155807546",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2312.10997",
+      "arxiv_id": "2312.10997",
+      "openalex_id": "W4389984066",
+      "doi": "https://doi.org/10.48550/arxiv.2312.10997",
+      "pdf_url": "https://arxiv.org/pdf/2312.10997",
+      "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+      "authors": "Yunfan Gao, Yun Xiong, Xinyu Gao, Kangxiang Jia, Jinliu Pan, Yuxi Bi, Yi Dai, Jiawei Sun, Wang, Meng, Wang, Haofen",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2312.10997",
+      "screening": {
+        "paper_id": "2312.10997",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4396723768",
+      "arxiv_id": "",
+      "openalex_id": "W4396723768",
+      "doi": "https://doi.org/10.1038/s42256-024-00832-8",
+      "pdf_url": "https://www.nature.com/articles/s42256-024-00832-8.pdf",
+      "title": "Augmenting large language models with chemistry tools",
+      "authors": "Andres M. Bran, Sam Cox, Oliver Schilter, Carlo Baldassari, Andrew Dickson White, Philippe Schwaller",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1038/s42256-024-00832-8",
+      "screening": {
+        "paper_id": "W4396723768",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4410343193",
+      "arxiv_id": "",
+      "openalex_id": "W4410343193",
+      "doi": "https://doi.org/10.1038/s41746-025-01670-7",
+      "pdf_url": "https://www.nature.com/articles/s41746-025-01670-7.pdf",
+      "title": "A framework to assess clinical safety and hallucination rates of LLMs for medical text summarisation",
+      "authors": "Elham Asgari, Nina Montaña-Brown, Magda Dubois, Saleh Khalil, Jasmine Balloch, Joshua Au Yeung, Dominic Pimenta",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.1038/s41746-025-01670-7",
+      "screening": {
+        "paper_id": "W4410343193",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2403.14473",
+      "arxiv_id": "2403.14473",
+      "openalex_id": "W4393119065",
+      "doi": "https://doi.org/10.1038/s41746-024-01157-x",
+      "pdf_url": "https://arxiv.org/pdf/2403.14473",
+      "title": "The ethics of ChatGPT in medicine and healthcare: a systematic review on Large Language Models (LLMs)",
+      "authors": "Joschka Haltaufderheide, Robert Ranisch",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2403.14473",
+      "screening": {
+        "paper_id": "2403.14473",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2309.06794",
+      "arxiv_id": "2309.06794",
+      "openalex_id": "W4386755313",
+      "doi": "https://doi.org/10.48550/arxiv.2309.06794",
+      "pdf_url": "https://arxiv.org/pdf/2309.06794",
+      "title": "Cognitive Mirage: A Review of Hallucinations in Large Language Models",
+      "authors": "Hongbin Ye, Tong Liu, Aijia Zhang, Hua, Wei, Weiqiang Jia",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2309.06794",
+      "screening": {
+        "paper_id": "2309.06794",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2404.11457",
+      "arxiv_id": "2404.11457",
+      "openalex_id": "W4394947904",
+      "doi": "https://doi.org/10.1145/3637528.3671458",
+      "pdf_url": "https://arxiv.org/pdf/2404.11457",
+      "title": "Bias and Unfairness in Information Retrieval Systems: New Challenges in the LLM Era",
+      "authors": "Sunhao Dai, Xu Chen, Shicheng Xu, Liang Pang, Zhenhua Dong, Jun Xu",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2404.11457",
+      "screening": {
+        "paper_id": "2404.11457",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    }
+  ],
+  "retrieval_attempts": [
+    {
+      "paper_id": "2303.18223",
+      "success": true,
+      "citation_id": "P1"
+    },
+    {
+      "paper_id": "2309.01219",
+      "success": true,
+      "citation_id": "P2"
+    },
+    {
+      "paper_id": "2311.05232",
+      "success": true,
+      "citation_id": "P3"
+    },
+    {
+      "paper_id": "2401.01313",
+      "success": true,
+      "citation_id": "P4"
+    },
+    {
+      "paper_id": "W4389518784",
+      "success": true,
+      "citation_id": "P5"
+    },
+    {
+      "paper_id": "W4402670429",
+      "success": true,
+      "citation_id": "P6"
+    },
+    {
+      "paper_id": "W4399803256",
+      "success": true,
+      "citation_id": "P7"
+    },
+    {
+      "paper_id": "W4389520749",
+      "success": true,
+      "citation_id": "P8"
+    },
+    {
+      "paper_id": "W4389519928",
+      "success": true,
+      "citation_id": "P9"
+    },
+    {
+      "paper_id": "W4389523832",
+      "success": true,
+      "citation_id": "P10"
+    },
+    {
+      "paper_id": "W4393147129",
+      "success": true,
+      "citation_id": "P11"
+    },
+    {
+      "paper_id": "W4414677042",
+      "success": true,
+      "citation_id": "P12"
+    }
+  ]
+}

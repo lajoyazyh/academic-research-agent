@@ -9,11 +9,17 @@ from core.tool_registry import get_registry
 from tools.arxiv_tools import ArxivSearchTool, ArxivFetchTool
 from tools.semantic_scholar_tools import SemanticScholarSearchTool, SemanticScholarFetchTool
 from tools.crossref_tools import CrossrefSearchTool, CrossrefFetchByDoiTool
-from tools.openalex_tools import OpenAlexSearchTool
+from tools.openalex_tools import OpenAlexSearchTool, OpenAlexCitationTool
+from tools.dblp_tools import DblpSearchTool
 from tools.pdf_tools import ArxivPdfReaderTool, ArxivDownloadPdfTool
 from tools.file_tools import ClearNoteTool, AppendNoteTool
 from llms.client import LLMClient
-from prompts.review_skills import DEFAULT_REVIEW_SKILL
+from prompts.review_skills import (
+    DEFAULT_REVIEW_SKILL,
+    DEFAULT_REVIEW_SKILL_EN,
+    REVIEW_PRESETS,
+    REVIEW_PRESETS_EN,
+)
 
 
 def _load_skill_info(skill_id: str = None) -> dict:
@@ -115,13 +121,6 @@ WRITER_SECTION_TITLES_EN = [
     "Experimental Evidence and Practical Implications",
     "Limitations and Future Research",
 ]
-
-DEFAULT_REVIEW_SKILL_EN = """Write an evidence-grounded academic literature review rather than a list of paper summaries.
-Use a transparent structure covering scope and evidence, thematic synthesis, method and evidence comparison,
-areas of consensus and disagreement, limitations, research gaps, and conclusions. Cite only the supplied [P#]
-and [R#] evidence identifiers. Distinguish reported findings from your synthesis, never invent missing results,
-and explicitly state when the available evidence is insufficient."""
-
 
 def _merge_referenced_papers(notes_content: str, papers_list: list[dict] = None) -> list[str]:
     """从笔记内容中提取被实际引用的论文 paper_id 列表"""
@@ -718,51 +717,165 @@ def _append_verified_references(review: str, sources: list[dict], language: str 
     return cleaned + "\n\n" + "\n".join(lines) + "\n"
 
 
+def _normalize_citation_markers(review: str) -> str:
+    """Normalize common model-emitted citation brackets to clickable `[P#]` syntax."""
+    normalized = re.sub(
+        r"[【（(]\s*([PR]\d+)\s*[】）)]",
+        lambda match: f"[{match.group(1).upper()}]",
+        str(review or ""),
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"[【（(]\s*([PR]\d+(?:\s*[,，、]\s*[PR]\d+)+)\s*[】）)]",
+        lambda match: " ".join(
+            f"[{citation.upper()}]"
+            for citation in re.findall(
+                r"[PR]\d+",
+                match.group(1),
+                flags=re.IGNORECASE,
+            )
+        ),
+        normalized,
+    )
+    normalized = re.sub(
+        r"\[((?:[PR]\d+)(?:(?:\s*[,，、]\s*|\s*[-–—]\s*)[PR]?\d+)+)\]",
+        lambda match: " ".join(
+            f"[{citation.upper()}]"
+            for citation in dict.fromkeys(
+                re.findall(r"[PR]\d+", match.group(1), flags=re.IGNORECASE)
+            )
+        ),
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    return re.sub(
+        r"(?<![A-Za-z0-9_\[])([PR]\d+)(?![A-Za-z0-9_\]])",
+        lambda match: f"[{match.group(1).upper()}]",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+
+
 def assess_review_quality(review: str, sources: list[dict], language: str = "zh-CN") -> dict:
     """Return a transparent, non-LLM quality gate for the generated review."""
+    review = _normalize_citation_markers(review)
     valid_ids = {source["id"] for source in sources}
-    cited_ids = set(re.findall(r"\[([PR]\d+)\]", review))
+    body = re.sub(r"(?ms)^##\s+(?:参考来源|参考文献|References)\s*.*$", "", review)
+    cited_ids = set(re.findall(r"\[([PR]\d+)\]", body))
     invalid_ids = sorted(cited_ids - valid_ids)
     used_ids = sorted(cited_ids & valid_ids)
-    required_sections = (["abstract", "scope", "theme", "method", "limitation", "conclusion", "references"]
-                         if language == "en" else ["摘要", "研究范围", "主题", "方法", "局限", "结论", "参考来源"])
+    required_section_groups = (
+        [
+            ["abstract"],
+            ["scope", "research question", "introduction"],
+            ["theme", "result", "evidence synthesis", "synthesis"],
+            ["method", "search", "screening"],
+            ["limitation", "constraint"],
+            ["conclusion"],
+            ["references", "sources"],
+        ]
+        if language == "en"
+        else [
+            ["摘要"],
+            ["研究范围", "范围", "研究问题", "引言"],
+            ["主题", "结果", "证据综合", "综合"],
+            ["方法", "检索", "筛选"],
+            ["局限", "限制"],
+            ["结论"],
+            ["参考来源", "参考文献"],
+        ]
+    )
     headings = re.findall(r"(?m)^##\s+(.+)$", review)
-    section_hits = sum(1 for name in required_sections if any(name.lower() in heading.lower() for heading in headings))
+    section_hits = sum(
+        1
+        for aliases in required_section_groups
+        if any(
+            alias.lower() in heading.lower()
+            for alias in aliases
+            for heading in headings
+        )
+    )
     omission = bool(re.search(r"此处省略|同上|详见上文|与上一版.*相同|\.\.\.\s*[（(]略", review))
     citation_coverage = round(len(used_ids) / max(1, len(valid_ids)), 2)
-    body = re.sub(r"(?ms)^##\s+(?:参考来源|References)\s*.*$", "", review)
-    sentences = [item.strip() for item in re.split(r"(?<=[。！？.!?])\s+|\n+", body) if len(item.strip()) >= 20]
+    # Chinese prose normally has no whitespace after sentence punctuation.
+    # Requiring ``\s+`` merged an entire paragraph into one claim block, so a
+    # single citation at the end could incorrectly validate several earlier
+    # unsupported claims.
+    sentences = [
+        item.strip()
+        for item in re.split(r"(?<=[。！？])\s*|(?<=[.!?])\s+|\n+", body)
+        if len(item.strip()) >= 20
+        and not item.lstrip().startswith("#")
+        and not re.match(r"^\*{0,2}(?:关键词|Keywords?)\b", item.strip(), re.IGNORECASE)
+    ]
+    # Flag high-risk empirical claims, not every sentence that merely mentions
+    # a model or method. The broader matcher produced false positives for
+    # research aims, transitions, and protocol descriptions.
     claim_pattern = re.compile(
-        r"(?:\d+(?:\.\d+)?\s*%|\b\d{2,}\b|method|model|dataset|sample|result|accuracy|"
-        r"方法|模型|数据集|样本|结果|准确率|召回率|显著)",
+        r"(?:"
+        r"\d+(?:\.\d+)?\s*%|\b\d{2,}\b|"
+        r"(?:研究|实验|结果)(?:发现|报告|显示|表明|指出)|"
+        r"(?:显著|明显)(?:提高|提升|降低|下降|优于|差异|改善)|"
+        r"(?:method|model|dataset|benchmark|方法|模型|数据集|基准)"
+        r".{0,40}(?:propose|introduce|use|report|achieve|"
+        r"提出|引入|采用|构建|报告|达到|提升|降低)"
+        r")",
         re.IGNORECASE,
     )
-    substantive_claims = [sentence for sentence in sentences if claim_pattern.search(sentence)]
+    non_empirical_claim = re.compile(
+        r"(?:本文|本研究|本综述)(?:旨在|将|试图|聚焦|回答)|"
+        r"(?:研究问题|文章结构|下文将)",
+        re.IGNORECASE,
+    )
+    substantive_claims = [
+        sentence
+        for sentence in sentences
+        if claim_pattern.search(sentence)
+        and not non_empirical_claim.search(sentence)
+    ]
+    explicit_non_source_claim = re.compile(r"【(?:方法记录|作者综合判断|综合判断)】")
     unsupported_claims = [
         sentence[:240] for sentence in substantive_claims
         if not re.search(r"\[[PR]\d+\]", sentence)
+        and not explicit_non_source_claim.search(sentence)
     ]
-    claim_citation_coverage = round(
-        (len(substantive_claims) - len(unsupported_claims)) / max(1, len(substantive_claims)), 2
+    claim_citation_coverage = (
+        round(
+            (len(substantive_claims) - len(unsupported_claims))
+            / len(substantive_claims),
+            2,
+        )
+        if substantive_claims
+        else 1.0
     )
     abstract_only_sources = sorted(
         source["id"] for source in sources if source.get("evidence_basis") == "abstract"
     )
     base_score = int(
-        section_hits / len(required_sections) * 35
+        section_hits / len(required_section_groups) * 35
         + citation_coverage * 35
         + claim_citation_coverage * 15
         + (15 if not omission and not invalid_ids else 0)
     )
     score = max(0, min(100, base_score))
-    passed = score >= 75 and not invalid_ids and not omission and not unsupported_claims
+    passed = (
+        score >= 85
+        and citation_coverage == 1
+        and section_hits == len(required_section_groups)
+        and claim_citation_coverage == 1
+        and not invalid_ids
+        and not omission
+        and not unsupported_claims
+    )
     return {
         "score": score,
         "source_count": len(valid_ids),
         "cited_source_count": len(used_ids),
+        "cited_source_ids": used_ids,
+        "uncited_source_ids": sorted(valid_ids - set(used_ids)),
         "citation_coverage": citation_coverage,
         "invalid_citations": invalid_ids,
-        "section_coverage": round(section_hits / len(required_sections), 2),
+        "section_coverage": round(section_hits / len(required_section_groups), 2),
         "claim_citation_coverage": claim_citation_coverage,
         "unsupported_claims": unsupported_claims[:20],
         "abstract_only_sources": abstract_only_sources,
@@ -861,6 +974,7 @@ def compose_review_from_notes(
     review = _self_critique_review(topic, review, provider_config)
 
     review = _verify_review_against_evidence(topic, review, evidence_catalog, provider_config)
+    review = _normalize_citation_markers(review)
     review = _append_verified_references(review, evidence_sources, language=language)
     quality = assess_review_quality(review, evidence_sources, language=language)
 
@@ -973,6 +1087,8 @@ def run_agent_pipeline(user_topic: str, max_loops: int = 20, agent_callback=None
         "crossref_search": CrossrefSearchTool,
         "crossref_fetch_doi": CrossrefFetchByDoiTool,
         "openalex_search": OpenAlexSearchTool,
+        "openalex_citations": OpenAlexCitationTool,
+        "dblp_search": DblpSearchTool,
         "clear_notes": lambda: ClearNoteTool(work_dir=work_dir),
         "append_note": lambda: AppendNoteTool(work_dir=work_dir),
     }
@@ -1205,6 +1321,156 @@ def run_plan_only(user_topic: str, provider_config: dict | None = None) -> dict:
     }
 
 
+def _search_source_from_action(action: str) -> str:
+    return str(action or "").replace("_search", "").replace("search_", "")
+
+
+def _query_tokens(value: str) -> set[str]:
+    return {
+        token
+        for token in re.findall(r"[a-z0-9][a-z0-9_-]{2,}", str(value or "").lower())
+        if token not in {"and", "or", "not"}
+    }
+
+
+def _planned_query_matches(planned: str, executed: str) -> bool:
+    planned_tokens = _query_tokens(planned)
+    executed_tokens = _query_tokens(executed)
+    if not planned_tokens or not executed_tokens:
+        return False
+    overlap = len(planned_tokens.intersection(executed_tokens))
+    return overlap >= max(1, min(len(planned_tokens), len(executed_tokens)) // 3)
+
+
+def _search_cursor_identity(source: str, value) -> str:
+    if value in {None, "", "first"}:
+        return "1" if str(source).lower() == "openalex" else "0"
+    try:
+        return str(max(0, int(value)))
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _scientific_search_coverage(
+    traces: list[dict] | None,
+    search_query_plan: list[dict] | None,
+) -> tuple[bool, str]:
+    """Deterministically prevent a paper-count target from ending protocol search."""
+    pending = []
+    for plan in search_query_plan or []:
+        if plan.get("status") == "completed":
+            continue
+        source = str(plan.get("source") or "").strip().lower()
+        attempts = list(plan.get("executed_queries") or [])
+        for trace in traces or []:
+            if not isinstance(trace, dict):
+                continue
+            action = str(trace.get("action") or "")
+            if _search_source_from_action(action).lower() != source:
+                continue
+            action_input = trace.get("input") if isinstance(trace.get("input"), dict) else {}
+            if (
+                plan.get("stage") == "citation_chasing"
+                and str(action_input.get("direction") or "cited_by")
+                != str(plan.get("direction") or "cited_by")
+            ):
+                continue
+            executed_query = str(
+                action_input.get("query")
+                or action_input.get("keywords")
+                or action_input.get("work_id")
+                or ""
+            ).strip()
+            if plan.get("stage") != "citation_chasing" and not _planned_query_matches(
+                str(plan.get("query") or ""),
+                executed_query,
+            ):
+                continue
+            if trace.get("error_type") in {
+                "provider_rate_limited",
+                "tool_runtime_error",
+                "tool_reported_failure",
+                "unknown_tool",
+            }:
+                continue
+            attempts.append({
+                "query": executed_query,
+                "direction": action_input.get("direction"),
+                "page": action_input.get(
+                    "page",
+                    action_input.get("offset", action_input.get("start", "")),
+                ),
+            })
+        unique = {
+            _search_cursor_identity(source, item.get("page"))
+            for item in attempts
+        }
+        required = int(plan.get("required_pages") or 1)
+        if len(unique) < required:
+            pending.append(f"{source} {len(unique)}/{required}")
+    if not pending:
+        return True, ""
+    return (
+        False,
+        "Search coverage gate: the batch paper target is met, but the confirmed "
+        "protocol still has pending query/page assignments: "
+        + ", ".join(pending)
+        + ". Execute the next planned page or source before finishing.",
+    )
+
+
+def _scientific_search_context(
+    review_protocol: dict | None,
+    search_query_plan: list[dict] | None,
+    *,
+    language: str,
+) -> str:
+    if not review_protocol:
+        return ""
+    plan_lines = []
+    for item in search_query_plan or []:
+        completed = len(item.get("executed_queries") or [])
+        required = int(item.get("required_pages") or 1)
+        query = str(item.get("query") or "").strip()
+        plan_lines.append(
+            f"- {item.get('source')}: {item.get('status', 'pending')} "
+            f"({completed}/{required} pages or cursor positions)"
+            + (f"; query={query}" if query else "; use an included OpenAlex work")
+            + (f"; direction={item.get('direction')}" if item.get("direction") else "")
+        )
+    if language == "en":
+        return f"""
+## Locked scientific review protocol
+- Mode: {review_protocol.get("mode")}
+- Candidate cap: {review_protocol.get("candidate_cap")}
+- Inclusion criteria: {" | ".join(review_protocol.get("inclusion_criteria") or [])}
+- Exclusion criteria: {" | ".join(review_protocol.get("exclusion_criteria") or [])}
+
+## Query ledger assignments
+{chr(10).join(plan_lines) if plan_lines else "- No executable source was configured."}
+
+The requested paper count is a batch collection target, not the scientific stopping condition.
+Attempt each pending source/query/page assignment. A failed
+or rate-limited request remains incomplete and must be left resumable. Only
+protocol coverage, the candidate cap, explicit cancellation, or execution-budget
+exhaustion may end discovery.
+"""
+    return f"""
+## 已锁定的科学综述协议
+- 模式：{review_protocol.get("mode")}
+- 候选文献上限：{review_protocol.get("candidate_cap")}
+- 纳入标准：{"；".join(review_protocol.get("inclusion_criteria") or [])}
+- 排除标准：{"；".join(review_protocol.get("exclusion_criteria") or [])}
+
+## 检索账本待执行项
+{chr(10).join(plan_lines) if plan_lines else "- 未配置可执行数据源。"}
+
+用户设置的论文篇数只是本轮收集目标，不是科学检索的完成条件。必须推进每个待执行的
+数据源、检索式及分页/游标任务。失败或限流的请求保持未完成并允许断点续跑。只有协议
+检索覆盖完成、达到候选上限、用户主动取消或执行预算耗尽，才能结束本轮发现阶段。
+"""
+
+
 def _build_research_query(
     topic: str,
     initial_plan: str,
@@ -1215,6 +1481,8 @@ def _build_research_query(
     available_tool_names: list[str] | None = None,
     language: str = "zh-CN",
     previous_queries: list[dict] | None = None,
+    review_protocol: dict | None = None,
+    search_query_plan: list[dict] | None = None,
 ) -> str:
     """构建 Researcher Agent 的研究查询，支持用户确认的关键词"""
     if language == "en":
@@ -1241,13 +1509,23 @@ def _build_research_query(
             for item in (previous_queries or [])[-30:]
             if str(item.get("query") or "").strip()
         ]
+        protocol_context = _scientific_search_context(
+            review_protocol,
+            search_query_plan,
+            language=language,
+        )
+        completion_rule = (
+            "3. Do not finish merely because the batch paper target is met; complete the pending query-ledger assignments shown below."
+            if review_protocol
+            else "3. Finish immediately after the target is met."
+        )
         return f"""## Research objective
-Conduct a scholarly literature search on “{topic}”. Add at least {target_new_papers} directly relevant papers with verified title, authors, and an abstract copied from a search or detail source.
+Conduct a scholarly literature search on “{topic}”. Register at least {target_new_papers} unique candidate records with verified metadata; preserve abstracts from the source when available.
 
 ## Completion criteria
 1. Register at least {target_new_papers} new papers in this run; existing or duplicate papers do not count.
 2. Use at least {source_target} distinct enabled literature databases when possible.
-3. Finish immediately after the target is met.
+{completion_rule}
 
 ## Enabled tools — the only tools you may call
 {chr(10).join('- ' + name for name in available_tool_names)}
@@ -1257,13 +1535,13 @@ Conduct a scholarly literature search on “{topic}”. Add at least {target_new
 - If the topic resembles an exact paper title, search the full title first, then focused title phrases.
 - Process every relevant, unregistered candidate in the current result batch before issuing another search.
 - Never fabricate an abstract, DOI, arXiv identifier, open-access URL, author, venue, year, or result.
-- Pass an abstract only when it was copied from a tool result. If a source provides an arXiv ID, preserve it and pass it to `paper_register`.
-- Register each accepted candidate with `paper_register(paper_id, title, authors, abstract, arxiv_id?, pdf_url?)`.
+- Pass an abstract only when it was copied from a tool result. A title-only record may be registered as uncertain; never invent missing text. If a source provides an arXiv ID, preserve it.
+- Register each unique candidate, including uncertain title-only records, with `paper_register(paper_id, title, authors, abstract?, arxiv_id?, pdf_url?)`.
 - Do not download PDFs yourself; `paper_register` handles lawful full-text resolution.
 - On HTTP 429, stop using that provider for this run and switch databases immediately.
 - Never repeat the same query on the same result page. Use `start`, `offset`, or `page` to paginate.
-- Reject candidates that match only a broad word but not the research question.
-- Use `finish` only after the target is met or the allowed execution budget is exhausted.
+- Screen broad-word-only matches as excluded while retaining their candidate record.
+- Use `finish` only after the completion criteria above are met or the allowed execution budget is exhausted.
 
 ## User-confirmed search concepts
 {chr(10).join(keyword_lines) if keyword_lines else '- Derive two to five focused English concepts from the topic.'}
@@ -1277,6 +1555,8 @@ Do not repeat an identical source/query/page combination. Use a new synonym, a n
 
 ## Initial plan
 {initial_plan}
+
+{protocol_context}
 
 Begin by stating a concise English tool-use plan in `thought`, then execute it. All reasoning and status text must be English; preserve original paper titles and source excerpts."""
     keyword_hint = ""
@@ -1333,13 +1613,24 @@ Begin by stating a concise English tool-use plan in `thought`, then execute it. 
             + "\n请改用新的同义词、相邻概念、引用链扩展或后续结果页。\n"
         )
 
+    protocol_context = _scientific_search_context(
+        review_protocol,
+        search_query_plan,
+        language=language,
+    )
+    completion_rule = (
+        "3. 本轮达到论文数量目标后仍须推进下方检索账本，不得仅因篇数达标就 FINISH。\n\n"
+        if review_protocol
+        else f"3. **本轮新增够 {target_new_papers} 篇高质量论文后必须立即 FINISH，不要无谓重复搜索！**\n\n"
+    )
     return (
         f"## 🎯 研究目标\n"
-        f"对《{topic}》进行学术文献调研。你的任务是**搜索并新增收集**至少 {target_new_papers} 篇高质量论文的标题、作者、摘要。\n\n"
+        f"对《{topic}》进行学术文献调研。你的任务是登记至少 {target_new_papers} 篇候选论文（唯一候选记录），保存可核验元数据和数据源实际提供的摘要。\n\n"
         "## 📋 硬性完成标准\n"
-        f"1. 必须实际新增至少 {target_new_papers} 篇相关论文，并获得标题+作者+摘要。\n"
+        f"1. 本轮目标是实际新增至少 {target_new_papers} 条唯一候选记录；缺少摘要时标为不确定，严禁编造。\n"
         f"2. 本轮已启用 {len(search_tool_names)} 个检索工具；应使用至少 {source_target} 个不同数据库工具。\n"
-        f"3. **本轮新增够 {target_new_papers} 篇高质量论文后必须立即 FINISH，不要无谓重复搜索！**\n\n"
+        + completion_rule
+        +
         "## ⛔ 严禁行为（违反直接判定失败）\n"
         "- **禁止用中文关键词搜索任何学术数据库**：所有数据库都只支持英文！必须先将中文翻译为英文！\n"
         "- **禁止调用不存在的工具（wait/sleep/manual/none 等）**：遇到 429 限流直接换数据库，不要等待！\n"
@@ -1362,7 +1653,7 @@ Begin by stating a concise English tool-use plan in `thought`, then execute it. 
         "## 🛠 本轮真实可用工具（唯一允许列表）\n"
         f"{tool_hint}\n\n"
         "## ⚠️ 关键经验\n"
-        "- 搜索结果获得 ID、标题、作者、摘要后，必须调用 paper_register(paper_id, title, authors, abstract, arxiv_id?, pdf_url?)；abstract 缺失会拒绝登记。\n"
+        "- 搜索结果获得 ID、标题和作者后，必须调用 paper_register；有真实摘要时原样传入，缺少摘要的记录会进入不确定人工队列。\n"
         "- abstract 必须逐字来自搜索/详情工具的 Abstract 或 Summary，严禁根据标题自行编造摘要。\n"
         "- 数据源返回 OpenAccessPDF/pdf_url 时原样传入 pdf_url；没有时留空，严禁臆造下载地址。\n"
         "- paper_register 支持 arXiv ID 和 DOI 两种格式，OpenAlex 返回的 doi 可以直接使用。\n"
@@ -1372,6 +1663,8 @@ Begin by stating a concise English tool-use plan in `thought`, then execute it. 
         + keyword_hint + incremental_hint + previous_query_hint +
         "## 🧭 初始计划草案（供参考，可在 thought 中修订）\n"
         f"{initial_plan}\n\n"
+        + protocol_context + "\n"
+        +
         "现在请开始你的调研。先用 thought 制定检索计划，然后执行。"
     )
 
@@ -1388,6 +1681,8 @@ def run_search_only(
     existing_papers: list[dict] | None = None,
     target_new_papers: int = 3,
     search_mode: str = "initial",
+    review_protocol: dict | None = None,
+    search_query_plan: list[dict] | None = None,
 ) -> dict:
     """
     【阶段 2：仅搜索】使用确认后的关键词执行论文搜索和笔记记录。
@@ -1437,6 +1732,8 @@ def run_search_only(
         "crossref_search": CrossrefSearchTool,
         "crossref_fetch_doi": CrossrefFetchByDoiTool,
         "openalex_search": OpenAlexSearchTool,
+        "openalex_citations": OpenAlexCitationTool,
+        "dblp_search": DblpSearchTool,
     }
 
     active_tools = []
@@ -1476,6 +1773,11 @@ def run_search_only(
         provider_config=provider_config,
         min_new_papers=target_new_papers,
         paper_progress_getter=paper_progress_getter,
+        finish_gate=(
+            lambda traces: _scientific_search_coverage(traces, search_query_plan)
+            if review_protocol
+            else (True, "")
+        ),
     )
     if agent_callback:
         agent_callback(researcher_agent, work_dir)
@@ -1490,6 +1792,8 @@ def run_search_only(
         available_tool_names=list(researcher_agent.tools.keys()),
         language=researcher_agent.language,
         previous_queries=previous_queries,
+        review_protocol=review_protocol,
+        search_query_plan=search_query_plan,
     )
 
     # ━━━ 双通道 Skill 注入：搜索阶段 ━━━
@@ -1525,6 +1829,8 @@ def run_search_only(
                     available_tool_names=list(researcher_agent.tools.keys()),
                     language=researcher_agent.language,
                     previous_queries=previous_queries,
+                    review_protocol=review_protocol,
+                    search_query_plan=search_query_plan,
                 )
             )
             print(f"[Skill] Injected search skill: {search_skill_id}")
@@ -1598,6 +1904,7 @@ def run_write_from_notes(
     provider_config: dict | None = None,
     papers_list: list[dict] | None = None,
     repository_sources: list[dict] | None = None,
+    review_mode: str = "rapid",
 ) -> dict:
     """
     【阶段 3：撰写综述】基于笔记内容生成/重写综述初稿。
@@ -1641,6 +1948,11 @@ def run_write_from_notes(
         write_skill_content = write_skill_info.get("content", "")
         if write_skill_content:
             print(f"[Skill] Injected write skill: {write_skill_id}")
+    if not write_skill_content:
+        mode_presets = REVIEW_PRESETS_EN if language == "en" else REVIEW_PRESETS
+        mode_preset = mode_presets.get(review_mode) or mode_presets.get("rapid")
+        if mode_preset:
+            write_skill_content = str(mode_preset.get("content", ""))
 
     if user_feedback and previous_review:
         # 带反馈的重写 — 双通道：有 Skill 时替换默认要求
@@ -1755,6 +2067,8 @@ def run_agent_pipeline_session(
     existing_papers: list[dict] | None = None,
     target_new_papers: int = 3,
     search_mode: str = "initial",
+    review_protocol: dict | None = None,
+    search_query_plan: list[dict] | None = None,
 ) -> dict:
     """
     Session-aware 流水线，支持从指定断点继续执行。
@@ -1806,6 +2120,8 @@ def run_agent_pipeline_session(
             existing_papers=existing_papers,
             target_new_papers=target_new_papers,
             search_mode=search_mode,
+            review_protocol=review_protocol,
+            search_query_plan=search_query_plan,
         )
         result["session_id"] = session_id
         return result

@@ -1,0 +1,28 @@
+{
+  "score": 100,
+  "source_count": 12,
+  "cited_source_count": 12,
+  "cited_source_ids": [
+    "P1",
+    "P10",
+    "P11",
+    "P12",
+    "P2",
+    "P3",
+    "P4",
+    "P5",
+    "P6",
+    "P7",
+    "P8",
+    "P9"
+  ],
+  "uncited_source_ids": [],
+  "citation_coverage": 1.0,
+  "invalid_citations": [],
+  "section_coverage": 1.0,
+  "claim_citation_coverage": 1.0,
+  "unsupported_claims": [],
+  "abstract_only_sources": [],
+  "has_omission_markers": false,
+  "status": "passed"
+}

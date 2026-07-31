@@ -1,0 +1,13 @@
+{
+  "mode": "technical",
+  "question": "参数高效微调方法在可训练参数、结构改动、任务适用性、性能证据、训练与推理成本以及复现性方面形成了怎样的技术谱系？",
+  "sources": [
+    "OpenAlex candidate discovery",
+    "original open-access full text"
+  ],
+  "candidate_count": 47,
+  "target_included": 12,
+  "included_count": 12,
+  "status": "focused_high_load_validation",
+  "systematic_review_claim_allowed": false
+}

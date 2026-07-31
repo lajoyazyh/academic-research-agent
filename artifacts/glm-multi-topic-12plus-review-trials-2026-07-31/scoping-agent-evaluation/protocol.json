@@ -1,0 +1,15 @@
+{
+  "mode": "scoping",
+  "question": "LLM Agent 的规划、工具使用、记忆、协作与长期任务能力如何被评价，现有基准的任务设计、指标、可复现性和有效性风险是什么？",
+  "sources": [
+    "OpenAlex candidate discovery",
+    "original open-access full text"
+  ],
+  "candidate_record_count": 43,
+  "unique_candidate_count_after_version_audit": 42,
+  "target_included_records": 12,
+  "included_record_count": 12,
+  "unique_study_count": 11,
+  "status": "focused_high_load_validation",
+  "systematic_review_claim_allowed": false
+}

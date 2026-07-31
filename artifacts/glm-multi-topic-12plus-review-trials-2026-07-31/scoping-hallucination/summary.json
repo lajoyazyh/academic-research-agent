@@ -1,0 +1,18 @@
+{
+  "case_id": "scoping-hallucination",
+  "mode": "scoping",
+  "title": "大语言模型幻觉检测与缓解研究的范围综述",
+  "candidate_record_count": 43,
+  "unique_candidate_count": 43,
+  "included_record_count": 12,
+  "unique_study_count": 12,
+  "version_linked_record_count": 0,
+  "full_text_record_count": 12,
+  "review_characters": 8067,
+  "product_quality_score": 100,
+  "product_quality_status": "passed",
+  "model_audit_verdict": "pass",
+  "model_audit_major_issue_count": 0,
+  "human_checks_required_count": 0,
+  "api_key_retained": false
+}

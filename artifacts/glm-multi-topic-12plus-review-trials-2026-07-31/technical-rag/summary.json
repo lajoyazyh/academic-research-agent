@@ -1,0 +1,18 @@
+{
+  "case_id": "technical-rag",
+  "mode": "technical",
+  "title": "检索增强生成的架构、评价与可靠性技术综述",
+  "candidate_record_count": 52,
+  "unique_candidate_count": 52,
+  "included_record_count": 12,
+  "unique_study_count": 12,
+  "version_linked_record_count": 0,
+  "full_text_record_count": 12,
+  "review_characters": 7682,
+  "product_quality_score": 100,
+  "product_quality_status": "passed",
+  "model_audit_verdict": "needs_revision",
+  "model_audit_major_issue_count": 3,
+  "human_checks_required_count": 0,
+  "api_key_retained": false
+}

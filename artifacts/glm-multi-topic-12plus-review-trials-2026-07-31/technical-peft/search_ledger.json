@@ -1,0 +1,23 @@
+[
+  {
+    "source": "openalex",
+    "query": "parameter efficient fine tuning language models LoRA adapter prefix prompt",
+    "success": true,
+    "result_count": 20,
+    "error": null
+  },
+  {
+    "source": "openalex",
+    "query": "low rank adaptation quantized LoRA adaptive rank fine tuning",
+    "success": true,
+    "result_count": 20,
+    "error": null
+  },
+  {
+    "source": "openalex",
+    "query": "prompt tuning prefix tuning adapters bias tuning transformers",
+    "success": true,
+    "result_count": 20,
+    "error": null
+  }
+]

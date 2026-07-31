@@ -2341,3 +2341,163 @@ html, body {
   box-shadow: 0 4px 16px rgba(11,87,208,.12) !important;
 }
 
+.protocol-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px 12px;
+  margin: 0 14px 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 92%, var(--primary) 8%);
+}
+
+.protocol-card-main {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 9px;
+}
+
+.protocol-card-main div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.protocol-card-main strong,
+.protocol-card-main small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.protocol-card-main small {
+  color: var(--text-muted);
+}
+
+.protocol-status-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 999px;
+  background: var(--warning);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--warning) 18%, transparent);
+}
+
+.protocol-status-dot.confirmed {
+  background: var(--success);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 18%, transparent);
+}
+
+.compact-btn {
+  min-height: 38px;
+  padding: 7px 10px;
+  white-space: nowrap;
+}
+
+.protocol-flow {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.protocol-flow span {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  border-right: 1px solid var(--border);
+}
+
+.protocol-flow span:last-child {
+  border-right: 0;
+}
+
+.protocol-flow strong {
+  font-size: 15px;
+}
+
+.protocol-flow small {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.protocol-modal-box {
+  width: min(780px, calc(100vw - 28px));
+  max-height: min(88vh, 900px);
+  overflow-y: auto;
+}
+
+.protocol-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.protocol-grid label,
+.protocol-field {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.protocol-grid input,
+.protocol-grid select,
+.protocol-field input,
+.protocol-field textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 10px 11px;
+  font: inherit;
+  font-weight: 400;
+}
+
+.protocol-field textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.protocol-checkpoint-note {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.protocol-message {
+  margin-right: auto;
+}
+
+@media (max-width: 720px) {
+  .protocol-card {
+    margin: 0 10px 10px;
+  }
+
+  .protocol-grid,
+  .protocol-criteria-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .protocol-modal-box .modal-foot {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .protocol-modal-box .modal-foot button {
+    width: 100%;
+  }
+}

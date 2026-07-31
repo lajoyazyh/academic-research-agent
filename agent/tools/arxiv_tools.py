@@ -11,7 +11,8 @@ from core.tools import BaseTool
 
 # ━━━ 全局 arXiv API 限流器（所有 arXiv 工具共享）━━━
 _ARXIV_LAST_CALL_TS = 0.0
-_ARXIV_MIN_INTERVAL_SEC = float(os.getenv("ARXIV_MIN_INTERVAL_SEC", "5.0"))
+_ARXIV_MIN_INTERVAL_SEC = float(os.getenv("ARXIV_MIN_INTERVAL_SEC", "3.0"))
+_ARXIV_REQUEST_TIMEOUT_SEC = float(os.getenv("ARXIV_REQUEST_TIMEOUT_SEC", "30.0"))
 
 
 def _arxiv_rate_limit_wait():
@@ -65,7 +66,7 @@ def _fetch_arxiv_entries(query: str, max_results: int, base_url: str, user_agent
     req = urllib.request.Request(url, headers={"User-Agent": user_agent})
 
     _arxiv_rate_limit_wait()
-    with urllib.request.urlopen(req) as response:
+    with urllib.request.urlopen(req, timeout=_ARXIV_REQUEST_TIMEOUT_SEC) as response:
         xml_data = response.read()
 
     root = ET.fromstring(xml_data)
@@ -92,7 +93,7 @@ class ArxivSearchTool(BaseTool):
             start = max(0, int(kwargs.get("start", 0)))
         except (TypeError, ValueError):
             start = 0
-        base_url = os.getenv("ARXIV_API_BASE", "http://export.arxiv.org/api/query")
+        base_url = os.getenv("ARXIV_API_BASE", "https://export.arxiv.org/api/query")
         user_agent = os.getenv("ARXIV_USER_AGENT", "AcademicResearchAgent/1.0")
         try:
             retry_limit = max(1, int(os.getenv("ARXIV_SEARCH_RETRY_LIMIT", "3")))
@@ -109,7 +110,6 @@ class ArxivSearchTool(BaseTool):
                 max_retries = 3
                 for attempt in range(max_retries):
                     try:
-                        _arxiv_rate_limit_wait()
                         if start:
                             entries, _ = _fetch_arxiv_entries(candidate, max_results, base_url, user_agent, start)
                         else:
@@ -193,7 +193,7 @@ class ArxivFetchTool(BaseTool):
         # 去掉版本后缀（如 v3），避免部分 ID 被 arXiv 限流更严格地对待
         clean_id = re.sub(r'v\d+$', '', str(paper_id).strip())
             
-        base_url = os.getenv("ARXIV_API_BASE", "http://export.arxiv.org/api/query")
+        base_url = os.getenv("ARXIV_API_BASE", "https://export.arxiv.org/api/query")
         user_agent = os.getenv("ARXIV_USER_AGENT", "AcademicResearchAgent/1.0")
         url = f"{base_url}?id_list={clean_id}"
         
@@ -204,7 +204,7 @@ class ArxivFetchTool(BaseTool):
             for attempt in range(max_retries):
                 try:
                     _arxiv_rate_limit_wait()
-                    with urllib.request.urlopen(req) as response:
+                    with urllib.request.urlopen(req, timeout=_ARXIV_REQUEST_TIMEOUT_SEC) as response:
                         xml_data = response.read()
                     break
                 except urllib.error.HTTPError as cand_http_err:

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "ai_gnn",
+    "domain": "computer_ai",
+    "question": "What are the foundational methods for graph convolutional neural networks?",
+    "known_relevant_titles": ["Semi-Supervised Classification with Graph Convolutional Networks"]
+  },
+  {
+    "id": "ai_transformer",
+    "domain": "computer_ai",
+    "question": "How did self-attention replace recurrence in sequence modelling?",
+    "known_relevant_titles": ["Attention Is All You Need"]
+  },
+  {
+    "id": "ai_bert",
+    "domain": "computer_ai",
+    "question": "What evidence established bidirectional pre-training for language understanding?",
+    "known_relevant_titles": ["BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding"]
+  },
+  {
+    "id": "ai_lora",
+    "domain": "computer_ai",
+    "question": "How effective is low-rank adaptation for parameter-efficient language-model tuning?",
+    "known_relevant_titles": ["LoRA: Low-Rank Adaptation of Large Language Models"]
+  },
+  {
+    "id": "ai_rag",
+    "domain": "computer_ai",
+    "question": "How does retrieval-augmented generation affect knowledge-intensive NLP tasks?",
+    "known_relevant_titles": ["Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks"]
+  },
+  {
+    "id": "ai_federated",
+    "domain": "computer_ai",
+    "question": "What are the foundational optimization methods for federated learning?",
+    "known_relevant_titles": ["Communication-Efficient Learning of Deep Networks from Decentralized Data"]
+  },
+  {
+    "id": "ai_diffusion",
+    "domain": "computer_ai",
+    "question": "How do denoising diffusion probabilistic models generate images?",
+    "known_relevant_titles": ["Denoising Diffusion Probabilistic Models"]
+  },
+  {
+    "id": "ai_rlhf",
+    "domain": "computer_ai",
+    "question": "What evidence supports instruction tuning with human feedback?",
+    "known_relevant_titles": ["Training language models to follow instructions with human feedback"]
+  },
+  {
+    "id": "ai_vit",
+    "domain": "computer_ai",
+    "question": "Can transformer architectures perform image recognition without convolutions?",
+    "known_relevant_titles": ["An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale"]
+  },
+  {
+    "id": "ai_alphafold",
+    "domain": "computer_ai",
+    "question": "How accurately can deep learning predict protein structures?",
+    "known_relevant_titles": ["Highly accurate protein structure prediction with AlphaFold"]
+  },
+  {
+    "id": "general_prisma",
+    "domain": "general",
+    "question": "What reporting items are required by PRISMA 2020?",
+    "known_relevant_titles": ["The PRISMA 2020 statement: an updated guideline for reporting systematic reviews"]
+  },
+  {
+    "id": "general_swim",
+    "domain": "general",
+    "question": "How should intervention effects be synthesized without meta-analysis?",
+    "known_relevant_titles": ["Synthesis without meta-analysis (SWiM) in systematic reviews: reporting guideline"]
+  },
+  {
+    "id": "general_sanra",
+    "domain": "general",
+    "question": "How can the quality of narrative reviews be assessed?",
+    "known_relevant_titles": ["SANRA—a scale for the quality assessment of narrative review articles"]
+  },
+  {
+    "id": "general_remote_work",
+    "domain": "general",
+    "question": "What is the causal effect of working from home on productivity?",
+    "known_relevant_titles": ["Does Working from Home Work? Evidence from a Chinese Experiment"]
+  },
+  {
+    "id": "general_social_media",
+    "domain": "general",
+    "question": "How does Facebook use relate to subjective well-being in young adults?",
+    "known_relevant_titles": ["Facebook Use Predicts Declines in Subjective Well-Being in Young Adults"]
+  },
+  {
+    "id": "general_sleep_memory",
+    "domain": "general",
+    "question": "What role does sleep play in memory consolidation?",
+    "known_relevant_titles": ["Sleep and Memory: The Distributed Circuitry of Brain States"]
+  },
+  {
+    "id": "general_crispr",
+    "domain": "general",
+    "question": "How did CRISPR-Cas9 emerge as a genome-engineering technology?",
+    "known_relevant_titles": ["The new frontier of genome engineering with CRISPR-Cas9"]
+  },
+  {
+    "id": "general_mrna",
+    "domain": "general",
+    "question": "What randomized evidence established the efficacy of an mRNA COVID-19 vaccine?",
+    "known_relevant_titles": ["Safety and Efficacy of the BNT162b2 mRNA Covid-19 Vaccine"]
+  },
+  {
+    "id": "general_open_science",
+    "domain": "general",
+    "question": "How reproducible are findings in psychological science?",
+    "known_relevant_titles": ["Estimating the reproducibility of psychological science"]
+  },
+  {
+    "id": "general_research_bias",
+    "domain": "general",
+    "question": "Why can many published research findings be false?",
+    "known_relevant_titles": ["Why Most Published Research Findings Are False"]
+  }
+]

@@ -1,0 +1,135 @@
+# 大语言模型幻觉检测与缓解研究的范围综述
+
+## 摘要
+
+大语言模型幻觉会削弱生成内容的事实可靠性与来源忠实性[P2][P3]。本文以范围综述/系统映射方式梳理幻觉的定义、评价、检测和缓解策略。12篇全文证据呈现出多种分类轴：输入/上下文/事实冲突、事实性/忠实性，以及提示词或模型行为等归因来源[P2][P3][P12]。RAG、链式验证和自反思是纳入语料中的主要缓解路线，但其效果受检索噪声、任务设置与额外计算开销影响[P4][P6][P9]。本轮语料还显示长上下文、低资源领域和高风险真实部署的直接证据有限；该判断仅适用于本次协议覆盖的候选池。
+
+**关键词**：大语言模型；幻觉；检测；缓解；范围综述
+
+## 引言
+
+随着大语言模型从任务特定的辅助工具演变为通用任务求解器，其生成内容的可信度问题日益凸显。幻觉通常被定义为模型生成的内容与真实世界事实或源材料不一致的现象，这与传统的模型错误有本质区别，后者往往源于模型未能正确拟合训练数据。尽管大语言模型在参数规模扩展后表现出强大的涌现能力【方法记录：LLMs exhibit 'emergent abilities' not present in smaller models when parameter scale exceeds a certain level [P1]】，但这种开放式的生成特性也使其更容易产生看似合理但实则错误的输出。
+
+现有研究已从不同角度对这一问题进行了探索，包括构建幻觉分类学、开发检测基准、设计缓解算法以及分析特定应用场景下的表现。然而，由于缺乏统一的评价标准和定义框架，不同研究之间的结论往往难以直接比较。此外，随着模型架构的演进（如多模态大模型）和应用场景的复杂化（如医疗、法律、检索增强生成），幻觉的表现形式和成因也变得更加多样化。
+
+本文旨在回答：大语言模型幻觉研究如何定义问题、构建评价、检测错误并实施缓解？现有研究覆盖了哪些典型场景，又留下了哪些证据空白？本轮结果用于形成结构化范围映射，不宣称穷尽整个领域。
+
+## 方法
+
+本研究采用范围综述的方法论，旨在全面覆盖大语言模型幻觉检测与缓解领域的现有研究，而非进行穷尽性的系统综述或荟萃分析。
+
+### 研究范围与问题
+本综述聚焦于大语言模型（LLMs）在文本生成任务中的幻觉现象。研究问题主要涵盖：幻觉的定义与分类框架、评价基准与指标体系、检测机制的有效性、缓解策略的局限性以及特定应用场景下的表现。
+
+### 数据来源与筛选
+【方法记录】本轮通过 OpenAlex 执行三条预设主题查询，形成43条去重候选记录；经标题/摘要高召回排序和开放全文可得性验证，纳入12篇可解析全文。纳入类型包括综述、基准、检测方法与缓解策略研究。检索式、命中数和来源状态保存在检索账本中；该流程不是穷尽性系统综述。
+
+### 证据提取与综合
+研究团队依据预先定义的结构化证据卡提取关键信息，包括研究目标、方法框架、评估范围、主要发现及局限性。随后，通过跨研究综合分析，将文献归类为概念化、评价、检测、缓解及场景限制等综合单元，以识别共识、分歧、异质性来源及证据空白。
+
+## 结果与证据综合
+
+### 文献筛选与研究特征
+经过筛选，最终纳入 12 篇文献。其中，综述文章 4 篇[P1] [P2] [P3] [P4]，基准测试研究 3 篇[P5] [P10] [P11]，检测方法研究 2 篇[P7] [P8]，缓解策略研究 2 篇[P6] [P9]。研究对象涵盖了从早期的统计语言模型到最新的多模态大模型（MLLMs）和检索增强生成（RAG）系统。
+
+### 幻觉的概念化与分类框架
+纳入综述对幻觉的共同描述是生成内容与事实或源材料不一致，但在具体定义和分类轴上存在差异[P2][P3]。
+
+**基于冲突类型的分类**
+[P2] 提出了一种基于冲突来源的分类框架，将幻觉细分为三类：输入冲突（偏离用户输入）、上下文冲突（与先前上下文矛盾）和事实冲突（与真实世界知识不一致）。这种分类方式直观地反映了幻觉产生的语境差异。
+
+**基于错误性质的分类**
+[P3] 则从错误性质出发，区分了事实性幻觉（与真实世界事实不符）和忠实性幻觉（偏离源材料内容）。这一分类对于评估模型在信息检索和摘要任务中的表现尤为重要。
+
+**基于归因来源的分类**
+[P12] 进一步引入了归因视角，区分提示词主导型与模型行为主导型幻觉。该研究报告不同模型对提示策略的敏感性不同，但这只能支持“提示与模型行为共同影响幻觉”的有限结论，不能单独确定内部因果机制[P12]。
+
+### 幻觉的评价与基准构建
+为了量化幻觉程度，研究者们开发了多种基准测试和评价指标，但不同基准的侧重点和适用场景存在异质性。
+
+**文本领域的基准**
+[P5] 构建了大规模幻觉评估基准（HaluEval），通过采样—过滤框架生成样本并评估识别能力。HaluEval 报告 ChatGPT 在其特定构造任务中的幻觉识别准确率约为 62.59%；该数值依赖该基准的数据生成与评测设置[P5]。[P3] 和 [P4] 还讨论了 TruthfulQA、HaluEval-2.0 等事实一致性与忠实性基准。
+
+**多模态领域的基准**
+针对多模态大模型（LVLMs）的对象幻觉，[P10] 提出了基于投票的物体探测评估方法（POPE）。该基准通过“图像中是否存在某物体”的二分类任务评估不存在对象的生成。其实验显示，受测模型会生成图像中不存在的对象，且对象频率等采样因素会影响评测结果[P10]。
+
+**检索增强生成的基准**
+[P11] 针对检索增强生成（RAG）构建 RGB 基准，评估噪声鲁棒性、负样本拒绝、信息整合和反事实鲁棒性。该基准显示，受测 RAG 系统在噪声、拒绝和信息整合任务上仍会失败，具体表现依赖检索结果和任务构造[P11]。
+
+### 幻觉的检测机制
+检测幻觉的核心在于识别模型输出的不确定性或与自身生成内容的不一致性。
+
+**不确定性估计**
+[P2] 和 [P7] 指出，不确定性估计是检测幻觉的有效手段。[P7] 提出的语义熵方法通过计算多个采样答案在语义层面的聚类熵来检测“胡编乱造”的幻觉。该方法在黑盒模型（如 GPT-4）上表现出色，能够有效区分正确答案与错误答案。然而，[P2] 也指出，基于对数概率的估计方法在闭源商业模型中难以应用，而基于语言表达的置信度评分往往会导致过度自信。
+
+**自一致性检查**
+[P5] 和 [P8] 讨论了基于自一致性的检测方法。SelfCheckGPT 通过多个随机样本及 BERTScore、NLI 等指标衡量信息一致性，并在其黑盒生成评测中报告了相对优势；该比较不能外推到所有模型与领域[P8]。[P5] 则显示外部知识会影响其幻觉识别任务的准确率，提示检测性能与可用事实依据相关[P5]。
+
+### 幻觉的缓解策略
+缓解幻觉的策略主要分为提示工程和模型开发两大类。
+
+**检索增强生成（RAG）**
+RAG 是目前最主流的缓解策略，旨在通过外部知识库为模型提供事实依据。[P2]、[P3] 和 [P4] 均指出，RAG 通过提供上下文知识或后处理修正，能有效减少幻觉。然而，[P3] 和 [P11] 指出，RAG 系统本身存在固有缺陷，如检索粒度过粗导致语义不完整、检索信息与模型参数记忆冲突导致模型过度依赖内部知识等。
+
+**链式验证与自反思**
+[P6] 提出的链式验证（CoVe）方法通过让模型先起草回答，再规划验证问题并独立回答，最后生成修正后的回答，显著提升了长文本生成的精度和 FACTSCORE。[P9] 则在医疗问答领域提出了迭代自反思框架，通过生成、事实性评估和一致性评估的循环，有效减少了查询不一致和事实不一致。尽管这些方法效果显著，但 [P6] 和 [P4] 均指出，它们显著增加了推理开销，可能不适合对延迟敏感的实时应用。
+
+### 场景限制与证据空白
+现有研究在覆盖场景上存在明显的偏向性，留下了若干证据空白。
+
+**长上下文与低资源领域**
+[P1] 和 [P3] 指出，大语言模型在处理长文本和低资源领域（如小语种翻译）时存在局限性，这可能导致在这些场景下产生更严重的幻觉。然而，目前针对长上下文幻觉的专门基准和缓解策略仍相对匮乏。
+
+**高风险领域的真实部署**
+[P9] 虽然在医疗领域进行了深入探索，并强调了伦理风险，但也指出其方法尚未准备好直接用于现实世界的部署。目前缺乏关于幻觉缓解策略在真实高风险场景（如法律咨询、金融分析）中的长期纵向研究数据。
+
+**多模态机制的深入理解**
+虽然 [P10] 评估了 LVLMs 的对象幻觉，但对于视觉指令偏差如何导致幻觉的深层机制，以及如何从架构层面解决多模态融合中的不一致性，现有研究仍处于起步阶段。
+
+## 讨论与局限
+
+### 主要发现与解释
+本综述的核心发现是，大语言模型的幻觉问题是一个多维度的复杂现象，其缓解依赖于多层次的干预。
+
+首先，幻觉的成因具有异质性。[P12] 的研究把提示策略与模型行为都纳入归因分析。链式验证则通过生成回答、规划验证问题并独立作答来降低其评测任务中的幻觉率，但会增加推理步骤与调用成本[P6]。因此，现有证据不足以把提示优化视为对所有模型都有效的通用方案。
+
+其次，缓解策略存在显著的性能-成本权衡。RAG 虽然有效，但受限于检索系统的质量；CoVe 和自反思虽然能大幅提升事实一致性，但引入了额外的推理步骤，导致推理延迟增加。这提示在实际应用中，需要根据任务对准确性和实时性的要求，选择合适的缓解策略。
+
+最后，检测技术的局限性不容忽视。[P5] 的研究显示，模型难以识别自身的幻觉，且外部知识能显著提升检测能力。这暗示了“检测”本身可能是一个需要外部事实支撑的过程，而非完全依赖模型内部状态的自我监控。
+
+### 异质性、适用性与证据确定性
+不同研究在模型选择、任务类型和评价指标上存在显著异质性，这限制了结论的普适性。
+在模型方面，研究涵盖了从 GPT-4 到 LLaMA 2、DeepSeek 等不同架构的模型。[P12] 的发现表明，幻觉的归因在不同模型间差异巨大，这意味着一种缓解策略在 GPT-4 上有效，未必能在 LLaMA 2 上奏效。
+在任务方面，研究主要集中在问答、摘要和医疗领域。[P10] 和 [P11] 的研究分别聚焦于多模态和检索增强生成，揭示了特定领域的独特挑战。例如，[P11] 发现 RAG 在处理噪声和负样本拒绝方面存在瓶颈，这是通用 QA 任务中较少被强调的问题。
+在指标方面，从传统的 BLEU/ROUGE 到专门的 FACTSCORE、CHAIR 和 POPE，指标的选择直接影响了对幻觉严重程度的评估。[P10] 指出，传统的 CHAIR 指标在评估对象幻觉时可能不够稳定，而 POPE 提供了更灵活的评估方式。
+
+### 本综述的局限
+作为一项范围综述，本研究存在以下局限性：
+1.  **数据源限制**：候选发现仅使用 OpenAlex，且只纳入可获得开放全文的记录，可能遗漏其他索引、封闭出版物和未被查询命中的研究。
+2.  **研究类型限制**：纳入文献以综述和基准测试为主，缺乏大量实证性的干预实验，导致对缓解策略因果关系的推断可能不够深入。
+3.  **语言与领域限制**：现有文献主要集中在英语和通用/医疗领域，对其他语言和垂直行业的覆盖不足。
+4.  **复现性挑战**：部分综述文章（如 [P1], [P2], [P3], [P4]）未提供代码或详细的数据集，增加了独立验证的难度。
+
+### 研究与实践启示
+【作者综合判断】基于本轮语料的覆盖缺口，后续可优先评估长上下文与低资源场景、统一基准定义，并报告缓解方法的计算开销；这些方向需要在更广数据源和更新协议下重新验证。
+
+对于实践者而言，在部署大语言模型时，应充分认识到幻觉的普遍性和成因的复杂性。建议采用 RAG 等检索增强技术作为基础保障，并结合提示工程优化输入指令。同时，应建立完善的输出审核机制，特别是在医疗、法律等高风险领域，不能完全依赖模型的自我检测能力。
+
+## 结论
+
+大语言模型的幻觉问题是一个涉及定义、检测、缓解和评价的系统性挑战。本文通过范围综述发现，尽管学界已提出了多种分类框架（如冲突型、性质型、归因型）和缓解策略（如 RAG、CoVe、自反思），但尚未形成统一的解决方案。现有研究在通用文本领域取得了显著进展，但在长上下文、低资源领域及高风险场景下的真实部署方面仍存在明显的证据空白。未来的研究需要在提高缓解效率、构建通用基准以及探索深层机制方面取得突破，以推动大语言模型向更可靠、更可信的方向发展。
+
+## 参考来源
+
+- [P1] Wayne Xin Zhao, Kun Zhou, Junyi Li, Tianyi Tang, Zican Dong, Yupeng Hou, Beichen Zhang, Yingqian Min, Junjie Zhang, Peiyu Liu, Xiaolei Wang, Yifan Du, Yushuo Chen, Yushuo Chen, Zhipeng Chen, Jinhao Jiang, Ruiyang Ren, Yifan Li, Xinyu Tang, Peiyu Liu, Yiwen Hu, Jian‐Yun Nie, Ji-Rong Wen. A Survey of Large Language Models. 2026. https://arxiv.org/abs/2303.18223
+- [P2] Yue Zhang, Yafu Li, Leyang Cui, Deng Cai, Lemao Liu, Tingchen Fu, Xinting Huang, Enbo Zhao, Yu Zhang, Xu, Chen, Yulong Chen, Longyue Wang, Anh Tuan Luu, Wei Bi, Freda Shi, Shuming Shi. Siren's Song in the AI Ocean: A Survey on Hallucination in Large Language Models. 2023. https://arxiv.org/abs/2309.01219
+- [P3] Lei Huang, Weijiang Yu, Weitao Ma, Wei‐Hong Zhong, Zhangyin Feng, Haotian Wang, Qianglong Chen, Weihua Peng, Xiaocheng Feng, Bing Qin, Ting Liu. A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions. 2023. https://arxiv.org/abs/2311.05232
+- [P4] S. M Towhidul Islam Tonmoy, S M Mehedi Zaman, Vinija Jain, Anku Rani, Vipula Rawte, Aman Chadha, Amitava Das. A Comprehensive Survey of Hallucination Mitigation Techniques in Large Language Models. 2024. https://arxiv.org/abs/2401.01313
+- [P5] Junyi Li, Xiaoxue Cheng, Xin Zhao, Jian‐Yun Nie, Ji-Rong Wen. HaluEval: A Large-Scale Hallucination Evaluation Benchmark for Large Language Models. 2023. https://doi.org/10.18653/v1/2023.emnlp-main.397
+- [P6] Shehzaad Dhuliawala, Mojtaba Komeili, Jing Xu, Roberta Răileanu, Xian Li, Aslı Çelikyılmaz, Jason Weston. Chain-of-Verification Reduces Hallucination in Large Language Models. 2024. https://doi.org/10.18653/v1/2024.findings-acl.212
+- [P7] Sebastian Farquhar, Jannik Kossen, Lorenz Kuhn, Yarin Gal. Detecting hallucinations in large language models using semantic entropy. 2024. https://doi.org/10.1038/s41586-024-07421-0
+- [P8] Potsawee Manakul, Adian Liusie, Mark Gales. SelfCheckGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models. 2023. https://doi.org/10.18653/v1/2023.emnlp-main.557
+- [P9] Ziwei Ji, Tiezheng Yu, Yan Xu, Nayeon Lee, Etsuko Ishii, Pascale Fung. Towards Mitigating LLM Hallucination via Self Reflection. 2023. https://doi.org/10.18653/v1/2023.findings-emnlp.123
+- [P10] Yifan Li, Yifan Du, Kun Zhou, Jinpeng Wang, Zhao Xin, Ji-Rong Wen. Evaluating Object Hallucination in Large Vision-Language Models. 2023. https://doi.org/10.18653/v1/2023.emnlp-main.20
+- [P11] Jiawei Chen, Hongyu Lin, Xianpei Han, Le Sun. Benchmarking Large Language Models in Retrieval-Augmented Generation. 2024. https://doi.org/10.1609/aaai.v38i16.29728
+- [P12] Dang Anh-Hoang, Vu Tran, Le-Minh Nguyen. Survey and analysis of hallucinations in large language models: attribution to prompting strategies or model behavior. 2025. https://doi.org/10.3389/frai.2025.1622292

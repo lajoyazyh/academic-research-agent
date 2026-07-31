@@ -45,6 +45,18 @@
       "limit": 5
     }
   },
+  "openalex_citations": {
+    "enabled": true,
+    "config": {
+      "limit": 5
+    }
+  },
+  "dblp_search": {
+    "enabled": true,
+    "config": {
+      "rows": 5
+    }
+  },
   "clear_notes": {
     "enabled": true,
     "config": {}

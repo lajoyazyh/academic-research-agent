@@ -1,0 +1,18 @@
+{
+  "case_id": "technical-peft",
+  "mode": "technical",
+  "title": "参数高效微调方法的机制、证据与工程权衡",
+  "candidate_record_count": 47,
+  "unique_candidate_count": 47,
+  "included_record_count": 12,
+  "unique_study_count": 12,
+  "version_linked_record_count": 0,
+  "full_text_record_count": 12,
+  "review_characters": 7828,
+  "product_quality_score": 100,
+  "product_quality_status": "passed",
+  "model_audit_verdict": "needs_revision",
+  "model_audit_major_issue_count": 5,
+  "human_checks_required_count": 3,
+  "api_key_retained": false
+}

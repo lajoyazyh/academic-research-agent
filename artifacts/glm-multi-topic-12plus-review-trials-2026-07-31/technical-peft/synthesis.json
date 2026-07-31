@@ -1,0 +1,448 @@
+{
+  "review_mode": "technical",
+  "taxonomy_or_method_families": [
+    {
+      "family_name": "Additive Fine-Tuning (加性微调)",
+      "description": "通过在模型结构中插入额外模块（如适配器、前缀）进行微调，不修改原有权重。",
+      "key_methods": [
+        {
+          "method": "Adapter",
+          "mechanism": "在Transformer层间插入小型神经网络模块。",
+          "structural_impact": "增加模型深度/宽度，增加推理延迟。",
+          "efficiency": "可训练参数约 1.2% - 2.38% (P1, P2)。",
+          "strengths": "结构清晰，易于组合，性能稳定。",
+          "weaknesses": "推理速度较慢，增加计算开销 (P1, P6)。",
+          "sources": [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+            "P10"
+          ]
+        },
+        {
+          "method": "Prefix Tuning / Prompt Tuning",
+          "mechanism": "在输入层或隐藏层前添加可学习的连续向量。",
+          "structural_impact": "不改变原有权重，仅修改输入/输出。",
+          "efficiency": "可训练参数极低 (0.01% - 0.5%) (P2)。",
+          "strengths": "参数极少，适合零样本/少样本学习。",
+          "weaknesses": "收敛慢，性能不稳定，依赖随机种子 (P6)。",
+          "sources": [
+            "P1",
+            "P2",
+            "P6"
+          ]
+        }
+      ]
+    },
+    {
+      "family_name": "Reparameterization Fine-Tuning (重参数化微调)",
+      "description": "冻结原权重，通过低秩分解或结构重参数化添加少量可训练参数，推理时融合回原权重。",
+      "key_methods": [
+        {
+          "method": "LoRA (Low-Rank Adaptation)",
+          "mechanism": "将权重矩阵分解为低秩矩阵相乘。",
+          "structural_impact": "不改变模型结构，仅增加旁路参数。",
+          "efficiency": "可训练参数约 0.26% - 0.73% (P2)。",
+          "strengths": "性能与全微调一致，推理速度快（合并后），易于部署。",
+          "weaknesses": "未合并时推理速度较慢 (P6)。",
+          "sources": [
+            "P1",
+            "P2",
+            "P3",
+            "P5",
+            "P6",
+            "P7",
+            "P9"
+          ]
+        },
+        {
+          "method": "GLoRA (Generalized LoRA)",
+          "mechanism": "结合进化搜索和结构重参数化。",
+          "structural_impact": "通过搜索确定最优子结构并重参数化。",
+          "efficiency": "可训练参数 0.28M - 0.86M (P9)。",
+          "strengths": "性能优于标准 LoRA，推理无额外开销。",
+          "weaknesses": "训练时间显著增加（需超网训练）。",
+          "sources": [
+            "P9"
+          ]
+        }
+      ]
+    },
+    {
+      "family_name": "Hybrid & Unified Fine-Tuning (混合与统一微调)",
+      "description": "结合多种机制或针对特定场景优化的方法。",
+      "key_methods": [
+        {
+          "method": "AdaMix (Mixture-of-Adaptations)",
+          "mechanism": "每层引入多个适配器，训练时随机路由，推理时加权平均。",
+          "structural_impact": "增加模块数量，但通过合并保持结构不变。",
+          "efficiency": "参数量与单模块相当，但性能超越全微调。",
+          "strengths": "在 GLUE 等任务上超越全微调 (P10)。",
+          "weaknesses": "训练复杂度增加，边际收益递减。",
+          "sources": [
+            "P10"
+          ]
+        },
+        {
+          "method": "HETLORA (Heterogeneous LoRA)",
+          "mechanism": "针对联邦学习中的异构客户端，使用不同秩。",
+          "structural_impact": "客户端侧结构异构。",
+          "efficiency": "通信开销极低 (0.004x) (P12)。",
+          "strengths": "解决异构资源问题，收敛更快。",
+          "weaknesses": "理论收敛性未完全探索 (P12)。",
+          "sources": [
+            "P12"
+          ]
+        }
+      ]
+    },
+    {
+      "family_name": "Quantization-based Fine-Tuning (基于量化的微调)",
+      "description": "结合低比特量化技术降低内存占用。",
+      "key_methods": [
+        {
+          "method": "QLoRA",
+          "mechanism": "4-bit 量化 + LoRA + 双重量化 + 分页优化器。",
+          "structural_impact": "量化原模型权重。",
+          "efficiency": "65B 模型训练内存 <48GB (P5)。",
+          "strengths": "极大降低训练成本，性能不退化。",
+          "weaknesses": "数学推理能力较弱 (P5)。",
+          "sources": [
+            "P5",
+            "P8"
+          ]
+        }
+      ]
+    }
+  ],
+  "synthesis_groups": [
+    {
+      "name": "可训练参数与结构改动",
+      "question_answered": "不同 PEFT 方法在参数规模和结构修改上的差异如何？",
+      "included_sources": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7",
+        "P8",
+        "P9",
+        "P10",
+        "P12"
+      ],
+      "consensus": [
+        {
+          "finding": "LoRA 和 Adapter 是目前最主流且性能最稳定的重参数化和加性方法，可训练参数通常在 0.3% - 2.5% 之间。",
+          "support": [
+            "P1",
+            "P2",
+            "P6"
+          ],
+          "strength": "high",
+          "boundary": "适用于大多数 Transformer 架构（T5, LLaMA, BERT）"
+        },
+        {
+          "finding": "Prompt Tuning 和 Prefix Tuning 的参数量极低（<0.5%），但结构改动最小（仅修改输入/输出）。",
+          "support": [
+            "P2",
+            "P6"
+          ],
+          "strength": "high",
+          "boundary": "在零样本/少样本场景下表现优异，但在全微调基线上收敛较慢且不稳定"
+        },
+        {
+          "finding": "Adapter 方法通过增加数据流路径，在推理时引入了显著的延迟开销。",
+          "support": [
+            "P1",
+            "P6"
+          ],
+          "strength": "high",
+          "boundary": "在实时性要求高的场景中需权衡性能与速度"
+        }
+      ],
+      "disagreements": [],
+      "heterogeneity": [
+        {
+          "finding": "AdaMix 通过混合适配器在 GLUE 上超越了全微调，而 P1 指出 LoRA 仅能达到全微调性能。",
+          "support": [
+            "P1",
+            "P10"
+          ],
+          "strength": "moderate",
+          "boundary": "AdaMix 的优势依赖于特定的路由策略和任务（如 GLUE），并非普适"
+        }
+      ],
+      "boundary": "结构改动程度从最小（Prompt Tuning）到最大（Adapter 插入层）不等。"
+    },
+    {
+      "name": "性能证据与任务适用性",
+      "question_answered": "PEFT 方法在不同任务上的性能表现如何？",
+      "included_sources": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7",
+        "P9",
+        "P10",
+        "P11",
+        "P12"
+      ],
+      "consensus": [
+        {
+          "finding": "LoRA 和 Houlsby Adapter 是唯一能一致达到全微调性能且无需复杂超参调优的方法。",
+          "support": [
+            "P1",
+            "P6"
+          ],
+          "strength": "high",
+          "boundary": "在 NLU 和 NLG 任务上表现一致"
+        },
+        {
+          "finding": "小规模 LLM（如 LLaMA-13B）结合 PEFT 可以在特定推理任务（如算术、常识）上超越大规模 GPT-3.5。",
+          "support": [
+            "P3"
+          ],
+          "strength": "moderate",
+          "boundary": "依赖于特定的任务类型和模型配置"
+        },
+        {
+          "finding": "在联邦学习场景下，PEFT 方法（如 FedPETuning）能有效降低通信开销并防御梯度反演攻击。",
+          "support": [
+            "P11"
+          ],
+          "strength": "high",
+          "boundary": "在数据非独立同分布（Non-IID）场景下性能可能下降"
+        }
+      ],
+      "disagreements": [],
+      "heterogeneity": [
+        {
+          "finding": "GLoRA 在 VTAB-1K 和 ImageNet 上显著优于标准 LoRA，缩小了与全微调的差距。",
+          "support": [
+            "P9"
+          ],
+          "strength": "high",
+          "boundary": "需要额外的训练时间（超网训练）"
+        },
+        {
+          "finding": "QLoRA 训练的模型（如 Guanaco）在人类评估中接近 ChatGPT，但在数学任务上表现较弱。",
+          "support": [
+            "P5"
+          ],
+          "strength": "high",
+          "boundary": "性能评估受 GPT-4 评估偏差影响"
+        }
+      ],
+      "boundary": "PEFT 方法在通用 NLU/NLG 任务上表现优异，但在复杂数学推理和多模态对齐任务上仍存在挑战。"
+    },
+    {
+      "name": "训练与推理成本",
+      "question_answered": "PEFT 方法在计算资源和时间成本上的表现如何？",
+      "included_sources": [
+        "P1",
+        "P2",
+        "P4",
+        "P5",
+        "P6",
+        "P8",
+        "P9",
+        "P10",
+        "P12"
+      ],
+      "consensus": [
+        {
+          "finding": "PEFT 方法能显著节省 GPU 内存，小批量下可节省 3/4，大批量下可节省 1/2 - 1/3。",
+          "support": [
+            "P1",
+            "P2"
+          ],
+          "strength": "high",
+          "boundary": "节省幅度取决于批量大小"
+        },
+        {
+          "finding": "QLoRA 通过 4-bit 量化将 65B 模型的训练内存需求降低至 <48GB，使得单卡训练成为可能。",
+          "support": [
+            "P5"
+          ],
+          "strength": "high",
+          "boundary": "量化过程增加了计算开销"
+        },
+        {
+          "finding": "LoRA 的训练速度通常快于全微调，但未合并参数时的推理速度较慢。",
+          "support": [
+            "P1",
+            "P6"
+          ],
+          "strength": "high",
+          "boundary": "对于极小模型（<1B），PEFT 可能因开销导致训练变慢"
+        }
+      ],
+      "disagreements": [],
+      "heterogeneity": [
+        {
+          "finding": "AdaMix 和 GLoRA 等高级方法虽然性能更好，但需要额外的训练步骤（如进化搜索、超网训练），导致总训练时间增加。",
+          "support": [
+            "P9",
+            "P10"
+          ],
+          "strength": "moderate",
+          "boundary": "以时间换性能"
+        }
+      ],
+      "boundary": "PEFT 在训练阶段显著降低内存和计算需求，但在推理阶段（尤其是未合并的 LoRA 或 Adapter）可能引入延迟。"
+    },
+    {
+      "name": "复现性与有效性",
+      "question_answered": "现有 PEFT 方法的复现性和证据强度如何？",
+      "included_sources": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7",
+        "P8",
+        "P9",
+        "P10",
+        "P11",
+        "P12"
+      ],
+      "consensus": [
+        {
+          "finding": "大多数主流 PEFT 方法（LoRA, Adapter, QLoRA, LLaMA-Adapter）都提供了开源代码和数据集。",
+          "support": [
+            "P1",
+            "P3",
+            "P4",
+            "P5",
+            "P9",
+            "P10",
+            "P11"
+          ],
+          "strength": "high",
+          "boundary": "部分综述性论文（如 P7, P8）代码可用性为 partial"
+        },
+        {
+          "finding": "Prompt Tuning 的性能高度依赖于随机种子，方差较大。",
+          "support": [
+            "P6"
+          ],
+          "strength": "high",
+          "boundary": "需要多次运行取平均"
+        }
+      ],
+      "disagreements": [],
+      "heterogeneity": [
+        {
+          "finding": "P5 指出 GPT-4 评估系统存在顺序效应和自评偏差，导致模型性能评估可能被高估。",
+          "support": [
+            "P5"
+          ],
+          "strength": "moderate",
+          "boundary": "需要结合人类评估进行验证"
+        }
+      ],
+      "boundary": "PEFT 方法整体具有较高的可复现性，但 Prompt Tuning 等方法存在较高的方差，需要谨慎解读结果。"
+    }
+  ],
+  "cross_study_comparability": [
+    {
+      "comparison": "LoRA vs Adapter vs Prompt Tuning",
+      "analysis": "LoRA 在参数效率和推理速度上优于 Adapter，且性能与 Adapter 相当；Prompt Tuning 参数最少，但在全微调基线上收敛慢且不稳定。",
+      "sources": [
+        "P1",
+        "P2",
+        "P6"
+      ],
+      "boundary": "Prompt Tuning 在零样本场景下优于 Adapter/LoRA，但在全微调场景下表现不如两者。"
+    },
+    {
+      "comparison": "Full Fine-tuning vs PEFT",
+      "analysis": "在标准 NLU/NLG 任务上，LoRA 和 Adapter 能达到与全微调一致的性能；但在特定任务（如 GLUE 上的 AdaMix）或特定场景（如联邦学习）下，PEFT 可能超越全微调。",
+      "sources": [
+        "P1",
+        "P6",
+        "P10",
+        "P11"
+      ],
+      "boundary": "PEFT 的性能优势通常伴随着计算资源的节省，而非单纯的性能提升。"
+    },
+    {
+      "comparison": "Standard LoRA vs Advanced PEFT (GLoRA, AdaMix)",
+      "analysis": "Advanced PEFT 方法通过更复杂的机制（如进化搜索、混合路由）在特定数据集上提升了性能，但增加了训练复杂度和时间。",
+      "sources": [
+        "P9",
+        "P10"
+      ],
+      "boundary": "对于资源受限或追求快速迭代的场景，标准 LoRA 仍是首选；对于追求极致性能的场景，可考虑高级方法。"
+    }
+  ],
+  "evidence_gaps": [
+    "缺乏标准化的 PEFT 基准测试集来公平比较不同方法 (P6)。",
+    "HETLORA 等针对联邦学习的 PEFT 方法的理论收敛性和泛化性尚未得到充分证明 (P12)。",
+    "PEFT 方法在复杂多模态任务（如视频理解）中的适用性和性能表现仍需更多研究 (P7, P8)。",
+    "Prompt Tuning 和 Prefix Tuning 在不同模型规模下的性能表现差异及其收敛机制仍需深入分析 (P6)。",
+    "PEFT 方法在对抗性攻击下的鲁棒性研究相对较少 (P7, P8)。",
+    "量化 PEFT 方法（如 QLoRA）在极端资源受限设备上的实际部署挑战和性能权衡研究不足。"
+  ],
+  "claims": [
+    {
+      "claim_id": "C1",
+      "claim": "LoRA 和 Houlsby Adapter 是目前最主流且性能最稳定的 PEFT 方法，能在极低参数量（<1%）下达到全微调性能。",
+      "support": [
+        "P1",
+        "P2",
+        "P6"
+      ],
+      "strength": "high",
+      "boundary": "适用于大多数 Transformer 架构，在 NLU/NLG 任务上表现一致。"
+    },
+    {
+      "claim_id": "C2",
+      "claim": "PEFT 方法通过减少可训练参数和内存占用，显著降低了大模型微调的计算成本，使得单卡训练 65B 模型成为可能。",
+      "support": [
+        "P1",
+        "P2",
+        "P5"
+      ],
+      "strength": "high",
+      "boundary": "内存节省幅度取决于批量大小和量化技术。"
+    },
+    {
+      "claim_id": "C3",
+      "claim": "Prompt Tuning 在零样本/少样本场景下表现优异，但在全微调基线上收敛慢且性能不稳定。",
+      "support": [
+        "P2",
+        "P6"
+      ],
+      "strength": "high",
+      "boundary": "性能高度依赖随机种子和超参数。"
+    },
+    {
+      "claim_id": "C4",
+      "claim": "在联邦学习和异构设备场景下，PEFT 方法（如 HETLORA）能有效解决通信瓶颈和资源异构问题。",
+      "support": [
+        "P11",
+        "P12"
+      ],
+      "strength": "high",
+      "boundary": "在数据非独立同分布场景下性能可能下降。"
+    }
+  ],
+  "recommended_outline": [
+    "1. 引言：PEFT 的定义、动机与分类框架（加性、重参数化、混合、量化）。",
+    "2. 结构与参数效率：详细分析 Adapter, LoRA, Prompt Tuning 等方法的参数规模与结构改动机制。",
+    "3. 性能评估：对比 PEFT 与全微调在 NLU/NLG、推理任务及特定场景（如联邦学习）下的表现。",
+    "4. 计算成本分析：深入探讨 GPU 内存节省、训练速度、推理延迟及量化技术（如 QLoRA）的影响。",
+    "5. 先进方法与趋势：综述 GLoRA, AdaMix 等高级 PEFT 方法及其在性能上的突破。",
+    "6. 复现性与局限性：讨论代码可用性、评估偏差及 Prompt Tuning 的方差问题。",
+    "7. 结论与未来方向：总结 PEFT 的技术谱系，指出标准化基准和理论研究的不足。"
+  ]
+}

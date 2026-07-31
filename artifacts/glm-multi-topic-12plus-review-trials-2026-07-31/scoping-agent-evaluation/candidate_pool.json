@@ -1,0 +1,389 @@
+[
+  {
+    "paper_id": "W4393065402",
+    "title": "A survey on large language model based autonomous agents",
+    "authors": "Lei Wang, Chen Ma, Xueyang Feng, Zeyu Zhang, Hao Yang, Jingsen Zhang, Zhiyuan Chen, Jiakai Tang, Xu Chen, Yankai Lin, Wayne Xin Zhao, Zhewei Wei, Ji-Rong Wen",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1007/s11704-024-40231-1",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Autonomous agents have long been a research focus in academic and industry communities. Previous research often focuses"
+  },
+  {
+    "paper_id": "2303.18223",
+    "title": "A Survey of Large Language Models",
+    "authors": "Wayne Xin Zhao, Kun Zhou, Junyi Li, Tianyi Tang, Zican Dong, Yupeng Hou, Beichen Zhang, Yingqian Min, Junjie Zhang, Peiyu Liu, Xiaolei Wang, Yifan Du, Yushuo Chen, Yushuo Chen, Zhipeng Chen, Jinhao Jiang, Ruiyang Ren, Yifan Li, Xinyu Tang, Peiyu Liu, Yiwen Hu, Jian‐Yun Nie, Ji-Rong Wen",
+    "year": 2026,
+    "source_url": "https://arxiv.org/abs/2303.18223",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract The rapid evolution of large language models (LLMs) has driven a transformative shift in artificial intelligence (AI),"
+  },
+  {
+    "paper_id": "W4396723768",
+    "title": "Augmenting large language models with chemistry tools",
+    "authors": "Andres M. Bran, Sam Cox, Oliver Schilter, Carlo Baldassari, Andrew Dickson White, Philippe Schwaller",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1038/s42256-024-00832-8",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) have shown strong performance in tasks across domains but struggle with chemistry-related problems. These"
+  },
+  {
+    "paper_id": "2204.14198",
+    "title": "Flamingo: a Visual Language Model for Few-Shot Learning",
+    "authors": "Alayrac, Jean-Baptiste, Jeff Donahue, Pauline Luc, Antoine Miech, Iain Barr, Yana Hasson, Karel Lenc, Arthur Mensch, Katie Millican, Malcolm Reynolds, Roman Ring, Eliza Rutherford, Serkan Cabi, Tengda Han, Zhitao Gong, Sina Samangooei, Marianne Monteiro, Jacob Menick, Sebastian Borgeaud, Andrew Brock, Aida Nematzadeh, Sahand Sharifzadeh, Mikołaj Bińkowski, Ricardo Barreira, Oriol Vinyals, Andrew Zisserman, Karen Simonyan",
+    "year": 2022,
+    "source_url": "https://arxiv.org/abs/2204.14198",
+    "abstract_available": true,
+    "abstract_excerpt": "Building models that can be rapidly adapted to novel tasks using only a handful of annotated examples is"
+  },
+  {
+    "paper_id": "1207.4708",
+    "title": "The Arcade Learning Environment: An Evaluation Platform for General Agents",
+    "authors": "M. G. Bellemare, Y. Naddaf, J. Veness, M. Bowling",
+    "year": 2013,
+    "source_url": "https://arxiv.org/abs/1207.4708",
+    "abstract_available": true,
+    "abstract_excerpt": "In this article we introduce the Arcade Learning Environment (ALE): both a challenge problem and a platform and"
+  },
+  {
+    "paper_id": "W4387835442",
+    "title": "Generative Agents: Interactive Simulacra of Human Behavior",
+    "authors": "Joon Sung Park, Joseph O’Brien, Carrie J. Cai, Meredith Ringel Morris, Percy Liang, Michael S. Bernstein",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1145/3586183.3606763",
+    "abstract_available": true,
+    "abstract_excerpt": "Believable proxies of human behavior can empower interactive applications ranging from immersive environments to rehearsal spaces for interpersonal"
+  },
+  {
+    "paper_id": "2312.10997",
+    "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+    "authors": "Yunfan Gao, Yun Xiong, Xinyu Gao, Kangxiang Jia, Jinliu Pan, Yuxi Bi, Yi Dai, Jiawei Sun, Wang, Meng, Wang, Haofen",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2312.10997",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) showcase impressive capabilities but encounter challenges like hallucination, outdated knowledge, and non-transparent, untraceable reasoning"
+  },
+  {
+    "paper_id": "2501.12948",
+    "title": "Can Open Large Language Models Catch Vulnerabilities?",
+    "authors": "DeepSeek-AI, Guo, Daya, Yang, Dejian, Zhang, Haowei, Junxiao Song, Wang, Peiyi, Qihao Zhu, Runxin Xu, Ruoyu Zhang, Shirong Ma, Xiao Bi, Xiaokang Zhang, Xingkai Yu, Yu Wu, Zhenhua Wu, Zhibin Gou, Zhihong Shao, Zhuoshu Li, Ziyi Gao, Aixin Liu, Bing Xue, Bingxuan Wang, Bowen Wu, Bei Feng, Chengda Lu, Chenggang Zhao, Chengqi Deng, Chenyu Zhang, Chong Ruan, Damai Dai, Deli Chen, Dongjie Ji, Erhang Li, Fangyun Lin, Dai, Fucong, Fuli Luo, Guangbo Hao, Guan-Ting Chen, Guowei Li, Hongjun Zhang, Han Bao, Hanwei Xu, Haocheng Wang, Honghui Ding, Huajian Xin, Huazuo Gao, Hui Qu, Hui Li, Jianzhong Guo, Jiashi Li, Jiawei Wang, Jingchang Chen, Jingyang Yuan, Junjie Qiu, Junlong Li, Jiali Cai, Jiaqi Ni, Jian Liang, Jing Chen, Kai Dong, Kai Hu, Kaige Gao, Kang Guan, Kexin Huang, Kuai Yu, Lean Wang, Lecong Zhang, Liang Zhao, Litong Wang, Liyue Zhang, Lei Xu, L. Xia, Mingchuan Zhang, Minghua Zhang, Minghui Tang, Meng Li, Miaojun Wang, Mingming Li, Ning Tian, Panpan Huang, Peng Zhang, Qiancheng Wang, Qinyu Chen, Qiushi Du, Ruiqi Ge, Ruisong Zhang, Pan, Ruizhe, Runji Wang, R. J. Chen, Rong Jin, Ruyi Chen, Shanghao Lu, Shangyan Zhou, Shanhuang Chen, Shengfeng Ye, Shiyu Wang, Shuiping Yu, Shunfeng Zhou, Shuting Pan, Sansan Li",
+    "year": 2025,
+    "source_url": "https://arxiv.org/abs/2501.12948",
+    "abstract_available": true,
+    "abstract_excerpt": "As Large Language Models (LLMs) become increasingly integrated into secure software development workflows, a critical question remains unanswered:"
+  },
+  {
+    "paper_id": "W1552847225",
+    "title": "DBpedia – A large-scale, multilingual knowledge base extracted from Wikipedia",
+    "authors": "Jens Lehmann, Robert Isele, Max Jakob, Anja Jentzsch, Dimitris Kontokostas, Pablo N. Mendes, Sebastian Hellmann, Mohamed Morsey, Patrick van Kleef, Sören Auer, Christian Bizer",
+    "year": 2015,
+    "source_url": "https://doi.org/10.3233/sw-140134",
+    "abstract_available": true,
+    "abstract_excerpt": "The DBpedia community project extracts structured, multilingual knowledge from Wikipedia and makes it freely available on the Web"
+  },
+  {
+    "paper_id": "1906.05113",
+    "title": "A Survey of Autonomous Driving: <i>Common Practices and Emerging Technologies</i>",
+    "authors": "Ekim Yurtsever, Jacob Lambert, Alexander Carballo, Kazuya Takeda",
+    "year": 2020,
+    "source_url": "https://arxiv.org/abs/1906.05113",
+    "abstract_available": true,
+    "abstract_excerpt": "Automated driving systems (ADSs) promise a safe, comfortable and efficient driving experience. However, fatalities involving vehicles equipped with"
+  },
+  {
+    "paper_id": "2307.06435",
+    "title": "A Comprehensive Overview of Large Language Models",
+    "authors": "Humza Naveed, Asad Ullah Khan, Shi Qiu, Muhammad Saqib, Saeed Anwar, Muhammad Usman, Akhtar, Naveed, Nick Barnes, Ajmal Mian",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2307.06435",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) have recently demonstrated remarkable capabilities in natural language processing tasks and beyond. This success"
+  },
+  {
+    "paper_id": "2307.03109",
+    "title": "A Survey on Evaluation of Large Language Models",
+    "authors": "Yupeng Chang, Xu Wang, Jindong Wang, Yuan-Hsuan Wu, Linyi Yang, Kaijie Zhu, Hao Chen, Xiaoyuan Yi, Cunxiang Wang, Yidong Wang, Wei Ye, Yue Zhang, Yi Chang, Philip S. Yu, Qiang Yang, Xing Xie",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2307.03109",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) are gaining increasing popularity in both academia and industry, owing to their unprecedented performance"
+  },
+  {
+    "paper_id": "2308.11432",
+    "title": "A Survey on Large Language Model based Autonomous Agents",
+    "authors": "Lei Wang, Chen Ma, Xueyang Feng, Zeyu Zhang, Hao Yang, Jingsen Zhang, Zhiyuan Chen, Jiakai Tang, Xu Chen, Yankai Lin, Wayne Xin Zhao, Zhewei Wei, Ji-Rong Wen",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2308.11432",
+    "abstract_available": true,
+    "abstract_excerpt": "Autonomous agents have long been a prominent research focus in both academic and industry communities. Previous research in"
+  },
+  {
+    "paper_id": "2309.07864",
+    "title": "The Rise and Potential of Large Language Model Based Agents: A Survey",
+    "authors": "Zhiheng Xi, Wen-Xiang Chen, Xin Guo, Wei He, Yiwen Ding, Boyang Hong, Ming Zhang, Junzhe Wang, Senjie Jin, Enyu Zhou, Rui Zheng, Xiaoran Fan, Xiao Wang, Limao Xiong, Yuhao Zhou, Weiran Wang, Changhao Jiang, Yicheng Zou, Xiangyang Liu, Zhangyue Yin, Shihan Dou, Rongxiang Weng, Wensen Cheng, Qi Zhang, Wenjuan Qin, Yongyan Zheng, Xipeng Qiu, Huang, Xuanjing, Tao Gui",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2309.07864",
+    "abstract_available": true,
+    "abstract_excerpt": "For a long time, humanity has pursued artificial intelligence (AI) equivalent to or surpassing the human level, with"
+  },
+  {
+    "paper_id": "W4393867901",
+    "title": "Evaluating large language models as agents in the clinic",
+    "authors": "Nikita Mehandru, Brenda Y. Miao, Eduardo Rodriguez Almaraz, Madhumita Sushil, Atul J. Butte, Ahmed M. Alaa",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1038/s41746-024-01083-y",
+    "abstract_available": true,
+    "abstract_excerpt": "Recent developments in large language models (LLMs) have unlocked opportunities for healthcare, from information synthesis to clinical decision"
+  },
+  {
+    "paper_id": "W4402901320",
+    "title": "Large language models empowered agent-based modeling and simulation: a survey and perspectives",
+    "authors": "Chen Gao, Xiaochong Lan, Nian Li, Yuan Yuan, Jingtao Ding, Zhilun Zhou, Fengli Xu, Yong Li",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1057/s41599-024-03611-3",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Agent-based modeling and simulation have evolved as a powerful tool for modeling complex systems, offering insights into"
+  },
+  {
+    "paper_id": "W4389727268",
+    "title": "Mathematical discoveries from program search with large language models",
+    "authors": "Bernardino Romera‐Paredes, Mohammadamin Barekatain, Alexander Novikov, Matej Balog, Manish Kumar, Emilien Dupont, Francisco J. R. Ruiz, Jordan S. Ellenberg, Pengming Wang, Omar Fawzi, Pushmeet Kohli, Alhussein Fawzi",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1038/s41586-023-06924-6",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Large language models (LLMs) have demonstrated tremendous capabilities in solving complex tasks, from quantitative reasoning to understanding"
+  },
+  {
+    "paper_id": "2402.06196",
+    "title": "Large Language Models: A Survey",
+    "authors": "Shervin Minaee, Tomas Mikolov, Nikzad, Narjes, Meysam Chenaghlu, Richard Socher, Xavier Amatriain, Jianfeng Gao",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2402.06196",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) have drawn a lot of attention due to their strong performance on a wide"
+  },
+  {
+    "paper_id": "W4406152263",
+    "title": "The TRIPOD-LLM reporting guideline for studies using large language models",
+    "authors": "Jack Gallifant, Majid Afshar, Saleem Ameen, Yindalon Aphinyanaphongs, Shan Chen, Giovanni Cacciamani, Dina Demner‐Fushman, Dmitriy Dligach, Roxana Daneshjou, Chrystinne Oliveira Fernandes, Lasse Hyldig Hansen, Adam Landman, Lisa Soleymani Lehmann, Liam G. McCoy, Timothy A. Miller, Amy C. Moreno, Nikolaj Munch, David Restrepo, Guergana Savova, Renato Umeton, Judy Wawira Gichoya, Professor Gary S. Collins, Karel G.M. Moons, Leo Anthony Celi, Danielle S. Bitterman",
+    "year": 2025,
+    "source_url": "https://doi.org/10.1038/s41591-024-03425-5",
+    "abstract_available": false,
+    "abstract_excerpt": ""
+  },
+  {
+    "paper_id": "W4389518608",
+    "title": "API-Bank: A Comprehensive Benchmark for Tool-Augmented LLMs",
+    "authors": "Minghao Li, Yingxiu Zhao, Bowen Yu, Feifan Song, Hangyu Li, Haiyang Yu, Zhoujun Li, Fei Huang, Yongbin Li",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.187",
+    "abstract_available": true,
+    "abstract_excerpt": "Recent research has demonstrated that Large Language Models (LLMs) can enhance their capabilities by utilizing external tools. However,"
+  },
+  {
+    "paper_id": "W4413801638",
+    "title": "MedAgentBench: A Virtual EHR Environment to Benchmark Medical LLM Agents",
+    "authors": "Yixing Jiang, Kameron Collin Black, Gloria Geng, Dae-Gyun Park, James Zou, Andrew Y. Ng, Jonathan H. Chen",
+    "year": 2025,
+    "source_url": "https://doi.org/10.1056/aidbp2500144",
+    "abstract_available": true,
+    "abstract_excerpt": "BACKGROUND Recent large language models (LLMs) have demonstrated significant advancements, particularly in their ability to serve as agents,"
+  },
+  {
+    "paper_id": "2507.21504",
+    "title": "Evaluation and Benchmarking of LLM Agents: A Survey",
+    "authors": "Mahmoud Mohammadi, Yipeng Li, Jane C. Lo, Wendy Yip",
+    "year": 2025,
+    "source_url": "https://arxiv.org/abs/2507.21504",
+    "abstract_available": true,
+    "abstract_excerpt": "The rise of LLM-based agents has opened new frontiers in AI applications, yet evaluating these agents remains a"
+  },
+  {
+    "paper_id": "W4411700982",
+    "title": "LLM-Based Agents for Tool Learning: A Survey",
+    "authors": "Weikai Xu, Chengrui Huang, Shen Gao, Shuo Shang",
+    "year": 2025,
+    "source_url": "https://doi.org/10.1007/s41019-025-00296-9",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Human beings capable of making and using tools can accomplish tasks far beyond their innate abilities, and"
+  },
+  {
+    "paper_id": "W4392503764",
+    "title": "Mental-LLM",
+    "authors": "Xuhai Xu, Bingsheng Yao, Yuanzhe Dong, Saadia Gabriel, Hong Yu, James Hendler, Marzyeh Ghassemi, Anind K. Dey, Dakuo Wang",
+    "year": 2024,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/11806945",
+    "abstract_available": true,
+    "abstract_excerpt": "Advances in large language models (LLMs) have empowered a variety of applications. However, there is still a significant"
+  },
+  {
+    "paper_id": "W4393160747",
+    "title": "ExpeL: LLM Agents Are Experiential Learners",
+    "authors": "Andrew Zhao, Daniel Huang, Quentin Xu, Matthieu Gaetan Lin, Yong‐Jin Liu, Gao Huang",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1609/aaai.v38i17.29936",
+    "abstract_available": true,
+    "abstract_excerpt": "The recent surge in research interest in applying large language models (LLMs) to decision-making tasks has flourished by"
+  },
+  {
+    "paper_id": "2303.08774",
+    "title": "GPT-4 Technical Report",
+    "authors": "OpenAI, Achiam, Josh, Adler, Steven, Agarwal, Sandhini, Ahmad, Lama, Akkaya, Ilge, Aleman, Florencia Leoni, Almeida, Diogo, Altenschmidt, Janko, Altman, Sam, Anadkat, Shyamal, Avila, Red, Babuschkin, Igor, Balaji, Suchir, Balcom, Valerie, Baltescu, Paul, Bao, Haiming, Bavarian, Mohammad, Belgum, Jeff, Bello, Irwan, Berdine, Jake, Bernadett-Shapiro, Gabriel, Berner, Christopher, Bogdonoff, Lenny, Boiko, Oleg, Boyd, Madelaine, Brakman, Anna-Luisa, Brockman, Greg, Brooks, Tim, Brundage, Miles, Button, Kevin, Cai, Trevor, Campbell, Rosie, Cann, Andrew, Carey, Brittany, Carlson, Chelsea, Carmichael, Rory, Chan, Brooke, Chang, Che, Chantzis, Fotis, Chen, Derek, Chen, Sully, Chen, Ruby, Chen, Jason, Chen, Mark, Chess, Ben, Cho, Chester, Chu, Casey, Chung, Hyung Won, Cummings, Dave, Currier, Jeremiah, Dai, Yunxing, Decareaux, Cory, Degry, Thomas, Deutsch, Noah, Deville, Damien, Dhar, Arka, Dohan, David, Dowling, Steve, Dunning, Sheila, Ecoffet, Adrien, Eleti, Atty, Eloundou, Tyna, Farhi, David, Fedus, Liam, Felix, Niko, Fishman, Simón Posada, Forte, Juston, Fulford, Isabella, Gao, Leo, Georges, Elie, Gibson, Christian, Goel, Vik, Gogineni, Tarun, Goh, Gabriel, Gontijo-Lopes, Rapha, Gordon, Jonathan, Grafstein, Morgan, Gray, Scott, Greene, Ryan, Gross, Joshua, Gu, Shixiang Shane, Guo, Yufei, Hallacy, Chris, Han, Jesse, Harris, Jeff, He, Yuchen, Heaton, Mike, Heidecke, Johannes, Hesse, Chris, Hickey, Alan, Hickey, Wade, Hoeschele, Peter, Houghton, Brandon, Hsu, Kenny, Hu, Shengli, Hu, Xin, Huizinga, Joost, Jain, Shantanu, Jain, Shawn",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2303.08774",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract—Large Language Models (LLMs) suffer from inherent stochasticity, limiting their utility in high-stakes enterprise environments where determinism and"
+  },
+  {
+    "paper_id": "W4401671778",
+    "title": "Large language models (LLMs): survey, technical frameworks, and future challenges",
+    "authors": "Pranjal Kumar",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1007/s10462-024-10888-y",
+    "abstract_available": true,
+    "abstract_excerpt": "Artificial intelligence (AI) has significantly impacted various fields. Large language models (LLMs) like GPT-4, BARD, PaLM, Megatron-Turing NLG,"
+  },
+  {
+    "paper_id": "W4393231265",
+    "title": "Knowledge sharing in manufacturing using LLM-powered tools: user study and model benchmarking",
+    "authors": "Samuel Kernan Freire, Chaofan Wang, Mina Foosherian, Stefan Wellsandt, Santiago Ruiz-Arenas, Evangelos Niforatos",
+    "year": 2024,
+    "source_url": "https://doi.org/10.3389/frai.2024.1293084",
+    "abstract_available": true,
+    "abstract_excerpt": "Recent advances in natural language processing enable more intelligent ways to support knowledge sharing in factories. In manufacturing,"
+  },
+  {
+    "paper_id": "W4408167800",
+    "title": "Generative AI and LLMs for Critical Infrastructure Protection: Evaluation Benchmarks, Agentic AI, Challenges, and Opportunities",
+    "authors": "Yagmur Yigit, Mohamed Amine Ferrag, Mohamed Chahine Ghanem, Iqbal H. Sarker, Λέανδρος Μαγλαράς, Christos Chrysoulas, Naghmeh Moradpoor, Norbert Tihanyi, Helge Janicke",
+    "year": 2025,
+    "source_url": "https://doi.org/10.3390/s25061666",
+    "abstract_available": true,
+    "abstract_excerpt": "Critical National Infrastructures (CNIs)-including energy grids, water systems, transportation networks, and communication frameworks-are essential to modern society yet"
+  },
+  {
+    "paper_id": "2303.11366",
+    "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+    "authors": "Noah Shinn, Cassano, Federico, Berman, Edward, Gopinath, Ashwin, Narasimhan, Karthik, Yao, Shunyu",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2303.11366",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) have been increasingly used to interact with external environments (e.g., games, compilers, APIs) as"
+  },
+  {
+    "paper_id": "W4401545735",
+    "title": "Designing Heterogeneous LLM Agents for Financial Sentiment Analysis",
+    "authors": "Frank Xing",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1145/3688399",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) have drastically changed the possible ways to design intelligent systems, shifting the focus from"
+  },
+  {
+    "paper_id": "W4392193191",
+    "title": "Challenges and barriers of using large language models (LLM) such as ChatGPT for diagnostic medicine with a focus on digital pathology – a recent scoping review",
+    "authors": "Ehsan Ullah, Anil V. Parwani, Mirza Mansoor Baig, Rajendra Singh",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1186/s13000-024-01464-7",
+    "abstract_available": true,
+    "abstract_excerpt": "BACKGROUND: The integration of large language models (LLMs) like ChatGPT in diagnostic medicine, with a focus on digital"
+  },
+  {
+    "paper_id": "W4402670135",
+    "title": "MM-LLMs: Recent Advances in MultiModal Large Language Models",
+    "authors": "Duzhen Zhang, Yahan Yu, Jiahua Dong, Chenxing Li, Dan Su, Chenhui Chu, Dong Yu",
+    "year": 2024,
+    "source_url": "https://doi.org/10.18653/v1/2024.findings-acl.738",
+    "abstract_available": false,
+    "abstract_excerpt": ""
+  },
+  {
+    "paper_id": "W4283170666",
+    "title": "Taxonomy of Risks posed by Language Models",
+    "authors": "Laura Weidinger, Jonathan Uesato, Maribeth Rauh, Conor Griffin, Po-Sen Huang, John Mellor, Amelia Glaese, Myra Cheng, Borja Balle, Atoosa Kasirzadeh, Courtney Biles, Sasha Brown, Zac Kenton, Will Hawkins, Tom Stepleton, Abeba Birhane, Lisa Anne Hendricks, Laura Rimell, William Isaac, Julia Haas, Sean Legassick, Geoffrey Irving, Iason Gabriel",
+    "year": 2022,
+    "source_url": "https://doi.org/10.1145/3531146.3533088",
+    "abstract_available": true,
+    "abstract_excerpt": "Responsible innovation on large-scale Language Models (LMs) requires foresight into and in-depth understanding of the risks these models"
+  },
+  {
+    "paper_id": "W2922903482",
+    "title": "Automation and New Tasks: How Technology Displaces and Reinstates Labor",
+    "authors": "Daron Acemoğlu, Pascual Restrepo",
+    "year": 2019,
+    "source_url": "https://doi.org/10.1257/jep.33.2.3",
+    "abstract_available": true,
+    "abstract_excerpt": "We present a framework for understanding the effects of automation and other types of technological changes on labor"
+  },
+  {
+    "paper_id": "W3122161814",
+    "title": "Agent based-stock flow consistent macroeconomics: Towards a benchmark model",
+    "authors": "Alessandro Caiani, Antoine Godin, Eugenio Caverzasi, Mauro Gallegati, Stephen Kinsella, Joseph E. Stiglitz",
+    "year": 2016,
+    "source_url": "https://doi.org/10.1016/j.jedc.2016.06.001",
+    "abstract_available": true,
+    "abstract_excerpt": "The paper moves from a discussion of the challenges posed by the crisis to standard macroeconomics and the"
+  },
+  {
+    "paper_id": "W4389523765",
+    "title": "Is ChatGPT Good at Search? Investigating Large Language Models as Re-Ranking Agents",
+    "authors": "Weiwei Sun, Lingyong Yan, Xinyu Ma, Shuaiqiang Wang, Pengjie Ren, Zhumin Chen, Dawei Yin, Zhaochun Ren",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.923",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) have demonstrated remarkable zero-shot generalization across various language-related tasks, including search engines. However, existing"
+  },
+  {
+    "paper_id": "W3156295478",
+    "title": "Multi-agent deep reinforcement learning: a survey",
+    "authors": "Sven Gronauer, Klaus Diepold",
+    "year": 2021,
+    "source_url": "https://doi.org/10.1007/s10462-021-09996-w",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract The advances in reinforcement learning have recorded sublime success in various domains. Although the multi-agent domain has"
+  },
+  {
+    "paper_id": "W3121342653",
+    "title": "Challenges of real-world reinforcement learning: definitions, benchmarks and analysis",
+    "authors": "Gabriel Dulac-Arnold, Nir Levine, Daniel J. Mankowitz, Jerry Li, Cosmin Păduraru, Sven Gowal, Todd Hester",
+    "year": 2021,
+    "source_url": "https://doi.org/10.1007/s10994-021-05961-4",
+    "abstract_available": false,
+    "abstract_excerpt": ""
+  },
+  {
+    "paper_id": "W4386142022",
+    "title": "Interpreting Black-Box Models: A Review on Explainable Artificial Intelligence",
+    "authors": "Vikas Hassija, Vinay Chamola, Atmesh Mahapatra, Abhinandan Singal, Divyansh Goel, Kaizhu Huang, Simone Scardapane, Indro Spinelli, Mufti Mahmud, Amir Hussain",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1007/s12559-023-10179-8",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Recent years have seen a tremendous growth in Artificial Intelligence (AI)-based methodological development in a broad range"
+  },
+  {
+    "paper_id": "W3130450512",
+    "title": "Benchmarking and survey of explanation methods for black box models",
+    "authors": "Francesco Bodria, Fosca Giannotti, Riccardo Guidotti, Francesca Naretto, Dino Pedreschi, Salvatore Rinzivillo",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1007/s10618-023-00933-9",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract The rise of sophisticated black-box machine learning models in Artificial Intelligence systems has prompted the need for"
+  },
+  {
+    "paper_id": "W4287024925",
+    "title": "Knowledge Engineering Using Large Language Models",
+    "authors": "Freitas, Tiago Carvalho, Costa Neto, Alvaro, Pereira, Maria João Varanda, Henriques, Pedro Rangel",
+    "year": 2023,
+    "source_url": "https://drops.dagstuhl.de/entities/document/10.4230/OASIcs.ICPEC.2023.9",
+    "abstract_available": true,
+    "abstract_excerpt": "Knowledge engineering is a discipline that focuses on the creation and maintenance of processes that generate and apply"
+  },
+  {
+    "paper_id": "1705.08926",
+    "title": "Counterfactual Multi-Agent Policy Gradients",
+    "authors": "Jakob Foerster, Gregory Farquhar, Triantafyllos Afouras, Nantas Nardelli, Shimon Whiteson",
+    "year": 2017,
+    "source_url": "https://arxiv.org/abs/1705.08926",
+    "abstract_available": true,
+    "abstract_excerpt": "Cooperative multi-agent systems can be naturally used to model many real world problems, such as network packet routing"
+  }
+]

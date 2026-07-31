@@ -232,6 +232,7 @@ from backend.routes.agent import router as agent_router
 from backend.routes.admin import router as admin_router
 from backend.routes.exports import router as exports_router
 from backend.routes.repositories import router as repositories_router
+from backend.routes.scientific_review import router as scientific_review_router
 
 app.include_router(pages_router)
 app.include_router(session_router)
@@ -242,6 +243,7 @@ app.include_router(agent_router)
 app.include_router(admin_router)
 app.include_router(exports_router)
 app.include_router(repositories_router)
+app.include_router(scientific_review_router)
 
 
 if __name__ == "__main__":

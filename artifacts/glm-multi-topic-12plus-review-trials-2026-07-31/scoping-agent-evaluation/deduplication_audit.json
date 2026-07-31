@@ -1,0 +1,20 @@
+{
+  "included_record_count": 12,
+  "unique_study_count": 11,
+  "version_linked_record_count": 1,
+  "version_groups": [
+    {
+      "canonical_record": "P4",
+      "linked_record": "P5",
+      "match_basis": [
+        "normalized_title",
+        "authors"
+      ],
+      "relationship": "journal_version_and_preprint",
+      "count_as_unique_studies": 1
+    }
+  ],
+  "interpretation": "P4 and P5 are two publication records of the same underlying survey and must not be treated as independent evidence.",
+  "future_run_status": "fixed",
+  "future_run_change": "Candidate deduplication now uses the normalized full title before DOI or arXiv identifiers, preventing journal/preprint version pairs from entering screening twice."
+}

@@ -17,6 +17,7 @@ from .deps import (
 )
 
 from backend.session_manager import SessionState, STATE_LABELS, VALID_TRANSITIONS
+from backend.scientific_review import ScientificReviewService
 from backend.cloud_persistence import get_workspace_store
 from backend.tenant import get_current_user
 from functools import lru_cache
@@ -238,13 +239,50 @@ def batch_delete_papers(session_id: str, paper_ids: list[str]) -> dict:
 
 class UpdatePaperStatusRequest(BaseModel):
     status: str = "pending"
+    reason_code: str | None = None
+    reason: str = ""
 
 
 @router.put("/{session_id}/papers/{paper_id:path}/status")
 def update_paper_status(session_id: str, paper_id: str, payload: UpdatePaperStatusRequest) -> dict:
     """更新论文审查状态"""
     try:
-        return session_mgr.update_paper_status(session_id, paper_id, payload.status)
+        result = session_mgr.update_paper_status(session_id, paper_id, payload.status)
+        if payload.status in {"accepted", "rejected", "pending"}:
+            service = ScientificReviewService(session_mgr)
+            service.ensure_protocol(session_id, topic=(result or {}).get("topic", ""))
+            if payload.status == "accepted":
+                service.record_screening(
+                    session_id,
+                    paper_id=paper_id,
+                    stage="full_text",
+                    decision="include",
+                    reason=payload.reason or "User selected this paper for the final inclusion set.",
+                    confidence=1.0,
+                    reviewer="human",
+                )
+            elif payload.status == "rejected":
+                service.record_screening(
+                    session_id,
+                    paper_id=paper_id,
+                    stage="full_text",
+                    decision="exclude",
+                    reason_code=payload.reason_code or "other",
+                    reason=payload.reason or "Excluded by the user.",
+                    confidence=1.0,
+                    reviewer="human",
+                )
+            else:
+                service.record_screening(
+                    session_id,
+                    paper_id=paper_id,
+                    stage="full_text",
+                    decision="uncertain",
+                    reason=payload.reason or "Returned to the unresolved screening queue.",
+                    reviewer="human",
+                )
+            result = session_mgr.load_session(session_id)
+        return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -353,7 +391,7 @@ Return:
     # 从删除列表中移除，允许重新添加
     session_mgr.undelete_paper(session_id, clean_id)
 
-    session_papers.append({
+    paper_entry = {
         "paper_id": clean_id,
         "title": paper_title,
         "authors": paper_authors,
@@ -361,10 +399,24 @@ Return:
         "url": paper_url,
         "source": "user_custom",
         "source_type": "arxiv",
-        "status": "accepted",
+        "status": "pending",
+        "screening_stage": "title_abstract",
+        "screening_decision": "uncertain",
         "added_at": datetime.datetime.now().isoformat(),
-    })
+    }
+    session_papers.append(paper_entry)
     session_mgr.save_papers_list(session_id, session_papers)
+    scientific = ScientificReviewService(session_mgr)
+    scientific.ensure_protocol(session_id, topic=session.get("topic", ""))
+    scientific.register_candidate(session_id, paper_entry)
+    scientific.record_screening(
+        session_id,
+        paper_id=clean_id,
+        stage="title_abstract",
+        decision="uncertain",
+        reason="User-added paper requires protocol-based screening.",
+        reviewer="system",
+    )
 
 #    from llms.client import LLMClient
 #    llm = LLMClient()
@@ -523,7 +575,7 @@ PDF 文本片段（前 5 页）：
     # 从删除列表中移除，允许重新添加
     session_mgr.undelete_paper(session_id, clean_id)
 
-    session_papers.append({
+    paper_entry = {
         "paper_id": clean_id,
         "title": paper_title,
         "authors": paper_authors,
@@ -532,10 +584,24 @@ PDF 文本片段（前 5 页）：
         "original_filename": safe_filename,
         "pdf_filename": stored_filename,
         "content_sha256": digest.hexdigest(),
-        "status": "accepted",
+        "status": "pending",
+        "screening_stage": "full_text",
+        "screening_decision": "uncertain",
         "added_at": datetime.datetime.now().isoformat(),
-    })
+    }
+    session_papers.append(paper_entry)
     session_mgr.save_papers_list(session_id, session_papers)
+    scientific = ScientificReviewService(session_mgr)
+    scientific.ensure_protocol(session_id, topic=session.get("topic", ""))
+    scientific.register_candidate(session_id, paper_entry)
+    scientific.record_screening(
+        session_id,
+        paper_id=clean_id,
+        stage="full_text",
+        decision="uncertain",
+        reason="Uploaded full text is available and awaits protocol-based human screening.",
+        reviewer="system",
+    )
 
 #    from llms.client import LLMClient
 #    llm = LLMClient()

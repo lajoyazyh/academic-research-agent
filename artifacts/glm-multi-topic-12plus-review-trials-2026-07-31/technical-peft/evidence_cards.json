@@ -1,0 +1,1235 @@
+[
+  {
+    "citation_id": "P1",
+    "study_or_article_type": "Analysis",
+    "research_objective": "对参数高效微调（Delta Tuning）方法进行统一分类，并从优化和最优控制理论角度分析其有效性，同时通过大规模实证研究评估其性能、效率及组合特性。",
+    "method_or_framework": "Delta Tuning (Delta Tuning: A Comprehensive Study of Parameter Efficient Methods for Pre-trained Language Models)",
+    "evaluation_scope": {
+      "models_or_population": [
+        "T5BASE",
+        "T5LARGE",
+        "T5XL",
+        "T5SMALL",
+        "T5XXL"
+      ],
+      "tasks_or_contexts": [
+        "Sentiment Analysis (e.g., SST-2, ROTTEN_TOMATOES)",
+        "Emotion Detection (e.g., EMO, TWEET_EVAL-EMOTION)",
+        "Hate Speech Detection (e.g., ETHOS, HATEXPLAIN)",
+        "Natural Language Inference (e.g., GLUE-MNLI, GLUE-QNLI, ANLI)",
+        "Fact Checking (e.g., CLIMATE_FEVER, LIAR)",
+        "Paraphrase Identification (e.g., GLUE-QQP, PAWS)",
+        "Topic Classification (e.g., AG_NEWS)",
+        "Binary Classification (e.g., BOOLQ)",
+        "Closed-book QA (e.g., LAMA, SEARCH_QA)",
+        "Multiple-choice QA (e.g., COSMOS_QA)",
+        "Conditional Generation (e.g., Summarization, Dialogue)"
+      ],
+      "datasets": [
+        "Huggingface datasets (over 100 representative tasks)",
+        "GLUE",
+        "SuperGLUE",
+        "RTE",
+        "SICK",
+        "SciTail"
+      ],
+      "baselines": [
+        "Full Fine-tuning (FT)",
+        "Pre-training (PT)",
+        "Prompt Tuning (PT)",
+        "LoRA (LR)",
+        "Adapter (AP)",
+        "BitFit (BF)"
+      ],
+      "metrics": [
+        "Accuracy (acc)",
+        "F1 Score",
+        "Pearson Correlation (Pear.)",
+        "ROUGE-L"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "Delta Tuning 方法在超过 100 个 NLP 任务上表现出与全参数微调一致且非平凡的性能，证明了其作为全参数微调轻量级替代方案的有效性。",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "在可训练参数比例上，BitFit (0.003%) 效率最高，LoRA (0.38%) 次之，Adapter (2.38%) 再次之，而全参数微调为 100%。",
+        "support_type": "reported_result",
+        "page": 3
+      },
+      {
+        "finding": "Delta Tuning 方法在内存效率上表现优异，在小批量（如 1 和 8）下可节省高达 3/4 的 GPU 内存，在大批量（如 32 和 64）下可节省约 1/2 到 1/3 的 GPU 内存。",
+        "support_type": "reported_result",
+        "page": 10
+      },
+      {
+        "finding": "Delta Tuning 的训练速度通常快于全参数微调，因为减少了可训练参数的梯度计算量；但 Adapter 由于增加了数据流路径，推理延迟可能增加。",
+        "support_type": "reported_result",
+        "page": 10
+      },
+      {
+        "finding": "不同 Delta Tuning 方法之间具有兼容性，可以同时或顺序组合使用；组合通常能带来额外收益，但最优组合因设置而异。",
+        "support_type": "reported_result",
+        "page": 11
+      },
+      {
+        "finding": "随着模型规模（T5SMALL 到 T5XXL）的增大，Delta Tuning 方法的收敛速度加快，性能提升，体现了“规模效应”。",
+        "support_type": "reported_result",
+        "page": 11
+      },
+      {
+        "finding": "Delta Tuning 方法在零样本迁移任务上表现出一定的可迁移性，但迁移效果取决于源任务和目标任务之间的相似性。",
+        "support_type": "reported_result",
+        "page": 11
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "可训练参数比例",
+        "value": "BitFit: 0.003%, LoRA: 0.38%, Adapter: 2.38%, Full FT: 100%",
+        "page": 3
+      },
+      {
+        "aspect": "GPU 内存节省",
+        "value": "小批量下节省 3/4 内存，大批量下节省 1/2-1/3 内存",
+        "page": 10
+      },
+      {
+        "aspect": "训练时间",
+        "value": "Delta Tuning 的反向传播时间短于全参数微调；Adapter 的前向传播时间可能较长",
+        "page": 10
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": "报告了多个随机种子下的平均结果",
+      "ablation_or_sensitivity": "研究了不同组合、不同学习率、不同批量大小的影响",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Delta Tuning 的收敛速度通常慢于全参数微调",
+      "Adapter 方法由于增加了结构，可能引入推理延迟",
+      "Prompt Tuning 在与 Adapter 或 BitFit 组合时可能损害性能",
+      "手动模板在数据充足时可能仅带来边际改进甚至损害性能"
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4322766882",
+    "title": "Parameter-efficient fine-tuning of large-scale pre-trained language models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P2",
+    "study_or_article_type": "Review",
+    "research_objective": "对参数高效微调方法进行系统性综述，提出统一的分类框架（基于加法、指定和重参数化），并从优化和最优控制理论角度解释其机制，同时通过实证研究分析性能、组合、规模效应和任务迁移性。",
+    "method_or_framework": "Delta Tuning (Delta Tuning: A Comprehensive Study of Parameter Efficient Methods for Pre-trained Language Models)",
+    "evaluation_scope": {
+      "models_or_population": [
+        "T5BASE",
+        "T5LARGE",
+        "RoBERTaLARGE"
+      ],
+      "tasks_or_contexts": [
+        "Sentiment Analysis",
+        "Natural Language Inference",
+        "Paraphrase Identification",
+        "Question Answering",
+        "Summarization"
+      ],
+      "datasets": [
+        "GLUE",
+        "SuperGLUE",
+        "RTE",
+        "SICK",
+        "SciTail",
+        "Rotten Tomatoes",
+        "QQP",
+        "MRPC",
+        "STS-B",
+        "MNLI",
+        "QNLI",
+        "TREC",
+        "TREC-Finegrained",
+        "Tweet Eval",
+        "ETHOS",
+        "HATEXPLAIN",
+        "Climate Fever",
+        "Liar",
+        "Medical Questions Pairs",
+        "AG News",
+        "BoolQ",
+        "ADE Corpus",
+        "Discovery",
+        "CoLA",
+        "SMS Spam",
+        "WIC",
+        "Wiki QA",
+        "CIRCA",
+        "OneStop English",
+        "Freebase QA",
+        "LAMA",
+        "Numer Sense",
+        "Search QA",
+        "Web Questions",
+        "Hotpot QA",
+        "Cosmos QA",
+        "Dream",
+        "Hellaswag",
+        "OpenBookQA",
+        "Quarel",
+        "Quartz",
+        "Race",
+        "SuperGLUE-COPA",
+        "SWAG",
+        "WinoGrande",
+        "ELI5",
+        "Multi-News",
+        "SAMSum",
+        "XSum",
+        "Spider",
+        "Wiki Bio",
+        "Wiki Split",
+        "BLIMP",
+        "CoS-E",
+        "Slot Filling",
+        "Entity Linking",
+        "Acronym Identification",
+        "Proto QA"
+      ],
+      "baselines": [
+        "Full Fine-tuning (FT)",
+        "Prompt Tuning (PT)",
+        "LoRA (LR)",
+        "Adapter (AP)",
+        "BitFit (BF)"
+      ],
+      "metrics": [
+        "Accuracy",
+        "F1",
+        "Pearson",
+        "ROUGE-L"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "Delta Tuning 方法在超过 100 个 NLP 任务上取得了与全参数微调相当的性能。",
+        "support_type": "reported_result",
+        "page": 3
+      },
+      {
+        "finding": "提出了统一的分类框架：基于加法的方法（如 Adapter）、基于指定的方法（如 Prompt Tuning）和基于重参数化的方法（如 LoRA）。",
+        "support_type": "author_claim",
+        "page": 4
+      },
+      {
+        "finding": "Adapter 在组合中通常能带来平均性能提升，而 Prompt Tuning 在组合中可能损害性能。",
+        "support_type": "reported_result",
+        "page": 25
+      },
+      {
+        "finding": "BitFit 在组合中通常能改善平均性能。",
+        "support_type": "reported_result",
+        "page": 25
+      },
+      {
+        "finding": "手动模板能显著提高零样本性能（从 23.7 提升到 43.4），并在少样本设置下有助于提升平均性能。",
+        "support_type": "reported_result",
+        "page": 25
+      },
+      {
+        "finding": "Prompt Tuning 在与 Adapter 或 BitFit 组合时总是损害性能，表明其可能不兼容。",
+        "support_type": "reported_result",
+        "page": 25
+      },
+      {
+        "finding": "随着模型规模（T5SMALL 到 T5XXL）的增大，Delta Tuning 方法的性能和收敛速度均提升。",
+        "support_type": "reported_result",
+        "page": 26
+      },
+      {
+        "finding": "Delta Tuning 方法在不同任务间表现出可迁移性，迁移效果取决于任务类型和相似性。",
+        "support_type": "reported_result",
+        "page": 27
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "可训练参数比例",
+        "value": "Adapter: 1.70% (T5SMALL), 1.20% (T5BASE), 0.28% (T5XXL); LoRA: 0.73% (T5SMALL), 0.64% (T5BASE), 0.26% (T5XXL); Prefix-tuning: 0.50% (T5SMALL), 0.47% (T5BASE), 0.11% (T5XXL); Prompt Tuning: 0.06% (T5SMALL), 0.03% (T5BASE), 0.01% (T5XXL); Last Layer Tuning: 6.30% (T5SMALL), 4.20% (T5BASE), 2.10% (T5XXL); Selective Module Tuning: 2.10% (T5SMALL), 4.20% (T5BASE), 2.40% (T5XXL)",
+        "page": 49
+      },
+      {
+        "aspect": "GPU 内存消耗",
+        "value": "T5BASE: 0.9-4.4 GB (Batch 0-32); T5LARGE: 2.8-13.5 GB (Batch 0-32); T5XL: 10.7-48.5 GB (Batch 0-32)",
+        "page": 26
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": "报告了多个随机种子下的平均结果",
+      "ablation_or_sensitivity": "研究了不同组合、不同学习率、不同批量大小的影响",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Delta Tuning 的收敛速度通常慢于全参数微调",
+      "Prompt Tuning 在组合中可能损害性能",
+      "手动模板在数据充足时可能仅带来边际改进甚至损害性能"
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4221145545",
+    "title": "Delta Tuning: A Comprehensive Study of Parameter Efficient Methods for Pre-trained Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P3",
+    "study_or_article_type": "Empirical Study",
+    "research_objective": "To determine the optimal placement and configuration of different PEFT methods (specifically adapters and LoRA) across various LLMs, tasks, and scenarios (ID vs OOD).",
+    "method_or_framework": "LLM-Adapters framework integrating various adapters (Series, Parallel, LoRA, etc.) into LLaMA, BLOOM, and GPT-J. Conducts placement analysis and performance comparison on reasoning tasks.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLaMA (7B, 13B)",
+        "GPT-J (6B)",
+        "BLOOMz (7B)"
+      ],
+      "tasks_or_contexts": [
+        "Arithmetic Reasoning",
+        "Commonsense Reasoning"
+      ],
+      "datasets": [
+        "GSM8K",
+        "SVAMP",
+        "MultiArith",
+        "AddSub",
+        "AQuA",
+        "BoolQ",
+        "SIQA",
+        "WinoGrande",
+        "ARC-e",
+        "ARC-c",
+        "OBQA"
+      ],
+      "baselines": [
+        "ChatGPT",
+        "GPT-3.5 (>175B)"
+      ],
+      "metrics": [
+        "Accuracy"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "Optimal placement for Series Adapter is after MLP layers; Parallel Adapter is parallel with MLP layers; LoRA is located after both Attention and MLP layers simultaneously.",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "Smaller LLMs with PEFT (e.g., LLaMA-13B with LoRA) can outperform larger LLMs (GPT-3.5) on specific tasks like MultiArith, AddSub, and SingleEq.",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "ID fine-tuned LLaMA-13B with adapters outperforms ChatGPT on commonsense reasoning tasks.",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "Placement analysis on GPT-J-6B and BLOOMz-7B confirms Series Adapter is best after MLP, Parallel Adapter best in parallel with MLP, and LoRA best after both Attention and MLP.",
+        "support_type": "reported_result",
+        "page": 12
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "metric": "Trainable Parameters",
+        "value": "Few extra trainable parameters (fewer than 7B)",
+        "page": 1
+      },
+      {
+        "metric": "Model Performance",
+        "value": "Comparable or superior to 175B GPT-3.5 on reasoning tasks with 7B models",
+        "page": 1
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Unable to evaluate larger language models (LLaMA-33B and LLaMA-65B) due to constrained computing resources.",
+      "Does not explore combining different adapters due to extensive search space."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "W4389524317",
+    "title": "LLM-Adapters: An Adapter Family for Parameter-Efficient Fine-Tuning of Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P4",
+    "study_or_article_type": "Methodology Paper",
+    "research_objective": "To propose LLaMA-Adapter, a lightweight adaption method for efficient instruction tuning of LLaMA using a zero-initialized attention mechanism, and verify its effectiveness and generalizability.",
+    "method_or_framework": "LLaMA-Adapter: Inserts learnable adaption prompts into the last L transformer layers of LLaMA and modifies self-attention layers with a learnable zero gating factor to stabilize training.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLaMA 7B",
+        "ViT",
+        "RoBERTa",
+        "CLIP"
+      ],
+      "tasks_or_contexts": [
+        "Instruction Following",
+        "Multi-modal Reasoning"
+      ],
+      "datasets": [
+        "Self-instruct (52K demonstrations)",
+        "MME",
+        "MMBench",
+        "LVLM-eHub",
+        "ScienceQA"
+      ],
+      "baselines": [
+        "Alpaca (fully fine-tuned 7B)",
+        "Alpaca-LoRA",
+        "Vicuna",
+        "LLaMA-I (65B)",
+        "GPT-3"
+      ],
+      "metrics": [
+        "Instruction-following quality",
+        "Multi-modal reasoning benchmarks"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LLaMA-Adapter introduces only 1.2M learnable parameters upon frozen LLaMA 7B, achieving comparable instruction-following proficiency to Alpaca with fully fine-tuned 7B parameters.",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "Training convergence costs less than one hour on 8 A100 GPUs, which is three times faster than Alpaca.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "The zero-initialized attention mechanism stabilizes the training process and progressively injects instructional signals.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "The approach can be generalized to multi-modal LLMs via image encoder and achieves superior multi-modal reasoning capacity.",
+        "support_type": "author_claim",
+        "page": 1
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "metric": "Trainable Parameters",
+        "value": "1.2M parameters",
+        "page": 1
+      },
+      {
+        "metric": "Training Time",
+        "value": "Less than one hour on 8 A100 GPUs",
+        "page": 2
+      },
+      {
+        "metric": "Inference Cost",
+        "value": "Suffices to store 1.8M adapter within each context",
+        "page": 2
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "2303.16199",
+    "title": "LLaMA-Adapter: Efficient Fine-tuning of Language Models with Zero-init Attention",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P5",
+    "study_or_article_type": "Technical Report",
+    "research_objective": "提出 QLORA 方法，通过 4-bit 量化结合 LoRA 实现大模型的高效微调，降低训练与推理成本。",
+    "method_or_framework": "QLoRA (4-bit NormalFloat quantization, Double Quantization, Paged Optimizers)",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLaMA (7B, 13B, 33B, 65B)",
+        "T5"
+      ],
+      "tasks_or_contexts": [
+        "Instruction following",
+        "Chatbot performance",
+        "Vicuna benchmark",
+        "OpenAssistant (OA) benchmark"
+      ],
+      "datasets": [
+        "OASST1",
+        "HH-RLHF",
+        "FLAN v2",
+        "Longform",
+        "Super-Natural Instructions",
+        "Self-Instruct",
+        "Alpaca",
+        "Unnatural Instructions",
+        "Chip2"
+      ],
+      "baselines": [
+        "16-bit full finetuning",
+        "Vicuna models",
+        "ChatGPT-3.5 Turbo",
+        "Bard"
+      ],
+      "metrics": [
+        "Elo ratings",
+        "GPT-4 evaluations",
+        "Human evaluations",
+        "Factual Recall",
+        "Math accuracy",
+        "Theory of Mind"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "QLoRA 将 65B 模型的训练内存需求从 >780GB 降低至 <48GB，且性能不退化。",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "Guanaco 65B 在 Vicuna 基准上达到 99.3% 的 ChatGPT 性能水平。",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "GPT-4 评估存在显著偏差（如顺序效应），且与人类评估者一致性较低。",
+        "support_type": "author_claim",
+        "page": 14
+      },
+      {
+        "finding": "数据集质量比数据集大小对性能影响更大。",
+        "support_type": "reported_result",
+        "page": 24
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "category": "Training Cost",
+        "detail": "65B 模型训练时间 <24 小时（单 GPU）。",
+        "page": 2
+      },
+      {
+        "category": "Inference Cost",
+        "detail": "Guanaco 7B 模型仅需 5GB 内存。",
+        "page": 2
+      },
+      {
+        "category": "Memory Optimization",
+        "detail": "Double Quantization 节省约 3GB 内存；Paged Optimizers 防止内存溢出。",
+        "page": 2
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": "GPT-4 评估中模型排名存在置信区间（±1 Elo），人类评估者一致性较低（Fleiss κ = 0.42）。",
+      "ablation_or_sensitivity": "分析了不同 LoRA r 值、学习率、数据集大小和训练轮次的影响。",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "数学能力较弱，即使步骤正确也可能失败。",
+      "拒绝指令不可靠，容易被简单的提示词欺骗。",
+      "基准测试（如 Vicuna）可能存在数据泄露或偏差。",
+      "GPT-4 评估系统存在顺序效应和自评偏差。"
+    ],
+    "validity_risks": [
+      "GPT-4 评估结果可能高估模型性能（自评 Elo 1348 vs 人类 1176）。",
+      "人类评估者对偏好判断的主观性强，一致性低。",
+      "OASST1 数据集与 Vicuna 基准可能存在重叠（尽管未发现）。"
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [
+      "GPT-4 评估与人类评估的偏好不完全一致。",
+      "模型在复杂推理任务（如数学）中的表现不稳定。"
+    ],
+    "paper_id": "2305.14314",
+    "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P6",
+    "study_or_article_type": "Survey",
+    "research_objective": "系统性综述 PEFT 方法，构建分类框架，并通过实验比较不同方法的性能与效率。",
+    "method_or_framework": "Taxonomy (Addition-based, Selection-based, Reparametrization-based) + Empirical Comparison",
+    "evaluation_scope": {
+      "models_or_population": [
+        "T5-Large",
+        "T5-3B",
+        "T5-11B"
+      ],
+      "tasks_or_contexts": [
+        "Downstream tasks"
+      ],
+      "datasets": [
+        "Collection of datasets (Section 11.1)"
+      ],
+      "baselines": [
+        "Full tuning"
+      ],
+      "metrics": [
+        "Performance scores",
+        "Trainable parameters",
+        "GPU memory consumption",
+        "Throughput (ktok/s)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "Houlsby Adapters 和 LoRA 是唯一能一致达到全微调性能且无需复杂超参调优的方法。",
+        "support_type": "reported_result",
+        "page": 29
+      },
+      {
+        "finding": "Layer Norm Tuning 性能具有竞争力，且实现简单。",
+        "support_type": "reviewer_inference",
+        "page": 30
+      },
+      {
+        "finding": "大多数声称优于 LoRA 的方法在资源受限设置下表现不佳。",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "Prompt Tuning 收敛慢且性能不稳定，Prefix Tuning 在某些设置下优于 Prompt Tuning。",
+        "support_type": "reported_result",
+        "page": 29
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "category": "Memory Efficiency",
+        "detail": "所有 PEFT 方法均显著降低内存消耗（如 Compacter++ 在 T5-11B 上节省 71.5GB）。",
+        "page": 30
+      },
+      {
+        "category": "Training Speed",
+        "detail": "对于小模型（<1B），PEFT 方法可能导致训练速度下降（如 T5-Large LoRA 训练速度降低 20%）。",
+        "page": 31
+      },
+      {
+        "category": "Inference Speed",
+        "detail": "Reparametrization-based methods（如 LoRA）在未合并参数时推理速度较慢。",
+        "page": 32
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": "报告了标准差和置信区间。",
+      "ablation_or_sensitivity": "进行了超参数搜索（学习率）。",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Prompt Tuning 和 Prefix Tuning 收敛慢且不稳定。",
+      "Hybrid methods（如 MAM, UniPELT）难以训练。",
+      "部分方法（如 Prompt Tuning）的可训练参数数量被低估。",
+      "缺乏标准化的 PEFT 基准。"
+    ],
+    "validity_risks": [
+      "Prompt Tuning 的性能严重依赖随机种子（高方差）。",
+      "Hybrid methods 的性能高度依赖超参数调优。"
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [
+      "Prompt Tuning 在不同模型规模下的表现差异。",
+      "不同 PEFT 方法在资源受限环境下的实际适用性。"
+    ],
+    "paper_id": "2303.15647",
+    "title": "Scaling Down to Scale Up: A Guide to Parameter-Efficient Fine-Tuning",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P7",
+    "study_or_article_type": "Survey",
+    "research_objective": "对参数高效微调（PEFT）方法进行全面、系统的回顾和评估，总结其应用，并评估其参数效率和内存效率。",
+    "method_or_framework": "分类法：将PEFT方法分为加性微调、部分微调、重参数化微调、混合微调和统一微调。定量研究：使用代表性PEFT方法进行实验。",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Transformer-based Pretrained Language Models (PLMs)",
+        "Large Language Models (LLMs)"
+      ],
+      "tasks_or_contexts": [
+        "Natural Language Understanding (NLU)",
+        "Machine Translation (MT)",
+        "Natural Language Generation (NLG)",
+        "Multi-task learning",
+        "Cross-lingual transfer",
+        "Backdoor attack and defense"
+      ],
+      "datasets": "未明确指定具体数据集，主要关注通用基准。",
+      "baselines": "Full fine-tuning (全微调)。",
+      "metrics": "Performance (性能), Parameter efficiency (参数效率), Memory usage (内存使用)。",
+      "coverage_role": "评价与复现性"
+    },
+    "main_findings": [
+      {
+        "finding": "PEFT方法通过减少可训练参数和内存使用量，同时实现与全微调相当的性能。",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "提出了一个分类框架，将PEFT方法分为Additive, Partial, Reparameterized, Hybrid, Unified fine-tuning。",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "LoRA及其衍生方法（如DyLoRA, AdaLoRA, QLoRA）在参数效率和性能上表现优异。",
+        "support_type": "reported_result",
+        "page": 10
+      },
+      {
+        "finding": "Hybrid fine-tuning（如MAM Adapter, UniPELT）通过组合多种方法优于单一方法。",
+        "support_type": "reported_result",
+        "page": 11
+      },
+      {
+        "finding": "PEFT方法在计算机视觉和多模态学习中也显示出巨大潜力。",
+        "support_type": "author_claim",
+        "page": 18
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "metric": "Parameter Efficiency",
+        "value": "显著减少可训练参数，同时保持性能。",
+        "page": 1
+      },
+      {
+        "metric": "Memory Usage",
+        "value": "降低内存使用量，缓解计算资源需求。",
+        "page": 1
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "缺乏对PEFT方法工作机制的全面理论解释。",
+      "大多数PEFT方法尚未完全集成到主流库中。",
+      "未来研究应关注PEFT在计算机视觉和多模态学习中的应用。"
+    ],
+    "validity_risks": [],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "2312.12148",
+    "title": "Parameter-Efficient Fine-Tuning Methods for Pretrained Language Models: A Critical Review and Assessment",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P8",
+    "study_or_article_type": "Survey",
+    "research_objective": "对PEFT算法进行全面研究，考察其性能和计算开销，并提供系统实现成本的分析。",
+    "method_or_framework": "分类法：Selective PEFT, Additive PEFT, Reparameterized PEFT, Hybrid PEFT。系统设计：Centralized PEFT Serving, Distributed PEFT Training, Concurrent PEFT Tuning。",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Large Language Models (LLMs)",
+        "Vision Transformer (ViT)",
+        "Vision-Language Alignment Models (VLA)",
+        "Diffusion Models"
+      ],
+      "tasks_or_contexts": [
+        "General Language Understanding (GLUE)",
+        "Continual Learning",
+        "Context Window Extension",
+        "Video Recognition"
+      ],
+      "datasets": "GLUE benchmark (CoLA, SST-2, MRPC, STS-B, QQP, MNLI, QNLI, RTE, WNLI)。",
+      "baselines": "Full fine-tuning。",
+      "metrics": "Performance (性能), Computational overhead (计算开销), Memory overhead (内存开销)。",
+      "coverage_role": "分类框架与系统成本"
+    },
+    "main_findings": [
+      {
+        "finding": "PEFT是解决大模型计算成本和资源限制的关键技术。",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "LLaMA-7B的架构分析表明，FFN和Attention模块是PEFT应用的主要位置。",
+        "support_type": "reported_result",
+        "page": 3
+      },
+      {
+        "finding": "QLoRA和LoftQ等量化技术显著降低了LLM微调的内存需求。",
+        "support_type": "reported_result",
+        "page": 12
+      },
+      {
+        "finding": "PEFT在LLMs、ViTs、VLA和Diffusion模型中均有广泛应用。",
+        "support_type": "author_claim",
+        "page": 13
+      },
+      {
+        "finding": "系统设计挑战包括PEFT查询服务、分布式调优和并发调优。",
+        "support_type": "author_claim",
+        "page": 2
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "metric": "Computational Overhead",
+        "value": "通过KV-cache管理、剪枝和量化技术降低。",
+        "page": 11
+      },
+      {
+        "metric": "Memory Overhead",
+        "value": "通过量化（如NF4）和LoRA模块减少。",
+        "page": 12
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "未覆盖所有PEFT应用场景。",
+      "需要进一步优化PEFT在特定模型架构上的应用。"
+    ],
+    "validity_risks": [],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "2403.14608",
+    "title": "Parameter-Efficient Fine-Tuning for Large Models: A Comprehensive Survey",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P9",
+    "study_or_article_type": "Technical Paper",
+    "research_objective": "提出 Generalized LoRA (GLoRA)，通过结构化搜索和激活优化改进 LoRA，实现统一的参数高效微调框架。",
+    "method_or_framework": "GLoRA (Generalized LoRA) 采用统一的数学公式，结合权重微调、特征缩放与 VPT-Deep 级别的提示设计，并通过结构重参数化在推理时融合额外参数。",
+    "evaluation_scope": {
+      "models_or_population": [
+        "ViT-B (ImageNet-21K pre-trained)",
+        "LLaMA-1-7B",
+        "LLaMA-2-7B"
+      ],
+      "tasks_or_contexts": [
+        "视觉任务 (VTAB-1K, ImageNet-1K 及其变体)",
+        "语言任务 (Alpaca, ShareGPT, ARC, HellaSwag, MMLU, TruthfulQA)",
+        "Few-shot learning",
+        "Domain generalization"
+      ],
+      "datasets": [
+        "VTAB-1K (19个异构视觉数据集)",
+        "ImageNet-1K, ImageNet-V2, ImageNet-Sketch, ImageNet-A, ImageNet-R",
+        "StanfordCars, FGVCAircraft, OxfordPets, Flowers102, Food101",
+        "Alpaca, ShareGPT"
+      ],
+      "baselines": [
+        "Full tuning",
+        "LoRA",
+        "Adapter",
+        "VPT (VPT-Shallow, VPT-Deep)",
+        "AdaptFormer",
+        "SSF (Scaling & Shifting Features)",
+        "FacT",
+        "NOAH"
+      ],
+      "metrics": [
+        "Accuracy (%)",
+        "Throughput (imgs/sec)",
+        "FLOPs (G)",
+        "Parameter count (M)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "GLoRA 在 VTAB-1K 上平均准确率相比 SOTA PEFT 方法提升 2.9%，在 ImageNet-1K 16-shot 下达到 78.3%，显著缩小了与全量微调 (83.97%) 的差距。",
+        "support_type": "reported_result",
+        "page": 7
+      },
+      {
+        "finding": "GLoRA 在 ImageNet-A 上相比 LoRA 提升了 100% 的性能，在 ImageNet-Sketch 上提升了 50%。",
+        "support_type": "reported_result",
+        "page": 8
+      },
+      {
+        "finding": "GLoRA 在 LLaMA-1 和 LLaMA-2 的语言任务上，相比原始 LoRA 和预训练模型均有显著提升。",
+        "support_type": "reported_result",
+        "page": 7
+      },
+      {
+        "finding": "通过结构重参数化设计，GLoRA 在推理阶段不增加额外参数或 FLOPs，吞吐量与全量微调相当。",
+        "support_type": "reported_result",
+        "page": 8
+      },
+      {
+        "finding": "GLoRA 在 Few-shot learning 和 Domain generalization 任务上均优于现有方法。",
+        "support_type": "reported_result",
+        "page": 7
+      },
+      {
+        "finding": "GLoRA 的进化搜索机制无需手动超参数调优，但增加了训练时间（例如在 ImageNet 上 LoRA 训练 100 epochs，GLoRA supernet 训练 500 epochs）。",
+        "support_type": "author_claim",
+        "page": 14
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "可训练参数",
+        "value": "0.28M - 0.86M (ViT-B) / 0.29M (LLaMA-1)",
+        "page": 7
+      },
+      {
+        "aspect": "训练成本",
+        "value": "训练时间显著增加，需进行 supernet 训练和进化搜索 (500 epochs vs 100 epochs)。",
+        "page": 14
+      },
+      {
+        "aspect": "推理成本",
+        "value": "无额外推理成本，通过结构重参数化将额外参数融合到邻近投影权重中。",
+        "page": 8
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": "提供标准差或分布图 (如 Figure 4, 6)。",
+      "ablation_or_sensitivity": "提供了关于支持张量选择、搜索空间大小、训练时间等消融分析。",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "训练时间显著增加，需要 supernet 训练和进化搜索。",
+      "搜索空间较大 (例如 20,736 个子网配置)。",
+      "需要调整学习率等超参数 (尽管范围较小)。",
+      "在 Flowers102 等数据集上与其他方法性能接近。"
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "2306.07967",
+    "title": "One-for-All: Generalized LoRA for Parameter-Efficient Fine-tuning",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P10",
+    "study_or_article_type": "Technical Paper",
+    "research_objective": "提出 AdaMix，通过混合适配器 (Mixture-of-Adaptations) 和随机路由机制，在不增加计算成本和参数量的情况下提升 PEFT 性能。",
+    "method_or_framework": "AdaMix 在每一层引入多个适配器模块，训练时随机路由输入，推理时通过权重平均合并模块，保持与单模块相同的 FLOPs 和参数量。",
+    "evaluation_scope": {
+      "models_or_population": [
+        "RoBERTa-large",
+        "BERT-base",
+        "GPT-2 medium"
+      ],
+      "tasks_or_contexts": [
+        "NLU tasks (GLUE benchmark)",
+        "NLG tasks (E2E NLG, DART, WebNLG)",
+        "Few-shot NLU"
+      ],
+      "datasets": [
+        "GLUE (MNLI, QNLI, SST2, MRPC, RTE, CoLA, STS-B)",
+        "E2E NLG Challenge",
+        "DART",
+        "WebNLG"
+      ],
+      "baselines": [
+        "Full Fine-tuning",
+        "Houlsby Adapter",
+        "BitFit",
+        "Prefix-tuning",
+        "LoRA",
+        "UNIPELT",
+        "AdaMix w/o Merging / w/o Consistency / w/o Sharing"
+      ],
+      "metrics": [
+        "Accuracy / F1 / MCC / Pearson",
+        "BLEU / NIST / MET / ROUGE-L / CIDEr"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "AdaMix 在 GLUE 上平均准确率 (84.5) 超过全量微调 (82.7)，是唯一在所有任务上超越全量微调的 PEFT 方法。",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "AdaMix 在 E2E NLG 和 DART/WebNLG 任务上，相比 LoRA 和 Adapter 均有显著提升，且参数量仅为全量微调的 0.1%。",
+        "support_type": "reported_result",
+        "page": 7
+      },
+      {
+        "finding": "AdaMix 在 Few-shot NLU 任务上表现优异，在 30-shot 设置下平均准确率达到 79.3%。",
+        "support_type": "reported_result",
+        "page": 8
+      },
+      {
+        "finding": "通过权重平均合并机制，AdaMix 在推理时保持了与单模块相同的参数量和 FLOPs。",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "随机路由策略无需额外的负载平衡参数，且一致性正则化有助于缓解训练不稳定性。",
+        "support_type": "author_claim",
+        "page": 3
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "可训练参数",
+        "value": "0.9M (BERT-base) / 0.8M (RoBERTa-large) / 0.35M (GPT-2)",
+        "page": 7
+      },
+      {
+        "aspect": "计算成本",
+        "value": "推理时 FLOPs 和参数量与单模块相同，无额外开销。",
+        "page": 2
+      },
+      {
+        "aspect": "存储成本",
+        "value": "训练时增加存储 (多个模块)，但通过合并机制在推理时保持一致。",
+        "page": 2
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": "提供标准差和分布图 (如 Figure 4, 6)。",
+      "ablation_or_sensitivity": "提供了关于路由策略、模块数量、一致性正则化、参数共享的消融研究。",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "随着模块数量增加，性能提升呈边际递减。",
+      "在低资源任务 (如 RTE) 上，增加模块数量可能导致性能下降。",
+      "需要额外的训练步骤来学习多个模块的权重。"
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4385572883",
+    "title": "AdaMix: Mixture-of-Adaptations for Parameter-efficient Model Tuning",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P11",
+    "study_or_article_type": "Empirical Study",
+    "research_objective": "Investigate parameter-efficient tuning (PETuning) methods in the context of Federated Learning (FL) to address communication overhead, local adaptation costs, and privacy concerns.",
+    "method_or_framework": "FedPETuning framework integrating four representative PETuning methods (Adapter, Prefix, LoRA, BitFit) into a federated benchmark.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Pre-trained Language Models (PLMs) like BERT and RoBERTa"
+      ],
+      "tasks_or_contexts": [
+        "Federated Learning (FL) settings",
+        "Cross-silo FL",
+        "Large-scale cross-device FL"
+      ],
+      "datasets": [
+        "GLUE benchmark (RTE, MRPC, SST-2, QNLI, QQP, MNLI)"
+      ],
+      "baselines": [
+        "FedFT (Full Fine-Tuning)",
+        "Centralized Fine-Tuning (CenFT, CenAP, CenLR, CenPF, CenBF)"
+      ],
+      "metrics": [
+        "Accuracy",
+        "Communication overhead (normalized)",
+        "Storage efficiency",
+        "Privacy attack performance (DLG attack)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "FedPETuning significantly reduces communication overhead (up to 190x) and storage costs (up to 190x) compared to FedFT while maintaining acceptable performance.",
+        "support_type": "reported_result",
+        "page": 6
+      },
+      {
+        "finding": "FedPETuning methods effectively defend against gradient inversion attacks (e.g., DLG) compared to FedFT due to the transmission of only lightweight parameters.",
+        "support_type": "reported_result",
+        "page": 6
+      },
+      {
+        "finding": "PETuning methods are more susceptible to data heterogeneity (non-IID) than full fine-tuning, with performance degradation increasing as data distribution gap widens.",
+        "support_type": "reported_result",
+        "page": 7
+      },
+      {
+        "finding": "Performance gap between FedPETuning and FedFT diminishes in cross-silo settings compared to standard settings, attributed to reduced data scarcity.",
+        "support_type": "reported_result",
+        "page": 8
+      },
+      {
+        "finding": "Increasing local training epochs generally benefits performance on large datasets but may cause overfitting on small datasets.",
+        "support_type": "reported_result",
+        "page": 8
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "category": "Communication Cost",
+        "evidence": "FedPETuning reduces communication overhead significantly compared to FedFT. Communication overhead ranking: FedFT ≫ FedPF > FedAP > FedLR > FedBF.",
+        "page": 6
+      },
+      {
+        "category": "Storage Cost",
+        "evidence": "FedPETuning lowers storage cost by 12~190 times compared to FedFT.",
+        "page": 7
+      },
+      {
+        "category": "Trainable Parameters",
+        "evidence": "PETuning methods freeze most PLM parameters and update only lightweight parameters (e.g., LoRA < 1% trainable parameters).",
+        "page": 3
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": "Mean and standard deviation are computed over 5 runs.",
+      "ablation_or_sensitivity": "Experiments vary local training epochs and communication rounds.",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "PETuning methods are more susceptible to data heterogeneity than FedFT.",
+      "Adapter tuning may be more prone to privacy leaks than other PETuning methods.",
+      "Performance gap between FedPETuning and FedFT is larger in standard settings than in cross-silo settings."
+    ],
+    "validity_risks": [
+      "Potential privacy risks if lightweight parameters are not sufficiently protected.",
+      "Performance degradation under high data heterogeneity."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [
+      "The impact of batch size on privacy attacks (trade-off with resource constraints)."
+    ],
+    "paper_id": "W4385572063",
+    "title": "FedPETuning: When Federated Learning Meets the Parameter-Efficient Tuning Methods of Pre-trained Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P12",
+    "study_or_article_type": "Method Proposal",
+    "research_objective": "Address the challenges of federated fine-tuning for On-Device Foundation Models (ODFMs) by leveraging system and data heterogeneity through heterogeneous LoRA ranks.",
+    "method_or_framework": "HETLORA (Heterogeneous LoRA) with rank self-pruning and sparsity-weighted aggregation.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "On-Device Foundation Models (ODFMs) like PaLM 2-XXS and PaLM 2-XS"
+      ],
+      "tasks_or_contexts": [
+        "Federated fine-tuning of ODFMs",
+        "Reddit text summarization",
+        "Multi-session chat"
+      ],
+      "datasets": [
+        "Reddit (RougeL)",
+        "Multi-session chat (Perplexity)"
+      ],
+      "baselines": [
+        "Full Fine-Tuning",
+        "Homogeneous LoRA (HOMLORA) with ranks r=1, 5, 20, 50",
+        "Reconstruction + SVD method"
+      ],
+      "metrics": [
+        "RougeL score",
+        "Perplexity",
+        "Ratio of communicated parameters"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "HETLORA achieves better convergence speed and final performance than homogeneous LoRA by allowing clients to use ranks suited to their system capabilities.",
+        "support_type": "reported_result",
+        "page": 4
+      },
+      {
+        "finding": "HETLORA outperforms the 'Reconstruction + SVD' method, which aggregates full models after reconstruction, by preserving cross-client information.",
+        "support_type": "reported_result",
+        "page": 5
+      },
+      {
+        "finding": "HETLORA achieves similar performance to full fine-tuning with significantly fewer trained parameters (e.g., 0.004x for Reddit task).",
+        "support_type": "reported_result",
+        "page": 8
+      },
+      {
+        "finding": "Homogeneous LoRA with high ranks (e.g., r=50) overfits quickly, while low ranks (e.g., r=1) converge slowly.",
+        "support_type": "reported_result",
+        "page": 7
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "category": "Communication Cost",
+        "evidence": "HETLORA reduces the ratio of communicated parameters to full fine-tuning to 0.004 for Reddit task.",
+        "page": 8
+      },
+      {
+        "category": "Trainable Parameters",
+        "evidence": "LoRA parameters are less than 5% of the original ODFM size even for large ranks (r=200).",
+        "page": 3
+      },
+      {
+        "category": "Computation Efficiency",
+        "evidence": "HETLORA improves training speed and convergence compared to homogeneous LoRA.",
+        "page": 4
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": "Experiments ran with 3 different random seeds.",
+      "ablation_or_sensitivity": "Ablation study on the decaying factor γ for self-rank pruning.",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Assumes rank distribution is independent of data distribution, which may not hold in correlated scenarios (e.g., wealthier populations having better devices).",
+      "Theoretical convergence and generalization of heterogeneous LoRA are not fully explored."
+    ],
+    "validity_risks": [
+      "Potential correlation between system resources (rank) and data distribution not accounted for in the current model."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [
+      "Optimal rank assignment strategy across clients for better convergence.",
+      "Theoretical guarantees for HETLORA."
+    ],
+    "paper_id": "W4404782226",
+    "title": "Heterogeneous LoRA for Federated Fine-tuning of On-Device Foundation Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  }
+]

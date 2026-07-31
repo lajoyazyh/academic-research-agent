@@ -1,0 +1,13 @@
+{
+  "mode": "scoping",
+  "question": "大语言模型幻觉研究如何定义问题、构建评价、检测错误并实施缓解，现有研究覆盖了哪些场景，又留下哪些证据空白？",
+  "sources": [
+    "OpenAlex candidate discovery",
+    "original open-access full text"
+  ],
+  "candidate_count": 43,
+  "target_included": 12,
+  "included_count": 12,
+  "status": "focused_high_load_validation",
+  "systematic_review_claim_allowed": false
+}

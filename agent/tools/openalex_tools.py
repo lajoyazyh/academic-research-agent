@@ -68,6 +68,7 @@ class OpenAlexSearchTool(BaseTool):
                         work_ids = work.get("ids") or {}
                         
                         parsed_results.append({
+                            "openalex_id": str(work.get("id") or "").rsplit("/", 1)[-1],
                             "title": title,
                             "authors": ", ".join(authors),
                             "publication_year": work.get("publication_year", "Unknown"),
@@ -108,4 +109,82 @@ class OpenAlexSearchTool(BaseTool):
                     
         # Filter out empty strings and join
         return " ".join([w for w in words if w])
+
+
+class OpenAlexCitationTool(OpenAlexSearchTool):
+    name = "openalex_citations"
+    description = (
+        "Expand an OpenAlex work through its citation network. direction may be "
+        "'cited_by' (forward citations), 'references' (backward citations), or "
+        "'related'. Returns metadata and abstracts for screening."
+    )
+    parameters = {
+        "work_id": "OpenAlex work id such as W2741809807, or a DOI",
+        "direction": "cited_by, references, or related",
+        "limit": "maximum records, 1 to 20 (default 5)",
+    }
+
+    def _get_json(self, url: str) -> dict:
+        contact = os.getenv("OPENALEX_EMAIL", "").strip() or os.getenv("SCHOLAR_CONTACT_EMAIL", "").strip()
+        if contact:
+            url += ("&" if "?" in url else "?") + "mailto=" + urllib.parse.quote(contact)
+        request = urllib.request.Request(
+            url,
+            headers={"User-Agent": "AcademicResearchAgent/2.0", "Accept": "application/json"},
+        )
+        with urllib.request.urlopen(request, timeout=20) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    def _compact(self, work: dict) -> dict:
+        ids = work.get("ids") or {}
+        authors = [
+            ((item.get("author") or {}).get("display_name") or "")
+            for item in work.get("authorships") or []
+        ]
+        best_location = work.get("best_oa_location") or {}
+        return {
+            "openalex_id": str(work.get("id") or "").rsplit("/", 1)[-1],
+            "title": work.get("title") or "",
+            "authors": ", ".join(item for item in authors if item),
+            "publication_year": work.get("publication_year"),
+            "abstract": self._reconstruct_abstract(work.get("abstract_inverted_index") or {}),
+            "doi": str(ids.get("doi") or work.get("doi") or "").replace("https://doi.org/", ""),
+            "arxiv_id": str(ids.get("arxiv") or "").replace("https://arxiv.org/abs/", ""),
+            "pdf_url": best_location.get("pdf_url") or "",
+            "cited_by_count": work.get("cited_by_count", 0),
+        }
+
+    def execute(self, **kwargs) -> Any:
+        work_id = str(kwargs.get("work_id") or "").strip()
+        direction = str(kwargs.get("direction") or "cited_by").strip()
+        if not work_id:
+            return {"error": "Missing parameter 'work_id'"}
+        if direction not in {"cited_by", "references", "related"}:
+            return {"error": "direction must be cited_by, references, or related"}
+        try:
+            limit = max(1, min(20, int(kwargs.get("limit", 5))))
+        except (TypeError, ValueError):
+            limit = 5
+        identifier = work_id if work_id.upper().startswith("W") else "https://doi.org/" + work_id.replace("https://doi.org/", "")
+        try:
+            target = self._get_json("https://api.openalex.org/works/" + urllib.parse.quote(identifier, safe=":/"))
+            target_id = str(target.get("id") or "").rsplit("/", 1)[-1]
+            if direction == "cited_by":
+                payload = self._get_json(
+                    f"https://api.openalex.org/works?filter=cites:{target_id}&per-page={limit}&sort=cited_by_count:desc"
+                )
+                works = payload.get("results") or []
+            else:
+                ids = target.get("referenced_works") if direction == "references" else target.get("related_works")
+                works = []
+                for item in (ids or [])[:limit]:
+                    try:
+                        works.append(self._get_json(str(item)))
+                    except Exception:
+                        continue
+            return json.dumps([self._compact(work) for work in works], ensure_ascii=False, indent=2)
+        except urllib.error.HTTPError as exc:
+            return f"OpenAlex citation expansion failed: HTTP Error {exc.code}"
+        except Exception as exc:
+            return f"OpenAlex citation expansion failed: {exc}"
 

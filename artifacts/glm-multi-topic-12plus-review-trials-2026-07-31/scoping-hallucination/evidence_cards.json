@@ -1,0 +1,1012 @@
+[
+  {
+    "citation_id": "P1",
+    "study_or_article_type": "Survey",
+    "research_objective": "Review recent advances of Large Language Models (LLMs) across four major aspects: pre-training, adaptation tuning, utilization, and capacity evaluation.",
+    "method_or_framework": "Systematic literature review covering technical evolution, key findings, and mainstream techniques of LLMs.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Statistical Language Models (1990s)",
+        "Neural Language Models (2013)",
+        "Pre-trained Language Models (PLMs, 2018)",
+        "Large Language Models (LLMs, 2020-2023)"
+      ],
+      "tasks_or_contexts": [
+        "General-purpose task solving",
+        "NLP tasks (e.g., information extraction, text generation)",
+        "Information Retrieval (IR) and Reranking",
+        "Recommendation Systems",
+        "Multimodal Large Language Models (MLLMs)"
+      ],
+      "datasets": [
+        "arXiv papers statistics (since June 2018 for 'language model', since October 2019 for 'large language model')",
+        "Visual instruction datasets for MLLMs",
+        "POPE (for object hallucination in MLLMs)"
+      ],
+      "baselines": [
+        "BERT (330M parameters)",
+        "GPT-2 (1.5B parameters)",
+        "Traditional ID-based recommenders"
+      ],
+      "metrics": [
+        "Performance improvement metrics",
+        "Task solving capacity levels",
+        "Perception and cognition task performance (for MLLMs)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LLMs have evolved from task-specific helpers to general-purpose task solvers through scaling effects.",
+        "support_type": "author_claim",
+        "page": 3
+      },
+      {
+        "finding": "LLMs exhibit 'emergent abilities' (e.g., in-context learning) not present in smaller models when parameter scale exceeds a certain level.",
+        "support_type": "author_claim",
+        "page": 3
+      },
+      {
+        "finding": "LLMs can be applied to various domains including IR (as backbones or enhancers), recommendation (as models, simulators, or enhancers), and MLLMs.",
+        "support_type": "reported_result",
+        "page": 72
+      },
+      {
+        "finding": "Current MLLMs struggle with object hallucination, as demonstrated by POPE polling-based object probing.",
+        "support_type": "reported_result",
+        "page": 74
+      },
+      {
+        "finding": "LLMs are not directly well suited for existing IR systems due to high inference overhead and limitations in modeling long texts.",
+        "support_type": "reported_result",
+        "page": 72
+      },
+      {
+        "finding": "LLMs in zero/few-shot settings tend to perform worse than traditional ID-based recommenders.",
+        "support_type": "reported_result",
+        "page": 73
+      },
+      {
+        "finding": "LLMs have limitations in processing NLP tasks in low-resource domains (e.g., minor language translation).",
+        "support_type": "reported_result",
+        "page": 72
+      },
+      {
+        "finding": "LLMs can be enhanced by quantization (e.g., 4-bit precision) and distillation to reduce cost and improve performance.",
+        "support_type": "reported_result",
+        "page": 142
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "Inference Cost",
+        "detail": "LLMs require high overhead for inference and special adaptation (e.g., instruction tuning) for IR tasks.",
+        "page": 72
+      },
+      {
+        "aspect": "Efficiency Techniques",
+        "detail": "Efficient tuning and quantization methods (e.g., QLoRA, 4-bit precision) are proposed to deploy LLMs effectively.",
+        "page": 142
+      },
+      {
+        "aspect": "Context Limitation",
+        "detail": "LLMs have limited capacities in long context modeling, making it difficult to process huge amounts of user-item interaction data.",
+        "page": 73
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "LLMs cannot effectively process NLP tasks in low-resource domains (e.g., minor language translation).",
+      "LLMs are not directly well suited for existing IR systems due to high overhead and long text limitations.",
+      "LLMs in zero/few-shot settings tend to perform worse than traditional ID-based recommenders.",
+      "LLMs have limited capacities in long context modeling."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "2303.18223",
+    "title": "A Survey of Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P2",
+    "study_or_article_type": "Survey",
+    "research_objective": "Survey recent efforts on the detection, explanation, and mitigation of hallucination in LLMs, with an emphasis on unique challenges.",
+    "method_or_framework": "Taxonomy of hallucination phenomena and evaluation benchmarks, analysis of mitigation approaches.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Autoregressive Language Models (LLMs)"
+      ],
+      "tasks_or_contexts": [
+        "Input-conflicting hallucination",
+        "Context-conflicting hallucination",
+        "Fact-conflicting hallucination"
+      ],
+      "datasets": [
+        "BEGIN",
+        "QMSum",
+        "FENMT",
+        "FEQA",
+        "HADES",
+        "TruthfulQA",
+        "FActScore",
+        "HaluEval",
+        "FACTOR"
+      ],
+      "baselines": [],
+      "metrics": [
+        "Confidence scores (0-100)",
+        "Risk scores",
+        "Factual consistency metrics"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LLM hallucination is categorized into three types: Input-conflicting (deviates from user input), Context-conflicting (conflicts with previous context), and Fact-conflicting (inconsistent with world knowledge).",
+        "support_type": "author_claim",
+        "page": 3
+      },
+      {
+        "finding": "External knowledge retrieval (e.g., from Wikipedia or search engines) is a common method to mitigate hallucinations by providing context knowledge or post-hoc correction.",
+        "support_type": "author_claim",
+        "page": 18
+      },
+      {
+        "finding": "Uncertainty estimation methods include logit-based (token probability), verbalize-based (confidence scores), and consistency-based (multiple sampling).",
+        "support_type": "author_claim",
+        "page": 19
+      },
+      {
+        "finding": "Multi-agent interaction can mitigate hallucinations by having multiple LLMs debate and reach a consensus.",
+        "support_type": "reported_result",
+        "page": 20
+      },
+      {
+        "finding": "LLMs may be aware of their own falsehoods, and internal states (e.g., activations) can be utilized to detect hallucinations.",
+        "support_type": "author_claim",
+        "page": 21
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "Mitigation Complexity",
+        "detail": "Post-hoc correction using external knowledge sources can be effective but requires verifying the retrieved knowledge.",
+        "page": 18
+      },
+      {
+        "aspect": "Uncertainty Estimation Challenges",
+        "detail": "Logit-based methods are less applicable for closed-source models; verbalize-based methods suffer from overconfidence; consistency-based methods face unresolved issues in measuring consistency.",
+        "page": 20
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "Logit-based uncertainty estimation is less applicable for closed-source commercial LLMs.",
+      "Verbalize-based methods often result in overconfident responses.",
+      "Measuring the consistency of different responses remains an unresolved issue.",
+      "Fully utilizing context knowledge in long contexts is under-explored."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "2309.01219",
+    "title": "Siren's Song in the AI Ocean: A Survey on Hallucination in Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P3",
+    "study_or_article_type": "Survey",
+    "research_objective": "To provide a comprehensive overview of hallucination in Large Language Models (LLMs), focusing on principles, taxonomy, challenges, detection, benchmarks, and mitigation strategies, while highlighting future research directions.",
+    "method_or_framework": "Systematic survey and taxonomy construction. The authors propose a redefined taxonomy of hallucination tailored for LLMs, categorizing it into factuality hallucination and faithfulness hallucination. They also analyze causes (data, training, inference) and survey existing methods.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLMs (e.g., LLaMA, Claude, Gemini, GPT-4)",
+        "Retrieval-Augmented LLMs (RAG systems)"
+      ],
+      "tasks_or_contexts": [
+        "Open-domain Question Answering (QA)",
+        "Conversational Search",
+        "Expository Writing",
+        "Knowledge-intensive complex reasoning",
+        "Information Retrieval (IR) systems"
+      ],
+      "datasets": [
+        "TruthfulQA",
+        "HalluQA",
+        "HaluEval-2.0",
+        "SelfCheckGPT-Wikibio",
+        "FELM",
+        "HotpotQA",
+        "MSMARCO",
+        "WebQuestions"
+      ],
+      "baselines": [
+        "Standard retrieval methods (keyword/semantic matching)",
+        "Various LLMs (T5, BART, etc.)"
+      ],
+      "metrics": [
+        "Factuality",
+        "Faithfulness",
+        "BLEU",
+        "ROUGE",
+        "Accuracy",
+        "Contextual awareness",
+        "Contextual alignment"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LLM hallucinations present distinct challenges compared to prior task-specific models due to their open-ended general-purpose attributes, predominantly manifesting as factual errors.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "The authors propose a taxonomy distinguishing between factuality hallucination (discrepancy with real-world facts) and faithfulness hallucination (divergence from source content).",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "Retrieval-Augmented Generation (RAG) systems face limitations, including noisy retrieval, context conflicts, and insufficient utilization of context information, which can lead to hallucinations.",
+        "support_type": "author_claim",
+        "page": 30
+      },
+      {
+        "finding": "In RAG, inappropriate retrieval granularity (chunking) can compromise semantic integrity and affect relevance, with fixed-size chunking being crude and prevalent.",
+        "support_type": "author_claim",
+        "page": 29
+      },
+      {
+        "finding": "Context conflicts occur when retrieved information contradicts the LLM's parametric memory, causing the model to over-rely on internal knowledge.",
+        "support_type": "author_claim",
+        "page": 31
+      },
+      {
+        "finding": "Future research directions include hallucinations in Large Vision-Language Models (LVLMs) and understanding knowledge boundaries in LLM hallucinations.",
+        "support_type": "author_claim",
+        "page": 3
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "The survey focuses on a critical subset of trustworthiness challenges (factuality and faithfulness), excluding other aspects like bias or toxicity.",
+      "Existing hallucination taxonomies may not fully adapt to the evolving landscape of LLMs.",
+      "RAG systems inherently face limitations and even suffer from hallucinations despite their potential."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "2311.05232",
+    "title": "A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P4",
+    "study_or_article_type": "Survey",
+    "research_objective": "To present a comprehensive survey of hallucination mitigation techniques in LLMs, introducing a detailed taxonomy based on dataset utilization, common tasks, feedback mechanisms, and retriever types, and analyzing their limitations.",
+    "method_or_framework": "Systematic survey and taxonomy construction. The authors categorize mitigation techniques into Prompt Engineering (RAG, prompting, prompt tuning) and Developing Models (decoding strategies, knowledge graphs, loss functions, supervised fine-tuning).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLMs (e.g., GPT-3.5, GPT-4, Llama-2, T5, BART)",
+        "Vision Language Models (VLMs)"
+      ],
+      "tasks_or_contexts": [
+        "Short-form QA",
+        "Biography generation",
+        "Multi-hop reasoning",
+        "Medical generative QA",
+        "Summarization",
+        "Fact verification and Fact Revision",
+        "Video-grounded Dialogue"
+      ],
+      "datasets": [
+        "HILT (Own dataset)",
+        "NQ, TriviaQA, WebQuestion QA, Jeopardy QG, Fact Verification",
+        "PubMedQA, MedQuAD, MEDIQA 2019, LiveMedQA 2017, MASH-QA",
+        "TL;DR, RLAIF-HH and TREC News",
+        "BenchLLM and BenchText",
+        "FATE (Own novel dataset)",
+        "WebNLG, TekGen and GenWiki"
+      ],
+      "baselines": [
+        "Various LLMs (T5, BART, GPT-3.5, Llama-2, etc.)"
+      ],
+      "metrics": [
+        "BLEU-1, Q-BLEU-1, Rouge-L",
+        "QA Accuracy, Expected Calibration Error (ECE), Brier score",
+        "Unigram F1 and ROUGE-L",
+        "Helpfulness, honesty and harmlessness",
+        "Gold Answer Coverage, Hallucination",
+        "Precision",
+        "BLEU, ROUGE-L, CIDEr"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "The paper presents a systematic taxonomy of hallucination mitigation techniques, extending coverage to Vision Language Models (VLMs).",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "Mitigation techniques range from post-generation refinement (e.g., RARR, FLEEK) to supervised fine-tuning (e.g., Fine-tuning Language Models for Factuality, R-Tuning).",
+        "support_type": "author_claim",
+        "page": 9
+      },
+      {
+        "finding": "The survey identifies limitations inherent in these techniques, such as reliance on labeled data, computational intensity, and the need for hybrid models.",
+        "support_type": "author_claim",
+        "page": 11
+      },
+      {
+        "finding": "The paper highlights the challenge of hallucination in critical applications like medical records, financial analysis, and legal advice.",
+        "support_type": "author_claim",
+        "page": 1
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "The study is limited to English medical queries, limiting generalizability to other languages, domains, and modalities.",
+      "The evaluation is conducted on a sample set of datasets.",
+      "Consistency measurement uses approximate metrics rather than more rigorous schemes.",
+      "The work only addresses hallucinations in the form of directly stated factual inaccuracies.",
+      "The current system relies on the initial set of responses generated by LLMs to execute tasks.",
+      "The TWEAK decoding strategy increases computational cost during inference compared to baseline approaches like beam search."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "2401.01313",
+    "title": "A Comprehensive Survey of Hallucination Mitigation Techniques in Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P5",
+    "study_or_article_type": "Evaluation Benchmark",
+    "research_objective": "To understand what types of content and to which extent LLMs are apt to hallucinate, and to evaluate the performance of LLMs in recognizing hallucination.",
+    "method_or_framework": "A large-scale hallucination evaluation benchmark (HaluEval) constructed via a two-stage framework: sampling-then-filtering. Includes automatic generation of hallucinated samples and human annotation of ChatGPT responses.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "ChatGPT",
+        "GPT-3",
+        "Alpaca",
+        "Vicuna"
+      ],
+      "tasks_or_contexts": [
+        "Question Answering (QA)",
+        "Dialogue",
+        "Text Summarization"
+      ],
+      "datasets": [
+        "HotpotQA (seed data)",
+        "HaluEval (generated and human-annotated)"
+      ],
+      "baselines": [
+        "Random chance (50%)",
+        "ChatGPT (baseline)"
+      ],
+      "metrics": [
+        "Accuracy (%)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "ChatGPT is likely to generate hallucinated content by fabricating unverifiable information in its responses (about 19.5% responses).",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "Existing LLMs face significant challenges to identify the hallucinations in the generated text, even for ChatGPT which is used to generate these hallucinated samples (e.g., only 62.59% accuracy for ChatGPT in question answering).",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "Providing external knowledge can significantly enhance LLMs' ability to recognize hallucinations (e.g., increasing from 62.59 to 76.83 in QA).",
+        "support_type": "reported_result",
+        "page": 7
+      },
+      {
+        "finding": "Generating reasoning steps (CoT) can mildly improve performance in text summarization (from 58.53 to 61.21) but makes the model perform worse in QA and dialogue.",
+        "support_type": "reported_result",
+        "page": 7
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "The quality of hallucinated samples is limited by the capacity of ChatGPT in following the complex instruction of hallucination sampling.",
+      "The benchmark focuses on evaluating the ability of LLMs in recognizing the hallucinations in text but does not investigate the underlying reasons behind the appearance of hallucinations.",
+      "The hallucinated samples look highly similar to the ground-truth samples, which might be misused for an unexpected purpose."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4389518784",
+    "title": "HaluEval: A Large-Scale Hallucination Evaluation Benchmark for Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P6",
+    "study_or_article_type": "Mitigation Methodology",
+    "research_objective": "To study the ability of language models to deliberate on the responses they give in order to correct their mistakes, and to reduce hallucination.",
+    "method_or_framework": "Chain-of-Verification (CoVe) method: (i) draft an initial response; (ii) plan verification questions to fact-check the draft; (iii) answer those questions independently; (iv) generate a final verified response. Variants include joint, 2-step, factored, and factor+revise.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Llama 2 70B Chat",
+        "Llama 65B",
+        "GPT-3",
+        "InstructGPT",
+        "ChatGPT",
+        "PerplexityAI"
+      ],
+      "tasks_or_contexts": [
+        "List-based questions (Wikidata, Wiki-Category)",
+        "Closed book MultiSpanQA",
+        "Longform generation (Biographies)"
+      ],
+      "datasets": [
+        "Wikidata",
+        "Wiki-Category list",
+        "MultiSpanQA",
+        "Biography generation benchmark"
+      ],
+      "baselines": [
+        "Zero-shot",
+        "CoT",
+        "Few-shot",
+        "SelfCheckGPT (NLI, LLM)",
+        "ChatProtect",
+        "Retrieval-based"
+      ],
+      "metrics": [
+        "Precision (micro-averaged)",
+        "F1",
+        "FACTSCORE"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "CoVe provides large gains in precision on list-based tasks (e.g., more than doubles the precision from Llama 65B few-shot baseline for the Wikidata task from 0.17 to 0.36).",
+        "support_type": "reported_result",
+        "page": 6
+      },
+      {
+        "finding": "CoVe brings improvements in general QA problems, as measured on MultiSpanQA (23% improvement in F1 over the few-shot baseline, 0.39 → 0.48).",
+        "support_type": "reported_result",
+        "page": 6
+      },
+      {
+        "finding": "FACTSCORE increases 28% (55.9 → 71.4) from the few-shot baseline in longform generation, with only a relatively small reduction in the average number of facts provided (16.6 → 12.3).",
+        "support_type": "reported_result",
+        "page": 6
+      },
+      {
+        "finding": "Shortform verification questions are typically answered with higher accuracy than the original accuracy of the facts in the original longform generation (e.g., only ~17% of Llama few-shot baseline answer entities are correct in list-based questions, but when queried individually, ~70% are correctly answered).",
+        "support_type": "reported_result",
+        "page": 8
+      },
+      {
+        "finding": "CoVe outperforms existing hallucination mitigation baselines like SelfCheckGPT and ChatProtect.",
+        "support_type": "reported_result",
+        "page": 7
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "CoVe uses only the base language model itself in all steps and does not explore tool-use (e.g., search engine) in this work.",
+      "CoVe induces a similar inference overhead to other longform hallucination mitigation approaches."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4402670429",
+    "title": "Chain-of-Verification Reduces Hallucination in Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P7",
+    "study_or_article_type": "Detection Methodology",
+    "research_objective": "To detect a subset of hallucinations called 'confabulations'—arbitrary and incorrect generations—in Large Language Models (LLMs) using a novel statistical approach based on semantic entropy.",
+    "method_or_framework": "Semantic Entropy (SE). The method computes uncertainty at the level of meaning rather than specific sequences of words by sampling multiple answers and clustering them based on bidirectional entailment. A 'discrete' variant is also proposed for black-box models without access to probabilities.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLaMA 2 Chat (7B, 13B, 70B)",
+        "Falcon Instruct (7B, 40B)",
+        "Mistral Instruct (7B)",
+        "GPT-4"
+      ],
+      "tasks_or_contexts": [
+        "Question Answering (QA)",
+        "Mathematical Word Problems",
+        "Biography Generation"
+      ],
+      "datasets": [
+        "TriviaQA",
+        "SQuAD 1.1",
+        "BioASQ",
+        "NQ-Open",
+        "SVAMP",
+        "FactualBio"
+      ],
+      "baselines": [
+        "Embedding Regression (logistic regression on final hidden state)",
+        "P(True) method (few-shot prompting to compare main answer with brainstormed alternatives)"
+      ],
+      "metrics": [
+        "AUROC (Area Under the Receiver Operating Characteristic curve)",
+        "AURAC (Area Under the Rejection Accuracy curve)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "Semantic entropy effectively detects confabulations across various LLMs and domains without prior domain knowledge or task-specific data.",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "The method outperforms baselines like embedding regression and P(True) in detecting incorrect answers (AUROC) and improving rejection accuracy (AURAC).",
+        "support_type": "reported_result",
+        "page": 3
+      },
+      {
+        "finding": "The discrete variant of semantic entropy works effectively for paragraph-length biographies using only black-box outputs.",
+        "support_type": "reported_result",
+        "page": 5
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Semantic entropy is not suited for other types of errors, such as consistent errors learned from erroneous training data.",
+      "The method relies on the quality of the semantic clustering, which can be sensitive to context and judgment (e.g., distinguishing specific dates from years).",
+      "The discrete variant requires approximations when access to model internals (like probabilities) is limited."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4399803256",
+    "title": "Detecting hallucinations in large language models using semantic entropy",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P8",
+    "study_or_article_type": "Detection Methodology",
+    "research_objective": "To propose a zero-resource, black-box hallucination detection method for generative LLMs that does not require access to output probability distributions or external databases.",
+    "method_or_framework": "SelfCheckGPT. A sampling-based approach that measures informational consistency between multiple stochastic responses generated by the LLM. It uses five variants: BERTScore, Question Answering (MQAG), n-gram, NLI, and LLM prompting.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "GPT-3 (text-davinci-003)",
+        "ChatGPT (gpt-3.5-turbo)",
+        "LLaMA (7B, 13B, 30B)",
+        "OPT (125m, 1.3B, 13B, 30B)",
+        "GPT-J-6B",
+        "GPT-NeoX-20B"
+      ],
+      "tasks_or_contexts": [
+        "Biography Generation (WikiBio dataset)"
+      ],
+      "datasets": [
+        "WikiBio"
+      ],
+      "baselines": [
+        "GPT-3's output probabilities (Avg(-logp), Avg(H), Max(-logp), Max(H))",
+        "Proxy LLM probabilities (LLaMA, OPT, etc.)",
+        "WikiBio + External Knowledge (BERT, QA, NLI)"
+      ],
+      "metrics": [
+        "AUC-PR (Area Under the Precision-Recall Curve) for sentence-level detection",
+        "Pearson and Spearman correlation coefficients for passage-level factuality ranking"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "SelfCheckGPT outperforms grey-box methods (like GPT-3's probabilities) and other black-box baselines in both sentence-level and passage-level evaluations.",
+        "support_type": "reported_result",
+        "page": 7
+      },
+      {
+        "finding": "The NLI variant of SelfCheckGPT offers a good trade-off between performance and computational cost.",
+        "support_type": "reported_result",
+        "page": 8
+      },
+      {
+        "finding": "Performance improves with the number of samples, though diminishing gains are observed.",
+        "support_type": "reported_result",
+        "page": 9
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "The method relies on the assumption that factual information is consistent across samples, which may not always hold.",
+      "The computational cost increases with the number of samples generated.",
+      "Performance can be affected by the choice of the proxy LLM used for evaluation."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4389520749",
+    "title": "SelfCheckGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P9",
+    "study_or_article_type": "Empirical Study",
+    "research_objective": "To investigate the phenomenon of hallucination in medical generative QA systems, identify common problematic answers, and propose a self-reflection methodology to mitigate hallucination.",
+    "method_or_framework": "Iterative self-reflection methodology incorporating knowledge acquisition and answer generation. The framework includes a main loop (generation), a knowledge loop (factuality evaluation), and a response loop (consistency/entailment evaluation).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Vicuna-7B",
+        "Vicuna-7B_L",
+        "ChatGPT",
+        "ChatGPT_L",
+        "MedAlpaca",
+        "Robin-medical"
+      ],
+      "tasks_or_contexts": [
+        "Medical Generative Question Answering (GQA)"
+      ],
+      "datasets": [
+        "PubMedQA",
+        "MedQuAD",
+        "MEDIQA2019",
+        "LiveMedQA2017",
+        "MASH-QA"
+      ],
+      "baselines": [
+        "Directly generated answers (Vicuna, ChatGPT, etc.)"
+      ],
+      "metrics": [
+        "Unigram F1",
+        "ROUGE-L",
+        "Med-NLI (Medical Natural Language Inference)",
+        "Sentence-BERT embedding similarity",
+        "Human evaluation (Query-Inconsistent, Tangential, Entailed; Fact-Inconsistent, Fact-Consistent, Generic)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "The self-reflection method significantly reduces hallucination across all five medical datasets, as evidenced by superior performance in MedNLI and human evaluation metrics.",
+        "support_type": "reported_result",
+        "page": 4
+      },
+      {
+        "finding": "The method effectively reduces the percentage of query inconsistency, tangentiality, and fact inconsistency in both Vicuna and ChatGPT.",
+        "support_type": "reported_result",
+        "page": 16
+      },
+      {
+        "finding": "The approach fosters a dynamic interaction between the system and its knowledge, enhancing the model's ability to provide accurate, reliable, and factually grounded responses.",
+        "support_type": "author_claim",
+        "page": 2
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      "Implementation details: Models run on two GeForce RTX 2080 GPUs with temperature 1.0, max new tokens 512.",
+      "The max number of the main loop, knowledge loop, and response loop is 3.",
+      "The factuality, consistency, and entailment thresholds are -1.0, -5.0, and 0.8, respectively."
+    ],
+    "reproducibility": {
+      "code_available": "GitHub repository provided (https://github.com/ziweiji/Self_Reflection_Medical)",
+      "data_available": "Publicly available datasets used (PubMedQA, MedQuAD, etc.)",
+      "variance_or_significance": "Ablation study performed (w/o aspect, w/o num, w/o refinement) to show component importance.",
+      "ablation_or_sensitivity": "Ablation study results show that removing refinement or specific aspects (aspect/num) degrades performance.",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "The methodology does not entirely eliminate the possibility of hallucination, especially in complex or ambiguous scenarios.",
+      "The study primarily focuses on English medical queries, limiting generalizability to other languages, domains, and modalities.",
+      "The method is still in its early stages and not yet ready for direct real-world deployment.",
+      "The study relies on synthetic datasets for experiments, avoiding potential harm to individuals."
+    ],
+    "validity_risks": [
+      "Potential for ungrounded information generation in complex scenarios.",
+      "Ethical considerations regarding AI-assisted healthcare and the risk of misleading patient care."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [
+      "The study acknowledges that the method might still generate ungrounded information in complex or ambiguous scenarios.",
+      "The generalizability to other languages, domains, and multimodal settings is not yet fully explored."
+    ],
+    "paper_id": "W4389519928",
+    "title": "Towards Mitigating LLM Hallucination via Self Reflection",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P10",
+    "study_or_article_type": "Empirical Study",
+    "research_objective": "To conduct a systematic study on object hallucination in Large Vision-Language Models (LVLMs), investigate the causes (e.g., visual instructions), and propose a more stable evaluation method called POPE.",
+    "method_or_framework": "Polling-based Object Probing Evaluation (POPE). This method formulates object hallucination evaluation as a binary classification task (Yes/No) by prompting LVLMs with questions like 'Is there a <object> in the image?'",
+    "evaluation_scope": {
+      "models_or_population": [
+        "mPLUG-Owl",
+        "LLaVA",
+        "MultiModal-GPT",
+        "MiniGPT-4",
+        "InstructBLIP",
+        "BLIP (smaller model)"
+      ],
+      "tasks_or_contexts": [
+        "Image Captioning",
+        "Visual Question Answering (VQA)"
+      ],
+      "datasets": [
+        "MSCOCO",
+        "A-OKVQA",
+        "GQA"
+      ],
+      "baselines": [
+        "CHAIR (Caption Hallucination Assessment with Image Relevance)"
+      ],
+      "metrics": [
+        "Accuracy, Precision, Recall, F1 Score",
+        "CHAIRI, CHAIRS",
+        "VQA Score"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LVLMs suffer from severe object hallucination issues, generating objects inconsistent with target images.",
+        "support_type": "reported_result",
+        "page": 1
+      },
+      {
+        "finding": "LVLMs are prone to hallucinate objects that frequently appear in visual instruction datasets or co-occur with image objects.",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "The proposed POPE method is more stable and flexible than the traditional CHAIR metric, as it is less sensitive to instruction designs and caption length.",
+        "support_type": "author_claim",
+        "page": 5
+      },
+      {
+        "finding": "InstructBLIP performs the best under all POPE settings, while LLaVA, MultiModal-GPT, and mPLUG-Owl suffer more severe hallucination.",
+        "support_type": "reported_result",
+        "page": 7
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      "Evaluation on 2,000 images from MSCOCO validation set.",
+      "POPE constructs 6 questions per image (l=6)."
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": "Publicly available datasets used (MSCOCO, A-OKVQA, GQA).",
+      "variance_or_significance": "Evaluation conducted under three settings: Random, Popular, and Adversarial.",
+      "ablation_or_sensitivity": "Analysis of hallucination times for frequently appearing and co-occurring objects.",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "The study focuses on coarse-grained object hallucinations (object level) and leaves fine-grained hallucinations (attributes, positions) for future work.",
+      "The study primarily uses English datasets, limiting generalizability to other languages.",
+      "The study relies on existing LVLMs and does not propose a new architecture to mitigate hallucination, only an evaluation method."
+    ],
+    "validity_risks": [
+      "Potential bias in object sampling (Random, Popular, Adversarial) affecting evaluation results.",
+      "The study uses ChatGPT to parse VQA results, introducing potential subjectivity in evaluation."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [
+      "The study does not fully explain the underlying reasons for the correlation between frequent objects and hallucination.",
+      "The generalizability of POPE to other types of hallucinations (e.g., attribute hallucination) is not fully explored."
+    ],
+    "paper_id": "W4389523832",
+    "title": "Evaluating Object Hallucination in Large Vision-Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P11",
+    "study_or_article_type": "Benchmarking Study",
+    "research_objective": "To systematically investigate the impact of Retrieval-Augmented Generation (RAG) on large language models (LLMs) and identify potential bottlenecks in RAG capabilities by evaluating four fundamental abilities: noise robustness, negative rejection, information integration, and counterfactual robustness.",
+    "method_or_framework": "Constructs the Retrieval-Augmented Generation Benchmark (RGB) using latest news articles. The benchmark is divided into four testbeds based on the four fundamental abilities. It evaluates 6 representative LLMs (ChatGPT, ChatGLM-6B, ChatGLM2-6B, Vicuna-7B-v1.3, Qwen-7B-Chat, BELLE-7B-2M) on RGB.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "ChatGPT (gpt-3.5-turbo)",
+        "ChatGLM-6B",
+        "ChatGLM2-6B",
+        "Vicuna-7B-v1.3",
+        "Qwen-7B-Chat",
+        "BELLE-7B-2M"
+      ],
+      "tasks_or_contexts": [
+        "Retrieval-Augmented Generation (RAG)",
+        "Noise Robustness",
+        "Negative Rejection",
+        "Information Integration",
+        "Counterfactual Robustness"
+      ],
+      "datasets": [
+        "Retrieval-Augmented Generation Benchmark (RGB)"
+      ],
+      "baselines": [],
+      "metrics": [
+        "Accuracy (%)",
+        "Rejection Rate (%)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "RAG effectively improves LLM responses, showing strong performance even with noise, but struggles significantly with negative rejection, information integration, and counterfactual robustness.",
+        "support_type": "reported_result",
+        "page": 1
+      },
+      {
+        "finding": "Increasing noise rates pose a challenge for RAG in LLMs, with accuracy dropping as noise ratio increases (e.g., ChatGPT accuracy drops from 96.33% to 76.00% as noise ratio goes from 0 to 0.8 in English).",
+        "support_type": "reported_result",
+        "page": 5
+      },
+      {
+        "finding": "Negative rejection poses a significant challenge; the highest rejection rates for LLMs in English and Chinese were only 45% and 43.33%, respectively.",
+        "support_type": "reported_result",
+        "page": 6
+      },
+      {
+        "finding": "LLMs fail to strictly follow instructions and often generate unpredictable responses, making it hard to use them as state triggers for recognizing rejection.",
+        "support_type": "author_claim",
+        "page": 6
+      },
+      {
+        "finding": "LLMs struggle with information integration, exhibiting errors such as ignoring one of the sub-questions or misaligning documents for different sub-problems.",
+        "support_type": "reported_result",
+        "page": 7
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "The study notes that while RAG is promising, there is still a considerable journey ahead to effectively apply RAG to LLMs.",
+      "The evaluation only considers scenarios where LLMs are given warnings about potential risks in retrieved information.",
+      "The study suggests that further enhancements such as long documents modeling and precise concept comprehension are required to handle the vast amount of noise on the internet."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "W4393147129",
+    "title": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P12",
+    "study_or_article_type": "Survey and Empirical Analysis",
+    "research_objective": "To provide a comprehensive survey and empirical analysis of hallucination attribution in LLMs, distinguishing whether hallucinations stem from prompting strategies or model behavior, and to quantify the contribution of prompts versus model-internal factors.",
+    "method_or_framework": "Proposes an attribution framework defining metrics for Prompt Sensitivity (PS) and Model Variability (MV). It evaluates state-of-the-art LLMs (GPT-4, LLaMA 2, DeepSeek, Mistral, OpenChat-3.5, Gwen) under various controlled prompting conditions (zero-shot, few-shot, CoT, instruction, vague) using established benchmarks (TruthfulQA, HallucinationEval, QAFactEval).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "GPT-4",
+        "LLaMA 2 (13B)",
+        "DeepSeek 67B",
+        "Mistral 7B",
+        "OpenChat-3.5",
+        "Gwen"
+      ],
+      "tasks_or_contexts": [
+        "Factual QA",
+        "Summarization",
+        "Reasoning (math)",
+        "Legal QA"
+      ],
+      "datasets": [
+        "TruthfulQA",
+        "HallucinationEval",
+        "QAFactEval"
+      ],
+      "baselines": [],
+      "metrics": [
+        "Hallucination Rate (%)",
+        "Prompt Sensitivity (PS)",
+        "Model Variability (MV)",
+        "Factuality",
+        "Coherence",
+        "Usability"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "Chain-of-thought (CoT) prompting significantly reduces hallucinations (18.1%) compared to vague prompts (38.3%), highlighting the crucial role of prompt clarity.",
+        "support_type": "reported_result",
+        "page": 11
+      },
+      {
+        "finding": "LLaMA 2 exhibits notably high prompt sensitivity, suggesting hallucinations are predominantly Prompt-Dominant in origin.",
+        "support_type": "reported_result",
+        "page": 12
+      },
+      {
+        "finding": "DeepSeek demonstrates superior factuality and coherence with minimal prompt sensitivity, indicating hallucinations originate primarily from internal model behavior (Model-Dominant attribution).",
+        "support_type": "reported_result",
+        "page": 12
+      },
+      {
+        "finding": "Mistral shows balanced behavior across dimensions, indicating a mixed attribution of hallucination sources.",
+        "support_type": "reported_result",
+        "page": 12
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "There remains no standard protocol across tasks or domains for hallucination evaluation, making cross-model comparison and generalization difficult.",
+      "High-confidence hallucinations (fluent but incorrect) are particularly dangerous and difficult to detect automatically.",
+      "Current hallucination research largely focuses on open-domain tasks, while high-risk domains like medicine, law, and education have far higher stakes."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "W4414677042",
+    "title": "Survey and analysis of hallucinations in large language models: attribution to prompting strategies or model behavior",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  }
+]

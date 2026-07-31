@@ -1,0 +1,230 @@
+{
+  "review_mode": "scoping",
+  "taxonomy_or_method_families": [
+    {
+      "name": "Survey Literature",
+      "description": "Comprehensive reviews covering LLM architectures, agent frameworks, and evaluation taxonomies (P1, P2, P3, P4, P5, P6, P7, P9, P10, P11)."
+    },
+    {
+      "name": "Benchmark Studies",
+      "description": "Specific evaluation frameworks designed to test tool use and agent capabilities (P8)."
+    },
+    {
+      "name": "Commentary",
+      "description": "Perspectives on evaluation gaps in specific domains like clinical settings (P12)."
+    }
+  ],
+  "synthesis_groups": [
+    {
+      "name": "Planning and Long-term Task Capabilities",
+      "question_answered": "How are planning and long-term task capabilities evaluated?",
+      "included_sources": [
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P9",
+        "P11",
+        "P12"
+      ],
+      "consensus": [
+        "Planning is recognized as a core module in agent architecture, often integrated with memory and action modules (P4, P5, P6).",
+        "Long-term task capabilities are evaluated through simulation environments (Agent-Based Modeling) and specific benchmarks (P11, P12).",
+        "Current LLMs face limitations in long-context modeling, which hinders long-term task execution (P3)."
+      ],
+      "disagreements": [],
+      "heterogeneity": [
+        "Evaluation of planning varies from internal reasoning assessment (P9) to simulation of complex workflows (P11, P12)."
+      ],
+      "boundary": "Focuses on architectural components and simulation-based assessment rather than raw performance metrics."
+    },
+    {
+      "name": "Tool Use Evaluation",
+      "question_answered": "How is tool use evaluated, and what are the metrics?",
+      "included_sources": [
+        "P2",
+        "P8",
+        "P9",
+        "P10"
+      ],
+      "consensus": [
+        "Tool use is evaluated based on the 'Three Ws': Whether (invocation), Which (retrieval), and How (usage) (P10).",
+        "Key metrics include API call correctness, retrieval accuracy (MRR, NDCG), tool selection accuracy, and parameter name F1 score (P8, P9).",
+        "Benchmarks like API-Bank and ToolBench provide standardized environments for testing tool-augmented LLMs (P2, P8)."
+      ],
+      "disagreements": [],
+      "heterogeneity": [
+        "Some evaluations focus on response quality (Rouge-L) while others focus on execution correctness (P8, P9)."
+      ],
+      "boundary": "Excludes multi-modal tool interaction in depth, though briefly mentioned (P10)."
+    },
+    {
+      "name": "Memory and Context Management",
+      "question_answered": "How is memory and context management evaluated?",
+      "included_sources": [
+        "P3",
+        "P4",
+        "P5",
+        "P9"
+      ],
+      "consensus": [
+        "Memory is categorized into short-term, long-term, and hybrid structures (P4, P5).",
+        "Evaluation focuses on the ability to retrieve relevant information and maintain context over interactions (P9).",
+        "Hallucination rates are a critical metric for assessing memory integrity (P3)."
+      ],
+      "disagreements": [],
+      "heterogeneity": [
+        "Memory evaluation is often implicit within task success rates rather than a standalone metric (P3, P9)."
+      ],
+      "boundary": "Does not deeply cover specific memory architectures (e.g., vector databases) beyond their general utility."
+    },
+    {
+      "name": "Collaboration and Multi-agent Systems",
+      "question_answered": "How are collaboration and multi-agent capabilities evaluated?",
+      "included_sources": [
+        "P6",
+        "P9",
+        "P11"
+      ],
+      "consensus": [
+        "Collaboration is evaluated through sociability metrics (language proficiency, cooperation, negotiation) (P6).",
+        "Agent-based modeling and simulation (ABM) are used to evaluate social dynamics and collective behavior (P11).",
+        "Multi-agent collaboration is assessed via task completion rates and consensus answers in simulated environments (P9)."
+      ],
+      "disagreements": [],
+      "heterogeneity": [
+        "Evaluation ranges from simple task cooperation (P9) to complex social simulation (P11)."
+      ],
+      "boundary": "Limited focus on adversarial multi-agent interactions compared to cooperative ones."
+    },
+    {
+      "name": "Evaluation Design, Metrics, Reproducibility, and Validity Risks",
+      "question_answered": "What are the task designs, metrics, reproducibility, and validity risks?",
+      "included_sources": [
+        "P1",
+        "P2",
+        "P7",
+        "P9",
+        "P12"
+      ],
+      "consensus": [
+        "Task designs range from static benchmarks (MMLU, MATH) to dynamic environments (DynaBench, API-Bank) (P1, P2, P8).",
+        "Metrics include accuracy, F1, MRR, Elo ratings, and cost/latency (P1, P2, P7, P9).",
+        "Reproducibility is adequate in benchmarks like API-Bank (code/data available) but varies in surveys (P1, P8).",
+        "Validity risks include hallucination, adversarial attacks, bias, and the subjectivity of LLM-as-a-Judge evaluations (P2, P3, P6, P9, P12)."
+      ],
+      "disagreements": [],
+      "heterogeneity": [
+        "Short-term evaluations often fail to capture long-horizon performance drift (P9).",
+        "Human-crafted benchmarks may not capture emergent abilities (P2, P12)."
+      ],
+      "boundary": "Covers general evaluation challenges applicable across all agent capabilities."
+    }
+  ],
+  "cross_study_comparability": [
+    {
+      "aspect": "Methodology",
+      "observation": "Surveys (P1-P11) provide taxonomies and frameworks, while Benchmarks (P8) provide concrete metrics and data. Commentary (P12) critiques the gap between benchmarks and real-world application."
+    },
+    {
+      "aspect": "Metrics",
+      "observation": "While accuracy is common, specific agent metrics like 'pass^k' for consistency and 'sociability' for collaboration are emerging (P2, P6, P9)."
+    },
+    {
+      "aspect": "Scope",
+      "observation": "There is a shift from single-task evaluation to complex, multi-step, and long-horizon evaluations (P8, P9, P11)."
+    }
+  ],
+  "evidence_gaps": [
+    {
+      "gap": "Long-horizon and continuous evaluation",
+      "description": "Current benchmarks often focus on short episodes or single interactions, lacking the ability to capture performance drift or cumulative effects over time (P9)."
+    },
+    {
+      "gap": "Subjective Quality Evaluation",
+      "description": "Code-based methods are inflexible for open-ended responses, and LLM-as-a-Judge approaches introduce complexity and subjectivity (P9)."
+    },
+    {
+      "gap": "Domain-Specific High-Fidelity Benchmarks",
+      "description": "Standardized benchmarks (e.g., MedQA) are insufficient for capturing the full range of capabilities in complex domains like clinical settings (P12)."
+    },
+    {
+      "gap": "Enterprise-Specific Evaluation",
+      "description": "Role-based access control, reliability guarantees, and compliance requirements in enterprise environments are often overlooked (P9)."
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "C1",
+      "claim": "LLM Agents are evaluated through a combination of modular architecture analysis (Planning, Memory, Action) and task-specific benchmarks.",
+      "support": [
+        "P4",
+        "P5",
+        "P6",
+        "P8"
+      ],
+      "strength": "high",
+      "boundary": "Applies to autonomous agents designed for general-purpose task solving."
+    },
+    {
+      "claim_id": "C2",
+      "claim": "Tool use evaluation requires a multi-dimensional approach involving invocation accuracy, retrieval precision, and parameter correctness.",
+      "support": [
+        "P8",
+        "P9",
+        "P10"
+      ],
+      "strength": "high",
+      "boundary": "Specifically applies to text-based API and tool-augmented LLMs."
+    },
+    {
+      "claim_id": "C3",
+      "claim": "Evaluation validity is threatened by hallucinations, adversarial attacks, and the limitations of static benchmarks in capturing emergent or long-term behaviors.",
+      "support": [
+        "P2",
+        "P3",
+        "P6",
+        "P9",
+        "P12"
+      ],
+      "strength": "high",
+      "boundary": "Highlights risks inherent in current evaluation methodologies."
+    },
+    {
+      "claim_id": "C4",
+      "claim": "Reproducibility varies significantly; while some benchmarks provide open-source code and data, surveys often rely on existing literature without explicit implementation details.",
+      "support": [
+        "P1",
+        "P8"
+      ],
+      "strength": "moderate",
+      "boundary": "Based on the provided evidence cards regarding code availability."
+    }
+  ],
+  "recommended_outline": [
+    {
+      "section": "Introduction to LLM Agent Evaluation",
+      "content": "Overview of the shift from evaluating LLMs to evaluating agents (P2, P4, P9)."
+    },
+    {
+      "section": "Core Agent Capabilities",
+      "content": "Evaluation of Planning, Memory, and Tool Use (P4, P5, P6, P8, P9, P10)."
+    },
+    {
+      "section": "Collaboration and Multi-agent Dynamics",
+      "content": "Social simulation, cooperation, and adversarial robustness (P6, P9, P11)."
+    },
+    {
+      "section": "Evaluation Frameworks and Benchmarks",
+      "content": "Taxonomies, metrics (accuracy, consistency, cost), and specific benchmarks (API-Bank, ToolBench, HELM) (P1, P2, P7, P8, P9)."
+    },
+    {
+      "section": "Validity Risks and Challenges",
+      "content": "Hallucination, adversarial attacks, privacy, and the 'LLM-as-a-Judge' problem (P2, P3, P6, P9, P12)."
+    },
+    {
+      "section": "Future Directions",
+      "content": "Long-horizon evaluation, enterprise-specific benchmarks, and high-fidelity simulations (P9, P12)."
+    }
+  ]
+}

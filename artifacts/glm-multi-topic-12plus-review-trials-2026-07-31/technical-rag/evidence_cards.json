@@ -1,0 +1,1115 @@
+[
+  {
+    "citation_id": "P1",
+    "study_or_article_type": "Survey",
+    "research_objective": "To provide a comprehensive review of Retrieval-Augmented Generation (RAG) paradigms, core components (Retrieval, Generation, Augmentation), evaluation frameworks, and future challenges.",
+    "method_or_framework": "Taxonomy of RAG paradigms (Naive, Advanced, Modular) and analysis of the tripartite foundation (Retrieval, Generation, Augmentation).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "RAG systems",
+        "LLMs (e.g., GPT, Llama-2)",
+        "Embedding models (e.g., AngIE, Voyage, BGE)",
+        "Rerankers (e.g., Cohere rerank, bge-raranker-large)"
+      ],
+      "tasks_or_contexts": [
+        "Question Answering (QA)",
+        "Information Extraction (IE)",
+        "Dialogue generation",
+        "Code search",
+        "Long-form QA"
+      ],
+      "datasets": [
+        "MTEB leaderboard datasets (58 datasets)",
+        "C-MTEB datasets (6 tasks, 35 datasets)",
+        "HotPotQA",
+        "2WikiMultiHopQA",
+        "MuSiQue",
+        "Bamboogle",
+        "Feverous",
+        "StrategyQA"
+      ],
+      "baselines": [
+        "Naive RAG",
+        "Advanced RAG",
+        "Modular RAG",
+        "BM25",
+        "BERT-based dense retrievers",
+        "LLM-based rerankers"
+      ],
+      "metrics": [
+        "Exact Match (EM)",
+        "F1 score",
+        "MRR",
+        "Accuracy (Acc†)",
+        "LLM-based evaluation"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "RAG paradigms evolve from Naive RAG (Indexing, Retrieval, Generation) to Advanced RAG (pre/post-retrieval optimization) and Modular RAG (flexible, iterative, adaptive retrieval).",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "Naive RAG suffers from retrieval precision/recall issues, generation hallucinations, and augmentation hurdles (disjointed outputs).",
+        "support_type": "author_claim",
+        "page": 3
+      },
+      {
+        "finding": "Advanced RAG includes pre-retrieval optimization (query rewriting, HyDE, Step-back prompting, Query Routing) and post-retrieval optimization (reranking, context compression).",
+        "support_type": "author_claim",
+        "page": 4
+      },
+      {
+        "finding": "Iterative retrieval (e.g., ITER-RETGEN) and Recursive retrieval (e.g., IRCoT, ToC) enhance robustness for complex tasks.",
+        "support_type": "author_claim",
+        "page": 11
+      },
+      {
+        "finding": "Self-RAG introduces reflection tokens ('retrieve', 'critic') to autonomously control retrieval and generation.",
+        "support_type": "author_claim",
+        "page": 12
+      },
+      {
+        "finding": "Evaluation covers 26 tasks and nearly 50 datasets, utilizing EM, F1, and LLM-based metrics.",
+        "support_type": "author_claim",
+        "page": 12
+      },
+      {
+        "finding": "Embedding models (e.g., AngIE, Voyage, BGE) benefit from multi-task instruct tuning, with no one-size-fits-all model.",
+        "support_type": "author_claim",
+        "page": 4
+      },
+      {
+        "finding": "Context compression (e.g., LLMLingua, LongLLMLingua) and selection (e.g., PRCA, RECOMP) mitigate 'Lost in the middle' and noise.",
+        "support_type": "author_claim",
+        "page": 10
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "Computational Cost",
+        "evidence": "Excessive context can introduce noise and diminish LLM perception of key information.",
+        "support_type": "author_claim",
+        "page": 10
+      },
+      {
+        "aspect": "Computational Cost",
+        "evidence": "Iterative retrieval may be affected by semantic discontinuity and accumulation of irrelevant information.",
+        "support_type": "author_claim",
+        "page": 11
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Naive RAG struggles with precision/recall and hallucinations.",
+      "Excessive context can degrade generation quality.",
+      "Iterative retrieval risks semantic discontinuity and irrelevant information accumulation.",
+      "No single embedding model fits all use cases."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "2312.10997",
+    "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P2",
+    "study_or_article_type": "Empirical Study",
+    "research_objective": "To enhance Retrieval-Augmented Large Language Models with Iterative Retrieval-Generation Synergy (ITER-RETGEN) for complex information needs.",
+    "method_or_framework": "ITER-RETGEN: An iterative framework where generation outputs guide subsequent retrieval, and retrieved knowledge refines generation. Includes Generation-Augmented Retrieval Adaptation (distilling re-ranker knowledge to retriever).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "ITER-RETGEN",
+        "LLaMA-2-13B",
+        "LLaMA-2-70B",
+        "text-davinci-003"
+      ],
+      "tasks_or_contexts": [
+        "Multi-hop Question Answering",
+        "Fact Verification",
+        "Commonsense Reasoning"
+      ],
+      "datasets": [
+        "HotPotQA",
+        "2WikiMultiHopQA",
+        "MuSiQue",
+        "Bamboogle",
+        "Feverous",
+        "StrategyQA"
+      ],
+      "baselines": [
+        "Direct Prompting",
+        "CoT Prompting",
+        "ReAct",
+        "Self-Ask"
+      ],
+      "metrics": [
+        "Exact Match (EM)",
+        "Accuracy (Acc†)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "ITER-RETGEN synergizes retrieval and generation iteratively, leveraging generation outputs to retrieve more relevant knowledge.",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "ITER-RETGEN achieves up to 8.6% absolute gains over SOTA RAG baselines on 4 out of 6 datasets.",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "Generation generally benefits from more iterations, with 2 iterations yielding the most performance gains.",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "Generation-Augmented Retrieval Adaptation (distilling re-ranker to retriever) improves performance and reduces iteration overhead.",
+        "support_type": "author_claim",
+        "page": 4
+      },
+      {
+        "finding": "ITER-RETGEN consistently outperforms Self-Ask on QA tasks, regardless of whether context mentions the answer.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "ITER-RETGEN is simpler and causes fewer overheads than interleaved retrieval-generation methods.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "ITER-RETGEN works effectively with open-source LLaMA-2 models.",
+        "support_type": "reported_result",
+        "page": 13
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "Computational Cost",
+        "evidence": "ITER-RETGEN causes fewer overheads of retrieval and generation compared to interleaved methods.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "aspect": "Computational Cost",
+        "evidence": "Generation-Augmented Retrieval Adaptation reduces the number of iterations needed to achieve performance.",
+        "support_type": "author_claim",
+        "page": 2
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Automatic metrics (EM) can underestimate LLM performance.",
+      "More iterations generally improve performance but may increase cost."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4389520468",
+    "title": "Enhancing Retrieval-Augmented Large Language Models with Iterative Retrieval-Generation Synergy",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P3",
+    "study_or_article_type": "Technical Framework Proposal",
+    "research_objective": "To address the limitations of existing dynamic RAG methods that rely on static rules for retrieval timing and limited context for query formulation, by designing a framework that decides when and what to retrieve based on the LLM's real-time information needs.",
+    "method_or_framework": "DRAGIN (Dynamic Retrieval Augmented Generation based on the Information Needs of LLMs), consisting of RIND (Real-time Information Needs Detection) and QFS (Query Formulation based on Self-attention).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Transformer-based LLMs (e.g., Llama 2, Bloom)",
+        "Existing dynamic RAG frameworks (e.g., FLARE, IRCot, RETRO)"
+      ],
+      "tasks_or_contexts": [
+        "Knowledge-intensive generation tasks"
+      ],
+      "datasets": [
+        "2WikiMultihopQA",
+        "HotpotQA",
+        "IIRC",
+        "StrategyQA"
+      ],
+      "baselines": [
+        "Static rule-based retrieval",
+        "Fixed-interval retrieval (e.g., RETRO, IRCot)",
+        "FLARE (Jiang et al., 2023)"
+      ],
+      "metrics": [
+        "Performance on knowledge-intensive benchmarks"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "DRAGIN achieves superior performance on all four knowledge-intensive generation benchmarks compared to existing dynamic RAG methods.",
+        "support_type": "reported_result",
+        "page": 1
+      },
+      {
+        "finding": "The proposed RIND strategy (combining uncertainty, semantic significance, and token influence) and QFS strategy (leveraging self-attention across the entire context) perform uniformly better than existing strategies.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "BM25 outperforms the dense retrieval model SGPT in the dynamic RAG framework across various datasets.",
+        "support_type": "reported_result",
+        "page": 10
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "Computational Cost",
+        "description": "The paper states DRAGIN is a 'lightweight RAG framework' that can be incorporated without further training, fine-tuning, or prompt engineering.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "aspect": "Inference Cost",
+        "description": "Retrieval augmentation increases time and computation cost; the framework aims to avoid unnecessary retrieval to mitigate this.",
+        "support_type": "author_claim",
+        "page": 2
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      {
+        "limitation": "Relies on the self-attention mechanism of Transformer-based LLMs, which is not accessible in certain APIs that do not provide self-attention scores.",
+        "support_type": "author_claim",
+        "page": 7
+      },
+      {
+        "limitation": "Existing dynamic RAG methods often rely on static rules or fixed intervals, which may not capture the LLM's real-time information needs effectively.",
+        "support_type": "author_claim",
+        "page": 2
+      }
+    ],
+    "validity_risks": [],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "W4402671152",
+    "title": "DRAGIN: Dynamic Retrieval Augmented Generation based on the Real-time Information Needs of Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P4",
+    "study_or_article_type": "Benchmarking Study",
+    "research_objective": "To systematically investigate the impact of Retrieval-Augmented Generation on large language models by establishing a new benchmark (RGB) to evaluate fundamental RAG abilities: noise robustness, negative rejection, information integration, and counterfactual robustness.",
+    "method_or_framework": "Retrieval-Augmented Generation Benchmark (RGB) construction and evaluation.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "ChatGPT (gpt-3.5-turbo)",
+        "ChatGLM-6B",
+        "ChatGLM2-6B",
+        "Vicuna-7B-v1.3",
+        "Qwen-7B-Chat",
+        "BELLE-7B-2M"
+      ],
+      "tasks_or_contexts": [
+        "RAG fundamental abilities evaluation"
+      ],
+      "datasets": [
+        "RGB (English and Chinese)"
+      ],
+      "baselines": [
+        "None (Benchmark creation)"
+      ],
+      "metrics": [
+        "Accuracy (Noise Robustness)",
+        "Rejection Rate (Negative Rejection)",
+        "Accuracy (Information Integration)",
+        "Error Correction Rate (Counterfactual Robustness)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LLMs exhibit a certain degree of noise robustness but struggle significantly with negative rejection, information integration, and dealing with false information.",
+        "support_type": "reported_result",
+        "page": 1
+      },
+      {
+        "finding": "Negative rejection poses a challenge; the highest rejection rates for LLMs in English and Chinese were only 45% and 43.33% respectively.",
+        "support_type": "reported_result",
+        "page": 6
+      },
+      {
+        "finding": "Information integration errors include Merging Error (28%), Ignoring Error (28%), and Misalignment Error (6%).",
+        "support_type": "reported_result",
+        "page": 7
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": true,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      {
+        "limitation": "LLMs struggle with noise robustness, negative rejection, information integration, and counterfactual robustness.",
+        "support_type": "reported_result",
+        "page": 1
+      },
+      {
+        "limitation": "LLMs often fail to strictly follow instructions, making them unreliable as state triggers (e.g., for recognizing rejection).",
+        "support_type": "reported_result",
+        "page": 6
+      }
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "2309.01431",
+    "title": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P5",
+    "study_or_article_type": "Benchmarking Study",
+    "research_objective": "To systematically evaluate Retrieval-Augmented Generation (RAG) systems in the medical domain by introducing the MIRAGE benchmark and MEDRAG toolkit, identifying optimal settings and scaling properties.",
+    "method_or_framework": "MEDRAG Toolkit (Corpora, Retrievers, LLMs) applied to MIRAGE Benchmark (Zero-Shot Learning, Multi-Choice Evaluation, RAG, Question-Only Retrieval).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "GPT-3.5-turbo-16k-0613",
+        "GPT-4-32k-0613",
+        "Mixtral-7×8B",
+        "Llama-2-70B",
+        "MEDITRON-70B",
+        "PMC-LLaMA-13B"
+      ],
+      "tasks_or_contexts": [
+        "Medical Question Answering (QA)"
+      ],
+      "datasets": [
+        "MMLU-Med (6 tasks)",
+        "MedQA-US",
+        "MedMCQA",
+        "PubMedQA*",
+        "BioASQ-Y/N"
+      ],
+      "baselines": [
+        "Chain-of-Thought (CoT) Prompting"
+      ],
+      "metrics": [
+        "Accuracy (Multi-choice QA)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "MEDRAG improves the accuracy of six different LLMs by up to 18% over chain-of-thought prompting, elevating GPT-3.5 and Mixtral to GPT-4-level performance on MIRAGE.",
+        "support_type": "reported_result",
+        "page": 1
+      },
+      {
+        "finding": "The combination of various medical corpora and retrievers achieves the best performance.",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "A log-linear scaling property exists between model performance and the number of retrieved snippets.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "A 'lost-in-the-middle' phenomenon (U-shaped decreasing-then-increasing pattern) is observed between model accuracy and the position of the ground-truth snippet.",
+        "support_type": "author_claim",
+        "page": 8
+      },
+      {
+        "finding": "PubMed and the combined MedCorp corpus are the only corpora that outperform CoT on all tasks in MIRAGE.",
+        "support_type": "author_claim",
+        "page": 9
+      },
+      {
+        "finding": "BM25 and the domain-specific MedCPT retriever display superior performance, with performance further enhanced by combining multiple retrievers (RRF-2, RRF-4).",
+        "support_type": "author_claim",
+        "page": 2
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "type": "Computational Cost",
+        "description": "Large-scale experiments conducted with over 1.8 trillion prompt tokens.",
+        "page": 1
+      }
+    ],
+    "reproducibility": {
+      "code_available": "https://github.com/Teddy-XiongGZ/MedRAG",
+      "data_available": "https://github.com/Teddy-XiongGZ/MIRAGE",
+      "variance_or_significance": "Log-linear scaling curves and U-shaped accuracy patterns observed across tasks.",
+      "ablation_or_sensitivity": "Evaluated effects of different numbers of retrieved snippets (k ∈ {1, 2, 4, ..., 64}) and corpus combinations.",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Primarily evaluates vanilla RAG architecture (retrieved documents prepended to context), not newer designs like active RAG.",
+      "Coverage of corpora, retrievers, and LLMs, while comprehensive, could be expanded (e.g., full-text PMC articles, FAQs).",
+      "Only evaluated retrieval component for PubMedQA* and BioASQ-Y/N; other datasets lack ground-truth document labels.",
+      "Evaluation focuses on multi-choice QA; other knowledge-intensive tasks like claim verification were not evaluated."
+    ],
+    "validity_risks": [
+      "Potential bias from the specific selection of medical datasets and corpora.",
+      "Evaluation setting of 'Question-Only Retrieval' (without options) may not fully reflect real-world constraints where options might be implicitly known."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4402670290",
+    "title": "Benchmarking Retrieval-Augmented Generation for Medicine",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P6",
+    "study_or_article_type": "Survey",
+    "research_objective": "To provide a structured, unified framework for understanding Retrieval-Augmented Generation (RAG) by categorizing techniques into pre-retrieval, retrieval, post-retrieval, and generation phases, and to review evaluation methods.",
+    "method_or_framework": "Taxonomy and Literature Review of RAG techniques across four phases (Pre-retrieval, Retrieval, Post-retrieval, Generation).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "General LLMs (e.g., GPT-4, Llama-2)",
+        "Retrieval Models (e.g., BM25, BERT-based)"
+      ],
+      "tasks_or_contexts": [
+        "Text Generation",
+        "Knowledge Intensive Tasks"
+      ],
+      "datasets": [
+        "TriviaQA",
+        "HotpotQA",
+        "FEVER",
+        "Natural Questions (NQ)",
+        "Wizard of Wikipedia (WoW)",
+        "T-REX"
+      ],
+      "baselines": [],
+      "metrics": [
+        "MAP, Precision, Recall, NDCG (Retrieval)",
+        "Accuracy, BLEU, ROUGE-L (Generation)",
+        "Context Relevance, Faithfulness (RAG-specific)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "RAG addresses LLM limitations: inability to access up-to-date information, subpar performance in specialized areas, and susceptibility to hallucinations.",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "RAG workflow consists of four main phases: Pre-retrieval (Indexing), Retrieval, Post-retrieval, and Generation.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "Evaluation frameworks have evolved to assess not just downstream task accuracy but also retrieval quality (Context Relevance), generation faithfulness, and robustness to noise/misinformation.",
+        "support_type": "author_claim",
+        "page": 20
+      },
+      {
+        "finding": "Techniques for post-retrieval and generation include Context Compression, Self-Consistency, Ensemble, and Feedback loops.",
+        "support_type": "author_claim",
+        "page": 18
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "Focuses primarily on text-based applications; multimodal data applications are discussed as future directions.",
+      "Does not provide new empirical results or benchmarks, but synthesizes existing literature."
+    ],
+    "validity_risks": [
+      "Subjectivity in categorizing techniques into specific phases.",
+      "Potential bias towards surveyed papers and their definitions."
+    ],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "2404.10981",
+    "title": "A Survey on Retrieval-Augmented Text Generation for Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P7",
+    "study_or_article_type": "Technical Paper",
+    "research_objective": "Enhance the factuality of Medical Large Vision Language Models (Med-LVLMs) by addressing two key challenges in medical RAG: the optimal selection of retrieved contexts and the model's over-reliance on retrieved information.",
+    "method_or_framework": "RULE (Reliable Multimodal RAG) framework consisting of two components: (1) Factuality Risk Control (FRC) via calibrated selection of the number of retrieved contexts k using hypothesis testing; (2) Knowledge Balanced Preference Tuning (KBPT) using a curated preference dataset to fine-tune the model for balancing internal knowledge and retrieved contexts.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLaVA-Med-1.5 7B",
+        "LLaVA-Med-1.0",
+        "Harvard-FairVLMed",
+        "Med-Flamingo",
+        "MedVInT",
+        "RadFM"
+      ],
+      "tasks_or_contexts": [
+        "Medical Visual Question Answering (VQA)",
+        "Medical Report Generation"
+      ],
+      "datasets": [
+        "IU-Xray",
+        "Harvard-FairVLMed",
+        "MIMIC-CXR"
+      ],
+      "baselines": [
+        "LLaVA-Med-1.5 (w/o RAG)",
+        "LLaVA-Med-1.5 (w/ RAG)",
+        "LLaVA-Med-1.5 (w/ Beam Search)",
+        "LLaVA-Med-1.5 (w/ DoLa)",
+        "LLaVA-Med-1.5 (w/ OPEAR)",
+        "LLaVA-Med-1.5 (w/ VCD)"
+      ],
+      "metrics": [
+        "Accuracy",
+        "Precision",
+        "Recall",
+        "F1 Score",
+        "BLEU",
+        "ROUGE-L",
+        "METEOR"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "RULE achieves an average improvement of 47.4% in factual accuracy on VQA tasks and significantly improves report generation metrics (e.g., BLEU 27.53, ROUGE-L 23.16) compared to baselines.",
+        "support_type": "reported_result",
+        "page": 6
+      },
+      {
+        "finding": "The calibrated selection of k (Factuality Risk Control) stabilizes retrieval performance and outperforms the original Med-LVLM.",
+        "support_type": "reported_result",
+        "page": 7
+      },
+      {
+        "finding": "Knowledge Balanced Preference Tuning (KBPT) effectively mitigates over-reliance on retrieved contexts, reducing the Over-Reliance Ratio (ORR) from ~47% to ~27%.",
+        "support_type": "reported_result",
+        "page": 7
+      },
+      {
+        "finding": "The KBPT method demonstrates good compatibility across different backbone models, improving accuracy by an average of 16.7% on LLaVA-Med-1.0.",
+        "support_type": "reported_result",
+        "page": 8
+      },
+      {
+        "finding": "VQA data format yields better performance than captioning format during KBPT fine-tuning, indicating the model learns to integrate and balance knowledge better with VQA.",
+        "support_type": "reported_result",
+        "page": 8
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "type": "Computational Cost",
+        "detail": "Training the retriever (CLIP) takes roughly 2.5 hours on 4 NVIDIA RTX A6000 GPUs; fine-tuning LLaVA-Med-1.5 7B takes about 4 hours.",
+        "page": 13
+      },
+      {
+        "type": "Implementation Details",
+        "detail": "Uses AdamW optimizer, learning rate 10^-3, weight decay 10^-2, batch size 32, and LoRA fine-tuning for preference optimization.",
+        "page": 13
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": "Ablation studies show that removing KBPT leads to a significant drop in performance (e.g., Error increases from 15.93 to 22.85 on IU-Xray), confirming the significance of each component.",
+      "ablation_or_sensitivity": "Ablation studies on three datasets confirm that KBPT further enhances reliability and significantly improves performance, with RAG alone showing unstable improvements.",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "The study focuses on medical vision-language tasks; generalizability to non-medical domains is not discussed.",
+      "The preference dataset is curated based on samples where the model errs due to over-reliance, which might not cover all failure modes."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4404783798",
+    "title": "RULE: Reliable Multimodal RAG for Factuality in Medical Vision Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P8",
+    "study_or_article_type": "Technical Paper",
+    "research_objective": "Improve the robustness and factuality of Retrieval-Augmented Generation (RAG) by addressing scenarios where the retriever returns inaccurate results, through corrective strategies.",
+    "method_or_framework": "Corrective Retrieval Augmented Generation (CRAG) framework: (1) A lightweight retrieval evaluator (T5-based) assesses retrieved documents to trigger actions: Correct, Incorrect, or Ambiguous; (2) For Incorrect/Ambiguous, large-scale web searches are performed to augment retrieval; (3) A decompose-then-recompose algorithm refines retrieved documents to filter irrelevant information.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLaMA2-7B",
+        "LLaMA2-13B",
+        "Alpaca-7B",
+        "Alpaca-13B",
+        "LLaMA2-hf-7B",
+        "ChatGPT"
+      ],
+      "tasks_or_contexts": [
+        "Short-form entity generation (PopQA)",
+        "Long-form generation (Biography)",
+        "Healthcare domain (PubHealth)",
+        "Closed-set tasks (Arc-Challenge)"
+      ],
+      "datasets": [
+        "PopQA",
+        "Biography",
+        "PubHealth",
+        "Arc-Challenge"
+      ],
+      "baselines": [
+        "Standard RAG",
+        "SAIL",
+        "Self-RAG",
+        "Self-CRAG"
+      ],
+      "metrics": [
+        "Accuracy",
+        "FactScore"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "CRAG significantly improves RAG performance, e.g., 7.0% accuracy on PopQA and 36.6% on PubHealth compared to standard RAG.",
+        "support_type": "reported_result",
+        "page": 8
+      },
+      {
+        "finding": "Self-CRAG outperforms Self-RAG by margins of 20.0% accuracy on PopQA and 36.9% FactScore on Biography.",
+        "support_type": "reported_result",
+        "page": 8
+      },
+      {
+        "finding": "CRAG is plug-and-play and generalizable across different LLMs (e.g., LLaMA2-hf-7b) and tasks (short/long-form).",
+        "support_type": "reported_result",
+        "page": 8
+      },
+      {
+        "finding": "The retrieval evaluator (T5-based) outperforms ChatGPT in accuracy (84.3% vs 58.0%) for assessing retrieved document quality.",
+        "support_type": "reported_result",
+        "page": 9
+      },
+      {
+        "finding": "CRAG maintains robustness even when retrieval performance is degraded (e.g., removing accurate retrieval results).",
+        "support_type": "reported_result",
+        "page": 9
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "type": "Computational Cost",
+        "detail": "CRAG increases FLOPs per token from 26.5 (RAG) to 27.2 and execution time from 0.363s to 0.512s. Self-CRAG has an upper bound of 80.2 FLOPs per token and 0.908s.",
+        "page": 10
+      },
+      {
+        "type": "Implementation Details",
+        "detail": "Uses NVIDIA A800 80GB GPU; T5-large (0.77B) for evaluator fine-tuning; Contriever for retrieval.",
+        "page": 15
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": "Ablation studies show that removing any single operation (refinement, rewriting, selection) degrades performance, confirming the necessity of each component.",
+      "ablation_or_sensitivity": "Ablation studies on PopQA demonstrate that removing the 'Correct' action drops accuracy significantly (e.g., from 54.9 to 52.4 for LLaMA2-hf-7b).",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "The study relies on a public commercial web search API, which may introduce biases or rate limits.",
+      "The performance on PubHealth is lower for LLaMA2-hf-7B due to its weakness in instruction comprehension for binary questions.",
+      "The computational overhead is higher than standard RAG."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "2401.15884",
+    "title": "Corrective Retrieval Augmented Generation",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P9",
+    "study_or_article_type": "Case Study",
+    "research_objective": "To enhance the factual accuracy of LLMs for domain-specific and time-sensitive queries in private knowledge-bases by utilizing Retrieval Augmented Generation (RAG) to counter hallucinations.",
+    "method_or_framework": "End-to-end system design integrating RAG pipeline with upstream dataset processing and downstream performance evaluation. The system includes a custom web crawler, dataset generation, a Context Retriever, a Reranking model (BgeRerank), and a Core Model (LLaMA-2).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLaMA-2 (7B)",
+        "LLaMA-2 (13B)",
+        "Sentence-transformers/all-MiniLM-L6-v2 (Embedding model)",
+        "BAAI/bge-reranker-large (Reranking model)"
+      ],
+      "tasks_or_contexts": [
+        "Domain-specific and time-sensitive queries",
+        "Question-answering (QA)"
+      ],
+      "datasets": [
+        "CMU website data (34,781 QA pairs, 27,824 training, 6,957 testing)",
+        "Human-validated test set (128 QA pairs per run)"
+      ],
+      "baselines": [
+        "Baseline (w/o RAG)",
+        "Raw RAG Pipeline",
+        "RAG + Embedding",
+        "RAG + Core Model Finetune",
+        "RAG + Embedding & Core Model Finetune"
+      ],
+      "metrics": [
+        "Recall",
+        "F1 Score",
+        "Cosine Similarity",
+        "BLEU"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "RAG significantly improves performance over baselines without RAG (e.g., Recall increased from 0.361 to 0.452).",
+        "support_type": "reported_result",
+        "page": 5
+      },
+      {
+        "finding": "Fine-tuning the embedding model improves recall and F1 scores.",
+        "support_type": "reported_result",
+        "page": 6
+      },
+      {
+        "finding": "Fine-tuning the core model (LLaMA-2) with small-scale and skewed datasets can degrade performance, leading to verbose answers and repetitive tokens.",
+        "support_type": "author_claim",
+        "page": 6
+      },
+      {
+        "finding": "The system effectively answers domain-specific questions (e.g., academic calendar) using retrieved context.",
+        "support_type": "reported_result",
+        "page": 6
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "resource_type": "Computation",
+        "detail": "Fine-tuning LLaMA-2-7B is limited by parameter size and total computation steps due to resource constraints.",
+        "page": 6
+      }
+    ],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": "Standard deviation is derived from 4 independent runs.",
+      "ablation_or_sensitivity": "Ablation study performed on finetuning the embedding and core models.",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Fine-tuning large generative models with small and biased datasets has limitations.",
+      "Fine-tuning may reduce the model's performance in language generation tasks.",
+      "The model suffers from limited capacity due to its small parameter size (7 Billion)."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "2403.10446",
+    "title": "Enhancing LLM Factual Accuracy with RAG to Counter Hallucinations: A Case Study on Domain-Specific Queries in Private Knowledge-Bases",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P10",
+    "study_or_article_type": "Framework Proposal",
+    "research_objective": "To improve the reliability and traceability of Retrieval-Augmented Language Models (RALMs) by leveraging self-generated reasoning trajectories.",
+    "method_or_framework": "SELF-REASONING framework comprising three processes: Relevance-Aware Process (RAP), Evidence-Aware Selective Process (EAP), and Trajectory Analysis Process (TAP). Uses a gradual learning method with stage-wise masking strategies.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLaMA-2 (7B, 13B)",
+        "Vicuna (7B, 13B)",
+        "LLaMA-2-FT7B",
+        "Self-RAG (7B, 13B)",
+        "RECOMP",
+        "ReAct"
+      ],
+      "tasks_or_contexts": [
+        "Short-form QA",
+        "Long-form QA",
+        "Fact Verification"
+      ],
+      "datasets": [
+        "NaturalQuestions (NQ)",
+        "PopQA",
+        "FEVER",
+        "ASQA"
+      ],
+      "baselines": [
+        "LLaMA-2 (w/o retrieval)",
+        "LLaMA-2 (with retrieval)",
+        "Vicuna",
+        "Self-RAG"
+      ],
+      "metrics": [
+        "Accuracy (Short-form QA)",
+        "EM Recall (Long-form QA)",
+        "Citation Recall",
+        "Citation Precision"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "SELF-REASONING outperforms baselines and achieves performance comparable to GPT-4 using only 2,000 training samples.",
+        "support_type": "reported_result",
+        "page": 5
+      },
+      {
+        "finding": "The framework improves citation recall and precision, achieving better results than GPT-4 in ASQA citation recall metrics (72.3 vs. 68.5).",
+        "support_type": "reported_result",
+        "page": 6
+      },
+      {
+        "finding": "The framework demonstrates robustness to noisy documents and random shuffling of retrieved documents.",
+        "support_type": "reported_result",
+        "page": 7
+      },
+      {
+        "finding": "Ablation studies show that removing RAP, EAP, or TAP individually degrades performance.",
+        "support_type": "reported_result",
+        "page": 6
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "resource_type": "Training Data",
+        "detail": "Uses only 2,000 training samples to achieve performance comparable to GPT-4.",
+        "page": 5
+      },
+      {
+        "resource_type": "Efficiency",
+        "detail": "More efficient than Self-RAG which requires training additional critic LMs using 46,000 instances.",
+        "page": 6
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": "Results averaged over five runs, standard variance values omitted (all ≤2%).",
+      "ablation_or_sensitivity": "Ablation study conducted on RAP, EAP, TAP, and gradual learning (GL) methods.",
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Relies on GPT-4 for training data generation, which may introduce bias.",
+      "Effectiveness of external tools (NLI, summarization) influences overall performance.",
+      "Training and optimizing auxiliary models require additional costs."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "W4409362682",
+    "title": "Improving Retrieval Augmented Language Model with Self-Reasoning",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P11",
+    "study_or_article_type": "Development and Usability Study",
+    "research_objective": "Enhance the accuracy and reliability of COVID-19 fact-checking by integrating a retrieval-augmented generation (RAG) system with LLMs, specifically addressing hallucinations and context inaccuracy.",
+    "method_or_framework": "Naïve RAG, LOTR-RAG, CRAG, SRAG. Uses GPT-4 as base model. Implements agentic frameworks (CRAG, SRAG) with graders and rewriters. Utilizes vector stores (Qdrant) and embedding models (text-embedding-ada-002, NeuML/pubmedbert-base-embeddings).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "GPT-4 (baseline)",
+        "Naïve RAG",
+        "LOTR-RAG",
+        "CRAG",
+        "SRAG"
+      ],
+      "tasks_or_contexts": [
+        "COVID-19 fact-checking",
+        "Claim verification (True/False)"
+      ],
+      "datasets": [
+        "Real-world dataset (500 claims)",
+        "Synthesized dataset (500 claims)"
+      ],
+      "baselines": [
+        "GPT-4 (standalone)"
+      ],
+      "metrics": [
+        "Accuracy",
+        "F1-score",
+        "Precision",
+        "Sensitivity",
+        "PPV (Positive Predictive Value)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "RAG systems significantly improved accuracy over baseline GPT-4. Naïve RAG improved accuracy to 0.946 (real-world) and 0.972 (synthesized). LOTR-RAG reached 0.951 (real-world). CRAG and SRAG achieved the highest accuracies of 0.972 and 0.973 (real-world), and 0.978 (synthesized).",
+        "support_type": "reported_result",
+        "page": 7
+      },
+      {
+        "finding": "CRAG and SRAG models outperformed all others, demonstrating the effectiveness of agentic frameworks in reducing hallucinations and improving fact-checking accuracy.",
+        "support_type": "author_claim",
+        "page": 7
+      },
+      {
+        "finding": "The RAG system provided detailed, evidence-based explanations, referencing specific documents (e.g., 'Predicting the development trend of the second wave of COVID-19 in five European countries' by J. Lei et al.) to support claims.",
+        "support_type": "reported_result",
+        "page": 8
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "Computational Cost",
+        "detail": "Data preprocessing used extracted abstracts and metadata instead of full-text papers to minimize copyright issues and computational costs.",
+        "page": 3
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": "P value from confusion matrix was <.001 for all cases, indicating significant difference from random guessing.",
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "The external knowledge dataset derived from peer-reviewed journal papers cannot capture the entirety of academic research due to language restrictions, geographical diversity, and lack of timely unpublished clinical insights.",
+      "RAG-based systems may still struggle with complex claims where evidence is mixed or context is insufficient.",
+      "The study used preexisting public data with no identifiable information, requiring no institutional review board review.",
+      "The study focused on text-based retrieval; future research should explore knowledge-graph RAG systems and comparative performance of fine-tuned vs. RAG-equipped LLMs.",
+      "The modularity and scalability of RAG systems present opportunities for development but also require careful integration into platforms like social media.",
+      "Collaboration among AI developers, public health experts, and human-in-the-loop feedback is crucial for ethical implementation.",
+      "The system relies on vector similarity search and specific embedding models, which may have limitations in handling highly nuanced or ambiguous queries.",
+      "The study did not report specific inference latency or memory usage metrics.",
+      "The study did not provide a breakdown of computational costs per model or per query.",
+      "The study did not provide a breakdown of computational costs per model or per query."
+    ],
+    "validity_risks": [
+      "Potential bias in the synthesized dataset if not representative of real-world noise.",
+      "Reliance on GPT-4 as the base model may limit generalizability to other LLMs.",
+      "The evaluation metrics (Accuracy, F1) may not fully capture the nuance of fact-checking in complex medical contexts.",
+      "The study did not perform cross-validation or test on unseen datasets to assess generalization.",
+      "The study did not perform cross-validation or test on unseen datasets to assess generalization."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [
+      "The study did not report the specific size of the context dataset (130,000 papers) in terms of total tokens or processing time.",
+      "The study did not report the specific size of the context dataset (130,000 papers) in terms of total tokens or processing time."
+    ],
+    "paper_id": "W4408046520",
+    "title": "Use of Retrieval-Augmented Large Language Model for COVID-19 Fact-Checking: Development and Usability Study",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P12",
+    "study_or_article_type": "Survey",
+    "research_objective": "To comprehensively review existing efforts that integrate RAG techniques into AIGC scenarios, classifying RAG foundations and summarizing enhancements.",
+    "method_or_framework": "Systematic review and classification of RAG foundations, enhancements, and applications across various modalities. Categorizes RAG into 'training' and 'augmentation' aspects.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Generative models (LLMs, diffusion models, etc.)",
+        "Retrievers (Sparse, Dense, Hybrid, etc.)"
+      ],
+      "tasks_or_contexts": [
+        "Text generation",
+        "Code generation",
+        "Audio generation",
+        "Image generation",
+        "Video generation",
+        "Knowledge Graph QA",
+        "Table QA",
+        "Fact-checking"
+      ],
+      "datasets": [
+        "Mentions various benchmarks (e.g., KILT, RAGAS, ARES, CRUD-RAG, RAG-Med) but does not provide specific performance data for a single study."
+      ],
+      "baselines": [
+        "Mentions BM25 as a strong baseline for sparse retrieval."
+      ],
+      "metrics": [
+        "Mentions benchmarks for evaluation (e.g., RAGAS, ARES) but does not provide specific metric values."
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "RAG introduces the information retrieval process, enhancing generation by retrieving relevant objects from data stores, leading to higher accuracy and robustness.",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "RAG has extended beyond text domain to other modalities (codes, audios, images, videos, 3D, knowledge, AI for science) with consistent core principles but varying augmentation techniques.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "RAG foundations can be classified based on how the retriever augments the generator, encompassing all RAG scenarios.",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "RAG applications include query-based RAG, logit-based RAG, and retrieval-augmented generation for various tasks like code generation, semantic parsing, and knowledge graph reasoning.",
+        "support_type": "reviewer_inference",
+        "page": 11
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "Computational Cost",
+        "detail": "Mentions that RAG introduces retrieval steps which can increase inference time compared to standalone LLMs, but also allows for updating knowledge without retraining.",
+        "page": 1
+      },
+      {
+        "aspect": "Training Cost",
+        "detail": "RAG allows for updating knowledge without retraining the generator, mitigating high training costs associated with fine-tuning large models.",
+        "page": 1
+      }
+    ],
+    "reproducibility": {
+      "code_available": "GitHub link provided: https://github.com/PKU-DAIR/RAG-Survey",
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "The absence of discussion on RAG foundations significantly undermines the practical value of the research in this domain.",
+      "The lack of an overview on RAG applications causes researchers and practitioners to overlook RAG’s progress across multiple modalities.",
+      "Most existing research focuses on text-related RAG tasks facilitated by LLMs, without in-depth investigation in other modalities.",
+      "The survey does not provide specific performance comparisons or benchmarks for the reviewed methods.",
+      "The survey does not provide specific performance comparisons or benchmarks for the reviewed methods."
+    ],
+    "validity_risks": [
+      "As a survey, it relies on the quality and comprehensiveness of the cited literature.",
+      "The classification of RAG foundations may be subjective and not universally agreed upon.",
+      "The survey does not provide empirical evidence for the claims made about RAG's effectiveness.",
+      "The survey does not provide empirical evidence for the claims made about RAG's effectiveness."
+    ],
+    "evidence_strength": "moderate",
+    "uncertainties": [
+      "The survey does not provide specific performance metrics or benchmarks for the reviewed methods.",
+      "The survey does not provide specific performance metrics or benchmarks for the reviewed methods."
+    ],
+    "paper_id": "2402.19473",
+    "title": "Retrieval-Augmented Generation for AI-Generated Content: A Survey",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  }
+]
