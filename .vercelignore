@@ -15,6 +15,9 @@ docs/
 evaluation/
 supabase/
 tests/
+artifacts/
+tmp/
+.pytest_cache/
 
 DEPLOYMENT.md
 PROJECT_PAGE.md
