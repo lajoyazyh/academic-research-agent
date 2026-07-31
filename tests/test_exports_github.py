@@ -45,6 +45,35 @@ def test_render_docx_is_valid_office_zip(sample_session):
         assert "Retrieval-Augmented Generation" in archive.read("word/document.xml").decode("utf-8")
 
 
+def test_tables_and_concept_flow_survive_html_docx_and_pdf_exports(sample_session):
+    sample_session["review"] = """## 结构化技术证据
+
+| 文献 | 方法 | 结果 |
+|---|---|---|
+| P1 | CRAG | 0.40 → 0.47 |
+
+```mermaid
+flowchart LR
+  A["Static retrieval"] --> B["Correction and feedback"]
+```
+"""
+    data = collect_artifacts(sample_session)
+    html_payload, _, _ = render_export(data, "html")
+    html_text = html_payload.decode("utf-8")
+    assert "<table>" in html_text
+    assert "concept-flow" in html_text
+    assert "Static retrieval" in html_text
+
+    docx_payload, _, _ = render_export(data, "docx")
+    with zipfile.ZipFile(io.BytesIO(docx_payload)) as archive:
+        document = archive.read("word/document.xml").decode("utf-8")
+        assert "<w:tbl>" in document
+        assert "Static retrieval" in document
+
+    pdf_payload, _, _ = render_export(data, "pdf")
+    assert pdf_payload.startswith(b"%PDF")
+
+
 def test_zip_contains_portable_research_package(sample_session):
     payload, _, _ = render_export(collect_artifacts(sample_session), "zip")
     with zipfile.ZipFile(io.BytesIO(payload)) as archive:

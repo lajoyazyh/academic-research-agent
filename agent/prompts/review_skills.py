@@ -19,6 +19,9 @@ DEFAULT_REVIEW_SKILL = """## 角色与产物边界
 6. 只有效应定义和统计数据兼容、且系统明确提供统计结果时，才可以报告荟萃分析。
 7. 所有具体方法、数据、样本、指标、数字和归因判断必须紧邻稳定引用标识 `[P1]`、`[P2]`。
 8. 证据不足时写“在本次协议覆盖的语料中未发现”或“现有材料不足以判断”，不得泛化为整个领域没有研究。
+9. 一级研究、基准和框架才能支撑性能、成本、机制有效性与实践建议；综述论文只能支撑背景、分类和研究版图。
+10. 数字必须同时给出数据集/任务、基础模型、基线、指标、结果值及绝对/相对变化类型；结构化证据缺项时不得补写。
+11. “应采用”“优先采用”“普遍有效”等建议必须由多个可比一级研究支持并写明适用条件，否则改为条件性研究假设。
 
 ## 默认结构
 - `# 标题`
@@ -41,6 +44,8 @@ DEFAULT_REVIEW_SKILL = """## 角色与产物边界
 - 每一段围绕一个跨研究论点展开，优先采用“综合结论 → 多来源证据 → 分歧解释 → 边界”的段落结构。
 - 禁止使用“论文一/论文二”或按论文依次介绍的正文结构。
 - 明确区分作者报告、当前证据综合和综述作者推断。
+- 对技术机制回答输入、内部状态、决策/阈值、触发粒度、动作/融合、失效传播与适用条件。
+- 不把具有自适应控制的系统自动称为 Agent；只有证据卡确认目标、状态、动作和反馈闭环时才使用该术语。
 - 原始论文标题、数据集和软件名称保持原语言。
 - 列表和表格只用于高密度对照，主体使用连贯学术段落。
 - 输出完整 Markdown 正文，不输出写作过程、提示词或占位符。
@@ -74,6 +79,13 @@ references.
    dataset, sample, metric, number and attribution.
 8. When coverage is limited, write “not identified within the corpus covered by
    this protocol”, not “no research exists”.
+9. Surveys may support background, taxonomy and landscape claims only. Primary
+   studies, benchmarks or framework papers are required for performance, cost,
+   mechanism-effectiveness and practice claims.
+10. Every number needs its dataset/task, base model, baseline, metric, values
+    and absolute/relative effect type. Omit unstructured or incomplete numbers.
+11. Condition normative recommendations and avoid agentic terminology unless
+    goal, state, action and feedback-loop criteria are explicitly verified.
 
 ## Default structure
 - `# Title`
@@ -141,6 +153,8 @@ REVIEW_PRESETS = {
 - 不跨数据集、指标、数据切分或模型规模直接比较数字。
 - 明确区分论文声称的结果、独立复现实证和当前材料无法验证的工程结论。
 - 质量讨论覆盖数据泄漏风险、基线与调参公平性、方差/显著性、消融、代码数据环境和外部有效性。
+- 正文围绕“为何有效、何时失效、适用任务和工程代价”展开，不能只列机制名称。
+- 方法、三张技术证据表、概念图和参考文献由系统确定性插入；正文不得伪造或复写这些数据。
 """,
     },
     "scoping": {
@@ -189,6 +203,9 @@ Include query, exclusion and evidence-table appendices when supplied.
 Cover problem formulations, method taxonomy, datasets and benchmarks, evaluation
 protocols, reproducibility, engineering cost and open problems. Never compare
 numbers across incompatible datasets, metrics, splits or model scales.
+Explain why mechanisms work, when they fail, applicable tasks and engineering
+cost. Methods, three evidence tables, the concept figure and references are
+inserted deterministically; never invent or duplicate them.
 """,
     },
     "scoping": {

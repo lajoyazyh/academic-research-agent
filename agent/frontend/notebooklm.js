@@ -163,6 +163,11 @@
     this.els.protocolCandidateCap = document.getElementById("protocolCandidateCap");
     this.els.protocolQuestion = document.getElementById("protocolQuestion");
     this.els.protocolSources = document.getElementById("protocolSources");
+    this.els.protocolFields = document.getElementById("protocolFields");
+    this.els.protocolLanguages = document.getElementById("protocolLanguages");
+    this.els.protocolDocuments = document.getElementById("protocolDocuments");
+    this.els.protocolDateFrom = document.getElementById("protocolDateFrom");
+    this.els.protocolDateTo = document.getElementById("protocolDateTo");
     this.els.protocolInclusion = document.getElementById("protocolInclusion");
     this.els.protocolExclusion = document.getElementById("protocolExclusion");
     this.els.protocolMessage = document.getElementById("protocolMessage");
@@ -1106,6 +1111,12 @@
       protocolCapFieldLabel: "Candidate record cap",
       protocolQuestionFieldLabel: "Research question",
       protocolSourcesFieldLabel: "Sources (comma separated)",
+      protocolFieldsFieldLabel: "Search fields (comma separated)",
+      protocolLanguagesFieldLabel: "Language limits (comma separated)",
+      protocolDocumentsFieldLabel: "Document types (comma separated)",
+      protocolScreeningFieldLabel: "Screening strategy",
+      protocolDateFromFieldLabel: "Date from",
+      protocolDateToFieldLabel: "Date to",
       protocolInclusionFieldLabel: "Inclusion criteria (one per line)",
       protocolExclusionFieldLabel: "Exclusion criteria (one per line)",
       protocolCheckpointText: "Confirmation locks this version. Later edits preserve the original candidate records but do not silently reuse earlier screening decisions.",
@@ -1113,7 +1124,9 @@
       flowCandidatesLabel: "Found",
       flowDeduplicatedLabel: "Unique",
       flowScreenedLabel: "Screened",
+      flowFullTextLabel: "Full text",
       flowIncludedLabel: "Included",
+      flowConflictsLabel: "Conflicts",
     };
     Object.entries(text).forEach(([id, value]) => {
       const element = document.getElementById(id);
@@ -1197,12 +1210,111 @@
       flowCandidates: flow.discovered || 0,
       flowDeduplicated: flow.unique_candidates || 0,
       flowScreened: flow.title_abstract_screened || 0,
+      flowFullText: flow.full_text_assessed || 0,
       flowIncluded: flow.included || 0,
+      flowConflicts: flow.screening_conflicts || 0,
     };
     Object.entries(values).forEach(([id, value]) => {
       const element = document.getElementById(id);
       if (element) element.textContent = String(value);
     });
+    const audit = this.state.scientific?.methodology_report || {};
+    const auditBody = document.getElementById("protocolAuditBody");
+    if (auditBody) {
+      const reconciliation = audit.reconciliation || {};
+      const queries = audit.search_queries || [];
+      const reasons = audit.exclusion_reason_counts || {};
+      const conflicts = audit.unresolved_conflicts || [];
+      auditBody.innerHTML = `
+        <p><strong>${audit.reconciled ? "流程数量已对账" : "流程数量尚未对账"}</strong></p>
+        <p>检索式 ${queries.length} 条；完成 ${queries.filter((item) => item.status === "completed").length} 条；待裁决 ${conflicts.length} 条。</p>
+        <p>排除原因：${Object.keys(reasons).length
+          ? Object.entries(reasons).map(([key, value]) => `${this.escapeHtml(key)} ${value}`).join(" · ")
+          : "尚未记录"}</p>
+        <p class="muted">筛选方式：单名研究者与 AI 独立复核，分歧由研究者裁决；不等同于双人类独立筛选。</p>
+        ${protocol.mode === "systematic" && (flow.included || 0) > 0
+          ? '<button type="button" class="secondary-btn compact-btn" data-scientific-action="ai-screen">运行独立 AI 全文复核</button>'
+          : ""}
+        ${conflicts.length ? `<div class="screening-conflict-list">${conflicts.map((item) => `
+          <div class="screening-conflict-item">
+            <strong>${this.escapeHtml(item.paper_id || item.candidate_id || "")}</strong>
+            <span>人工：${this.escapeHtml(item.human_decision || "")} · AI：${this.escapeHtml(item.ai_decision || "")}</span>
+            <div>
+              <button type="button" class="mini-btn" data-resolve-paper="${this.escapeHtml(item.paper_id || "")}" data-resolve-stage="${this.escapeHtml(item.stage || "")}" data-resolve-decision="include">裁决纳入</button>
+              <button type="button" class="mini-btn" data-resolve-paper="${this.escapeHtml(item.paper_id || "")}" data-resolve-stage="${this.escapeHtml(item.stage || "")}" data-resolve-decision="exclude">裁决排除</button>
+            </div>
+          </div>`).join("")}</div>` : ""}
+      `;
+      auditBody.querySelector('[data-scientific-action="ai-screen"]')?.addEventListener("click", () => {
+        this.runIndependentAiScreening();
+      });
+      auditBody.querySelectorAll("[data-resolve-paper]").forEach((button) => {
+        button.addEventListener("click", () => {
+          this.resolveScientificConflict(
+            button.dataset.resolvePaper,
+            button.dataset.resolveStage,
+            button.dataset.resolveDecision,
+          );
+        });
+      });
+    }
+  },
+
+  async runIndependentAiScreening() {
+    const sessionId = this.state.currentSessionId;
+    const paperIds = (this.state.currentSession?.papers || [])
+      .filter((paper) => paper.status === "accepted")
+      .map((paper) => paper.paper_id);
+    if (!sessionId || !paperIds.length) return;
+    this.setConsoleStatus("screening", "正在运行不可见人工决定的独立 AI 全文复核…");
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/screening/ai-review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(this.withProvider({ paper_ids: paperIds, stage: "full_text" })),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(this.apiErrorMessage(data, "AI 独立复核失败"));
+      await this.loadScientificState();
+      this.setConsoleStatus(
+        data.conflicts?.some((item) => item.status === "unresolved") ? "screening" : "plan_confirmed",
+        data.conflicts?.some((item) => item.status === "unresolved")
+          ? "AI复核完成，请处理筛选分歧"
+          : "AI复核完成，未发现未解决分歧",
+      );
+    } catch (error) {
+      this.setConsoleStatus("error", error.message || "AI 独立复核失败");
+    }
+  },
+
+  async resolveScientificConflict(paperId, stage, decision) {
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId || !paperId) return;
+    const reason = window.prompt(
+      decision === "include" ? "请输入裁决纳入理由" : "请输入裁决排除理由",
+      "",
+    );
+    if (!reason?.trim()) return;
+    const payload = {
+      paper_id: paperId,
+      stage,
+      decision,
+      reason,
+      reason_code: decision === "exclude" ? "other" : null,
+      actor_id: "project_owner",
+    };
+    const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/screening/conflicts/resolve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      this.setConsoleStatus("error", this.apiErrorMessage(data, "筛选分歧裁决失败"));
+      return;
+    }
+    await this.loadScientificState();
+    this.setConsoleStatus("plan_confirmed", "筛选分歧已记录裁决");
   },
 
   async openProtocolModal() {
@@ -1219,6 +1331,11 @@
     if (this.els.protocolCandidateCap) this.els.protocolCandidateCap.value = protocol.candidate_cap || 100;
     if (this.els.protocolQuestion) this.els.protocolQuestion.value = protocol.research_question || "";
     if (this.els.protocolSources) this.els.protocolSources.value = (protocol.sources || []).join(", ");
+    if (this.els.protocolFields) this.els.protocolFields.value = (protocol.search_field_scope || ["title", "abstract", "keywords"]).join(", ");
+    if (this.els.protocolLanguages) this.els.protocolLanguages.value = (protocol.languages || ["en", "zh"]).join(", ");
+    if (this.els.protocolDocuments) this.els.protocolDocuments.value = (protocol.document_types || ["journal_article", "conference_paper", "preprint"]).join(", ");
+    if (this.els.protocolDateFrom) this.els.protocolDateFrom.value = protocol.date_from || "";
+    if (this.els.protocolDateTo) this.els.protocolDateTo.value = protocol.date_to || "";
     if (this.els.protocolInclusion) this.els.protocolInclusion.value = (protocol.inclusion_criteria || []).join("\n");
     if (this.els.protocolExclusion) this.els.protocolExclusion.value = (protocol.exclusion_criteria || []).join("\n");
     if (this.els.protocolMessage) this.els.protocolMessage.textContent = protocol.status === "confirmed"
@@ -1244,11 +1361,18 @@
     const lines = (value) => String(value || "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
     const sources = String(this.els.protocolSources?.value || "")
       .split(/[,，;\n]/).map((item) => item.trim()).filter(Boolean);
+    const csv = (value) => String(value || "")
+      .split(/[,，;\n]/).map((item) => item.trim()).filter(Boolean);
     return {
       mode: this.els.protocolMode?.value || "rapid",
       candidate_cap: Number(this.els.protocolCandidateCap?.value || 100),
       research_question: String(this.els.protocolQuestion?.value || "").trim(),
       sources,
+      search_field_scope: csv(this.els.protocolFields?.value),
+      languages: csv(this.els.protocolLanguages?.value),
+      document_types: csv(this.els.protocolDocuments?.value),
+      date_from: this.els.protocolDateFrom?.value || null,
+      date_to: this.els.protocolDateTo?.value || null,
       inclusion_criteria: lines(this.els.protocolInclusion?.value),
       exclusion_criteria: lines(this.els.protocolExclusion?.value),
       language: window.academicLocale?.isEnglish() ? "en" : "zh-CN",
@@ -1259,8 +1383,16 @@
     const sessionId = this.state.currentSessionId;
     if (!sessionId) return false;
     const payload = this.collectProtocolForm();
-    if (!payload.research_question || !payload.sources.length || !payload.inclusion_criteria.length || !payload.exclusion_criteria.length) {
-      if (this.els.protocolMessage) this.els.protocolMessage.textContent = "研究问题、数据源、纳入和排除标准均不能为空。";
+    if (
+      !payload.research_question
+      || !payload.sources.length
+      || !payload.search_field_scope.length
+      || !payload.languages.length
+      || !payload.document_types.length
+      || !payload.inclusion_criteria.length
+      || !payload.exclusion_criteria.length
+    ) {
+      if (this.els.protocolMessage) this.els.protocolMessage.textContent = "研究问题、数据源、字段、语言、文献类型以及纳排标准均不能为空。";
       return false;
     }
     try {

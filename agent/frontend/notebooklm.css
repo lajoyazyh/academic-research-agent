@@ -2399,9 +2399,49 @@ html, body {
 .protocol-flow {
   display: grid;
   grid-column: 1 / -1;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   border-top: 1px solid var(--border);
   padding-top: 10px;
+}
+
+.protocol-audit-summary {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.protocol-audit-summary summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 650;
+}
+
+.protocol-audit-summary p {
+  margin: 7px 0 0;
+  line-height: 1.45;
+}
+
+.screening-conflict-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.screening-conflict-item {
+  display: grid;
+  gap: 6px;
+  padding: 9px;
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--border));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--warning) 8%, var(--surface));
+}
+
+.screening-conflict-item > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .protocol-flow span {
@@ -2490,6 +2530,11 @@ html, body {
   .protocol-grid,
   .protocol-criteria-grid {
     grid-template-columns: 1fr;
+  }
+
+  .protocol-flow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 8px;
   }
 
   .protocol-modal-box .modal-foot {

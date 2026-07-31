@@ -1,0 +1,74 @@
+{
+  "protocol_id": "rag-legacy-regression-protocol-v2",
+  "version": 2,
+  "mode": "technical",
+  "label": "计算机与AI技术证据综述",
+  "question": "检索增强生成系统在检索器—生成器耦合、训练方式、评价框架、事实可靠性与计算成本方面有哪些主要技术路线和证据边界？",
+  "methodology_schema_version": 2,
+  "legacy_incomplete_methodology": true,
+  "search_field_scope": {
+    "requested": [
+      "title",
+      "abstract",
+      "keywords"
+    ],
+    "historically_recorded": null,
+    "status": "missing_not_imputed"
+  },
+  "date_range": {
+    "requested": null,
+    "historically_recorded": null,
+    "status": "missing_not_imputed"
+  },
+  "languages": {
+    "requested": null,
+    "historically_recorded": null,
+    "status": "missing_not_imputed"
+  },
+  "document_types": {
+    "requested": null,
+    "historically_recorded": null,
+    "status": "missing_not_imputed"
+  },
+  "evidence_hierarchy_policy": {
+    "primary": [
+      "primary_study",
+      "benchmark",
+      "framework_with_empirical_validation"
+    ],
+    "secondary": [
+      "systematic_or_scoping_review",
+      "narrative_survey"
+    ],
+    "secondary_allowed_for": [
+      "background",
+      "taxonomy",
+      "research_landscape"
+    ],
+    "secondary_forbidden_for": [
+      "performance_number",
+      "cost_number",
+      "mechanism_effectiveness",
+      "practice_recommendation"
+    ]
+  },
+  "screening_policy": {
+    "required_current_policy": "single_human_plus_blinded_ai_review",
+    "historical_policy": "model_ranked_target_sample",
+    "disagreement_resolution": "human_adjudication",
+    "historical_independent_blind_review_recorded": false,
+    "cochrane_dual_human_compliant": false
+  },
+  "inclusion_criteria": [
+    "直接研究RAG架构、检索—生成耦合、训练、评价或可靠性",
+    "能够获得足以提取机制或实证结果的全文",
+    "技术结论必须能够定位到原始研究证据"
+  ],
+  "exclusion_criteria": [
+    "与研究问题关联不足",
+    "全文无法获取，且结论依赖全文核验",
+    "仅为二级综述时，不得用于支撑性能、成本或部署建议"
+  ],
+  "status": "historical_reconstruction_requires_rerun",
+  "systematic_review_claim_allowed": false
+}

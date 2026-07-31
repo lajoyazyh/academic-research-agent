@@ -1,0 +1,40 @@
+{
+  "methodology_schema_version": 2,
+  "label_eligibility": "technical_evidence_review_draft",
+  "systematic_review_claim_allowed": false,
+  "counts": {
+    "source_hits": 59,
+    "duplicates_removed": 7,
+    "unique_candidates": 52,
+    "title_abstract_screened": 52,
+    "title_abstract_included": 17,
+    "title_abstract_excluded": 35,
+    "title_abstract_uncertain": 0,
+    "full_text_assessed": 17,
+    "full_text_included": 12,
+    "full_text_excluded": 5,
+    "full_text_uncertain": 0
+  },
+  "reconciliation": {
+    "discovery": true,
+    "title_abstract": true,
+    "full_text": true
+  },
+  "exclusion_reasons": {
+    "legacy_target_sample_not_selected": 35,
+    "full_text_unavailable": 3,
+    "retrieval_not_attempted_budget_limit": 2
+  },
+  "ai_participation_disclosure": "旧流程使用模型进行相关性排序和证据提取，但没有保存与人工决定隔离的独立盲审记录。本回归包只能重建旧决定，不能宣称双人类筛选，也不能宣称满足当前的单人研究者＋AI独立复核政策。",
+  "missing_historical_fields": [
+    "检索执行时间",
+    "OpenAlex字段映射",
+    "日期范围",
+    "语言限制",
+    "文献类型过滤器",
+    "逐条纳排标准判断",
+    "人工筛选者标识",
+    "独立盲审与分歧裁决记录"
+  ],
+  "required_action_for_upgrade": "从52条候选记录重新执行标题摘要筛选、全文筛选和独立AI复核，并重新运行可记录完整执行元数据的检索。"
+}

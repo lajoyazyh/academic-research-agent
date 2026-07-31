@@ -1,0 +1,116 @@
+[
+  {
+    "claim_id": "C1",
+    "claim": "RAG技术可按静态、迭代、按需检索和检索评估—纠错闭环组织。",
+    "claim_type": "taxonomy",
+    "support": [
+      "P1",
+      "P6",
+      "P12"
+    ],
+    "evidence_level": "secondary",
+    "allowed_support_types": [
+      "narrative_survey",
+      "systematic_or_scoping_review"
+    ],
+    "verification_status": "verified_for_taxonomy_only"
+  },
+  {
+    "claim_id": "C2",
+    "claim": "在DRAGIN所评估的四个知识密集型生成基准中，基于实时信息需求的触发与自注意力查询构造优于其比较的动态RAG策略。",
+    "claim_type": "performance",
+    "support": [
+      "P3"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "framework"
+    ],
+    "verification_status": "verified_with_task_scope"
+  },
+  {
+    "claim_id": "C3",
+    "claim": "CRAG使用轻量T5评估器将检索结果路由到正确、错误或模糊状态，随后执行知识精炼或外部检索；评估器错误会把系统送入不适当的纠错分支。",
+    "claim_type": "mechanism",
+    "support": [
+      "P8"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "primary_study"
+    ],
+    "verification_status": "verified"
+  },
+  {
+    "claim_id": "C4",
+    "claim": "P8在其局部成本实验中报告执行时间由0.363 s增至0.512 s，但这不能替代跨研究、统一硬件与语料规模下的端到端比较。",
+    "claim_type": "cost",
+    "support": [
+      "P8"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "primary_study"
+    ],
+    "verification_status": "verified_with_context_limit"
+  },
+  {
+    "claim_id": "C5",
+    "claim": "RULE报告平均准确率提升47.4%。",
+    "claim_type": "performance",
+    "support": [
+      "P7"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "primary_study"
+    ],
+    "verification_status": "blocked_from_summary",
+    "reason": "现有提取未明确该数字是相对变化还是百分点变化及逐任务基线。"
+  },
+  {
+    "claim_id": "C6",
+    "claim": "ITER-RETGEN在六个任务中的四个报告最高8.6%的绝对增益。",
+    "claim_type": "performance",
+    "support": [
+      "P2"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "primary_study"
+    ],
+    "verification_status": "body_only_context_incomplete",
+    "reason": "现有提取未把8.6%绑定到唯一数据集、模型与基线组合。"
+  },
+  {
+    "claim_id": "C7",
+    "claim": "对复杂任务是否采用动态或纠错式RAG，应以静态检索的失败诊断、额外延迟预算和控制器可观测性为条件，而不是无条件部署原则。",
+    "claim_type": "practice_recommendation",
+    "support": [
+      "P2",
+      "P3",
+      "P8"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "primary_study",
+      "framework"
+    ],
+    "verification_status": "conditional_low_to_moderate_certainty"
+  },
+  {
+    "claim_id": "C8",
+    "claim": "只有具备明确目标、状态、可选择动作与反馈闭环的系统才标记为Agent；DRAGIN和CRAG在本综述中称为自适应或纠错闭环。",
+    "claim_type": "terminology",
+    "support": [
+      "P3",
+      "P8"
+    ],
+    "evidence_level": "author_synthesis",
+    "allowed_support_types": [
+      "framework",
+      "primary_study"
+    ],
+    "verification_status": "verified_definition_applied"
+  }
+]

@@ -322,12 +322,43 @@ def _extract_scientific_evidence(
     schema = {
         "extraction": {
             "study_design": None,
+            "study_or_article_type": "primary_study|benchmark|framework|dataset_or_resource|systematic_or_scoping_review|narrative_survey|other|unclear",
             "population_or_dataset": None,
             "intervention_or_method": None,
             "comparator_or_baseline": None,
             "sample_size": None,
             "outcomes_and_metrics": [],
-            "main_results": [{"statement": "", "metric": None, "value": None, "location": None}],
+            "main_results": [{"statement": "", "support_type": "reported_result|author_claim|reviewer_inference", "location": None}],
+            "quantitative_results": [{
+                "statement": "",
+                "dataset_or_task": None,
+                "base_model": None,
+                "retriever": None,
+                "corpus_size": None,
+                "baseline": None,
+                "metric": None,
+                "baseline_value": None,
+                "method_value": None,
+                "effect_value": None,
+                "effect_type": "absolute|relative|raw_comparison|unclear",
+                "aggregation": None,
+                "statistical_significance": None,
+                "hardware": None,
+                "evidence_location": {"page": None, "section": None, "table": None},
+            }],
+            "technical_mechanism": {
+                "method_family": None,
+                "inputs": [],
+                "internal_state": None,
+                "decision_rule": None,
+                "thresholds": [],
+                "trigger_granularity": None,
+                "actions": [],
+                "fusion_strategy": None,
+                "failure_propagation": [],
+                "applicability_conditions": [],
+                "agentic_criteria_met": False,
+            },
             "uncertainty": None,
             "limitations": [],
             "funding_and_conflicts": None,
@@ -348,6 +379,7 @@ def _extract_scientific_evidence(
             "profile": appraisal_profile,
             "study_design": None,
             "domains": [{
+                "id": "baseline_fairness|data_leakage|statistical_sufficiency|ablation|reproducibility|external_validity|compute_cost",
                 "name": "",
                 "judgement": "low|some_concerns|high|unclear",
                 "reason": "",
@@ -362,11 +394,14 @@ def _extract_scientific_evidence(
         "You are a conservative evidence extraction and study-appraisal engine. "
         "Return one JSON object only. Never infer absent information; use null or []. "
         "Every quantitative result needs its metric, comparison and evidence location. "
+        "Classify primary versus secondary evidence. Extract mechanism inputs, decision rules, "
+        "thresholds, granularity, actions, failure propagation and applicability. "
         "A single overall score without domain-level reasons is forbidden."
         if is_en else
         "你是保守的结构化证据提取与研究质量评价引擎。只返回一个 JSON 对象。"
         "笔记中未提供的信息必须使用 null 或 []，禁止依据常识补齐。"
         "每个定量结果必须保留指标、比较对象和证据位置。禁止只给没有逐领域理由的总分。"
+        "必须区分一级与二级证据，并提取机制输入、决策规则、阈值、粒度、动作、失效传播和适用条件。"
     )
     labels = (
         ("Research question", "Paper", "Evidence basis", "Appraisal profile", "Evidence note",
@@ -380,7 +415,10 @@ def _extract_scientific_evidence(
         f"{labels[2]}：{paper.get('evidence_basis') or 'unknown'}\n"
         f"{labels[3]}：{appraisal_profile}\n\n"
         f"{labels[4]}：\n{notes[:18000]}\n\n"
-        f"{labels[5]}：\n{json.dumps(schema, ensure_ascii=False)}"
+        f"{labels[5]}：\n{json.dumps(schema, ensure_ascii=False)}\n\n"
+        "For computer_ai appraisal, return all seven domains exactly once: "
+        "baseline_fairness, data_leakage, statistical_sufficiency, ablation, "
+        "reproducibility, external_validity, compute_cost."
     )
     parsed = extract_json(llm.chat(system, prompt, []))
     extraction = parsed.get("extraction") if isinstance(parsed.get("extraction"), dict) else {}
@@ -1084,6 +1122,12 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
 
         # 保存综述，并记录本次撰写引用了哪些论文
         if result.get("review"):
+            result["review"] = scientific.inject_deterministic_review_sections(
+                session_id,
+                result["review"],
+                papers,
+                language_from_config(provider_config),
+            )
             result["review"] = scientific.enforce_review_label(
                 session_id,
                 result["review"],
@@ -1103,6 +1147,65 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
                     "blockers": list(dict.fromkeys(
                         list(gate.get("blockers") or []) + ["citation_claim_audit_failed"]
                     )),
+                    "dimensions": {
+                        **(gate.get("dimensions") or {}),
+                        "citation_integrity": {
+                            "passed": False,
+                            "issues": ["citation_claim_audit_failed"],
+                        },
+                        "evidence_fit": {
+                            "passed": not bool(claim_audit.get("evidence_mismatches")),
+                            "issues": (
+                                ["secondary_evidence_used_for_primary_claim"]
+                                if claim_audit.get("evidence_mismatches") else []
+                            ),
+                        },
+                        "quantitative_context": {
+                            "passed": not bool(claim_audit.get("quantitative_context_issues")),
+                            "issues": (
+                                ["quantitative_claim_context_incomplete"]
+                                if claim_audit.get("quantitative_context_issues") else []
+                            ),
+                        },
+                        "internal_consistency": {
+                            "passed": not bool(claim_audit.get("internal_consistency_issues")),
+                            "issues": (
+                                ["internal_claim_conflict"]
+                                if claim_audit.get("internal_consistency_issues") else []
+                            ),
+                        },
+                        "claim_strength": {
+                            "passed": not bool(
+                                claim_audit.get("normative_strength_issues")
+                                or claim_audit.get("terminology_issues")
+                            ),
+                            "issues": (
+                                ["unsupported_normative_or_agentic_claim"]
+                                if (
+                                    claim_audit.get("normative_strength_issues")
+                                    or claim_audit.get("terminology_issues")
+                                ) else []
+                            ),
+                        },
+                        "artifact_completeness": {
+                            "passed": bool(
+                                (claim_audit.get("artifact_audit") or {}).get("passed")
+                            ),
+                            "issues": (
+                                [] if (claim_audit.get("artifact_audit") or {}).get("passed")
+                                else ["required_tables_or_figure_missing"]
+                            ),
+                        },
+                        "reference_hygiene": {
+                            "passed": bool(
+                                (claim_audit.get("reference_audit") or {}).get("passed")
+                            ),
+                            "issues": (
+                                [] if (claim_audit.get("reference_audit") or {}).get("passed")
+                                else ["ieee_reference_hygiene_failed"]
+                            ),
+                        },
+                    },
                 }
                 if gate.get("can_claim_systematic"):
                     result["review"] = scientific.enforce_review_label(

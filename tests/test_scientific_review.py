@@ -335,7 +335,7 @@ def test_rapid_review_is_never_labelled_systematic(tmp_path):
 
     assert gate["ok"] is True
     assert gate["can_claim_systematic"] is False
-    assert gate["output_label"] == "incomplete_research_draft"
+    assert gate["output_label"] == "rapid_evidence_review_draft"
 
 
 def test_claim_audit_rejects_phantom_source_ids(tmp_path):
@@ -423,3 +423,282 @@ def test_scientific_migration_declares_workflow_tables():
         "review_versions",
     ):
         assert f"public.{table}" in migration
+
+
+def test_protocol_v2_records_search_scope_filters_and_screening_policy(tmp_path):
+    _manager, session, service = _service(tmp_path)
+    protocol = service.update_protocol(
+        session["session_id"],
+        {
+            "sources": ["OpenAlex"],
+            "search_field_scope": ["title", "abstract"],
+            "languages": ["en"],
+            "document_types": ["conference_paper"],
+            "date_from": "2020-01-01",
+            "date_to": "2025-12-31",
+        },
+    )
+    service.confirm_protocol(session["session_id"])
+    query = service.audit_summary(session["session_id"])["search_queries"][0]
+
+    assert protocol["methodology_schema_version"] == 2
+    assert protocol["screening_policy"]["strategy"] == "single_human_plus_independent_ai"
+    assert query["field_scope"] == ["title", "abstract"]
+    assert query["filters"]["languages"] == ["en"]
+    assert query["filters"]["date_from"] == "2020-01-01"
+
+
+def test_search_execution_metadata_is_preserved_for_reproducibility(tmp_path):
+    _manager, session, service = _service(tmp_path)
+    session_id = session["session_id"]
+    service.update_protocol(session_id, {"sources": ["OpenAlex"]})
+    service.confirm_protocol(session_id)
+    plan = service.audit_summary(session_id)["search_queries"][0]
+    result = service.reconcile_search_ledger(
+        session_id,
+        {
+            "queries": [{
+                "source": "openalex",
+                "query": plan["query"],
+                "page": 1,
+                "success": True,
+                "result_count": 37,
+            }]
+        },
+    )[0]
+
+    assert result["executed_at"]
+    assert result["attempt_count"] == 1
+    assert result["hit_count"] == 37
+    assert result["execution_metadata"]["actual_queries"] == [plan["query"]]
+
+
+def test_human_ai_disagreement_requires_adjudication(tmp_path):
+    manager, session, service = _service(tmp_path)
+    session_id = session["session_id"]
+    service.confirm_protocol(session_id)
+    paper = {"paper_id": "p1", "title": "Paper", "status": "pending"}
+    manager.add_paper(session_id, paper)
+    service.register_candidate(session_id, paper)
+    service.record_screening(
+        session_id,
+        paper_id="p1",
+        stage="full_text",
+        decision="include",
+        reason="Meets all criteria.",
+        reviewer="human",
+        actor_type="human",
+    )
+    service.record_screening(
+        session_id,
+        paper_id="p1",
+        stage="full_text",
+        decision="exclude",
+        reason_code="wrong_outcome",
+        reason="Outcome does not match.",
+        reviewer="ai",
+        actor_type="ai",
+        blinded_to_peer=True,
+    )
+
+    assert service.flow_counts(session_id)["screening_conflicts"] == 1
+    assert service.flow_counts(session_id)["unresolved"] == 1
+
+    service.resolve_screening_conflict(
+        session_id,
+        paper_id="p1",
+        stage="full_text",
+        decision="include",
+        reason_code=None,
+        reason="Human adjudication verified the primary outcome.",
+    )
+
+    assert service.flow_counts(session_id)["screening_conflicts"] == 0
+    assert service._resolved_screening_decisions(session_id)[
+        (service._read(session_id, "candidates.json", [])[0]["candidate_id"], "full_text")
+    ]["decision"] == "include"
+
+
+def test_secondary_evidence_cannot_support_performance_claim(tmp_path):
+    manager, session, service = _service(tmp_path)
+    session_id = session["session_id"]
+    service.update_protocol(session_id, {"mode": "technical", "candidate_cap": 300})
+    service.confirm_protocol(session_id)
+    paper = {
+        "paper_id": "survey-1",
+        "title": "A Survey on Retrieval-Augmented Generation",
+        "authors": ["Survey Author"],
+        "status": "accepted",
+    }
+    manager.add_paper(session_id, paper)
+    service.register_candidate(session_id, paper)
+    service.confirm_inclusion_snapshot(session_id, ["survey-1"])
+    service.save_extraction(
+        session_id,
+        "survey-1",
+        {
+            "study_or_article_type": "narrative_survey",
+            "evidence_basis": "full_text",
+            "evidence_locations": [{"page": 4, "section": "Results"}],
+        },
+    )
+
+    audit = service.audit_review_claims(
+        session_id,
+        (
+            "## 结果\n\n该方法在统一基准中显著提高了事实准确率，并且因此应当作为"
+            "所有生产系统的默认技术路线 [P1]。"
+        ),
+        [paper],
+    )
+
+    assert audit["passed"] is False
+    assert audit["evidence_mismatches"]
+    assert audit["normative_strength_issues"]
+
+
+def test_quantitative_result_requires_full_context(tmp_path):
+    manager, session, service = _service(tmp_path)
+    session_id = session["session_id"]
+    service.confirm_protocol(session_id)
+    paper = {"paper_id": "p1", "title": "Benchmark", "status": "accepted"}
+    manager.add_paper(session_id, paper)
+    service.register_candidate(session_id, paper)
+    extraction = service.save_extraction(
+        session_id,
+        "p1",
+        {
+            "study_or_article_type": "benchmark",
+            "evidence_basis": "full_text",
+            "quantitative_results": [{
+                "metric": "accuracy",
+                "method_value": 0.97,
+                "effect_type": "absolute",
+                "page": 8,
+            }],
+        },
+    )
+
+    validation = extraction["quantitative_results"][0]["context_validation"]
+    assert validation["complete"] is False
+    assert {"dataset_or_task", "base_model", "baseline"} <= set(validation["missing_fields"])
+
+
+def test_technical_review_injects_method_tables_figure_and_ieee_references(tmp_path):
+    manager, session, service = _service(tmp_path, topic="Retrieval augmented generation")
+    session_id = session["session_id"]
+    service.update_protocol(
+        session_id,
+        {
+            "mode": "technical",
+            "candidate_cap": 300,
+            "sources": ["OpenAlex"],
+        },
+    )
+    service.confirm_protocol(session_id)
+    paper = {
+        "paper_id": "p1",
+        "title": "Corrective Retrieval Augmented Generation",
+        "authors": "Shi-Qi Yan, Jia-Chen Gu",
+        "published_year": 2024,
+        "doi": "10.0000/example",
+        "status": "accepted",
+    }
+    manager.add_paper(session_id, paper)
+    service.register_candidate(session_id, paper)
+    service.confirm_inclusion_snapshot(session_id, ["p1"])
+    service.save_extraction(
+        session_id,
+        "p1",
+        {
+            "study_or_article_type": "framework",
+            "population_or_dataset": "PopQA",
+            "intervention_or_method": "CRAG",
+            "technical_mechanism": {
+                "method_family": "Corrective RAG",
+                "inputs": ["retrieved passages"],
+                "decision_rule": "retrieval evaluator",
+                "trigger_granularity": "retrieval step",
+                "actions": ["web search", "knowledge refinement"],
+                "failure_propagation": ["evaluator errors trigger wrong action"],
+            },
+            "quantitative_results": [{
+                "dataset_or_task": "PopQA",
+                "base_model": "LLaMA2-7B",
+                "baseline": "RAG",
+                "metric": "accuracy",
+                "baseline_value": 0.40,
+                "method_value": 0.47,
+                "effect_type": "absolute",
+                "aggregation": "test-set accuracy",
+                "statistical_significance": "not reported",
+                "evidence_location": {"page": 8, "table": 1},
+            }],
+            "evidence_locations": [{"page": 8, "section": "Results"}],
+        },
+    )
+
+    review = service.inject_deterministic_review_sections(
+        session_id,
+        "# RAG\n\n## 方法\n\n模型生成的方法描述。\n\n## 结果\n\n证据综合。",
+        [paper],
+    )
+
+    assert "模型生成的方法描述" not in review
+    assert review.count("|---") >= 4
+    assert "```mermaid" in review
+    assert "表1：纳入研究基本信息" in review
+    assert "## 参考文献" in review
+    assert "[P1]" in review
+
+
+def test_methodology_report_reconciles_flow_and_reports_exclusions(tmp_path):
+    manager, session, service = _service(tmp_path)
+    session_id = session["session_id"]
+    service.confirm_protocol(session_id)
+    for paper_id in ("p1", "p2"):
+        paper = {"paper_id": paper_id, "title": paper_id, "status": "pending"}
+        manager.add_paper(session_id, paper)
+        service.register_candidate(session_id, paper)
+    service.record_screening(
+        session_id,
+        paper_id="p1",
+        stage="title_abstract",
+        decision="include",
+        reason="Relevant.",
+    )
+    service.record_screening(
+        session_id,
+        paper_id="p2",
+        stage="title_abstract",
+        decision="exclude",
+        reason_code="not_relevant",
+        reason="Not relevant.",
+    )
+    service.confirm_inclusion_snapshot(session_id, ["p1"])
+
+    report = service.methodology_report(session_id)
+
+    assert report["reconciled"] is True
+    assert report["exclusion_reason_counts"]["not_relevant"] == 1
+    assert "not dual-human" in report["ai_participation_disclosure"].lower()
+
+
+def test_methodology_depth_migration_declares_new_columns():
+    migration = (
+        __import__("pathlib").Path(__file__).parents[1]
+        / "supabase"
+        / "migrations"
+        / "004_review_methodology_depth.sql"
+    ).read_text(encoding="utf-8")
+    for column in (
+        "compiled_query",
+        "executed_at",
+        "actor_type",
+        "blinded_to_peer",
+        "study_or_article_type",
+        "quantitative_results",
+        "technical_mechanism",
+        "numeric_context_complete",
+    ):
+        assert column in migration

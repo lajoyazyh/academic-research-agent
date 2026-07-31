@@ -66,8 +66,14 @@
           <span><strong id="flowCandidates">0</strong><small id="flowCandidatesLabel">候选</small></span>
           <span><strong id="flowDeduplicated">0</strong><small id="flowDeduplicatedLabel">去重后</small></span>
           <span><strong id="flowScreened">0</strong><small id="flowScreenedLabel">已初筛</small></span>
+          <span><strong id="flowFullText">0</strong><small id="flowFullTextLabel">全文评估</small></span>
           <span><strong id="flowIncluded">0</strong><small id="flowIncludedLabel">已纳入</small></span>
+          <span><strong id="flowConflicts">0</strong><small id="flowConflictsLabel">待裁决</small></span>
         </div>
+        <details class="protocol-audit-summary" id="protocolAuditSummary">
+          <summary>方法与筛选审计</summary>
+          <div id="protocolAuditBody">尚无审计记录</div>
+        </details>
       </section>
       <div class="sources-toolbar sources-primary-actions">
         <div class="search-run-controls" aria-label="本轮检索设置">
@@ -219,6 +225,32 @@
         <span id="protocolSourcesFieldLabel">数据源（逗号分隔）</span>
         <input id="protocolSources" value="arXiv, OpenAlex, Crossref, Semantic Scholar, DBLP">
       </label>
+      <div class="protocol-grid">
+        <label class="protocol-field">
+          <span id="protocolFieldsFieldLabel">检索字段（逗号分隔）</span>
+          <input id="protocolFields" value="title, abstract, keywords">
+        </label>
+        <label class="protocol-field">
+          <span id="protocolLanguagesFieldLabel">语言限制（逗号分隔）</span>
+          <input id="protocolLanguages" value="en, zh">
+        </label>
+        <label class="protocol-field">
+          <span id="protocolDocumentsFieldLabel">文献类型（逗号分隔）</span>
+          <input id="protocolDocuments" value="journal_article, conference_paper, preprint">
+        </label>
+        <label class="protocol-field">
+          <span id="protocolScreeningFieldLabel">筛选策略</span>
+          <input value="单名研究者 + 独立 AI 复核；人工裁决分歧" disabled>
+        </label>
+        <label class="protocol-field">
+          <span id="protocolDateFromFieldLabel">起始日期</span>
+          <input id="protocolDateFrom" type="date">
+        </label>
+        <label class="protocol-field">
+          <span id="protocolDateToFieldLabel">截止日期</span>
+          <input id="protocolDateTo" type="date">
+        </label>
+      </div>
       <div class="protocol-grid protocol-criteria-grid">
         <label class="protocol-field">
           <span id="protocolInclusionFieldLabel">纳入标准（每行一条）</span>
