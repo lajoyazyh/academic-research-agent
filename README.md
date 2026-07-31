@@ -77,6 +77,10 @@ flowchart LR
 
 Use the guided workflow when you want to curate each decision, or run the complete pipeline for a fast first pass. Intermediate notes, analysis cards, and drafts stay editable in both modes.
 
+### Expected runtime
+
+The default search round targets only three new unique candidate records. The 100, 300, and 500 candidate caps used by review modes are safety boundaries, not mandatory per-run targets. With an available provider and responsive sources, a search round typically takes 3–10 minutes; a rapid first draft based on about five included papers takes 10–20 minutes; and an 8–12-paper rapid evidence review takes 20–35 minutes. Free or rate-limited providers can roughly double those ranges, but completed checkpoints remain recoverable. A strict systematic review involves at least 100 candidates, two-stage screening, and human checkpoints, so it is a background research task rather than an instant request.
+
 ## Product highlights
 
 - **Evidence-first writing** — claims stay connected to source records, with source coverage and citation-quality checks.
