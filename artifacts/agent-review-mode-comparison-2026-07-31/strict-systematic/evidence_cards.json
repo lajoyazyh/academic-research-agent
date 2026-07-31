@@ -1,0 +1,2056 @@
+[
+  {
+    "extraction_id": "extract_53776cb40e1e",
+    "paper_id": "2506.09542",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "narrative_survey",
+    "evidence_level": "secondary",
+    "population_or_dataset": null,
+    "intervention_or_method": null,
+    "comparator_or_baseline": null,
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge.",
+        "support_type": "author_claim",
+        "location": null
+      },
+      {
+        "statement": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%).",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%).",
+        "dataset_or_task": "QA benchmarks",
+        "base_model": "vanilla RAG",
+        "retriever": "KG-Infused RAG",
+        "corpus_size": null,
+        "baseline": "vanilla RAG",
+        "metric": "performance",
+        "baseline_value": null,
+        "method_value": "3.9% to 17.8% improvement",
+        "effect_value": "3.9% to 17.8%",
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 1,
+          "section": "ABSTRACT",
+          "table": null
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "external knowledge"
+      ],
+      "internal_state": "pre-existing large-scale KGs, spreading activation",
+      "decision_rule": null,
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [
+        "retrieve relevant structured knowledge",
+        "expand queries",
+        "integrate with corpus passages",
+        "generate answers"
+      ],
+      "fusion_strategy": "KG facts and corpus passages",
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "corpus-based RAG methods"
+      ],
+      "method_family": "Retrieval-Augmented Generation (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.843571+00:00",
+    "updated_at": "2026-07-31T14:43:12.843581+00:00"
+  },
+  {
+    "extraction_id": "extract_13f9ac067de8",
+    "paper_id": "2409.15515",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Retrieval-Augmented Generation (RAG)",
+    "comparator_or_baseline": null,
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses.",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "improvements of ∼13% measured by human annotation",
+        "dataset_or_task": null,
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": null,
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": "∼13%",
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 1,
+          "section": "Abstract",
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "base_model",
+            "baseline",
+            "metric"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "conversational context"
+      ],
+      "internal_state": null,
+      "decision_rule": null,
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [
+        "retrieve",
+        "rewrite",
+        "judge relevance"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "conversational QA"
+      ],
+      "method_family": "Retrieval-Augmented Generation (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.865912+00:00",
+    "updated_at": "2026-07-31T14:43:12.865924+00:00"
+  },
+  {
+    "extraction_id": "extract_1f31eb81401f",
+    "paper_id": "2410.01782",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "OPEN-RAG framework",
+    "comparator_or_baseline": "state-of-the-art LLMs and RAG models such as ChatGPT, Self-RAG, and Command R+",
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "OPEN-RAG outperforms state-of-the-art LLMs and RAG models in various knowledge-intensive tasks.",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%.",
+        "dataset_or_task": "HotpotQA",
+        "base_model": "Alpaca13B",
+        "metric": "EM",
+        "method_value": 63.3,
+        "base_value": 0.7,
+        "effect_type": "absolute",
+        "evidence_location": {
+          "page": 7,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA.",
+        "dataset_or_task": null,
+        "base_model": null,
+        "metric": null,
+        "method_value": null,
+        "base_value": null,
+        "effect_type": "relative",
+        "evidence_location": {
+          "page": 7,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "base_model",
+            "baseline",
+            "metric",
+            "numeric_value"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "arbitrary dense LLM"
+      ],
+      "internal_state": "sparse mixture of experts (MoE) model",
+      "decision_rule": "hybrid adaptive retrieval method",
+      "thresholds": [
+        "confidence score"
+      ],
+      "trigger_granularity": "dynamic",
+      "actions": [
+        "retrieval/no_retrieval",
+        "answer generation"
+      ],
+      "fusion_strategy": "latent learning, selecting relevant experts, integrating external knowledge",
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "knowledge-intensive tasks"
+      ],
+      "method_family": "Retrieval-Augmented Reasoning (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.889062+00:00",
+    "updated_at": "2026-07-31T14:43:12.889072+00:00"
+  },
+  {
+    "extraction_id": "extract_aea3e4fb8ef1",
+    "paper_id": "2401.15884",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Corrective Retrieval Augmented Generation (CRAG)",
+    "comparator_or_baseline": "standard RAG, Self-RAG",
+    "sample_size": null,
+    "outcomes_and_metrics": [
+      {
+        "statement": "CRAG improves the performance of RAG and Self-RAG",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "CRAG demonstrates great generalizability across various generation tasks",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "CRAG exhibits greater flexibility in replacing the underlying LLM generator",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "main_results": [
+      {
+        "statement": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "Self-CRAG outperformed Self-RAG by margins of 20.0% accuracy on PopQA, 36.9% FactScore on Biography, and 4.0% accuracy on Arc-Challenge",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "CRAG improved accuracy by 7.0% on PopQA, 14.9% on Biography, 36.6% on PubHealth, and 15.4% on Arc-Challenge",
+        "dataset_or_task": [
+          "PopQA",
+          "Biography",
+          "PubHealth",
+          "Arc-Challenge"
+        ],
+        "base_model": "Self-RAG-LLaMA2-7b, LLaMA2-7B, LLaMA2-hf-7b",
+        "metric": "accuracy",
+        "effect_value": "7.0%, 14.9%, 36.6%, 15.4%",
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": "NVIDIA A800 80GB GPU",
+        "evidence_location": {
+          "page": 8,
+          "section": "Appendix B.3",
+          "table": "Table 1"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "Self-CRAG improved accuracy by 20.0% on PopQA, 36.9% on Biography, and 4.0% on Arc-Challenge",
+        "dataset_or_task": [
+          "PopQA",
+          "Biography",
+          "Arc-Challenge"
+        ],
+        "base_model": "SelfRAG-LLaMA2-7b, LLaMA2-hf-7b",
+        "metric": "accuracy",
+        "effect_value": "20.0%, 36.9%, 4.0%",
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": "NVIDIA A800 80GB GPU",
+        "evidence_location": {
+          "page": 8,
+          "section": "Appendix B.3",
+          "table": "Table 1"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "retrieval evaluator",
+        "large-scale web searches",
+        "decompose-then-recompose algorithm"
+      ],
+      "internal_state": null,
+      "decision_rule": "confidence degree based on retrieval evaluator",
+      "thresholds": [
+        "Correct",
+        "Incorrect",
+        "Ambiguous"
+      ],
+      "trigger_granularity": null,
+      "actions": [
+        "Correct",
+        "Incorrect",
+        "Ambiguous"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": null,
+      "applicability_conditions": null,
+      "method_family": "Retrieval Augmented Generation (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.909014+00:00",
+    "updated_at": "2026-07-31T14:43:12.909024+00:00"
+  },
+  {
+    "extraction_id": "extract_00f11e2c1316",
+    "paper_id": "2502.19629",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": "benchmark",
+    "study_or_article_type": "benchmark",
+    "evidence_level": "primary",
+    "population_or_dataset": {
+      "type": "chemical_data",
+      "subtypes": [
+        "small_molecules",
+        "polymers",
+        "chemical_reactions",
+        "nmr_spectra"
+      ],
+      "size": 750000,
+      "source": "open-literature|historical_data|NMRShiftDB2",
+      "location": "page 3"
+    },
+    "intervention_or_method": {
+      "name": "CRAG-MoW",
+      "type": "mixture-of-workflows",
+      "components": [
+        "agentic_workflows",
+        "self-corrective_retrieval_augmented_generation",
+        "orchestration_agent"
+      ],
+      "location": "page 1"
+    },
+    "comparator_or_baseline": {
+      "type": "GPT-4o",
+      "description": "leading_state_of_the_art_llm"
+    },
+    "sample_size": null,
+    "outcomes_and_metrics": [
+      "performance_comparable_to_GPT-4o",
+      "preferred_more_frequently_in_comparative_evaluations",
+      "performance_variations_across_data_types"
+    ],
+    "main_results": [
+      {
+        "statement": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations.",
+        "support_type": "author_claim",
+        "location": "page 1"
+      },
+      {
+        "statement": "Performance variations across data types indicate certain models may be better suited for specific materials science applications.",
+        "support_type": "author_claim",
+        "location": "page 3"
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "RRF score: 0.14781420765027323",
+        "dataset_or_task": "nmr_spectral_retrieval",
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": "RRF_score",
+        "baseline_value": null,
+        "method_value": "0.14781420765027323",
+        "effect_value": null,
+        "effect_type": "raw_comparison",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 114,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "base_model",
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "RRF score: 0.14162506400409625",
+        "dataset_or_task": "nmr_spectral_retrieval",
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": "RRF_score",
+        "baseline_value": null,
+        "method_value": "0.14162506400409625",
+        "effect_value": null,
+        "effect_type": "raw_comparison",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 216,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "base_model",
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "RRF score: 0.13333333333333333",
+        "dataset_or_task": "nmr_spectral_retrieval",
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": "RRF_score",
+        "baseline_value": null,
+        "method_value": "0.13333333333333333",
+        "effect_value": null,
+        "effect_type": "raw_comparison",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 216,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "base_model",
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "chemical_structure_data (SMILES)",
+        "nmr_spectral_images",
+        "reagents"
+      ],
+      "internal_state": null,
+      "decision_rule": "orchestration_agent synthesizes final response from multiple workflows",
+      "thresholds": [],
+      "trigger_granularity": "workflow_level",
+      "actions": [
+        "self-corrective_retrieval_augmented_generation",
+        "reciprocal_rank_fusion",
+        "synthesis"
+      ],
+      "fusion_strategy": "Reciprocal Rank Fusion (RRF)",
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "materials_discovery",
+        "chemical_search",
+        "multi_modal_nmr_retrieval"
+      ],
+      "method_family": "Mixture-of-Workflows (MoW)",
+      "agentic_criteria_met": true
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": "open-literature|historical_data|NMRShiftDB2",
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.935830+00:00",
+    "updated_at": "2026-07-31T14:43:12.935840+00:00"
+  },
+  {
+    "extraction_id": "extract_f58afa63d9ee",
+    "paper_id": "2509.20190",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Security Test Automation Framework (STAF)",
+    "comparator_or_baseline": "vanilla LLMs, GPT-4.1, DeepSeek",
+    "sample_size": null,
+    "outcomes_and_metrics": [
+      {
+        "statement": "efficiency, accuracy, scalability, easy integration",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "alignment, runnability, completeness",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "main_results": [
+      {
+        "statement": "STAF leads to significant improvements across all metrics for both models.",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "STAF and STAF&MM outperform even GPT-4.1 in crafting effective test cases.",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "GPT-4.1 (STAF) achieved the highest score of 9.80, indicating excellent adherence to the identified threats.",
+        "dataset_or_task": null,
+        "base_model": "GPT-4.1",
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": "Alignment",
+        "baseline_value": null,
+        "method_value": 9.8,
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 10,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "GPT-4.1 (STAF&MM) achieved the highest runnability score of 9.67, indicating that its generated test cases are highly executable without additional modifications.",
+        "dataset_or_task": null,
+        "base_model": "GPT-4.1",
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": "Runnability",
+        "baseline_value": null,
+        "method_value": 9.67,
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 10,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "attack trees",
+        "LLMs"
+      ],
+      "internal_state": null,
+      "decision_rule": null,
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [
+        "test case generation"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "automotive security testing"
+      ],
+      "method_family": "Retrieval-Augmented Generation (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [
+      "STAF is not yet fully autonomous",
+      "resource-intensive for complex applications",
+      "limits scalability in dynamic or large-scale settings"
+    ],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.956284+00:00",
+    "updated_at": "2026-07-31T14:43:12.956296+00:00"
+  },
+  {
+    "extraction_id": "extract_7c61e70228b1",
+    "paper_id": "2411.19443",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Auto-RAG: Autonomous Retrieval-Augmented Generation for Large Language Models",
+    "comparator_or_baseline": null,
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks.",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "Auto-RAG delivers outstanding performance on six benchmarks.",
+        "dataset_or_task": null,
+        "base_model": "Llama-3-8B-Instruct",
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": null,
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": null,
+        "effect_type": "unclear",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 2,
+          "section": "Abstract",
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "baseline",
+            "metric",
+            "numeric_value"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "LLM's powerful decision-making capabilities"
+      ],
+      "internal_state": null,
+      "decision_rule": null,
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [
+        "engaging in multi-turn dialogues",
+        "systematically planning retrievals",
+        "refining queries",
+        "continuously querying the retriever"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "complex multi-hop questions"
+      ],
+      "method_family": "Retrieval-Augmented Generation (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.976043+00:00",
+    "updated_at": "2026-07-31T14:43:12.976053+00:00"
+  },
+  {
+    "extraction_id": "extract_7731c46aa936",
+    "paper_id": "2410.13192",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Retrieval-Augmented Generation (RAG) with Self-Docs",
+    "comparator_or_baseline": null,
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "The integration of Self-Docs alongside retrieved documents has emerged as a promising strategy for RAG systems.",
+        "support_type": "author_claim",
+        "location": null
+      },
+      {
+        "statement": "Self-Docs are generated using the parametric memory of the same LLM for both document generation and downstream QA tasks.",
+        "support_type": "author_claim",
+        "location": null
+      },
+      {
+        "statement": "Scaling model capacity improves performance, although marginal returns may diminish for complex tasks.",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "Tailoring the quantity, tone, structure, and granularity of Self-Docs to match the task proves essential for maximizing gains.",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "Harmoniously integrating Self-Docs with external knowledge sources yields more robust improvements than relying on either approach alone.",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "Performance across various document numbers (n) for different datasets.",
+        "dataset_or_task": null,
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": null,
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": null,
+        "effect_type": "unclear",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 19,
+          "section": null,
+          "table": "Table 7"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "base_model",
+            "baseline",
+            "metric",
+            "numeric_value"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "GPT4o-Mini performance comparison of various document types across tasks.",
+        "dataset_or_task": null,
+        "base_model": "GPT4o-Mini",
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": null,
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": null,
+        "effect_type": "unclear",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 34,
+          "section": null,
+          "table": "Table 20"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "baseline",
+            "metric",
+            "numeric_value"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "GPT4o-Mini aggregated performance results across different dimensions of the metafunctions.",
+        "dataset_or_task": null,
+        "base_model": "GPT4o-Mini",
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": null,
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": null,
+        "effect_type": "unclear",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 35,
+          "section": null,
+          "table": "Table 23"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "baseline",
+            "metric",
+            "numeric_value"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "queries",
+        "retrieved documents",
+        "Self-Docs"
+      ],
+      "internal_state": null,
+      "decision_rule": null,
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [],
+      "method_family": "RAG",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.001501+00:00",
+    "updated_at": "2026-07-31T14:43:13.001513+00:00"
+  },
+  {
+    "extraction_id": "extract_5a813fc3a4f4",
+    "paper_id": "2502.00306",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "membership inference attack (Interrogation Attack)",
+    "comparator_or_baseline": "existing membership inference attacks",
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "The Interrogation Attack (IA) demonstrates successful inference with just 30 queries while remaining stealthy.",
+        "support_type": "reported_result",
+        "location": {
+          "page": 1,
+          "section": "Abstract"
+        }
+      },
+      {
+        "statement": "The attack achieves a 2× improvement in TPR@1%FPR over prior inference attacks across diverse RAG configurations.",
+        "support_type": "reported_result",
+        "location": {
+          "page": 2,
+          "section": "Abstract"
+        }
+      },
+      {
+        "statement": "The attack is effective and black-box, not relying on access or knowledge of the underlying retriever/generator models.",
+        "support_type": "reported_result",
+        "location": {
+          "page": 2,
+          "section": "Abstract"
+        }
+      },
+      {
+        "statement": "The attack may perform poorly on highly generic documents as they do not contain enough specific details to craft unique and distinguishable questions.",
+        "support_type": "reported_result",
+        "location": {
+          "page": 3,
+          "section": "Abstract"
+        }
+      },
+      {
+        "statement": "The attack achieves a higher AUC in all settings compared to the baselines.",
+        "support_type": "reported_result",
+        "location": {
+          "page": 13,
+          "section": "Abstract"
+        }
+      },
+      {
+        "statement": "The attack has a lower TPR@low FPR in some cases, indicating room for further improvement.",
+        "support_type": "reported_result",
+        "location": {
+          "page": 14,
+          "section": "Abstract"
+        }
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "The attack achieves a 2× improvement in TPR@1%FPR over prior inference attacks.",
+        "dataset_or_task": "membership inference",
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": "prior inference attacks",
+        "metric": "TPR@1%FPR",
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": "2×",
+        "effect_type": "relative",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 2,
+          "section": "Abstract"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "base_model"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "The attack achieves a higher AUC in all settings compared to the baselines.",
+        "dataset_or_task": "membership inference",
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": "baselines",
+        "metric": "AUC",
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": "higher",
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 13,
+          "section": "Abstract"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "base_model"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "natural-text queries"
+      ],
+      "internal_state": null,
+      "decision_rule": null,
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "documents must contain information that the base LLM is unaware of or not very good at"
+      ],
+      "method_family": "membership inference attack",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [
+      "attack may perform poorly on highly generic documents"
+    ],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "section": "Abstract",
+        "page": 14
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.025803+00:00",
+    "updated_at": "2026-07-31T14:43:13.025822+00:00"
+  },
+  {
+    "extraction_id": "extract_6aaeec5ce0a9",
+    "paper_id": "2510.22344",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "narrative_survey",
+    "evidence_level": "secondary",
+    "population_or_dataset": null,
+    "intervention_or_method": null,
+    "comparator_or_baseline": null,
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process.",
+        "support_type": "author_claim"
+      },
+      {
+        "statement": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps.",
+        "support_type": "author_claim"
+      },
+      {
+        "statement": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information.",
+        "support_type": "author_claim"
+      },
+      {
+        "statement": "This cycle repeats until the evidence is verified as sufficient, ensuring a comprehensive context for a final, strictly faithful generation step.",
+        "support_type": "author_claim"
+      },
+      {
+        "statement": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks.",
+        "support_type": "author_claim"
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "FAIR-RAG 3 (Adaptive LLMs) was benchmarked against a wide range of strong baselines.",
+        "dataset_or_task": null,
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": null,
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": null,
+        "effect_type": "unclear",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 3,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "base_model",
+            "baseline",
+            "metric",
+            "numeric_value"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "initial query",
+        "aggregated evidence"
+      ],
+      "internal_state": "Iterative Refinement Cycle, Structured Evidence Assessment (SEA), Adaptive Query Refinement agent",
+      "decision_rule": "SEA identifies confirmed facts and informational gaps",
+      "thresholds": [],
+      "trigger_granularity": "query level",
+      "actions": [
+        "deconstruct query",
+        "audit evidence",
+        "generate sub-queries",
+        "verify evidence sufficiency"
+      ],
+      "fusion_strategy": "dynamic, evidence-driven reasoning",
+      "failure_propagation": [],
+      "applicability_conditions": "complex queries requiring synthesis of information from disparate sources",
+      "method_family": "Retrieval-Augmented Generation (RAG)",
+      "agentic_criteria_met": true
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.047449+00:00",
+    "updated_at": "2026-07-31T14:43:13.047458+00:00"
+  },
+  {
+    "extraction_id": "extract_14fcb413c6aa",
+    "paper_id": "2604.19899",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": "reproducibility_study",
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": [
+      "HotpotQA",
+      "2WikiMultiHopQA"
+    ],
+    "intervention_or_method": [
+      "Metacognitive Retrieval-Augmented Generation (MetaRAG)",
+      "Rerankers (Point-Wise, List-Wise)"
+    ],
+    "comparator_or_baseline": [
+      "Standard RAG",
+      "SIM-RAG",
+      "Reflexion",
+      "FLARE",
+      "IRCoT",
+      "Self-Ask",
+      "ReAct",
+      "Chain of Thought",
+      "Standard Prompting"
+    ],
+    "sample_size": 500,
+    "outcomes_and_metrics": [
+      "Exact Match (EM)",
+      "F1 Score",
+      "Precision",
+      "Recall",
+      "Cost (USD)",
+      "Latency (s)",
+      "Tokens per request",
+      "Requests per question"
+    ],
+    "main_results": [
+      {
+        "statement": "MetaRAG consistently outperforms all baseline methods across HotpotQA and 2WikiMultiHopQA.",
+        "support_type": "author_claim",
+        "location": "Page 5"
+      },
+      {
+        "statement": "MetaRAG gains substantially from reranking, reducing noise and mitigating document reordering effects.",
+        "support_type": "author_claim",
+        "location": "Page 2"
+      },
+      {
+        "statement": "MetaRAG is more robust than SIM-RAG when extended with additional retrieval features.",
+        "support_type": "author_claim",
+        "location": "Page 2"
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "HotpotQA: MetaRAG Original EM 37.8 vs Reproduced EM 34.2.",
+        "dataset_or_task": "HotpotQA",
+        "base_model": "GPT-3.5",
+        "retriever": "MetaRAG",
+        "corpus_size": null,
+        "baseline": "Standard RAG",
+        "metric": "EM",
+        "baseline_value": null,
+        "method_value": "34.2",
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 6,
+          "section": "Table 1",
+          "table": "Table 1"
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "2WikiMultiHopQA: MetaRAG Original EM 42.8 vs Reproduced EM 33.4.",
+        "dataset_or_task": "2WikiMultiHopQA",
+        "base_model": "GPT-3.5",
+        "retriever": "MetaRAG",
+        "corpus_size": null,
+        "baseline": "Standard RAG",
+        "metric": "EM",
+        "baseline_value": null,
+        "method_value": "33.4",
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 6,
+          "section": "Table 1",
+          "table": "Table 1"
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "Threshold 0.4: EM 33.4, F1 38.9 on 2WikiMultiHopQA.",
+        "dataset_or_task": "2WikiMultiHopQA",
+        "base_model": "GPT-3.5",
+        "retriever": "MetaRAG",
+        "corpus_size": null,
+        "baseline": "Threshold 0.4",
+        "metric": "EM, F1",
+        "baseline_value": null,
+        "method_value": "33.4, 38.9",
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 7,
+          "section": "Table 3",
+          "table": "Table 3"
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "GPT-3.5: RAG Cost $1.3 vs MetaRAG Cost $37.66.",
+        "dataset_or_task": "HotpotQA",
+        "base_model": "GPT-3.5",
+        "retriever": "MetaRAG",
+        "corpus_size": null,
+        "baseline": "Standard RAG",
+        "metric": "Cost (USD)",
+        "baseline_value": "1.3",
+        "method_value": "37.66",
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 9,
+          "section": "Table 6",
+          "table": "Table 6"
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "question q",
+        "retrieved passages Dq",
+        "reference answer y' (expert QA model)"
+      ],
+      "internal_state": "similarity score between y and y'",
+      "decision_rule": "similarity score falls below a predefined threshold",
+      "thresholds": [
+        0.4,
+        0.3,
+        0.2,
+        0.1
+      ],
+      "trigger_granularity": "per question",
+      "actions": [
+        "produce candidate answer y",
+        "refine reasoning",
+        "reformulate new question for additional retrieval",
+        "accept answer directly"
+      ],
+      "fusion_strategy": "integrated by CS Reasoner Module",
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "multi-hop question answering",
+        "complex tasks requiring reasoning steps"
+      ],
+      "method_family": "Metacognitive RAG",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": [
+      "closed-source LLM updates",
+      "missing implementation details",
+      "unreleased prompts"
+    ],
+    "limitations": [
+      "closed-source LLM updates",
+      "missing implementation details",
+      "unreleased prompts",
+      "sample selection differences (subset not shared)",
+      "index construction differences (ElasticSearch vs Pyserini)",
+      "reranker usage not mentioned/discussed in original paper"
+    ],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": "development split of HotpotQA and 2WikiMultiHopQA",
+      "split_and_leakage_risk": "randomly sample 500 QA pairs from respective development sets",
+      "baseline_fairness": "follow experimental protocol described in original paper, minor adaptations",
+      "variance_or_significance": "statistically significant difference (p < 0.05) reported",
+      "ablation_reported": "evaluating the effect of Point-Wise and ListWise rerankers",
+      "code_data_environment": "release code, Pyserini (Lucene-based), ElasticSearch (alternative)",
+      "external_validity": "multi-hop QA tasks (HotpotQA, 2WikiMultiHopQA)",
+      "compute_cost": "detailed cost analysis (Table 6) including requests, tokens, latency, and USD"
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.067604+00:00",
+    "updated_at": "2026-07-31T14:43:13.067623+00:00"
+  },
+  {
+    "extraction_id": "extract_f5fc76712992",
+    "paper_id": "2411.16133",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Context Awareness Gate (CAG) architecture",
+    "comparator_or_baseline": null,
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "The Context Awareness Gate (CAG) architecture improves the reliability of RAG pipelines in both open-domain and closed-domain question answering tasks.",
+        "support_type": "author_claim",
+        "location": null
+      },
+      {
+        "statement": "The Vector Candidates method improves semantic search and routing by utilizing the concept of pseudo-queries and in-dataset embedding distributions.",
+        "support_type": "author_claim",
+        "location": null
+      },
+      {
+        "statement": "The Context Retrieval Supervision Benchmark (CRSB) dataset consists of data from 17 diverse fields.",
+        "support_type": "author_claim",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "The complexity of the Vector Candidates method is O(1), as it relies solely on the number of contexts, regardless of the number of input requests.",
+        "dataset_or_task": null,
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": null,
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": null,
+        "effect_type": "unclear",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 3,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "base_model",
+            "baseline",
+            "metric",
+            "numeric_value"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "user’s input query",
+        "context",
+        "pseudo-queries"
+      ],
+      "internal_state": null,
+      "decision_rule": "determine whether context retrieval is necessary or if the LLM can answer the query based on its internal knowledge",
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [
+        "transforming the user’s input query",
+        "applying Vector Candidates method",
+        "dynamically adapting the input query into a suitable prompt"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "open-domain and closed-domain question answering tasks"
+      ],
+      "method_family": "Retrieval-Augmented Generation (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) has emerged as a widely adopted approach to mitigate the limitations of large language models (LLMs) in answering domain-specific questions."
+      },
+      {
+        "section": "II. RELATED WORK",
+        "page": 2,
+        "excerpt": "CAG leverages both query transformation and dynamic prompting to enhance the reliability of RAG pipelines in both open-domain and closed-domain question answering tasks."
+      },
+      {
+        "section": "III. SYSTEM DESIGN",
+        "page": 3,
+        "excerpt": "The complexity of the Vector Candidates method is O(1), as it relies solely on the number of contexts, regardless of the number of input requests."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.089652+00:00",
+    "updated_at": "2026-07-31T14:43:13.089662+00:00"
+  },
+  {
+    "extraction_id": "extract_778f237ee0c7",
+    "paper_id": "2607.01852",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Retrieval-Augmented Generation (RAG)",
+    "comparator_or_baseline": "fixed-size and recursive chunking",
+    "sample_size": null,
+    "outcomes_and_metrics": [
+      {
+        "statement": "Cluster-based semantic chunking improves retrieval and answer quality",
+        "support_type": "author_claim",
+        "location": null
+      },
+      {
+        "statement": "Cluster-based chunking did not outperform simpler strategies",
+        "support_type": "author_claim",
+        "location": null
+      },
+      {
+        "statement": "Performance on fixed versus document specific questions varied substantially",
+        "support_type": "author_claim",
+        "location": null
+      },
+      {
+        "statement": "RAGAs based faithfulness shows limited reliability",
+        "support_type": "author_claim",
+        "location": null
+      }
+    ],
+    "main_results": [
+      {
+        "statement": "Cluster-based semantic chunking did not yield any consistent improvement",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "Simpler chunking strategies were overall more reliable",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "Context F1 scores for the evaluated chunking strategies",
+        "dataset_or_task": "context F1 scores",
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": "context F1",
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": null,
+        "effect_type": "unclear",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 4,
+          "section": "IV. RESULTS",
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "base_model",
+            "baseline",
+            "numeric_value"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "AQS scores for the evaluated chunking strategies",
+        "dataset_or_task": "AQS scores",
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": "AQS",
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": null,
+        "effect_type": "unclear",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 4,
+          "section": "IV. RESULTS",
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "base_model",
+            "baseline",
+            "numeric_value"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "Thesis documents",
+        "QA set",
+        "VectorDB",
+        "models & embeddings"
+      ],
+      "internal_state": null,
+      "decision_rule": null,
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [],
+      "method_family": "Retrieval-Augmented Generation (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [
+      "Cluster-based semantic chunking did not yield any consistent improvement",
+      "Simpler chunking strategies were overall more reliable",
+      "RAGAs based faithfulness shows limited reliability"
+    ],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.113171+00:00",
+    "updated_at": "2026-07-31T14:43:13.113182+00:00"
+  }
+]

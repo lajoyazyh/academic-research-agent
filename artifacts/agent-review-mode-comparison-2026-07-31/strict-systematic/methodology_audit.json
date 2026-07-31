@@ -1,0 +1,2546 @@
+{
+  "schema_version": 2,
+  "protocol": {
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "version": 1,
+    "status": "confirmed",
+    "mode": "systematic",
+    "research_question": "检索增强生成系统在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面有哪些可验证证据与适用边界？",
+    "sources": [
+      "arxiv",
+      "crossref",
+      "dblp"
+    ],
+    "field_scope": [
+      "title",
+      "abstract",
+      "keywords"
+    ],
+    "date_from": "2020-01-01",
+    "date_to": "2026-07-31",
+    "languages": [
+      "English"
+    ],
+    "document_types": [
+      "journal article",
+      "conference paper",
+      "preprint"
+    ],
+    "inclusion_criteria": [
+      "直接研究RAG架构、检索控制、可靠性评价或计算成本",
+      "提供原始实验、基准或具有实证验证的技术框架",
+      "综述文章仅用于分类与研究版图，不得支撑性能或成本结论",
+      "能够获得足以核验机制和结果的全文"
+    ],
+    "exclusion_criteria": [
+      "研究问题与RAG机制、评价、可靠性或成本无直接关系",
+      "只有观点或产品描述而无可核验技术证据",
+      "缺少可用全文，无法完成依赖全文的筛选与质量评价"
+    ]
+  },
+  "screening_policy": {
+    "strategy": "single_human_plus_independent_ai",
+    "ai_blinded_to_human": true,
+    "conflict_resolution": "human adjudication required; not performed in this automated test",
+    "cochrane_dual_human_compliant": false,
+    "title_abstract": "independent AI screening; uncertain records retained",
+    "full_text": "independent AI screening over structured full-text evidence",
+    "test_operator_confirmation": false
+  },
+  "screening_participants": {
+    "actor_types": [
+      "ai",
+      "system"
+    ],
+    "human_recorded": false,
+    "ai_recorded": true,
+    "adjudication_recorded": false,
+    "dual_human_recorded": false
+  },
+  "ai_participation_disclosure": "Screening decisions in this run were produced by AI without a recorded independent human screen. This is an AI-only research draft and is not dual-human Cochrane-compliant screening.",
+  "search_queries": [
+    {
+      "search_query_id": "query_7c551b20a4a8",
+      "source": "arxiv",
+      "original_query": "Self-RAG",
+      "compiled_query": "Self-RAG",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "all:\"Self-RAG\""
+        ],
+        "pages_or_cursors": [
+          0,
+          10
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "arXiv all-field Boolean query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:46:07.053738+00:00",
+          "2026-07-31T05:46:10.562525+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:46:07.892852+00:00",
+          "2026-07-31T05:46:11.464234+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_7c551b20a4a8",
+            "source": "arxiv",
+            "query": "all:\"Self-RAG\"",
+            "original_query": "Self-RAG",
+            "compiled_query": "all:\"Self-RAG\"",
+            "page": 0,
+            "result_count": 10,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:46:07.053738+00:00",
+            "completed_at": "2026-07-31T05:46:07.892852+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_7c551b20a4a8",
+            "source": "arxiv",
+            "query": "all:\"Self-RAG\"",
+            "original_query": "Self-RAG",
+            "compiled_query": "all:\"Self-RAG\"",
+            "page": 10,
+            "result_count": 6,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:46:10.562525+00:00",
+            "completed_at": "2026-07-31T05:46:11.464234+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:46:07.053738+00:00",
+      "completed_at": "2026-07-31T05:46:11.464234+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        10
+      ],
+      "hit_count": 16,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_8918982e3db6",
+      "source": "arxiv",
+      "original_query": "\"Corrective Retrieval Augmented Generation\"",
+      "compiled_query": "\"Corrective Retrieval Augmented Generation\"",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "all:\"Corrective Retrieval Augmented Generation\""
+        ],
+        "pages_or_cursors": [
+          0,
+          10
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "arXiv all-field Boolean query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:46:14.077730+00:00",
+          "2026-07-31T05:46:17.648502+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:46:15.045851+00:00",
+          "2026-07-31T05:46:25.365723+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_8918982e3db6",
+            "source": "arxiv",
+            "query": "all:\"Corrective Retrieval Augmented Generation\"",
+            "original_query": "\"Corrective Retrieval Augmented Generation\"",
+            "compiled_query": "all:\"Corrective Retrieval Augmented Generation\"",
+            "page": 0,
+            "result_count": 5,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:46:14.077730+00:00",
+            "completed_at": "2026-07-31T05:46:15.045851+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_8918982e3db6",
+            "source": "arxiv",
+            "query": "all:\"Corrective Retrieval Augmented Generation\"",
+            "original_query": "\"Corrective Retrieval Augmented Generation\"",
+            "compiled_query": "all:\"Corrective Retrieval Augmented Generation\"",
+            "page": 10,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:46:17.648502+00:00",
+            "completed_at": "2026-07-31T05:46:25.365723+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:46:14.077730+00:00",
+      "completed_at": "2026-07-31T05:46:25.365723+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        10
+      ],
+      "hit_count": 5,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_c6f3b818bdb3",
+      "source": "arxiv",
+      "original_query": "DRAGIN",
+      "compiled_query": "DRAGIN",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "all:\"DRAGIN\""
+        ],
+        "pages_or_cursors": [
+          0,
+          10
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "arXiv all-field Boolean query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:46:27.866108+00:00",
+          "2026-07-31T05:46:31.046800+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:46:28.500942+00:00",
+          "2026-07-31T05:46:31.688854+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_c6f3b818bdb3",
+            "source": "arxiv",
+            "query": "all:\"DRAGIN\"",
+            "original_query": "DRAGIN",
+            "compiled_query": "all:\"DRAGIN\"",
+            "page": 0,
+            "result_count": 2,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:46:27.866108+00:00",
+            "completed_at": "2026-07-31T05:46:28.500942+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_c6f3b818bdb3",
+            "source": "arxiv",
+            "query": "all:\"DRAGIN\"",
+            "original_query": "DRAGIN",
+            "compiled_query": "all:\"DRAGIN\"",
+            "page": 10,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:46:31.046800+00:00",
+            "completed_at": "2026-07-31T05:46:31.688854+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:46:27.866108+00:00",
+      "completed_at": "2026-07-31T05:46:31.688854+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        10
+      ],
+      "hit_count": 2,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_e02f75a15299",
+      "source": "arxiv",
+      "original_query": "\"Benchmarking Large Language Models in Retrieval-Augmented Generation\"",
+      "compiled_query": "\"Benchmarking Large Language Models in Retrieval-Augmented Generation\"",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "all:\"Benchmarking Large Language Models in Retrieval-Augmented Generation\""
+        ],
+        "pages_or_cursors": [
+          0,
+          10
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "arXiv all-field Boolean query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:46:34.189683+00:00",
+          "2026-07-31T05:46:37.584741+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:46:35.060447+00:00",
+          "2026-07-31T05:46:45.760570+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_e02f75a15299",
+            "source": "arxiv",
+            "query": "all:\"Benchmarking Large Language Models in Retrieval-Augmented Generation\"",
+            "original_query": "\"Benchmarking Large Language Models in Retrieval-Augmented Generation\"",
+            "compiled_query": "all:\"Benchmarking Large Language Models in Retrieval-Augmented Generation\"",
+            "page": 0,
+            "result_count": 1,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:46:34.189683+00:00",
+            "completed_at": "2026-07-31T05:46:35.060447+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_e02f75a15299",
+            "source": "arxiv",
+            "query": "all:\"Benchmarking Large Language Models in Retrieval-Augmented Generation\"",
+            "original_query": "\"Benchmarking Large Language Models in Retrieval-Augmented Generation\"",
+            "compiled_query": "all:\"Benchmarking Large Language Models in Retrieval-Augmented Generation\"",
+            "page": 10,
+            "result_count": 10,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:46:37.584741+00:00",
+            "completed_at": "2026-07-31T05:46:45.760570+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:46:34.189683+00:00",
+      "completed_at": "2026-07-31T05:46:45.760570+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        10
+      ],
+      "hit_count": 11,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_cc10867ea250",
+      "source": "arxiv",
+      "original_query": "\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+      "compiled_query": "\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "all:\"Retrieval-Augmented Generation for Large Language Models A Survey\""
+        ],
+        "pages_or_cursors": [
+          0,
+          10
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "arXiv all-field Boolean query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:46:48.410303+00:00",
+          "2026-07-31T05:46:51.777085+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:46:49.219806+00:00",
+          "2026-07-31T05:46:59.051074+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_cc10867ea250",
+            "source": "arxiv",
+            "query": "all:\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "original_query": "\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "compiled_query": "all:\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "page": 0,
+            "result_count": 3,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:46:48.410303+00:00",
+            "completed_at": "2026-07-31T05:46:49.219806+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_cc10867ea250",
+            "source": "arxiv",
+            "query": "all:\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "original_query": "\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "compiled_query": "all:\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "page": 10,
+            "result_count": 10,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:46:51.777085+00:00",
+            "completed_at": "2026-07-31T05:46:59.051074+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:46:48.410303+00:00",
+      "completed_at": "2026-07-31T05:46:59.051074+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        10
+      ],
+      "hit_count": 13,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_02c9045788a3",
+      "source": "arxiv",
+      "original_query": "\"retrieval augmented generation\" OR \"RAG factuality reliability benchmark\"",
+      "compiled_query": "\"retrieval augmented generation\" OR \"RAG factuality reliability benchmark\"",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "all:\"retrieval augmented generation\" OR all:\"RAG factuality reliability benchmark\""
+        ],
+        "pages_or_cursors": [
+          0,
+          10
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "arXiv all-field Boolean query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:47:01.715126+00:00",
+          "2026-07-31T05:47:04.691789+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:47:02.027786+00:00",
+          "2026-07-31T05:47:05.181852+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_02c9045788a3",
+            "source": "arxiv",
+            "query": "all:\"retrieval augmented generation\" OR all:\"RAG factuality reliability benchmark\"",
+            "original_query": "\"retrieval augmented generation\" OR \"RAG factuality reliability benchmark\"",
+            "compiled_query": "all:\"retrieval augmented generation\" OR all:\"RAG factuality reliability benchmark\"",
+            "page": 0,
+            "result_count": 10,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:01.715126+00:00",
+            "completed_at": "2026-07-31T05:47:02.027786+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_02c9045788a3",
+            "source": "arxiv",
+            "query": "all:\"retrieval augmented generation\" OR all:\"RAG factuality reliability benchmark\"",
+            "original_query": "\"retrieval augmented generation\" OR \"RAG factuality reliability benchmark\"",
+            "compiled_query": "all:\"retrieval augmented generation\" OR all:\"RAG factuality reliability benchmark\"",
+            "page": 10,
+            "result_count": 10,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:04.691789+00:00",
+            "completed_at": "2026-07-31T05:47:05.181852+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:47:01.715126+00:00",
+      "completed_at": "2026-07-31T05:47:05.181852+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        10
+      ],
+      "hit_count": 20,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_3e138d9ebdf0",
+      "source": "arxiv",
+      "original_query": "\"dynamic corrective retrieval augmented generation\" OR \"adaptive retrieval CRAG DRAGIN\"",
+      "compiled_query": "\"dynamic corrective retrieval augmented generation\" OR \"adaptive retrieval CRAG DRAGIN\"",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "all:\"dynamic corrective retrieval augmented generation\" OR all:\"adaptive retrieval CRAG DRAGIN\""
+        ],
+        "pages_or_cursors": [
+          0,
+          10
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "arXiv all-field Boolean query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:47:07.842085+00:00",
+          "2026-07-31T05:47:18.401367+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:47:15.900783+00:00",
+          "2026-07-31T05:47:26.736643+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_3e138d9ebdf0",
+            "source": "arxiv",
+            "query": "all:\"dynamic corrective retrieval augmented generation\" OR all:\"adaptive retrieval CRAG DRAGIN\"",
+            "original_query": "\"dynamic corrective retrieval augmented generation\" OR \"adaptive retrieval CRAG DRAGIN\"",
+            "compiled_query": "all:\"dynamic corrective retrieval augmented generation\" OR all:\"adaptive retrieval CRAG DRAGIN\"",
+            "page": 0,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:07.842085+00:00",
+            "completed_at": "2026-07-31T05:47:15.900783+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_3e138d9ebdf0",
+            "source": "arxiv",
+            "query": "all:\"dynamic corrective retrieval augmented generation\" OR all:\"adaptive retrieval CRAG DRAGIN\"",
+            "original_query": "\"dynamic corrective retrieval augmented generation\" OR \"adaptive retrieval CRAG DRAGIN\"",
+            "compiled_query": "all:\"dynamic corrective retrieval augmented generation\" OR all:\"adaptive retrieval CRAG DRAGIN\"",
+            "page": 10,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:18.401367+00:00",
+            "completed_at": "2026-07-31T05:47:26.736643+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:47:07.842085+00:00",
+      "completed_at": "2026-07-31T05:47:26.736643+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        10
+      ],
+      "hit_count": 0,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_e3a25e3de45c",
+      "source": "arxiv",
+      "original_query": "Self-RAG OR \"Corrective Retrieval Augmented Generation\" OR DRAGIN OR \"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR \"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+      "compiled_query": "Self-RAG OR \"Corrective Retrieval Augmented Generation\" OR DRAGIN OR \"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR \"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "all:\"Self-RAG\" OR all:\"Corrective Retrieval Augmented Generation\" OR all:\"DRAGIN\" OR all:\"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR all:\"Retrieval-Augmented Generation for Large Language Models A Survey\""
+        ],
+        "pages_or_cursors": [
+          0,
+          10
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "arXiv all-field Boolean query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:47:29.237344+00:00",
+          "2026-07-31T05:47:32.910377+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:47:30.259976+00:00",
+          "2026-07-31T05:47:34.005429+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_e3a25e3de45c",
+            "source": "arxiv",
+            "query": "all:\"Self-RAG\" OR all:\"Corrective Retrieval Augmented Generation\" OR all:\"DRAGIN\" OR all:\"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR all:\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "original_query": "Self-RAG OR \"Corrective Retrieval Augmented Generation\" OR DRAGIN OR \"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR \"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "compiled_query": "all:\"Self-RAG\" OR all:\"Corrective Retrieval Augmented Generation\" OR all:\"DRAGIN\" OR all:\"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR all:\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "page": 0,
+            "result_count": 10,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:29.237344+00:00",
+            "completed_at": "2026-07-31T05:47:30.259976+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_e3a25e3de45c",
+            "source": "arxiv",
+            "query": "all:\"Self-RAG\" OR all:\"Corrective Retrieval Augmented Generation\" OR all:\"DRAGIN\" OR all:\"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR all:\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "original_query": "Self-RAG OR \"Corrective Retrieval Augmented Generation\" OR DRAGIN OR \"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR \"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "compiled_query": "all:\"Self-RAG\" OR all:\"Corrective Retrieval Augmented Generation\" OR all:\"DRAGIN\" OR all:\"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR all:\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "page": 10,
+            "result_count": 10,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:32.910377+00:00",
+            "completed_at": "2026-07-31T05:47:34.005429+00:00",
+            "field_mapping": [
+              "arXiv all-field Boolean query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:47:29.237344+00:00",
+      "completed_at": "2026-07-31T05:47:34.005429+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        10
+      ],
+      "hit_count": 20,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_284196a37b29",
+      "source": "crossref",
+      "original_query": "\"retrieval augmented generation\" OR \"RAG factuality reliability benchmark\"",
+      "compiled_query": "retrieval augmented generation RAG factuality reliability benchmark",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "retrieval augmented generation RAG factuality reliability benchmark"
+        ],
+        "pages_or_cursors": [
+          0,
+          5
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "Crossref bibliographic query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:47:36.779588+00:00",
+          "2026-07-31T05:47:38.130446+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:47:37.648274+00:00",
+          "2026-07-31T05:47:39.149501+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_284196a37b29",
+            "source": "crossref",
+            "query": "retrieval augmented generation RAG factuality reliability benchmark",
+            "original_query": "\"retrieval augmented generation\" OR \"RAG factuality reliability benchmark\"",
+            "compiled_query": "retrieval augmented generation RAG factuality reliability benchmark",
+            "page": 0,
+            "result_count": 5,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:36.779588+00:00",
+            "completed_at": "2026-07-31T05:47:37.648274+00:00",
+            "field_mapping": [
+              "Crossref bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_284196a37b29",
+            "source": "crossref",
+            "query": "retrieval augmented generation RAG factuality reliability benchmark",
+            "original_query": "\"retrieval augmented generation\" OR \"RAG factuality reliability benchmark\"",
+            "compiled_query": "retrieval augmented generation RAG factuality reliability benchmark",
+            "page": 5,
+            "result_count": 5,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:38.130446+00:00",
+            "completed_at": "2026-07-31T05:47:39.149501+00:00",
+            "field_mapping": [
+              "Crossref bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:47:36.779588+00:00",
+      "completed_at": "2026-07-31T05:47:39.149501+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        5
+      ],
+      "hit_count": 10,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_fec394ec1164",
+      "source": "crossref",
+      "original_query": "\"dynamic corrective retrieval augmented generation\" OR \"adaptive retrieval CRAG DRAGIN\"",
+      "compiled_query": "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN"
+        ],
+        "pages_or_cursors": [
+          0,
+          5
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "Crossref bibliographic query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:47:39.662503+00:00",
+          "2026-07-31T05:47:41.090141+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:47:40.598509+00:00",
+          "2026-07-31T05:47:42.094625+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_fec394ec1164",
+            "source": "crossref",
+            "query": "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN",
+            "original_query": "\"dynamic corrective retrieval augmented generation\" OR \"adaptive retrieval CRAG DRAGIN\"",
+            "compiled_query": "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN",
+            "page": 0,
+            "result_count": 5,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:39.662503+00:00",
+            "completed_at": "2026-07-31T05:47:40.598509+00:00",
+            "field_mapping": [
+              "Crossref bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_fec394ec1164",
+            "source": "crossref",
+            "query": "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN",
+            "original_query": "\"dynamic corrective retrieval augmented generation\" OR \"adaptive retrieval CRAG DRAGIN\"",
+            "compiled_query": "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN",
+            "page": 5,
+            "result_count": 4,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:41.090141+00:00",
+            "completed_at": "2026-07-31T05:47:42.094625+00:00",
+            "field_mapping": [
+              "Crossref bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:47:39.662503+00:00",
+      "completed_at": "2026-07-31T05:47:42.094625+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        5
+      ],
+      "hit_count": 9,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_83c3b0dd3722",
+      "source": "crossref",
+      "original_query": "Self-RAG OR \"Corrective Retrieval Augmented Generation\" OR DRAGIN OR \"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR \"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+      "compiled_query": "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey"
+        ],
+        "pages_or_cursors": [
+          0,
+          5
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "Crossref bibliographic query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:47:42.588149+00:00",
+          "2026-07-31T05:47:44.427679+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:47:43.910761+00:00",
+          "2026-07-31T05:47:45.347100+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_83c3b0dd3722",
+            "source": "crossref",
+            "query": "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey",
+            "original_query": "Self-RAG OR \"Corrective Retrieval Augmented Generation\" OR DRAGIN OR \"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR \"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "compiled_query": "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey",
+            "page": 0,
+            "result_count": 5,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:42.588149+00:00",
+            "completed_at": "2026-07-31T05:47:43.910761+00:00",
+            "field_mapping": [
+              "Crossref bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_83c3b0dd3722",
+            "source": "crossref",
+            "query": "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey",
+            "original_query": "Self-RAG OR \"Corrective Retrieval Augmented Generation\" OR DRAGIN OR \"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR \"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "compiled_query": "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey",
+            "page": 5,
+            "result_count": 3,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:44.427679+00:00",
+            "completed_at": "2026-07-31T05:47:45.347100+00:00",
+            "field_mapping": [
+              "Crossref bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:47:42.588149+00:00",
+      "completed_at": "2026-07-31T05:47:45.347100+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        5
+      ],
+      "hit_count": 8,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_2327af3088fa",
+      "source": "dblp",
+      "original_query": "Self-RAG",
+      "compiled_query": "Self-RAG",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "Self-RAG"
+        ],
+        "pages_or_cursors": [
+          0,
+          5
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "DBLP bibliographic query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:47:45.819091+00:00",
+          "2026-07-31T05:47:48.347525+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:47:47.862635+00:00",
+          "2026-07-31T05:47:49.322935+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_2327af3088fa",
+            "source": "dblp",
+            "query": "Self-RAG",
+            "original_query": "Self-RAG",
+            "compiled_query": "Self-RAG",
+            "page": 0,
+            "result_count": 5,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:45.819091+00:00",
+            "completed_at": "2026-07-31T05:47:47.862635+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_2327af3088fa",
+            "source": "dblp",
+            "query": "Self-RAG",
+            "original_query": "Self-RAG",
+            "compiled_query": "Self-RAG",
+            "page": 5,
+            "result_count": 5,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:48.347525+00:00",
+            "completed_at": "2026-07-31T05:47:49.322935+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:47:45.819091+00:00",
+      "completed_at": "2026-07-31T05:47:49.322935+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        5
+      ],
+      "hit_count": 10,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_22e648e646c5",
+      "source": "dblp",
+      "original_query": "\"Corrective Retrieval Augmented Generation\"",
+      "compiled_query": "Corrective Retrieval Augmented Generation",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "Corrective Retrieval Augmented Generation"
+        ],
+        "pages_or_cursors": [
+          0,
+          5
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "DBLP bibliographic query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:47:49.817299+00:00",
+          "2026-07-31T05:47:51.881629+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:47:51.409006+00:00",
+          "2026-07-31T05:47:52.592554+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_22e648e646c5",
+            "source": "dblp",
+            "query": "Corrective Retrieval Augmented Generation",
+            "original_query": "\"Corrective Retrieval Augmented Generation\"",
+            "compiled_query": "Corrective Retrieval Augmented Generation",
+            "page": 0,
+            "result_count": 4,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:49.817299+00:00",
+            "completed_at": "2026-07-31T05:47:51.409006+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_22e648e646c5",
+            "source": "dblp",
+            "query": "Corrective Retrieval Augmented Generation",
+            "original_query": "\"Corrective Retrieval Augmented Generation\"",
+            "compiled_query": "Corrective Retrieval Augmented Generation",
+            "page": 5,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:51.881629+00:00",
+            "completed_at": "2026-07-31T05:47:52.592554+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:47:49.817299+00:00",
+      "completed_at": "2026-07-31T05:47:52.592554+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        5
+      ],
+      "hit_count": 4,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_67113b11c7a8",
+      "source": "dblp",
+      "original_query": "DRAGIN",
+      "compiled_query": "DRAGIN",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "DRAGIN"
+        ],
+        "pages_or_cursors": [
+          0,
+          5
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "DBLP bibliographic query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:47:52.993075+00:00",
+          "2026-07-31T05:47:54.521794+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:47:54.121466+00:00",
+          "2026-07-31T05:47:55.440054+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_67113b11c7a8",
+            "source": "dblp",
+            "query": "DRAGIN",
+            "original_query": "DRAGIN",
+            "compiled_query": "DRAGIN",
+            "page": 0,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:52.993075+00:00",
+            "completed_at": "2026-07-31T05:47:54.121466+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_67113b11c7a8",
+            "source": "dblp",
+            "query": "DRAGIN",
+            "original_query": "DRAGIN",
+            "compiled_query": "DRAGIN",
+            "page": 5,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:54.521794+00:00",
+            "completed_at": "2026-07-31T05:47:55.440054+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:47:52.993075+00:00",
+      "completed_at": "2026-07-31T05:47:55.440054+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        5
+      ],
+      "hit_count": 0,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_30bd96adab60",
+      "source": "dblp",
+      "original_query": "\"Benchmarking Large Language Models in Retrieval-Augmented Generation\"",
+      "compiled_query": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "Benchmarking Large Language Models in Retrieval-Augmented Generation"
+        ],
+        "pages_or_cursors": [
+          0,
+          5
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "DBLP bibliographic query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:47:55.840511+00:00",
+          "2026-07-31T05:47:57.163247+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:47:56.762917+00:00",
+          "2026-07-31T05:47:58.066139+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_30bd96adab60",
+            "source": "dblp",
+            "query": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+            "original_query": "\"Benchmarking Large Language Models in Retrieval-Augmented Generation\"",
+            "compiled_query": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+            "page": 0,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:55.840511+00:00",
+            "completed_at": "2026-07-31T05:47:56.762917+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_30bd96adab60",
+            "source": "dblp",
+            "query": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+            "original_query": "\"Benchmarking Large Language Models in Retrieval-Augmented Generation\"",
+            "compiled_query": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+            "page": 5,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:57.163247+00:00",
+            "completed_at": "2026-07-31T05:47:58.066139+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:47:55.840511+00:00",
+      "completed_at": "2026-07-31T05:47:58.066139+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        5
+      ],
+      "hit_count": 0,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_c77e87a71c52",
+      "source": "dblp",
+      "original_query": "\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+      "compiled_query": "Retrieval-Augmented Generation for Large Language Models A Survey",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "Retrieval-Augmented Generation for Large Language Models A Survey"
+        ],
+        "pages_or_cursors": [
+          0,
+          5
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "DBLP bibliographic query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:47:58.466758+00:00",
+          "2026-07-31T05:47:59.769413+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:47:59.368976+00:00",
+          "2026-07-31T05:48:00.815628+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_c77e87a71c52",
+            "source": "dblp",
+            "query": "Retrieval-Augmented Generation for Large Language Models A Survey",
+            "original_query": "\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "compiled_query": "Retrieval-Augmented Generation for Large Language Models A Survey",
+            "page": 0,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:58.466758+00:00",
+            "completed_at": "2026-07-31T05:47:59.368976+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_c77e87a71c52",
+            "source": "dblp",
+            "query": "Retrieval-Augmented Generation for Large Language Models A Survey",
+            "original_query": "\"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "compiled_query": "Retrieval-Augmented Generation for Large Language Models A Survey",
+            "page": 5,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:47:59.769413+00:00",
+            "completed_at": "2026-07-31T05:48:00.815628+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:47:58.466758+00:00",
+      "completed_at": "2026-07-31T05:48:00.815628+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        5
+      ],
+      "hit_count": 0,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_f91a3ea12414",
+      "source": "dblp",
+      "original_query": "\"retrieval augmented generation\" OR \"RAG factuality reliability benchmark\"",
+      "compiled_query": "retrieval augmented generation RAG factuality reliability benchmark",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "retrieval augmented generation RAG factuality reliability benchmark"
+        ],
+        "pages_or_cursors": [
+          0,
+          5
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "DBLP bibliographic query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:48:01.216286+00:00",
+          "2026-07-31T05:48:02.530400+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:48:02.129917+00:00",
+          "2026-07-31T05:48:03.452673+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_f91a3ea12414",
+            "source": "dblp",
+            "query": "retrieval augmented generation RAG factuality reliability benchmark",
+            "original_query": "\"retrieval augmented generation\" OR \"RAG factuality reliability benchmark\"",
+            "compiled_query": "retrieval augmented generation RAG factuality reliability benchmark",
+            "page": 0,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:48:01.216286+00:00",
+            "completed_at": "2026-07-31T05:48:02.129917+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_f91a3ea12414",
+            "source": "dblp",
+            "query": "retrieval augmented generation RAG factuality reliability benchmark",
+            "original_query": "\"retrieval augmented generation\" OR \"RAG factuality reliability benchmark\"",
+            "compiled_query": "retrieval augmented generation RAG factuality reliability benchmark",
+            "page": 5,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:48:02.530400+00:00",
+            "completed_at": "2026-07-31T05:48:03.452673+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:48:01.216286+00:00",
+      "completed_at": "2026-07-31T05:48:03.452673+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        5
+      ],
+      "hit_count": 0,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_285ad0f6e226",
+      "source": "dblp",
+      "original_query": "\"dynamic corrective retrieval augmented generation\" OR \"adaptive retrieval CRAG DRAGIN\"",
+      "compiled_query": "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN"
+        ],
+        "pages_or_cursors": [
+          0,
+          5
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "DBLP bibliographic query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:48:03.853258+00:00",
+          "2026-07-31T05:48:05.150565+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:48:04.747569+00:00",
+          "2026-07-31T05:48:06.194541+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_285ad0f6e226",
+            "source": "dblp",
+            "query": "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN",
+            "original_query": "\"dynamic corrective retrieval augmented generation\" OR \"adaptive retrieval CRAG DRAGIN\"",
+            "compiled_query": "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN",
+            "page": 0,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:48:03.853258+00:00",
+            "completed_at": "2026-07-31T05:48:04.747569+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_285ad0f6e226",
+            "source": "dblp",
+            "query": "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN",
+            "original_query": "\"dynamic corrective retrieval augmented generation\" OR \"adaptive retrieval CRAG DRAGIN\"",
+            "compiled_query": "dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN",
+            "page": 5,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:48:05.150565+00:00",
+            "completed_at": "2026-07-31T05:48:06.194541+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:48:03.853258+00:00",
+      "completed_at": "2026-07-31T05:48:06.194541+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        5
+      ],
+      "hit_count": 0,
+      "attempt_count": 2,
+      "last_error": null
+    },
+    {
+      "search_query_id": "query_85a856f0eabf",
+      "source": "dblp",
+      "original_query": "Self-RAG OR \"Corrective Retrieval Augmented Generation\" OR DRAGIN OR \"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR \"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+      "compiled_query": "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey",
+      "field_scope": [
+        "title",
+        "abstract",
+        "keywords"
+      ],
+      "filters": {
+        "date_from": "2020-01-01",
+        "date_to": "2026-07-31",
+        "languages": [
+          "English"
+        ],
+        "document_types": [
+          "journal article",
+          "conference paper",
+          "preprint"
+        ]
+      },
+      "execution_metadata": {
+        "actual_queries": [
+          "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey"
+        ],
+        "pages_or_cursors": [
+          0,
+          5
+        ],
+        "field_scope": [
+          "title",
+          "abstract",
+          "keywords"
+        ],
+        "actual_field_mappings": [
+          "DBLP bibliographic query"
+        ],
+        "filters": {
+          "date_from": "2020-01-01",
+          "date_to": "2026-07-31",
+          "languages": [
+            "English"
+          ],
+          "document_types": [
+            "journal article",
+            "conference paper",
+            "preprint"
+          ]
+        },
+        "request_started_at": [
+          "2026-07-31T05:48:06.595906+00:00",
+          "2026-07-31T05:48:08.055958+00:00"
+        ],
+        "request_completed_at": [
+          "2026-07-31T05:48:07.655239+00:00",
+          "2026-07-31T05:48:08.964809+00:00"
+        ],
+        "attempts": [
+          {
+            "search_query_id": "query_85a856f0eabf",
+            "source": "dblp",
+            "query": "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey",
+            "original_query": "Self-RAG OR \"Corrective Retrieval Augmented Generation\" OR DRAGIN OR \"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR \"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "compiled_query": "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey",
+            "page": 0,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:48:06.595906+00:00",
+            "completed_at": "2026-07-31T05:48:07.655239+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          },
+          {
+            "search_query_id": "query_85a856f0eabf",
+            "source": "dblp",
+            "query": "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey",
+            "original_query": "Self-RAG OR \"Corrective Retrieval Augmented Generation\" OR DRAGIN OR \"Benchmarking Large Language Models in Retrieval-Augmented Generation\" OR \"Retrieval-Augmented Generation for Large Language Models A Survey\"",
+            "compiled_query": "Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey",
+            "page": 5,
+            "result_count": 0,
+            "success": true,
+            "error": null,
+            "started_at": "2026-07-31T05:48:08.055958+00:00",
+            "completed_at": "2026-07-31T05:48:08.964809+00:00",
+            "field_mapping": [
+              "DBLP bibliographic query"
+            ],
+            "filters": {
+              "date_from": "2020-01-01",
+              "date_to": "2026-07-31",
+              "languages": [
+                "English"
+              ],
+              "document_types": [
+                "journal article",
+                "conference paper",
+                "preprint"
+              ]
+            }
+          }
+        ]
+      },
+      "executed_at": "2026-07-31T05:48:06.595906+00:00",
+      "completed_at": "2026-07-31T05:48:08.964809+00:00",
+      "status": "completed",
+      "pages_or_cursors": [
+        0,
+        5
+      ],
+      "hit_count": 0,
+      "attempt_count": 2,
+      "last_error": null
+    }
+  ],
+  "flow": {
+    "discovered": 99,
+    "duplicates_removed": 0,
+    "unique_candidates": 99,
+    "title_abstract_screened": 68,
+    "title_abstract_included": 37,
+    "title_abstract_excluded": 20,
+    "full_text_assessed": 37,
+    "full_text_excluded": 7,
+    "included": 13,
+    "unresolved": 59,
+    "queries_planned": 19,
+    "queries_completed": 19,
+    "screening_conflicts": 0
+  },
+  "exclusion_reason_counts": {
+    "not_relevant": 15,
+    "other": 5,
+    "full_text_unavailable": 6,
+    "insufficient_information": 1
+  },
+  "reconciliation": {
+    "discovery_reconciles": true,
+    "title_abstract_reconciles": true,
+    "full_text_reconciles": true
+  },
+  "reconciled": true,
+  "unresolved_conflicts": [],
+  "inclusion_snapshot": {
+    "snapshot_id": "inclusion_f5874d8674c7",
+    "version": 1,
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "paper_ids": [
+      "2506.09542",
+      "2409.15515",
+      "2410.01782",
+      "2401.15884",
+      "2502.19629",
+      "2509.20190",
+      "2411.19443",
+      "2410.13192",
+      "2502.00306",
+      "2510.22344",
+      "2604.19899",
+      "2411.16133",
+      "2607.01852"
+    ],
+    "confirmed_by": "ai_orchestrator",
+    "confirmed_at": "2026-07-31T13:41:24.478207+00:00"
+  }
+}

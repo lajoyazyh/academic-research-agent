@@ -521,6 +521,17 @@ def _analysis_result_to_markdown(result: dict, topic: str, language: str = "zh-C
         return ""
     return f"# {labels['title']}: {topic}\n\n" + "\n\n---\n\n".join(sections)
 
+
+def _strip_document_markdown_fence(value: str) -> str:
+    """Remove a model-added fence that wraps an entire Markdown document."""
+    text = str(value or "").strip()
+    lines = text.splitlines()
+    if lines and re.fullmatch(r"```(?:markdown|md)?\s*", lines[0].strip(), flags=re.I):
+        lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+    return "\n".join(lines).strip()
+
 @router.post("/{session_id}/run/plan")
 def run_plan_phase(session_id: str, payload: RunPhaseRequest) -> dict:
     """【阶段1】执行规划，生成关键词候选项"""
@@ -1084,16 +1095,11 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
                 deterministic_evidence_seed(paper),
             )
     gate = scientific.quality_gate(session_id, requested_paper_ids=selected_ids)
-    if not gate.get("ok"):
-        raise HTTPException(
-            status_code=409,
-            detail={
-                "error_code": "scientific_quality_gate_failed",
-                "message": "科学质量门禁未通过，请先完成协议、最终纳入确认和证据提取",
-                "quality_gate": gate,
-                "retryable": False,
-            },
-        )
+    # A failed methodology gate must downgrade the document, not suppress the
+    # evidence synthesis entirely.  The product specification explicitly
+    # allows an incomplete research draft while preventing it from being
+    # presented as a systematic review.  Keeping the gate attached to the
+    # result also gives the researcher a concrete remediation checklist.
     analysis_context = _load_analysis_context_for_writing(session_id, selected_ids)
     methodology_context = scientific.build_methodology_context(
         session_id, language_from_config(provider_config)
@@ -1122,6 +1128,7 @@ def run_write_phase(session_id: str, payload: RunPhaseRequest) -> dict:
 
         # 保存综述，并记录本次撰写引用了哪些论文
         if result.get("review"):
+            result["review"] = _strip_document_markdown_fence(result["review"])
             result["review"] = scientific.inject_deterministic_review_sections(
                 session_id,
                 result["review"],

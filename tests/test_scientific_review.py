@@ -145,6 +145,44 @@ def test_final_inclusion_checkpoint_resolves_unselected_screened_candidates(tmp_
     assert service.flow_counts(session_id)["unresolved"] == 0
 
 
+def test_ai_orchestrator_snapshot_does_not_fabricate_human_screening(tmp_path):
+    manager, session, service = _service(tmp_path)
+    session_id = session["session_id"]
+    service.confirm_protocol(session_id)
+    paper = {"paper_id": "p1", "title": "Paper", "status": "pending"}
+    manager.add_paper(session_id, paper)
+    service.register_candidate(session_id, paper)
+    service.record_screening(
+        session_id,
+        paper_id="p1",
+        stage="title_abstract",
+        decision="include",
+        reviewer="ai",
+        actor_type="ai",
+    )
+    service.record_screening(
+        session_id,
+        paper_id="p1",
+        stage="full_text",
+        decision="include",
+        reviewer="ai",
+        actor_type="ai",
+    )
+
+    snapshot = service.confirm_inclusion_snapshot(
+        session_id,
+        ["p1"],
+        confirmed_by="ai_orchestrator",
+        record_decisions=False,
+    )
+
+    decisions = service._read(session_id, "screening_decisions.json", [])
+    report = service.methodology_report(session_id)
+    assert snapshot["confirmed_by"] == "ai_orchestrator"
+    assert {item["actor_type"] for item in decisions} == {"ai"}
+    assert "AI without a recorded independent human" in report["ai_participation_disclosure"]
+
+
 def test_systematic_gate_requires_completed_configured_queries(tmp_path):
     manager, session, service = _service(tmp_path)
     session_id = session["session_id"]
@@ -213,6 +251,55 @@ def test_query_design_keeps_confirmed_concepts_as_separate_source_queries(tmp_pa
     assert {plan["concept"] for plan in plans} == {"PRISMA 2020", "SWiM"}
     assert any('"PRISMA 2020" OR "systematic review reporting"' == plan["query"] for plan in plans)
     assert any('SWiM OR "synthesis without meta-analysis"' == plan["query"] for plan in plans)
+
+
+def test_semicolon_named_terms_get_focused_cs_queries(tmp_path):
+    manager = SessionManager(str(tmp_path))
+    session = manager.create_session(
+        "Compare parameter-efficient fine-tuning methods",
+        keywords=[
+            {
+                "english": "LoRA",
+                "synonyms": "QLoRA; AdaLoRA; Prefix-Tuning",
+                "focus_context": "language models",
+            },
+        ],
+    )
+    service = ScientificReviewService(manager)
+    service.update_protocol(
+        session["session_id"],
+        {"sources": ["arXiv", "Crossref", "DBLP"]},
+    )
+    service.confirm_protocol(session["session_id"])
+
+    plans = service.audit_summary(session["session_id"])["search_queries"]
+    focused = [
+        item for item in plans
+        if item.get("query_strategy") == "focused_named_term"
+    ]
+
+    assert {item["source"] for item in focused} == {"arxiv", "dblp"}
+    assert {
+        item["concept"] for item in focused if item["source"] == "arxiv"
+    } == {"LoRA", "QLoRA", "AdaLoRA", "Prefix-Tuning"}
+    assert {
+        item["query"] for item in focused if item["source"] == "arxiv"
+    } == {
+        'LoRA AND "language models"',
+        'QLoRA AND "language models"',
+        'AdaLoRA AND "language models"',
+        'Prefix-Tuning AND "language models"',
+    }
+    assert not any(
+        item["source"] == "crossref"
+        and item.get("query_strategy") == "focused_named_term"
+        for item in plans
+    )
+    assert any(
+        item["source"] == "crossref"
+        and item.get("query_strategy") == "concept_recall"
+        for item in plans
+    )
 
 
 def test_search_ledger_requires_distinct_pages_before_completion(tmp_path):
@@ -379,6 +466,56 @@ def test_write_endpoint_stops_before_human_inclusion_checkpoint(tmp_path, monkey
     assert exc.value.detail["error_code"] == "inclusion_confirmation_required"
 
 
+def test_write_endpoint_generates_downgraded_draft_when_methodology_gate_fails(
+    tmp_path, monkeypatch
+):
+    manager, session, service = _service(tmp_path)
+    session_id = session["session_id"]
+    service.update_protocol(session_id, {"mode": "systematic"})
+    service.confirm_protocol(session_id)
+    manager.add_paper(session_id, {
+        "paper_id": "p1",
+        "title": "Paper",
+        "status": "accepted",
+        "notes": "Evidence from the abstract.",
+        "evidence_basis": "abstract",
+    })
+    service.register_candidate(session_id, manager.get_papers(session_id)[0])
+    service.confirm_inclusion_snapshot(
+        session_id,
+        ["p1"],
+        confirmed_by="ai_orchestrator",
+        record_decisions=False,
+    )
+    service.save_extraction(
+        session_id,
+        "p1",
+        deterministic_evidence_seed(manager.get_papers(session_id)[0]),
+    )
+
+    monkeypatch.setattr(agent_routes, "session_mgr", manager)
+    monkeypatch.setattr(agent_routes, "ensure_provider_available", lambda _provider: {})
+    monkeypatch.setattr(
+        "main.run_write_from_notes",
+        lambda **_kwargs: {
+            "review": "# 系统综述\n\n## 结果\n\n现有证据有限 [P1]。",
+            "quality": {},
+            "can_rewrite": True,
+            "traces": [],
+        },
+    )
+
+    result = agent_routes.run_write_phase(
+        session_id,
+        RunPhaseRequest(topic=session["topic"], paper_ids=["p1"]),
+    )
+
+    assert "# 系统综述" not in result["review"]
+    assert "文档状态" in result["review"]
+    assert result["quality"]["scientific_gate"]["ok"] is False
+    assert result["quality"]["output_label"] == "incomplete_research_draft"
+
+
 def test_scientific_skill_pipeline_is_typed_versioned_and_bilingual():
     ids = [item["id"] for item in SCIENTIFIC_SKILL_MANIFESTS]
     assert ids == [
@@ -401,6 +538,39 @@ def test_scientific_skill_pipeline_is_typed_versioned_and_bilingual():
     assert all(set(item["prompt_templates"]) == {"zh-CN", "en"} for item in SCIENTIFIC_SKILL_MANIFESTS)
     assert all(item["failure_states"] and item["uncertainty_states"] for item in SCIENTIFIC_SKILL_MANIFESTS)
     assert REVIEW_MODES["systematic"]["default_candidate_cap"] == 500
+
+
+def test_system_availability_check_can_record_fulltext_exclusion(tmp_path):
+    manager, session, service = _service(tmp_path)
+    session_id = session["session_id"]
+    manager.add_paper(session_id, {"paper_id": "p1", "title": "Paper"})
+    service.register_candidate(session_id, manager.get_papers(session_id)[0])
+
+    decision = service.record_screening(
+        session_id,
+        paper_id="p1",
+        stage="full_text",
+        decision="exclude",
+        reason_code="full_text_unavailable",
+        reason="No retained full text was available.",
+        reviewer="system",
+        actor_type="system",
+        actor_id="fulltext_availability_check",
+        blinded_to_peer=True,
+    )
+
+    assert decision["actor_type"] == "system"
+    assert decision["reason_code"] == "full_text_unavailable"
+
+
+def test_whole_document_markdown_fence_is_removed_without_touching_inner_fences():
+    value = "```markdown\n# Review\n\n```mermaid\ngraph TD\n```\n```"
+
+    cleaned = agent_routes._strip_document_markdown_fence(value)
+
+    assert cleaned.startswith("# Review")
+    assert "```mermaid" in cleaned
+    assert cleaned.endswith("```")
 
 
 def test_scientific_migration_declares_workflow_tables():
@@ -454,23 +624,83 @@ def test_search_execution_metadata_is_preserved_for_reproducibility(tmp_path):
     service.update_protocol(session_id, {"sources": ["OpenAlex"]})
     service.confirm_protocol(session_id)
     plan = service.audit_summary(session_id)["search_queries"][0]
-    result = service.reconcile_search_ledger(
-        session_id,
-        {
-            "queries": [{
+    ledger = {
+        "queries": [{
                 "source": "openalex",
                 "query": plan["query"],
                 "page": 1,
                 "success": True,
                 "result_count": 37,
-            }]
-        },
-    )[0]
+                "started_at": "2026-07-31T01:02:03+00:00",
+                "completed_at": "2026-07-31T01:02:05+00:00",
+                "field_mapping": ["source title/abstract search"],
+        }]
+    }
+    result = service.reconcile_search_ledger(session_id, ledger)[0]
+    repeated = service.reconcile_search_ledger(session_id, ledger)[0]
 
-    assert result["executed_at"]
+    assert result["executed_at"] == "2026-07-31T01:02:03+00:00"
+    assert result["completed_at"] == "2026-07-31T01:02:05+00:00"
     assert result["attempt_count"] == 1
     assert result["hit_count"] == 37
     assert result["execution_metadata"]["actual_queries"] == [plan["query"]]
+    assert result["execution_metadata"]["actual_field_mappings"] == [
+        "source title/abstract search"
+    ]
+    assert repeated["attempt_count"] == 1
+
+
+def test_search_ledger_does_not_cross_match_related_queries(tmp_path):
+    _manager, session, service = _service(tmp_path)
+    session_id = session["session_id"]
+    service.update_protocol(
+        session_id,
+        {
+            "sources": ["OpenAlex"],
+            "research_question": "retrieval augmented generation",
+        },
+    )
+    service.confirm_protocol(session_id)
+    plans = service.audit_summary(session_id)["search_queries"]
+    first = plans[0]
+    second = {
+        **first,
+        "search_query_id": "query_second",
+        "query": "dynamic corrective retrieval augmented generation",
+        "compiled_query": "dynamic corrective retrieval augmented generation",
+        "original_query": "dynamic corrective retrieval augmented generation",
+    }
+    service._write(session_id, "search_queries.json", [first, second])
+    ledger = {
+        "queries": [
+            {
+                "search_query_id": first["search_query_id"],
+                "source": "openalex",
+                "query": first["query"],
+                "page": 0,
+                "success": True,
+                "result_count": 10,
+                "started_at": "2026-07-31T01:00:00+00:00",
+                "completed_at": "2026-07-31T01:00:01+00:00",
+            },
+            {
+                "search_query_id": second["search_query_id"],
+                "source": "openalex",
+                "query": second["query"],
+                "page": 0,
+                "success": True,
+                "result_count": 9,
+                "started_at": "2026-07-31T01:01:00+00:00",
+                "completed_at": "2026-07-31T01:01:01+00:00",
+            },
+        ]
+    }
+
+    reconciled = service.reconcile_search_ledger(session_id, ledger)
+
+    assert [item["attempt_count"] for item in reconciled] == [1, 1]
+    assert [item["hit_count"] for item in reconciled] == [10, 9]
+    assert reconciled[0]["executed_at"] < reconciled[1]["executed_at"]
 
 
 def test_human_ai_disagreement_requires_adjudication(tmp_path):
@@ -682,6 +912,38 @@ def test_methodology_report_reconciles_flow_and_reports_exclusions(tmp_path):
     assert report["reconciled"] is True
     assert report["exclusion_reason_counts"]["not_relevant"] == 1
     assert "not dual-human" in report["ai_participation_disclosure"].lower()
+
+
+def test_methodology_report_discloses_ai_only_screening(tmp_path):
+    manager, session, service = _service(tmp_path)
+    session_id = session["session_id"]
+    service.confirm_protocol(session_id)
+    paper = {
+        "paper_id": "p-ai-only",
+        "title": "AI-only screening fixture",
+        "status": "pending",
+    }
+    manager.add_paper(session_id, paper)
+    service.register_candidate(session_id, paper)
+    service.record_screening(
+        session_id,
+        paper_id="p-ai-only",
+        stage="title_abstract",
+        decision="exclude",
+        reason_code="not_relevant",
+        reason="Does not address the protocol question.",
+        reviewer="ai",
+        actor_type="ai",
+        actor_id="fixture-model",
+        model_version="fixture-model",
+        blinded_to_peer=True,
+    )
+
+    report = service.methodology_report(session_id)
+
+    assert report["screening_participants"]["actor_types"] == ["ai"]
+    assert report["screening_participants"]["human_recorded"] is False
+    assert "AI-only research draft" in report["ai_participation_disclosure"]
 
 
 def test_methodology_depth_migration_declares_new_columns():

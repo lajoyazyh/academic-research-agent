@@ -1,0 +1,25 @@
+{
+  "total_claim_blocks": 27,
+  "supported_claim_blocks": 9,
+  "unverified_claim_blocks": 18,
+  "invalid_citation_ids": [],
+  "evidence_mismatches": [],
+  "quantitative_context_issues": [],
+  "normative_strength_issues": [],
+  "terminology_issues": [],
+  "internal_consistency_issues": [],
+  "artifact_audit": {
+    "passed": true,
+    "required_tables": 0,
+    "table_count": 0,
+    "concept_figure": false
+  },
+  "reference_audit": {
+    "passed": true,
+    "missing_reference_ids": [],
+    "unexpected_reference_ids": [],
+    "malformed_author_fragments": [],
+    "style": "IEEE"
+  },
+  "passed": false
+}

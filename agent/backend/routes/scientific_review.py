@@ -268,17 +268,81 @@ def run_independent_ai_screening(session_id: str, payload: AIScreeningRequest) -
         + ", ".join(sorted(EXCLUSION_CODES))
     )
     try:
-        parsed = extract_json(llm.chat(system, prompt, []))
+        raw = llm.chat(system, prompt, [])
+        try:
+            parsed = extract_json(raw)
+        except ValueError:
+            repair_system = (
+                "You repair JSON syntax only. Do not add, remove, or reinterpret screening facts. "
+                "Return one valid JSON object without Markdown fences."
+                if is_en else
+                "你只修复JSON语法，不得新增、删除或重新解释任何筛选事实。只返回一个合法JSON对象，不要Markdown围栏。"
+            )
+            parsed = extract_json(llm.chat(repair_system, raw, []))
+        if isinstance(parsed, list):
+            parsed = {"items": parsed}
+        if not isinstance(parsed, dict):
+            raise ValueError("AI screening response must be a JSON object or item array")
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"AI screening failed: {exc}") from exc
     valid_ids = set(payload.paper_ids)
+    response_items = (
+        parsed.get("items")
+        or parsed.get("decisions")
+        or parsed.get("records")
+        or []
+    )
+    if not response_items and parsed.get("paper_id"):
+        response_items = [parsed]
+    if not response_items:
+        list_values = [
+            value for value in parsed.values()
+            if isinstance(value, list) and all(isinstance(item, dict) for item in value)
+        ]
+        if len(list_values) == 1:
+            response_items = list_values[0]
+    if not response_items:
+        response_items = [
+            {"paper_id": key, **value}
+            for key, value in parsed.items()
+            if key in valid_ids and isinstance(value, dict)
+        ]
+    if not response_items:
+        shape = {key: type(value).__name__ for key, value in parsed.items()}
+        raise ValueError(f"AI screening response contained no decision list; shape={shape}")
+    for _ in range(3):
+        if len(response_items) != 1 or not isinstance(response_items[0], dict):
+            break
+        wrapper = response_items[0]
+        if wrapper.get("paper_id") or wrapper.get("candidate_id") or wrapper.get("id"):
+            break
+        nested = (
+            wrapper.get("items")
+            or wrapper.get("decisions")
+            or wrapper.get("records")
+        )
+        if not isinstance(nested, list):
+            break
+        response_items = nested
     records = []
-    for item in parsed.get("items") or []:
-        paper_id = str(item.get("paper_id") or "")
+    for item in response_items:
+        if not isinstance(item, dict):
+            continue
+        paper_id = str(
+            item.get("paper_id")
+            or item.get("candidate_id")
+            or item.get("id")
+            or ""
+        )
         if paper_id not in valid_ids:
             continue
-        decision = str(item.get("decision") or "uncertain")
-        reason_code = item.get("reason_code")
+        decision = str(
+            item.get("decision")
+            or item.get("screening_decision")
+            or item.get("result")
+            or "uncertain"
+        )
+        reason_code = item.get("reason_code") or item.get("exclusion_code")
         if decision == "exclude" and reason_code not in EXCLUSION_CODES:
             reason_code = "other"
         records.append(service.record_screening(
@@ -297,6 +361,17 @@ def run_independent_ai_screening(session_id: str, payload: AIScreeningRequest) -
             model_version=provider.get("chat_model") or provider.get("model"),
             blinded_to_peer=True,
         ))
+    if response_items and not records:
+        first = next((item for item in response_items if isinstance(item, dict)), {})
+        example_id = (
+            first.get("paper_id")
+            or first.get("candidate_id")
+            or first.get("id")
+        )
+        raise ValueError(
+            "AI screening returned no record matching the requested paper ids; "
+            f"item_keys={sorted(first.keys())}; example_id={example_id!r}"
+        )
     missing = valid_ids - {str(item.get("paper_id")) for item in records}
     for paper_id in sorted(missing):
         records.append(service.record_screening(

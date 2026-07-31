@@ -697,28 +697,70 @@ class ScientificReviewService:
     def _initialize_search_queries(self, session_id: str, protocol: dict) -> list[dict]:
         session = self.session_manager.load_session(session_id) or {}
         keywords = _list(session.get("keywords"))
-        query_groups = []
+        broad_query_groups = []
+        focused_query_groups = []
         for item in keywords:
             if isinstance(item, dict):
                 primary = str(item.get("english") or item.get("original") or "").strip()
+                raw_synonyms = str(item.get("synonyms") or "")
                 synonyms = [
                     value.strip()
-                    for value in re.split(r"[,;|]", str(item.get("synonyms") or ""))
+                    for value in re.split(r"[,;|]", raw_synonyms)
                     if value.strip()
                 ]
                 terms = list(dict.fromkeys([primary, *synonyms]))
+                # A semicolon-separated list commonly represents named methods,
+                # benchmarks, or seed concepts rather than interchangeable words.
+                # Give each item a focused CS-source query so a popular first OR
+                # branch cannot crowd the other branches out of shallow result pages.
+                if ";" in raw_synonyms and len(synonyms) >= 2:
+                    focus_context = str(item.get("focus_context") or "").strip()
+                    for focused_term in terms[:6]:
+                        focused_phrase = (
+                            f'"{focused_term}"'
+                            if " " in focused_term
+                            else focused_term
+                        )
+                        context_phrase = (
+                            f'"{focus_context}"'
+                            if " " in focus_context
+                            else focus_context
+                        )
+                        focused_query_groups.append({
+                            "concept": focused_term,
+                            "boolean": (
+                                f"{focused_phrase} AND {context_phrase}"
+                                if context_phrase
+                                else focused_phrase
+                            ),
+                            "compact": " ".join(
+                                value
+                                for value in (focused_term, focus_context)
+                                if value
+                            ),
+                            "strategy": "focused_named_term",
+                            "source_scope": ["arxiv", "dblp"],
+                            "focus_context": focus_context,
+                        })
             else:
                 terms = [str(item).strip()]
             phrases = [f'"{term}"' if " " in term else term for term in terms[:5] if term]
             if phrases:
-                query_groups.append({
+                broad_query_groups.append({
                     "concept": primary if isinstance(item, dict) else terms[0],
                     "boolean": " OR ".join(phrases),
                     "compact": " ".join(term.strip('"') for term in phrases),
+                    "strategy": "concept_recall",
                 })
+        query_groups = focused_query_groups + broad_query_groups
         if not query_groups:
             question = str(protocol.get("research_question") or "").strip()
-            query_groups = [{"concept": question, "boolean": f'"{question}"', "compact": question}]
+            query_groups = [{
+                "concept": question,
+                "boolean": f'"{question}"',
+                "compact": question,
+                "strategy": "research_question_fallback",
+            }]
         source_tools = {
             "arxiv": "arxiv",
             "openalex": "openalex",
@@ -747,6 +789,9 @@ class ScientificReviewService:
                 "dblp": "offset",
             }.get(tool_source)
             for group_index, group in enumerate(query_groups, start=1):
+                source_scope = _list(group.get("source_scope"))
+                if source_scope and tool_source not in source_scope:
+                    continue
                 query = group["compact"] if tool_source in {"crossref", "dblp"} else group["boolean"]
                 plans.append({
                     "search_query_id": f"query_{uuid.uuid4().hex[:12]}",
@@ -755,6 +800,8 @@ class ScientificReviewService:
                     "source": tool_source,
                     "concept_id": f"concept_{group_index}",
                     "concept": group["concept"],
+                    "query_strategy": group.get("strategy", "concept_recall"),
+                    "focus_context": group.get("focus_context"),
                     "query": query,
                     "original_query": group["boolean"],
                     "compiled_query": query,
@@ -832,6 +879,10 @@ class ScientificReviewService:
         ]
         observed = _list(_dict(retrieval_ledger).get("queries"))
         def query_matches(planned: str, executed: str) -> bool:
+            normalized_planned = re.sub(r"\s+", " ", planned.strip().lower())
+            normalized_executed = re.sub(r"\s+", " ", executed.strip().lower())
+            if normalized_planned and normalized_planned == normalized_executed:
+                return True
             planned_tokens = {
                 token for token in re.findall(r"[a-z0-9][a-z0-9_-]{2,}", planned.lower())
                 if token not in {"and", "or", "not"}
@@ -843,34 +894,94 @@ class ScientificReviewService:
             if not planned_tokens or not executed_tokens:
                 return False
             overlap = len(planned_tokens.intersection(executed_tokens))
-            return overlap >= max(1, min(len(planned_tokens), len(executed_tokens)) // 3)
+            return (
+                overlap / min(len(planned_tokens), len(executed_tokens)) >= 0.75
+                and overlap / len(planned_tokens.union(executed_tokens)) >= 0.6
+            )
         for plan in plans:
+            def belongs_to_plan(item: dict) -> bool:
+                observed_plan_id = str(item.get("search_query_id") or "")
+                if observed_plan_id:
+                    return observed_plan_id == str(plan.get("search_query_id") or "")
+                return (
+                    str(item.get("source") or "").strip().lower()
+                    == str(plan.get("source") or "").lower()
+                    and (
+                        (
+                            plan.get("stage") == "citation_chasing"
+                            and str(item.get("direction") or "cited_by")
+                            == str(plan.get("direction") or "cited_by")
+                        )
+                        or query_matches(
+                            str(plan.get("query") or ""),
+                            str(item.get("query") or ""),
+                        )
+                    )
+                )
             attempts = [
                 item for item in observed
-                if str(item.get("source") or "").strip().lower() == str(plan.get("source") or "").lower()
-                and (
-                    (
-                        plan.get("stage") == "citation_chasing"
-                        and str(item.get("direction") or "cited_by") == str(plan.get("direction") or "cited_by")
-                    )
-                    or query_matches(str(plan.get("query") or ""), str(item.get("query") or ""))
-                )
+                if belongs_to_plan(item)
             ]
             matches = [item for item in attempts if item.get("success") is not False]
             if attempts:
-                plan["attempt_count"] = int(plan.get("attempt_count") or 0) + len(attempts)
+                prior_attempts = _list(
+                    _dict(plan.get("execution_metadata")).get("attempts")
+                )
+                combined_attempts = []
+                seen_attempts = set()
+                for item in prior_attempts + attempts:
+                    if not belongs_to_plan(item):
+                        continue
+                    attempt_key = (
+                        str(item.get("source") or plan.get("source") or ""),
+                        str(item.get("query") or ""),
+                        str(item.get("page") if item.get("page") is not None else item.get("cursor")),
+                        str(item.get("started_at") or item.get("executed_at") or ""),
+                        str(item.get("success")),
+                    )
+                    if attempt_key in seen_attempts:
+                        continue
+                    seen_attempts.add(attempt_key)
+                    combined_attempts.append(item)
+                plan["attempt_count"] = len(combined_attempts)
                 plan["last_updated_at"] = _now()
-                plan["executed_at"] = plan.get("executed_at") or _now()
+                observed_starts = sorted(
+                    str(item.get("started_at") or item.get("executed_at") or "")
+                    for item in combined_attempts
+                    if item.get("started_at") or item.get("executed_at")
+                )
+                observed_completions = sorted(
+                    str(item.get("completed_at") or "")
+                    for item in combined_attempts
+                    if item.get("completed_at")
+                )
+                execution_candidates = observed_starts + [
+                    str(plan.get("executed_at"))
+                ] if plan.get("executed_at") else observed_starts
+                plan["executed_at"] = (
+                    min(execution_candidates)
+                    if execution_candidates
+                    else _now()
+                )
                 plan["execution_metadata"] = {
                     "actual_queries": list(dict.fromkeys(
-                        str(item.get("query") or "") for item in attempts
+                        str(item.get("query") or "") for item in combined_attempts
                     )),
                     "pages_or_cursors": [
                         item.get("page") if item.get("page") is not None else item.get("cursor")
-                        for item in attempts
+                        for item in combined_attempts
                     ],
                     "field_scope": _list(plan.get("field_scope")),
+                    "actual_field_mappings": list(dict.fromkeys(
+                        str(mapping)
+                        for item in combined_attempts
+                        for mapping in _list(item.get("field_mapping"))
+                        if str(mapping).strip()
+                    )),
                     "filters": _dict(plan.get("filters")),
+                    "request_started_at": observed_starts,
+                    "request_completed_at": observed_completions,
+                    "attempts": combined_attempts,
                 }
             if matches:
                 prior = _list(plan.get("executed_queries"))
@@ -893,7 +1004,12 @@ class ScientificReviewService:
                     if item.get("result_count") is not None or item.get("hit_count") is not None
                 ]
                 plan["hit_count"] = sum(hit_counts) if hit_counts else plan.get("hit_count")
-                plan["completed_at"] = _now() if plan["status"] == "completed" else None
+                plan["completed_at"] = (
+                    observed_completions[-1]
+                    if plan["status"] == "completed" and observed_completions
+                    else _now() if plan["status"] == "completed"
+                    else None
+                )
                 plan["last_error"] = None
             elif attempts:
                 plan["status"] = "failed"
@@ -988,8 +1104,10 @@ class ScientificReviewService:
         if decision == "exclude" and reason_code not in EXCLUSION_CODES:
             raise ValueError("A standard exclusion reason is required")
         resolved_actor_type = actor_type or ("ai" if reviewer == "ai" else "human")
-        if resolved_actor_type not in {"human", "ai", "adjudicator", "migration"}:
-            raise ValueError("actor_type must be human, ai, adjudicator, or migration")
+        if resolved_actor_type not in {"human", "ai", "adjudicator", "migration", "system"}:
+            raise ValueError(
+                "actor_type must be human, ai, adjudicator, migration, or system"
+            )
         protocol = self.ensure_protocol(session_id)
         candidates = _list(self._read(session_id, "candidates.json", []))
         candidate = next(
@@ -1119,7 +1237,14 @@ class ScientificReviewService:
             blinded_to_peer=False,
         )
 
-    def confirm_inclusion_snapshot(self, session_id: str, paper_ids: Iterable[str]) -> dict:
+    def confirm_inclusion_snapshot(
+        self,
+        session_id: str,
+        paper_ids: Iterable[str],
+        *,
+        confirmed_by: str = "human",
+        record_decisions: bool = True,
+    ) -> dict:
         protocol = self.ensure_protocol(session_id)
         if protocol.get("status") != "confirmed":
             raise ValueError("Confirm the review protocol before confirming included studies")
@@ -1140,27 +1265,32 @@ class ScientificReviewService:
             for paper_id, item in latest_title_by_paper.items()
             if item.get("decision") == "include"
         }
-        for paper_id in unique_ids:
-            self.record_screening(
-                session_id,
-                paper_id=paper_id,
-                stage="full_text",
-                decision="include",
-                reason="Confirmed by the user for the final inclusion set.",
-                confidence=1.0,
-                reviewer="human",
-            )
-        for paper_id in sorted(title_included_ids.difference(unique_ids)):
-            self.record_screening(
-                session_id,
-                paper_id=paper_id,
-                stage="full_text",
-                decision="exclude",
-                reason_code="other",
-                reason="Not selected by the user at the final full-text inclusion checkpoint.",
-                confidence=1.0,
-                reviewer="human",
-            )
+        if record_decisions:
+            if confirmed_by != "human":
+                raise ValueError("Only a human confirmation may create human screening decisions")
+            for paper_id in unique_ids:
+                self.record_screening(
+                    session_id,
+                    paper_id=paper_id,
+                    stage="full_text",
+                    decision="include",
+                    reason="Confirmed by the user for the final inclusion set.",
+                    confidence=1.0,
+                    reviewer="human",
+                    actor_type="human",
+                )
+            for paper_id in sorted(title_included_ids.difference(unique_ids)):
+                self.record_screening(
+                    session_id,
+                    paper_id=paper_id,
+                    stage="full_text",
+                    decision="exclude",
+                    reason_code="other",
+                    reason="Not selected by the user at the final full-text inclusion checkpoint.",
+                    confidence=1.0,
+                    reviewer="human",
+                    actor_type="human",
+                )
         snapshots = _list(self._read(session_id, "inclusion_snapshots.json", []))
         snapshot = {
             "snapshot_id": f"inclusion_{uuid.uuid4().hex[:12]}",
@@ -1168,7 +1298,7 @@ class ScientificReviewService:
             "protocol_id": protocol.get("protocol_id"),
             "protocol_version": protocol.get("version"),
             "paper_ids": unique_ids,
-            "confirmed_by": "human",
+            "confirmed_by": confirmed_by,
             "confirmed_at": _now(),
         }
         snapshots.append(snapshot)
@@ -1443,6 +1573,40 @@ class ScientificReviewService:
             **dict(PROTOCOL_DEFAULTS["screening_policy"]),
             **_dict(protocol.get("screening_policy")),
         }
+        actor_types = sorted({
+            str(item.get("actor_type") or item.get("reviewer") or "unknown")
+            for item in decisions
+        })
+        has_human = "human" in actor_types
+        has_ai = "ai" in actor_types
+        has_adjudicator = "adjudicator" in actor_types
+        if has_human and has_ai:
+            participation_disclosure = (
+                "One human reviewer plus an independent AI screen; "
+                + (
+                    "recorded disagreements were adjudicated. "
+                    if has_adjudicator else
+                    "unresolved disagreements require human adjudication. "
+                )
+                + "This is not dual-human Cochrane-compliant screening."
+            )
+        elif has_ai:
+            participation_disclosure = (
+                "Screening decisions in this run were produced by AI without a recorded "
+                "independent human screen. This is an AI-only research draft and is not "
+                "dual-human Cochrane-compliant screening."
+            )
+        elif has_human:
+            participation_disclosure = (
+                "Screening decisions in this run were recorded by one human reviewer without "
+                "an independent AI or second-human screen. This is not dual-human "
+                "Cochrane-compliant screening."
+            )
+        else:
+            participation_disclosure = (
+                "No attributable human or AI screening decisions were recorded. "
+                "Screening participation cannot be verified."
+            )
         return {
             "schema_version": 2,
             "protocol": {
@@ -1461,10 +1625,14 @@ class ScientificReviewService:
                 "exclusion_criteria": _list(protocol.get("exclusion_criteria")),
             },
             "screening_policy": policy,
-            "ai_participation_disclosure": (
-                "One human reviewer plus an independent AI screen; disagreements require human adjudication. "
-                "This is not dual-human Cochrane-compliant screening."
-            ),
+            "screening_participants": {
+                "actor_types": actor_types,
+                "human_recorded": has_human,
+                "ai_recorded": has_ai,
+                "adjudication_recorded": has_adjudicator,
+                "dual_human_recorded": False,
+            },
+            "ai_participation_disclosure": participation_disclosure,
             "search_queries": [
                 {
                     "search_query_id": item.get("search_query_id"),
@@ -1473,6 +1641,7 @@ class ScientificReviewService:
                     "compiled_query": item.get("compiled_query", item.get("query")),
                     "field_scope": _list(item.get("field_scope")),
                     "filters": _dict(item.get("filters")),
+                    "execution_metadata": _dict(item.get("execution_metadata")),
                     "executed_at": item.get("executed_at"),
                     "completed_at": item.get("completed_at"),
                     "status": item.get("status"),
@@ -2155,10 +2324,7 @@ class ScientificReviewService:
                     f"{flow.get('included', 0)}条记录。"
                 ),
                 "",
-                (
-                    "筛选披露：由一名研究者与AI独立复核，AI在判断时不可见人工决定，"
-                    "分歧由研究者裁决；该流程不等同于两名人类独立筛选的Cochrane标准。"
-                ),
+                f"筛选披露：{report['ai_participation_disclosure']}",
                 "",
                 "### 纳入与排除标准",
                 "",
@@ -2432,25 +2598,25 @@ class ScientificReviewService:
         """Replace mutable methods/references and insert schema-derived artifacts."""
         method = self.build_methodology_markdown(session_id, language)
         review = re.sub(
-            r"(?ms)^##\s+(?:方法|Methods)\s*.*?(?=^##\s+|\Z)",
+            r"(?ms)^#{2,6}\s+(?:方法|Methods)\s*.*?(?=^#{2,6}\s+|\Z)",
             method + "\n\n",
             review,
             count=1,
         )
-        if not re.search(r"(?m)^##\s+(?:方法|Methods)\s*$", review):
-            heading = re.search(r"(?m)^##\s+(?:结果|Results|主题|Evidence)", review)
+        if not re.search(r"(?m)^#{2,6}\s+(?:方法|Methods)\s*$", review):
+            heading = re.search(r"(?m)^#{2,6}\s+(?:结果|Results|主题|Evidence)", review)
             if heading:
                 review = review[:heading.start()] + method + "\n\n" + review[heading.start():]
             else:
                 review = review.rstrip() + "\n\n" + method
         artifacts = self.build_technical_artifacts_markdown(session_id, papers, language)
         review = re.sub(
-            r"(?ms)^##\s+(?:结构化技术证据|Structured technical evidence)\s*.*?(?=^##\s+|\Z)",
+            r"(?ms)^#{2,6}\s+(?:结构化技术证据|Structured technical evidence)\s*.*?(?=^#{2,6}\s+|\Z)",
             "",
             review,
         )
         review = re.sub(
-            r"(?ms)^##\s+(?:参考来源|参考文献|References)\s*.*$",
+            r"(?ms)^#{2,6}\s+(?:参考来源|参考文献|References)\s*.*$",
             "",
             review,
         ).rstrip()
@@ -2495,10 +2661,14 @@ class ScientificReviewService:
                 insert_at = 1 if lines and lines[0].lstrip().startswith("#") else 0
                 lines[insert_at:insert_at] = ["", notice, ""]
         else:
+            disclosure = self.methodology_report(session_id).get(
+                "ai_participation_disclosure",
+                "Screening participation cannot be verified.",
+            )
             notice = (
-                "> **Screening disclosure:** AI-assisted systematic-review research draft. One human reviewer and an independent AI screened records; disagreements were adjudicated by the human. This is not dual-human Cochrane-compliant screening."
+                f"> **Screening disclosure:** {disclosure}"
                 if str(language).lower().startswith("en")
-                else "> **筛选披露：** AI辅助系统综述研究草稿；一名研究者与AI独立筛选，分歧由研究者裁决，不等同于两名人类独立筛选的Cochrane标准。"
+                else f"> **筛选披露：** {disclosure}"
             )
             if notice not in lines[:10]:
                 insert_at = 1 if lines and lines[0].lstrip().startswith("#") else 0
