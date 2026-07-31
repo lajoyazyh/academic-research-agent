@@ -1,0 +1,1030 @@
+[
+  {
+    "claim_id": "claim_d277eab48ad5",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "```markdown ## 快速证据综述：检索增强生成系统在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面有哪些可验证证据与适用边界？",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.588251+00:00"
+  },
+  {
+    "claim_id": "claim_d1c1d570b344",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "问题：检索增强生成系统（RAG）在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面有哪些可验证证据与适用边界？ 方法范围：基于已核验的方法学账本（协议版本 `protocol_ac2d017c4feb`，版本1，状态 `confirmed`，模式 `rapid`）和结构化全文证据矩阵，分析RAG在检索机制、可靠性评价、实验设计和计算成本方面的研究证据，并探讨其适用边界。真实数据源包括 `arxiv`、`crossref` 和 `dblp`。检索和筛选由单人类别AI完成，无独立人类验证。证据提取基于结构化全文证据矩阵，质量评价根据方法学账本标准。综合方法为分析不同研究证据在检索机制、可靠性评价、实验设计和计算成本方面的异同。 主要综合结论：现有12篇研究（框架、基准、基准测试、叙事调查、主要研究）涵盖多智能体RAG、元认知RAG、纠错式RAG等，应用于多跳问答、知识密集型任务等，指标包括准确率、F1分数、成本等。部分证据支持RAG在特定检索机制、可靠性评价方法、实验设计和计算成本方面的有效性，但证据质量和适用边界需进一步验证。共识包括检索机制提升生成效果、可靠性评价方法至关重要、实验设计需考虑基线对比等。分歧源于机制、方法、设计的多样性及数据集任务差异。异质性来源包括检索机制、评价方法、实验设计的多样性。证据质量受限于部分研究缺乏详细设计和基线对比，计算成本数据不完整。 证据限制：检索范围有限，部分研究缺乏详细的实验设计和基线对比，计算成本数据不完整。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.589697+00:00"
+  },
+  {
+    "claim_id": "claim_6ade913c401f",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "检索增强生成系统（RAG）通过整合检索与生成技术，在提升信息检索和内容生成准确性方面展现出显著潜力，已成为自然语言处理领域的研究热点。现有研究虽已初步探索RAG在不同任务和数据集上的应用，但对其关键机制的有效性、可靠性评价方法的适用性、实验设计的公平性以及计算成本的全面评估仍存在不足。本文基于已核验的方法学账本和结构化全文证据矩阵，系统性地分析RAG在静态、迭代、按需与纠错式检索机制、可靠性评价、实验设计和计算成本方面的研究证据，并探讨其适用边界。由于检索范围有限，部分研究缺乏详细的实验设计和基线对比，计算成本数据不完整，因此本综述的结论强度受到限制。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.589770+00:00"
+  },
+  {
+    "claim_id": "claim_72f705568e81",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "本综述按协议 v1（confirmed）执行，模式为 rapid。配置数据源为arxiv、crossref、dblp；检索字段为title、abstract、keywords；语言限制为English；时间范围为2020-01-01至2026-07-31。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.589812+00:00"
+  },
+  {
+    "claim_id": "claim_06961a117fe0",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "流程共发现99条记录，移除0条重复记录，得到99条唯一候选；完成74条标题摘要判断和40条全文判断，最终纳入12条记录。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.589835+00:00"
+  },
+  {
+    "claim_id": "claim_d733a5977312",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "筛选披露：Screening decisions in this run were produced by AI without a recorded independent human screen. This is an AI-only research draft and is not dual-human Cochrane-compliant screening.",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.589887+00:00"
+  },
+  {
+    "claim_id": "claim_85d404df1568",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "**纳入：** 直接研究RAG架构、检索控制、可靠性评价或计算成本；提供原始实验、基准或具有实证验证的技术框架；综述文章仅用于分类与研究版图，不得支撑性能或成本结论；能够获得足以核验机制和结果的全文",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "taxonomy",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "narrative_survey",
+      "primary_study",
+      "systematic_or_scoping_review"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.589919+00:00"
+  },
+  {
+    "claim_id": "claim_eb9bc31b0175",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "**排除：** 研究问题与RAG机制、评价、可靠性或成本无直接关系；只有观点或产品描述而无可核验技术证据；缺少可用全文，无法完成依赖全文的筛选与质量评价",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.589942+00:00"
+  },
+  {
+    "claim_id": "claim_efa59fb23b6a",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "```mermaid flowchart TD A[\"Discovered: 99\"] --> B[\"Duplicates removed: 0\"] B --> C[\"Unique candidates: 99\"] C --> D[\"Title/abstract screened: 74\"] D --> E[\"Full text assessed: 40\"] E --> F[\"Included: 12\"] ```",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.590157+00:00"
+  },
+  {
+    "claim_id": "claim_f1ed0636f21e",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "排除原因统计：full_text_unavailable=18; insufficient_information=15; not_relevant=14; other=1; wrong_document_type=2; wrong_method_or_intervention=2; wrong_population_or_problem=1",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.590204+00:00"
+  },
+  {
+    "claim_id": "claim_a1a147a2234f",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "纳入12篇研究，涵盖框架、基准、基准测试、叙事调查和主要研究。研究设计包括框架、基准测试和主要研究。方法族涵盖多智能体RAG、元认知RAG、纠错式RAG、知识图谱增强RAG、开放源RAG和图基础模型增强RAG。研究对象/数据集包括多跳问答、知识密集型任务、自然语言SQL和API生成、对话式问答。结局与指标包括准确率、F1分数、执行准确率、组件匹配准确率、成本、延迟、令牌数、请求数。适用条件涵盖多源数据、关系数据库、文档存储、图数据库、知识密集型任务、多跳问答、复杂推理任务、混合文档环境、事实推理任务、开放源LLM。局限性涉及数据集/任务、基础模型、基线、指标、样本大小、计算成本数据不完整。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.590270+00:00"
+  },
+  {
+    "claim_id": "claim_3c375da47caa",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "共识：检索增强生成系统通过结合检索机制提升生成效果。分歧：不同检索机制在特定任务和数据集上的表现存在差异。例如，多智能体RAG系统通过将任务分配给不同的智能体，提高了查询效率、减少了令牌开销，并提升了响应准确性（[P1]）。然而，当处理多样数据源时，系统可能存在效率低下和潜在查询处理不准确的问题（[P2]）。异质性来源：检索机制的多样性、数据集和任务的差异。证据质量：部分研究缺乏详细的实验设计和基线对比（[P3]）。适用边界：检索机制的选择需根据任务和数据集的特点进行调整。",
+    "citation_ids": [
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "paper_ids": [
+      "2412.05838",
+      "2604.19899",
+      "2401.15884"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2412.05838",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "This distributed approach enhances query efficiency, reduces token overhead, and improves response accuracy..."
+      },
+      {
+        "paper_id": "2412.05838",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "Traditional RAG systems typically employ single-agent architectures... leading to inefficiencies in token usage, increased processing latency, and potential inaccuracies in query handling."
+      },
+      {
+        "paper_id": "2412.05838",
+        "section": "Proposed System Overview",
+        "page": 9,
+        "excerpt": "The proposed system decentralizes task management by introducing specialized agents... These specialized agents collaborate within a centralized query execution environment..."
+      },
+      {
+        "paper_id": "2412.05838",
+        "section": "Algorithm 4 Multi-Agent RAG System",
+        "page": 14,
+        "excerpt": "Input: User query Q... DataSourceType ← identify_data_source(Q)... if Agent is available then... else return No suitable agent found for query generation."
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "framework",
+      "primary_study",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:29:37.590354+00:00"
+  },
+  {
+    "claim_id": "claim_596a831bd99f",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "共识：可靠性评价方法对评估检索增强生成系统的性能至关重要。分歧：不同可靠性评价方法的适用场景和评价标准存在差异。例如，元认知RAG通过引入元认知机制，提高了生成结果的可信度（[P4]）。然而，不同的可靠性评价方法可能适用于不同的任务和数据集。异质性来源：评价方法的多样性、数据集和任务的差异。证据质量：部分研究缺乏详细的评价方法和标准（[P5]）。适用边界：可靠性评价方法的选择需根据任务和数据集的特点进行调整。",
+    "citation_ids": [
+      "P4",
+      "P5"
+    ],
+    "paper_ids": [
+      "2602.07086",
+      "2512.07015"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2602.07086",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "This paper presents a comprehensive evaluation of three retrieval-augmented generation (RAG) variants [Lewis et al., 2021]—standard RAG, Self- RAG [Asai et al., 2024], and CoRAG [Wang et al., 2025]—across SQL query generation, REST API call generation, and a combined task requiring dynamic task classification."
+      },
+      {
+        "paper_id": "2602.07086",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "This paper makes the following contributions: Comprehensive Evaluation: We present the first systematic comparison of RAG variants (standard RAG, Self-RAG, CoRAG) across SQL query generation, REST API call generation, and a combined task requiring dynamic classification, evaluated under database-only, API-only, and hybrid documentation contexts (18 experimental configurations)."
+      },
+      {
+        "paper_id": "2602.07086",
+        "section": "Experimental Design",
+        "page": 3,
+        "excerpt": "We evaluated three RAG variants (standard RAG, Self-RAG, CoRAG) plus a no-RAG baseline across three task settings: (1) SQL query generation, (2) REST API call generation, and (3) a combined task where the system must first classify whether the user’s natural language request requires data retrieval (SQL) or data modification (API), then generate the appropriate code accordingly."
+      },
+      {
+        "paper_id": "2602.07086",
+        "section": "Evaluation Metrics",
+        "page": 3,
+        "excerpt": "Following established practices in text-to-SQL [Yu et al., 2018; Pourreza and Rafiei, 2023] and API evaluation [Kim et al., 2024; Basu et al., 2025], we reported five metrics: Exact Match Accuracy, Component Match Accuracy, Execution Accuracy, Endpoint Retrieval Accuracy (API only), Classification Accuracy (combined task only)."
+      },
+      {
+        "paper_id": "2602.07086",
+        "section": "Results",
+        "page": 5,
+        "excerpt": "With database-only documentation, all RAG variants achieve comparable performance: Exact match accuracy ranges from 14.45% (standard RAG) to 15.61% (Self-RAG and CoRAG), with execution accuracy near 72–73%."
+      },
+      {
+        "paper_id": "2602.07086",
+        "section": "Discussion",
+        "page": 6,
+        "excerpt": "Our comparative evaluation reveals that retrieval policy choice significantly impacts robustness when documentation becomes heterogeneous."
+      },
+      {
+        "paper_id": "2512.07015",
+        "section": null,
+        "page": 1,
+        "excerpt": "FVA-RAG (Falsification-Verified Adversarial RAG), a pipeline that actively searches for counter-evidence and uses a verifier to decide when a draft answer should be overturned."
+      },
+      {
+        "paper_id": "2512.07015",
+        "section": null,
+        "page": 2,
+        "excerpt": "Our contributions are: 1. Method: We introduce FVA-RAG, a falsification-first architecture that treats the initial response as a draft hypothesis and explicitly retrieves counter-evidence."
+      },
+      {
+        "paper_id": "2512.07015",
+        "section": null,
+        "page": 3,
+        "excerpt": "3.3 Phase 3: Verification and Evidence-Grounded Revision The Adjudicator evaluates whether the anti-context contradicts the draft using a contradiction scoring function:"
+      },
+      {
+        "paper_id": "2512.07015",
+        "section": null,
+        "page": 4,
+        "excerpt": "3.4 Compared Methods and Controlled Baselines To isolate the impact of the architectural changes..."
+      },
+      {
+        "paper_id": "2512.07015",
+        "section": null,
+        "page": 5,
+        "excerpt": "FVA-RAG achieves 79.80% and 80.05% accuracy on two frozen corpora, outperforming Self-RAG and CRAG."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "benchmark"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:29:37.590416+00:00"
+  },
+  {
+    "claim_id": "claim_79c970c772cf",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "共识：实验设计需考虑基线对比、样本选择和指标选择等因素。分歧：不同研究在基线对比、样本选择和指标选择上存在差异。例如，多跳问答任务可能需要不同的基线模型和指标（[P6]）。异质性来源：实验设计的多样性、数据集和任务的差异。证据质量：部分研究缺乏详细的实验设计和基线对比（[P7]）。适用边界：实验设计需确保公平性和可比性。",
+    "citation_ids": [
+      "P6",
+      "P7"
+    ],
+    "paper_ids": [
+      "2502.01113",
+      "2506.09542"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2502.01113",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "GFM-RAG is powered by an innovative graph neural network that reasons over graph structure to capture complex query-knowledge relationships."
+      },
+      {
+        "paper_id": "2502.01113",
+        "section": "Methods",
+        "page": 2,
+        "excerpt": "GFM-RAG is powered by an innovative graph neural network that reasons over graph structure to capture complex query-knowledge relationships."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "narrative_survey"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:29:37.590740+00:00"
+  },
+  {
+    "claim_id": "claim_f482d1ced301",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "共识：计算成本是检索增强生成系统的重要考量因素。分歧：不同研究在计算成本评估方法和指标上存在差异。例如，知识密集型任务可能需要更高的计算资源（[P8]）。异质性来源：计算成本评估方法的多样性、数据集和任务的差异。证据质量：计算成本数据不完整（[P9]）。适用边界：计算成本评估需考虑任务规模、模型复杂度和硬件环境。",
+    "citation_ids": [
+      "P8",
+      "P9"
+    ],
+    "paper_ids": [
+      "2409.15515",
+      "2412.15235"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2412.15235",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "This paper presents OG-RAG, an Ontology-Grounded Retrieval Augmented Generation method designed to enhance LLM-generated responses by anchoring retrieval processes in domain-specific ontologies."
+      },
+      {
+        "paper_id": "2412.15235",
+        "section": "Table 4",
+        "page": 11,
+        "excerpt": "OG-RAG significantly reduced the time required by 28.8% and increased the human-attributed support by 29.6% on average."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:29:37.590800+00:00"
+  },
+  {
+    "claim_id": "claim_5d7686c6986f",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "现有研究提供了部分证据支持RAG在特定检索机制、可靠性评价方法、实验设计和计算成本方面的有效性。例如，多智能体RAG系统通过将任务分配给不同的智能体，提高了查询效率、减少了令牌开销，并提升了响应准确性（[P1]）。然而，当处理多样数据源时，系统可能存在效率低下和潜在查询处理不准确的问题（[P2]）。这些分歧可能源于检索机制的多样性、数据集和任务的差异（[P3]）。部分研究缺乏详细的实验设计和基线对比（[P4]），导致难以全面评估不同检索机制的有效性。因此，检索机制的选择需根据任务和数据集的特点进行调整。",
+    "citation_ids": [
+      "P1",
+      "P2",
+      "P3",
+      "P4"
+    ],
+    "paper_ids": [
+      "2412.05838",
+      "2604.19899",
+      "2401.15884",
+      "2602.07086"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2412.05838",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "This distributed approach enhances query efficiency, reduces token overhead, and improves response accuracy..."
+      },
+      {
+        "paper_id": "2412.05838",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "Traditional RAG systems typically employ single-agent architectures... leading to inefficiencies in token usage, increased processing latency, and potential inaccuracies in query handling."
+      },
+      {
+        "paper_id": "2412.05838",
+        "section": "Proposed System Overview",
+        "page": 9,
+        "excerpt": "The proposed system decentralizes task management by introducing specialized agents... These specialized agents collaborate within a centralized query execution environment..."
+      },
+      {
+        "paper_id": "2412.05838",
+        "section": "Algorithm 4 Multi-Agent RAG System",
+        "page": 14,
+        "excerpt": "Input: User query Q... DataSourceType ← identify_data_source(Q)... if Agent is available then... else return No suitable agent found for query generation."
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2602.07086",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "This paper presents a comprehensive evaluation of three retrieval-augmented generation (RAG) variants [Lewis et al., 2021]—standard RAG, Self- RAG [Asai et al., 2024], and CoRAG [Wang et al., 2025]—across SQL query generation, REST API call generation, and a combined task requiring dynamic task classification."
+      },
+      {
+        "paper_id": "2602.07086",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "This paper makes the following contributions: Comprehensive Evaluation: We present the first systematic comparison of RAG variants (standard RAG, Self-RAG, CoRAG) across SQL query generation, REST API call generation, and a combined task requiring dynamic classification, evaluated under database-only, API-only, and hybrid documentation contexts (18 experimental configurations)."
+      },
+      {
+        "paper_id": "2602.07086",
+        "section": "Experimental Design",
+        "page": 3,
+        "excerpt": "We evaluated three RAG variants (standard RAG, Self-RAG, CoRAG) plus a no-RAG baseline across three task settings: (1) SQL query generation, (2) REST API call generation, and (3) a combined task where the system must first classify whether the user’s natural language request requires data retrieval (SQL) or data modification (API), then generate the appropriate code accordingly."
+      },
+      {
+        "paper_id": "2602.07086",
+        "section": "Evaluation Metrics",
+        "page": 3,
+        "excerpt": "Following established practices in text-to-SQL [Yu et al., 2018; Pourreza and Rafiei, 2023] and API evaluation [Kim et al., 2024; Basu et al., 2025], we reported five metrics: Exact Match Accuracy, Component Match Accuracy, Execution Accuracy, Endpoint Retrieval Accuracy (API only), Classification Accuracy (combined task only)."
+      },
+      {
+        "paper_id": "2602.07086",
+        "section": "Results",
+        "page": 5,
+        "excerpt": "With database-only documentation, all RAG variants achieve comparable performance: Exact match accuracy ranges from 14.45% (standard RAG) to 15.61% (Self-RAG and CoRAG), with execution accuracy near 72–73%."
+      },
+      {
+        "paper_id": "2602.07086",
+        "section": "Discussion",
+        "page": 6,
+        "excerpt": "Our comparative evaluation reveals that retrieval policy choice significantly impacts robustness when documentation becomes heterogeneous."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "framework",
+      "primary_study",
+      "primary_study",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:29:37.590876+00:00"
+  },
+  {
+    "claim_id": "claim_3c42e332b31b",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "不同研究在检索机制、可靠性评价方法、实验设计和计算成本方面存在异质性，适用边界需进一步验证。例如，元认知RAG通过引入元认知机制，提高了生成结果的可信度（[P5]）。然而，不同的可靠性评价方法可能适用于不同的任务和数据集（[P6]）。这些分歧可能源于评价方法的多样性、数据集和任务的差异（[P7]）。部分研究缺乏详细的评价方法和标准（[P8]），导致难以全面评估不同可靠性评价方法的适用性。因此，可靠性评价方法的选择需根据任务和数据集的特点进行调整。",
+    "citation_ids": [
+      "P5",
+      "P6",
+      "P7",
+      "P8"
+    ],
+    "paper_ids": [
+      "2512.07015",
+      "2502.01113",
+      "2506.09542",
+      "2409.15515"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2512.07015",
+        "section": null,
+        "page": 1,
+        "excerpt": "FVA-RAG (Falsification-Verified Adversarial RAG), a pipeline that actively searches for counter-evidence and uses a verifier to decide when a draft answer should be overturned."
+      },
+      {
+        "paper_id": "2512.07015",
+        "section": null,
+        "page": 2,
+        "excerpt": "Our contributions are: 1. Method: We introduce FVA-RAG, a falsification-first architecture that treats the initial response as a draft hypothesis and explicitly retrieves counter-evidence."
+      },
+      {
+        "paper_id": "2512.07015",
+        "section": null,
+        "page": 3,
+        "excerpt": "3.3 Phase 3: Verification and Evidence-Grounded Revision The Adjudicator evaluates whether the anti-context contradicts the draft using a contradiction scoring function:"
+      },
+      {
+        "paper_id": "2512.07015",
+        "section": null,
+        "page": 4,
+        "excerpt": "3.4 Compared Methods and Controlled Baselines To isolate the impact of the architectural changes..."
+      },
+      {
+        "paper_id": "2512.07015",
+        "section": null,
+        "page": 5,
+        "excerpt": "FVA-RAG achieves 79.80% and 80.05% accuracy on two frozen corpora, outperforming Self-RAG and CRAG."
+      },
+      {
+        "paper_id": "2502.01113",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "GFM-RAG is powered by an innovative graph neural network that reasons over graph structure to capture complex query-knowledge relationships."
+      },
+      {
+        "paper_id": "2502.01113",
+        "section": "Methods",
+        "page": 2,
+        "excerpt": "GFM-RAG is powered by an innovative graph neural network that reasons over graph structure to capture complex query-knowledge relationships."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "benchmark",
+      "primary_study",
+      "narrative_survey",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:29:37.590946+00:00"
+  },
+  {
+    "claim_id": "claim_14e015028abf",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "检索范围有限，部分研究缺乏详细的实验设计和基线对比（[P9]），计算成本数据不完整（[P10]）。例如，知识密集型任务可能需要更高的计算资源（[P11]）。这些分歧可能源于计算成本评估方法的多样性、数据集和任务的差异（[P12]）。计算成本数据不完整，导致难以全面评估不同RAG系统的成本效益。因此，计算成本评估需考虑任务规模、模型复杂度和硬件环境。",
+    "citation_ids": [
+      "P9",
+      "P10",
+      "P11",
+      "P12"
+    ],
+    "paper_ids": [
+      "2412.15235",
+      "2603.16169",
+      "2512.10787",
+      "2410.01782"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2412.15235",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "This paper presents OG-RAG, an Ontology-Grounded Retrieval Augmented Generation method designed to enhance LLM-generated responses by anchoring retrieval processes in domain-specific ontologies."
+      },
+      {
+        "paper_id": "2412.15235",
+        "section": "Table 4",
+        "page": 11,
+        "excerpt": "OG-RAG significantly reduced the time required by 28.8% and increased the human-attributed support by 29.6% on average."
+      },
+      {
+        "paper_id": "2603.16169",
+        "section": null,
+        "page": null,
+        "excerpt": "Our open-source CRAG reproduction achieves 54.4% on PopQA, closely matching the original system’s 54.9%, and 85.2% versus 84.8% for vanilla RAG on ARC-Challenge."
+      },
+      {
+        "paper_id": "2512.10787",
+        "page": 1,
+        "section": "Abstract"
+      },
+      {
+        "paper_id": "2512.10787",
+        "page": 2,
+        "section": "Abstract"
+      },
+      {
+        "paper_id": "2512.10787",
+        "page": 12,
+        "section": "Table 7"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:29:37.591202+00:00"
+  },
+  {
+    "claim_id": "claim_cc0d4bfc8cea",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "检索增强生成系统在特定场景下可显著提升性能，但需根据任务和数据集的特点选择合适的检索机制、可靠性评价方法、实验设计和计算成本评估方法。例如，多源数据、关系数据库、文档存储、图数据库、知识密集型任务、多跳问答、复杂推理任务、混合文档环境、事实推理任务、开放源LLM。局限性涉及数据集/任务、基础模型、基线、指标、样本大小、计算成本数据不完整。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.591253+00:00"
+  },
+  {
+    "claim_id": "claim_0b69b3274e97",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "claim_text": "检索增强生成系统（RAG）在静态、迭代、按需与纠错式检索机制、可靠性评价、实验设计和计算成本方面存在部分证据支持其有效性，但证据质量和适用边界需进一步验证。现有研究提供了部分证据支持RAG在特定检索机制、可靠性评价方法、实验设计和计算成本方面的有效性，但证据质量和适用边界需进一步验证。由于检索范围有限，部分研究缺乏详细的实验设计和基线对比，计算成本数据不完整，因此本综述的结论强度受到限制。未来研究需进一步探索RAG在不同任务和数据集上的性能表现，并建立更完善的可靠性评价方法和实验设计标准，以推动RAG技术的实际应用。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:29:37.591315+00:00"
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "score": 63,
+  "source_count": 12,
+  "cited_source_count": 12,
+  "citation_coverage": 1.0,
+  "invalid_citations": [],
+  "section_coverage": 0.14,
+  "claim_citation_coverage": 0.54,
+  "unsupported_claims": [
+    "随着大语言模型（LLM）从单一文本生成向具备自主决策能力的智能体演进，如何科学、全面地评价其规划、工具使用、记忆、协作及长期任务能力成为关键挑战。",
+    "现有的基准测试在任务设计、指标选择、可复现性及有效性风险方面存在显著差异。",
+    "基准测试如 API-Bank 和 ToolBench 专门针对 API 调用的准确性、检索准确率及参数匹配度进行评估 [P8, P9]。",
+    "然而，这种方法引入了新的复杂性，且可能受到“Hyper-accuracy distortion”（过度精确化偏差）的影响 [P4, P5]。",
+    "*   **可复现性问题**：许多基准测试缺乏开源代码或详细的数据集描述，导致结果难以复现 [P3, P5]。",
+    "虽然现有的基准测试在工具使用和通用推理方面取得了显著进展，但在长期记忆管理、多 Agent 协作以及真实世界动态环境下的评估仍存在不足。"
+  ],
+  "abstract_only_sources": [],
+  "has_omission_markers": false,
+  "status": "needs_review"
+}

@@ -1,0 +1,30 @@
+{
+  "entrypoint": "backend.routes.agent.run_write_phase",
+  "writer": "main.run_write_from_notes",
+  "screening_entrypoint": "backend.routes.scientific_review.run_independent_ai_screening",
+  "provider": "zhipu",
+  "model": "glm-4-flash-250414",
+  "writer_model": "glm-4-flash-250414",
+  "screening_models": [
+    "glm-z1-flash"
+  ],
+  "api_key_retained": false,
+  "old_review_reused": false,
+  "generated_at": "2026-07-31T15:29:37.612619+00:00",
+  "traces": [
+    {
+      "timestamp": "2026-07-31T23:24:41.098851",
+      "thought": "Skill trace for write",
+      "action": "SKILL_STATUS",
+      "input": {
+        "phase": "write",
+        "skill_id": "",
+        "skill_title": "",
+        "loaded": false,
+        "fallback_default": true
+      },
+      "observation": "skill_phase: write | skill_id: - | skill_title: - | loaded: false | fallback_default: true | reason: not_configured",
+      "error_type": "skill_fallback"
+    }
+  ]
+}

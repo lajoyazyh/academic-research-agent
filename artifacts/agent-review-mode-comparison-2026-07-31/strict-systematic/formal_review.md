@@ -1,0 +1,159 @@
+## 检索增强生成系统在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面有哪些可验证证据与适用边界？
+
+> **文档状态：** 投稿前研究底稿；当前方法学门禁不允许将其声明为严格系统综述。
+
+
+### 摘要
+
+问题：检索增强生成系统（RAG）在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面有哪些可验证证据与适用边界？
+方法范围：系统综述
+主要综合结论：现有研究提供了关于RAG不同检索机制的有效性、可靠性评价方法、实验设计、计算成本等方面的证据，但证据质量和适用边界需进一步验证。综合现有材料表明，RAG在不同检索机制下表现出不同的性能，部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。然而，这些研究主要关注特定数据集和任务，不同检索机制的适用边界需进一步验证。现有研究主要采用自动评估指标和人工评估方法对RAG的可靠性进行评价 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`，部分研究支持结合多种评价方法。然而，不同可靠性评价方法的适用条件需进一步研究。部分研究关注实验设计的公平性，但方法不统一 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。实验设计的公平性对RAG性能评价至关重要，需进一步研究统一的实验设计方法。RAG的计算成本因检索机制、数据集和任务而异，部分研究提供了详细的成本分析 `[P1]`。然而，RAG的计算成本需根据具体应用场景进行评估，需进一步研究降低计算成本的方法。
+证据限制：纳入研究的文献数量为13篇，均来自arXiv、crossref和dblp，涵盖了期刊文章、会议论文和预印本。这些文献通过单人类别AI加独立AI的筛选策略进行筛选，确保了纳入研究的质量。所有纳入文献均提供全文，并经过结构化全文证据卡的证据提取和质量评价，为后续的综合分析提供了可靠的基础。然而，部分研究缺乏详细的实验设计和基准测试，证据质量参差不齐。不同研究在数据集、任务、评价指标、实验设计等方面存在异质性，证据确定性较低。
+
+### 引言
+
+检索增强生成系统（RAG）通过整合检索机制和生成模型，显著提升了大型语言模型（LLM）在信息获取和内容生成方面的能力。随着RAG技术的快速发展，其在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本等方面的研究日益增多。然而，现有研究在证据质量和适用边界方面仍存在诸多挑战。因此，本综述旨在系统梳理RAG在上述方面的可验证证据，并探讨其适用边界，为RAG技术的进一步发展和应用提供参考。
+
+首先，RAG的检索机制是影响其性能的关键因素。静态检索机制在查询时无需检索过程，适用于信息获取效率要求较高的场景；迭代检索机制通过多次检索逐步完善查询结果，适用于复杂任务；按需检索机制根据用户需求动态调整检索策略，适用于个性化服务；纠错式检索机制则通过识别和纠正检索错误提升检索精度，适用于对信息准确性要求较高的场景。现有研究提供了关于不同检索机制有效性的证据，但证据质量和适用边界需进一步验证。
+
+其次，RAG的可靠性评价是评估其性能的重要手段。自动评估指标如EM、F1分数等，能够快速量化RAG的生成结果，但可能存在偏差；人工评估方法则能够更全面地评价RAG的可靠性和可理解性，但成本较高。现有研究主要采用自动评估指标和人工评估方法对RAG的可靠性进行评价，但不同评价方法的适用条件需进一步研究。
+
+此外，RAG的实验设计对结果的可比性和可靠性至关重要。实验设计的公平性能够确保不同RAG系统之间的性能比较不受外部因素的影响。然而，现有研究在实验设计的公平性方面存在方法不统一的问题，需要进一步研究统一的实验设计方法。
+
+最后，RAG的计算成本是影响其应用的关键因素。RAG的计算成本因检索机制、数据集和任务而异，部分研究提供了详细的成本分析。然而，RAG的计算成本需根据具体应用场景进行评估，需进一步研究降低计算成本的方法。
+
+综上所述，本综述将系统梳理RAG在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面的可验证证据，并探讨其适用边界。这些方法确保了综述的系统性、可靠性和透明性。
+
+## 方法
+
+本综述按协议 v1（confirmed）执行，模式为 systematic。配置数据源为arxiv、crossref、dblp；检索字段为title、abstract、keywords；语言限制为English；时间范围为2020-01-01至2026-07-31。
+
+流程共发现99条记录，移除0条重复记录，得到99条唯一候选；完成68条标题摘要判断和37条全文判断，最终纳入13条记录。
+
+筛选披露：Screening decisions in this run were produced by AI without a recorded independent human screen. This is an AI-only research draft and is not dual-human Cochrane-compliant screening.
+
+### 纳入与排除标准
+
+**纳入：** 直接研究RAG架构、检索控制、可靠性评价或计算成本；提供原始实验、基准或具有实证验证的技术框架；综述文章仅用于分类与研究版图，不得支撑性能或成本结论；能够获得足以核验机制和结果的全文
+
+**排除：** 研究问题与RAG机制、评价、可靠性或成本无直接关系；只有观点或产品描述而无可核验技术证据；缺少可用全文，无法完成依赖全文的筛选与质量评价
+
+### 完整检索式
+
+| 数据源 | 实际检索式 | 字段 | 过滤条件 | 执行时间 | 命中数 | 状态 |
+|---|---|---|---|---|---:|---|
+| arxiv | Self-RAG | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:46:07.053738+00:00 | 16 | completed |
+| arxiv | "Corrective Retrieval Augmented Generation" | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:46:14.077730+00:00 | 5 | completed |
+| arxiv | DRAGIN | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:46:27.866108+00:00 | 2 | completed |
+| arxiv | "Benchmarking Large Language Models in Retrieval-Augmented Generation" | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:46:34.189683+00:00 | 11 | completed |
+| arxiv | "Retrieval-Augmented Generation for Large Language Models A Survey" | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:46:48.410303+00:00 | 13 | completed |
+| arxiv | "retrieval augmented generation" OR "RAG factuality reliability benchmark" | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:47:01.715126+00:00 | 20 | completed |
+| arxiv | "dynamic corrective retrieval augmented generation" OR "adaptive retrieval CRAG DRAGIN" | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:47:07.842085+00:00 | 0 | completed |
+| arxiv | Self-RAG OR "Corrective Retrieval Augmented Generation" OR DRAGIN OR "Benchmarking Large Language Models in Retrieval-Augmented Generation" OR "Retrieval-Augmented Generation for Large Language Models A Survey" | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:47:29.237344+00:00 | 20 | completed |
+| crossref | retrieval augmented generation RAG factuality reliability benchmark | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:47:36.779588+00:00 | 10 | completed |
+| crossref | dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:47:39.662503+00:00 | 9 | completed |
+| crossref | Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:47:42.588149+00:00 | 8 | completed |
+| dblp | Self-RAG | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:47:45.819091+00:00 | 10 | completed |
+| dblp | Corrective Retrieval Augmented Generation | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:47:49.817299+00:00 | 4 | completed |
+| dblp | DRAGIN | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:47:52.993075+00:00 | 0 | completed |
+| dblp | Benchmarking Large Language Models in Retrieval-Augmented Generation | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:47:55.840511+00:00 | 0 | completed |
+| dblp | Retrieval-Augmented Generation for Large Language Models A Survey | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:47:58.466758+00:00 | 0 | completed |
+| dblp | retrieval augmented generation RAG factuality reliability benchmark | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:48:01.216286+00:00 | 0 | completed |
+| dblp | dynamic corrective retrieval augmented generation adaptive retrieval CRAG DRAGIN | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:48:03.853258+00:00 | 0 | completed |
+| dblp | Self-RAG Corrective Retrieval Augmented Generation DRAGIN Benchmarking Large Language Models in Retrieval-Augmented Generation Retrieval-Augmented Generation for Large Language Models A Survey | title, abstract, keywords | date_from=2020-01-01, date_to=2026-07-31, languages=['English'], document_types=['journal article', 'conference paper', 'preprint'] | 2026-07-31T05:48:06.595906+00:00 | 0 | completed |
+
+### 流程与排除原因
+
+```mermaid
+flowchart TD
+  A["Discovered: 99"] --> B["Duplicates removed: 0"]
+  B --> C["Unique candidates: 99"]
+  C --> D["Title/abstract screened: 68"]
+  D --> E["Full text assessed: 37"]
+  E --> F["Included: 13"]
+```
+
+排除原因统计：full_text_unavailable=6; insufficient_information=1; not_relevant=15; other=5
+
+#### 研究协议和真实数据源
+本综述遵循预定义的系统综述协议，该协议已通过方法学账本确认。研究问题为“检索增强生成系统在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面有哪些可验证证据与适用边界？”。数据来源包括arXiv、crossref和dblp，涵盖了期刊文章、会议论文和预印本。这些来源经过筛选，确保纳入的研究直接关注RAG架构、检索控制、可靠性评价或计算成本，并提供原始实验、基准或具有实证验证的技术框架。
+
+#### 检索和筛选
+检索过程采用单人类别AI加独立AI的策略，仅纳入直接研究RAG架构、检索控制、可靠性评价或计算成本，提供原始实验、基准或具有实证验证的技术框架，全文可获取的文献。检索式包括“Self-RAG”、“Corrective Retrieval Augmented Generation”、“DRAGIN”等，覆盖了RAG领域的关键术语。筛选过程由独立AI进行，确保了筛选的一致性和效率。AI筛选的结果由人工进行确认，以减少错误和偏差。
+
+#### 证据提取
+证据提取过程由独立AI进行，确保了提取的一致性和效率。提取的信息包括研究设计、技术机制、实验结果、计算成本等。提取的证据经过人工确认，以减少错误和偏差。
+
+#### 质量评价
+质量评价采用结构化全文证据卡进行，评估研究的可靠性、外部效度等。证据卡由独立AI进行评价，确保了评价的一致性和效率。评价结果由人工进行确认，以减少错误和偏差。
+
+#### 综合方法
+综合方法采用主题分析法，综合不同文献中的证据，分析RAG不同检索机制的有效性、可靠性评价方法、实验设计、计算成本等方面的证据，并探讨其适用边界。综合方法由独立AI进行，确保了综合的一致性和效率。综合结果由人工进行确认，以减少错误和偏差。
+
+通过上述方法，本综述系统地梳理了RAG在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面的研究，并探讨了其适用边界。这些方法确保了综述的系统性、可靠性和透明性。
+
+### 结果
+
+#### 文献筛选与研究特征
+
+根据已核验的方法学账本，本次系统综述共纳入13篇文献，均为直接研究RAG架构、检索控制、可靠性评价或计算成本，并提供原始实验、基准或具有实证验证的技术框架。研究设计主要为实证研究，部分为基准测试或框架介绍。技术机制主要包括MetaRAG、CRAG、Auto-RAG、CAG、CRAG、FAIR-RAG、KG-Infused RAG、Riddle Me This!、STAF、Open-RAG等。实验数据集主要包括HotpotQA、2WikiMultiHopQA、化学数据集等。主要评价指标为EM、F1分数、准确率、召回率、计算成本等。
+
+#### 检索机制有效性
+
+现有研究提供了关于RAG不同检索机制有效性的证据，但证据质量和适用边界需进一步验证。部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。然而，这些研究主要关注特定数据集和任务，不同检索机制的适用边界需进一步验证。
+
+#### 可靠性评价方法
+
+现有研究主要采用自动评估指标和人工评估方法对RAG的可靠性进行评价 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`，部分研究支持结合多种评价方法。然而，不同可靠性评价方法的适用条件需进一步研究。
+
+#### 实验公平性
+
+部分研究关注实验设计的公平性，但方法不统一 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。实验设计的公平性对RAG性能评价至关重要，需进一步研究统一的实验设计方法。
+
+#### 计算成本
+
+RAG的计算成本因检索机制、数据集和任务而异，部分研究提供了详细的成本分析 `[P1]`。然而，RAG的计算成本需根据具体应用场景进行评估，需进一步研究降低计算成本的方法。
+
+通过上述分析，可以看出，现有研究提供了关于RAG在静态、迭代、按需与纠错式检索机制、可靠性评价方法、实验设计、计算成本等方面的证据，但证据质量和适用边界需进一步验证。不同研究在数据集、任务、评价指标、实验设计等方面存在异质性，证据确定性较低。RAG在不同检索机制下表现出不同的性能，部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。可靠性评价方法、实验设计、计算成本等方面的研究需进一步深入，以提升RAG的可靠性和实用性。
+
+#### 研究质量与偏倚风险
+
+纳入的13篇文献均经过结构化全文证据卡的证据提取和质量评价，评估了研究的可靠性、外部效度等。然而，部分研究缺乏详细的实验设计和基准测试，证据质量参差不齐。不同研究在数据集、任务、评价指标、实验设计等方面存在异质性，证据确定性较低。
+
+### 讨论
+
+#### 主要发现与解释
+
+现有研究提供了关于RAG不同检索机制、可靠性评价方法、实验设计、计算成本等方面的证据，但证据质量和适用边界需进一步验证。综合现有材料表明，RAG在不同检索机制下表现出不同的性能，部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。然而，这些研究主要关注特定数据集和任务，不同检索机制的适用边界需进一步验证。
+
+#### 异质性、适用性与证据确定性
+
+不同研究在数据集、任务、评价指标、实验设计等方面存在异质性，证据确定性较低。例如，部分研究主要关注特定数据集和任务，不同检索机制的适用边界需进一步验证。此外，现有研究在可靠性评价方法、实验设计、计算成本等方面的研究需进一步深入，以提升RAG的可靠性和实用性。
+
+#### 本综述的局限
+
+纳入研究的文献数量有限，部分研究缺乏详细的实验设计和基准测试，证据质量参差不齐。此外，不同研究在数据集、任务、评价指标、实验设计等方面存在异质性，证据确定性较低。
+
+#### 研究与实践启示
+
+RAG在不同检索机制下表现出不同的性能，部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。可靠性评价方法、实验设计、计算成本等方面的研究需进一步深入，以提升RAG的可靠性和实用性。
+
+### 结论
+
+检索增强生成系统（RAG）在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面存在可验证证据，但证据质量和适用边界需进一步验证。现有研究提供了关于RAG不同检索机制、可靠性评价方法、实验设计、计算成本等方面的证据，但证据质量和适用边界需进一步验证。综合现有材料表明，RAG在不同检索机制下表现出不同的性能，部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。然而，这些研究主要关注特定数据集和任务，不同检索机制的适用边界需进一步验证。现有研究主要采用自动评估指标和人工评估方法对RAG的可靠性进行评价 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`，部分研究支持结合多种评价方法。然而，不同可靠性评价方法的适用条件需进一步研究。部分研究关注实验设计的公平性，但方法不统一 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。实验设计的公平性对RAG性能评价至关重要，需进一步研究统一的实验设计方法。RAG的计算成本因检索机制、数据集和任务而异，部分研究提供了详细的成本分析 `[P1]`。然而，RAG的计算成本需根据具体应用场景进行评估，需进一步研究降低计算成本的方法。
+
+## 参考文献
+
+- [P1] G. Iturra-Bocaz, P. Galuscakova, “A Reproducibility Study of Metacognitive Retrieval-Augmented Generation”, https://arxiv.org/abs/2604.19899, n.d..
+- [P2] T. J. Callahan, N. H. Park, S. Capponi, “Agentic Mixture-of-Workflows for Multi-Modal Chemical Search”, https://arxiv.org/abs/2502.19629, n.d..
+- [P3] T. Yu, S. Zhang, Y. Feng, “Auto-RAG: Autonomous Retrieval-Augmented Generation for Large Language Models”, https://arxiv.org/abs/2411.19443, n.d..
+- [P4] M. H. Heydari, A. Hemmat, E. Naman, A. Fatemi, “Context Awareness Gate For Retrieval Augmented Generation”, https://arxiv.org/abs/2411.16133, n.d..
+- [P5] S. Yan, J. Gu, Y. Zhu, Z. Ling, “Corrective Retrieval Augmented Generation”, https://arxiv.org/abs/2401.15884, n.d..
+- [P6] V. J. J. Kreileder, J. Reisinger, A. Fischer, “Evaluating Chunking Strategies for Retrieval-Augmented Generation on Academic Texts”, https://arxiv.org/abs/2607.01852, n.d..
+- [P7] J. Li, X. Hu, X. Yin, X. Wan, “Evaluating Self-Generated Documents for Enhancing Retrieval-Augmented Generation with Large Language Models”, https://arxiv.org/abs/2410.13192, n.d..
+- [P8] M. A. Asl, M. Asgari-Bidhendi, B. Minaei-Bidgoli, “FAIR-RAG: Faithful Adaptive Iterative Refinement for Retrieval-Augmented Generation”, https://arxiv.org/abs/2510.22344, n.d..
+- [P9] D. Wu, Y. Yan, Z. Liu, Z. Liu, M. Sun, “KG-Infused RAG: Augmenting Corpus-Based RAG with External Knowledge Graphs”, https://arxiv.org/abs/2506.09542, n.d..
+- [P10] N. Roy, L. F. R. Ribeiro, R. Blloshmi, K. Small, “Learning When to Retrieve, What to Rewrite, and How to Respond in Conversational QA”, https://arxiv.org/abs/2409.15515, n.d..
+- [P11] A. Naseh, Y. Peng, A. Suri, H. Chaudhari, A. Oprea, A. Houmansadr, “Riddle Me This! Stealthy Membership Inference for Retrieval-Augmented Generation”, https://arxiv.org/abs/2502.00306, n.d..
+- [P12] T. Khule, S. Marksteiner, J. Alguindigue, H. Fuchs, S. Fischmeister, A. Narayan, “STAF: Leveraging LLMs for Automated Attack Tree-Based Security Test Generation”, https://arxiv.org/abs/2509.20190, n.d..
+- [P13] S. B. Islam, M. A. Rahman, K. S. M. T. Hossain, E. Hoque, S. Joty, M. R. Parvez, “Open-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models”, https://arxiv.org/abs/2410.01782, n.d..

@@ -1,0 +1,899 @@
+[
+  {
+    "appraisal_id": "appraisal_3a3ad47c1022",
+    "paper_id": "2506.09542",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      }
+    ],
+    "overall_judgement": "unclear",
+    "rationale": "",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.854746+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_c34e6e59d5b1",
+    "paper_id": "2409.15515",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      }
+    ],
+    "overall_judgement": "unclear",
+    "rationale": "",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.877880+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_24539623ef89",
+    "paper_id": "2410.01782",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      }
+    ],
+    "overall_judgement": "unclear",
+    "rationale": "",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.898842+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_57afe1b90bf8",
+    "paper_id": "2401.15884",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      }
+    ],
+    "overall_judgement": "unclear",
+    "rationale": "",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.923831+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_aedb7f9a62cc",
+    "paper_id": "2502.19629",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "some_concerns",
+        "reason": "Comparison is made against GPT-4o, but the paper does not specify the exact evaluation protocol or fairness metrics used for this comparison.",
+        "evidence": "Page 1: 'Our results demonstrate that CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations.'"
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "unclear",
+        "reason": "The paper mentions using historical data and NMRShiftDB2, but does not explicitly describe the data splitting strategy or leakage prevention measures.",
+        "evidence": "Page 3: 'data included small-molecules (n=250,000)... sourced from open-literature as well as our own historical data.'"
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "some_concerns",
+        "reason": "While the dataset size is large (750k), the paper does not report statistical tests or confidence intervals for the quantitative results.",
+        "evidence": "Page 1: 'Our results demonstrate that CRAG-MoWs achieve performance comparable to GPT-4o...'"
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "The paper does not report ablation studies to determine the contribution of individual components (e.g., orchestration agent, specific retrieval strategies).",
+        "evidence": "Page 1: 'Unlike prior approaches, CRAG-MoW synthesizes diverse outputs through an orchestration agent...'"
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "No code or environment details are provided in the evidence snippets.",
+        "evidence": "No evidence found in snippets."
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "some_concerns",
+        "reason": "The study focuses on chemical and materials science domains, limiting the generalizability to other fields.",
+        "evidence": "Page 1: 'benchmark CRAG-MoWs across small molecules, polymers, and chemical reactions, as well as multi-modal nuclear magnetic resonance (NMR) spectral retrieval.'"
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "The paper does not report computational costs or resource requirements.",
+        "evidence": "No evidence found in snippets."
+      }
+    ],
+    "overall_judgement": "some_concerns",
+    "rationale": "The study presents a novel benchmarking framework with a large dataset but lacks detailed reporting on statistical significance, ablation studies, reproducibility details, and computational costs.",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.945582+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_6142af3220e2",
+    "paper_id": "2509.20190",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      }
+    ],
+    "overall_judgement": "unclear",
+    "rationale": "",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.965914+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_e1b76b0fc202",
+    "paper_id": "2411.19443",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      }
+    ],
+    "overall_judgement": "unclear",
+    "rationale": "",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:12.988012+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_58c151db5dad",
+    "paper_id": "2410.13192",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      }
+    ],
+    "overall_judgement": "unclear",
+    "rationale": "",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.011708+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_c2a638eff604",
+    "paper_id": "2502.00306",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "high",
+        "reason": "The study demonstrates a successful membership inference attack, indicating potential data leakage risks.",
+        "evidence": "The attack achieves a 2× improvement in TPR@1%FPR over prior inference attacks across diverse RAG configurations."
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      }
+    ],
+    "overall_judgement": "some_concerns",
+    "rationale": "The study demonstrates a successful membership inference attack, indicating potential data leakage risks. However, the study does not provide information on statistical sufficiency, ablation, reproducibility, external validity, and compute cost.",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.036553+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_a0e3d113aaa9",
+    "paper_id": "2510.22344",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      }
+    ],
+    "overall_judgement": "unclear",
+    "rationale": "",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.057126+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_b48b065eca7e",
+    "paper_id": "2604.19899",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": "reproducibility_study",
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "some_concerns",
+        "reason": "Minor adaptations were made to ensure fair comparison, and the original paper lacked details on index construction and reranker usage.",
+        "evidence": "Page 5: 'minor adaptations to ensure a fair comparison'; Page 9: 'original paper lacks an explanation of how the index... is constructed' and 'reranker is neither mentioned nor discussed'."
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "some_concerns",
+        "reason": "The subset of 500 QA pairs used for evaluation was not shared in the released code, and sampling was done from the development split.",
+        "evidence": "Page 9: 'the subset is not shared in the released code' and 'randomly sample 500 QA pairs from the respective development sets'."
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "high",
+        "reason": "Results are based on 500 samples per dataset and statistical significance (p < 0.05) is explicitly reported.",
+        "evidence": "Page 6: '500 samples'; Page 6: 'statistically significant difference (p < 0.05)'."
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "high",
+        "reason": "The study explicitly evaluates the effect of different rerankers (Point-Wise and List-Wise) on the MetaRAG performance.",
+        "evidence": "Page 2: 'evaluating the effect of Point-Wise and ListWise rerankers'; Page 8: Table 5 shows results for Ret, Ret+PointWise, and Ret+ListWise."
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "some_concerns",
+        "reason": "Absolute performance is lower than reported, attributed to closed-source LLM updates, missing implementation details, and unreleased prompts.",
+        "evidence": "Page 5: 'lower absolute scores than reported... reflecting challenges with closed-source LLM updates, missing implementation details, and unreleased prompts'."
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "high",
+        "reason": "The study uses standard, widely recognized multi-hop QA benchmarks (HotpotQA, 2WikiMultiHopQA).",
+        "evidence": "Page 5: 'HotpotQA and 2WikiMultiHopQA'."
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "high",
+        "reason": "The paper provides a detailed breakdown of computational costs including requests, tokens, latency, and monetary cost for both GPT-3.5 and Llama3.3.",
+        "evidence": "Page 9: Table 6 reports Req./question, Tok./req., Lat./req., and Cost (USD)."
+      }
+    ],
+    "overall_judgement": "some_concerns",
+    "rationale": "While the study provides a detailed analysis of MetaRAG's performance, cost, and sensitivity, the reproducibility is hindered by unreleased prompts, missing implementation details, and discrepancies in absolute scores due to closed-source model updates.",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.077222+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_84fdd745f512",
+    "paper_id": "2411.16133",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      }
+    ],
+    "overall_judgement": "unclear",
+    "rationale": "",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.100365+00:00"
+  },
+  {
+    "appraisal_id": "appraisal_cb8918c9ac52",
+    "paper_id": "2607.01852",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "profile": "computer_ai",
+    "study_design": null,
+    "domains": [
+      {
+        "id": "baseline_fairness",
+        "name": "Baseline Fairness",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "data_leakage",
+        "name": "Data Leakage",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "statistical_sufficiency",
+        "name": "Statistical Sufficiency",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "ablation",
+        "name": "Ablation",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "reproducibility",
+        "name": "Reproducibility",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "external_validity",
+        "name": "External Validity",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      },
+      {
+        "id": "compute_cost",
+        "name": "Compute Cost",
+        "judgement": "unclear",
+        "reason": "",
+        "evidence": ""
+      }
+    ],
+    "overall_judgement": "unclear",
+    "rationale": "",
+    "review_status": "ai_draft",
+    "completeness": {
+      "required_domains": [],
+      "missing_domains": [],
+      "complete": true
+    },
+    "schema_version": 2,
+    "created_at": "2026-07-31T14:43:13.124401+00:00"
+  }
+]

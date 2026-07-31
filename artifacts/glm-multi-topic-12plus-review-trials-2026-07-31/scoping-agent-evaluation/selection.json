@@ -1,0 +1,856 @@
+{
+  "selection_rationale": "The selection prioritizes high-quality surveys and benchmarks to establish a comprehensive framework for evaluating LLM agents. It covers foundational LLM surveys (2307.06435, 2303.18223), specific agent surveys (W4393065402, 2309.07864), and evaluation-focused surveys (2307.03109, 2507.21504). Benchmarks for tool use (W4389518608) and complex medical tasks (W4413801638) are included to address specific sub-themes. Reserve items include duplicates, domain-specific applications, and foundational technical reports to ensure depth and coverage of potential gaps.",
+  "anticipated_gaps": [
+    "Specific benchmarks for long-horizon task planning and memory persistence beyond the medical domain.",
+    "Detailed analysis of reproducibility issues in agent benchmarks.",
+    "Comparative studies on the effectiveness of different memory architectures (episodic vs semantic) in agents."
+  ],
+  "ranked": [
+    {
+      "paper_id": "2307.06435",
+      "arxiv_id": "2307.06435",
+      "openalex_id": "W4384389802",
+      "doi": "https://doi.org/10.48550/arxiv.2307.06435",
+      "pdf_url": "https://arxiv.org/pdf/2307.06435",
+      "title": "A Comprehensive Overview of Large Language Models",
+      "authors": "Humza Naveed, Asad Ullah Khan, Shi Qiu, Muhammad Saqib, Saeed Anwar, Muhammad Usman, Akhtar, Naveed, Nick Barnes, Ajmal Mian",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2307.06435",
+      "screening": {
+        "paper_id": "2307.06435",
+        "decision": "include",
+        "reason": "Comprehensive overview of LLMs covering architectures, training, and evaluation benchmarks, providing a foundational classification for the survey.",
+        "coverage_role": "Foundational Framework",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2307.03109",
+      "arxiv_id": "2307.03109",
+      "openalex_id": "W4383605161",
+      "doi": "https://doi.org/10.48550/arxiv.2307.03109",
+      "pdf_url": "https://arxiv.org/pdf/2307.03109",
+      "title": "A Survey on Evaluation of Large Language Models",
+      "authors": "Yupeng Chang, Xu Wang, Jindong Wang, Yuan-Hsuan Wu, Linyi Yang, Kaijie Zhu, Hao Chen, Xiaoyuan Yi, Cunxiang Wang, Yidong Wang, Wei Ye, Yue Zhang, Yi Chang, Philip S. Yu, Qiang Yang, Xing Xie",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2307.03109",
+      "screening": {
+        "paper_id": "2307.03109",
+        "decision": "include",
+        "reason": "Specifically focuses on evaluation methods, benchmarks, and metrics for LLMs, directly addressing the 'how to evaluate' aspect of the research question.",
+        "coverage_role": "Evaluation Framework",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2303.18223",
+      "arxiv_id": "2303.18223",
+      "openalex_id": "W4362515116",
+      "doi": "https://doi.org/10.1007/s11704-026-60308-3",
+      "pdf_url": "https://arxiv.org/pdf/2303.18223",
+      "title": "A Survey of Large Language Models",
+      "authors": "Wayne Xin Zhao, Kun Zhou, Junyi Li, Tianyi Tang, Zican Dong, Yupeng Hou, Beichen Zhang, Yingqian Min, Junjie Zhang, Peiyu Liu, Xiaolei Wang, Yifan Du, Yushuo Chen, Yushuo Chen, Zhipeng Chen, Jinhao Jiang, Ruiyang Ren, Yifan Li, Xinyu Tang, Peiyu Liu, Yiwen Hu, Jian‐Yun Nie, Ji-Rong Wen",
+      "publication_year": 2026,
+      "source_url": "https://arxiv.org/abs/2303.18223",
+      "screening": {
+        "paper_id": "2303.18223",
+        "decision": "include",
+        "reason": "Comprehensive survey on LLMs covering utilization strategies (including agentic reasoning) and evaluation methods, providing a broad context.",
+        "coverage_role": "Foundational Framework",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "W4393065402",
+      "arxiv_id": "",
+      "openalex_id": "W4393065402",
+      "doi": "https://doi.org/10.1007/s11704-024-40231-1",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s11704-024-40231-1.pdf",
+      "title": "A survey on large language model based autonomous agents",
+      "authors": "Lei Wang, Chen Ma, Xueyang Feng, Zeyu Zhang, Hao Yang, Jingsen Zhang, Zhiyuan Chen, Jiakai Tang, Xu Chen, Yankai Lin, Wayne Xin Zhao, Zhewei Wei, Ji-Rong Wen",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1007/s11704-024-40231-1",
+      "screening": {
+        "paper_id": "W4393065402",
+        "decision": "include",
+        "reason": "Comprehensive survey on LLM-based autonomous agents covering construction, applications, and evaluation strategies, directly relevant to the agent domain.",
+        "coverage_role": "Domain Survey",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2308.11432",
+      "arxiv_id": "2308.11432",
+      "openalex_id": "W4386184788",
+      "doi": "https://doi.org/10.48550/arxiv.2308.11432",
+      "pdf_url": "https://arxiv.org/pdf/2308.11432",
+      "title": "A Survey on Large Language Model based Autonomous Agents",
+      "authors": "Lei Wang, Chen Ma, Xueyang Feng, Zeyu Zhang, Hao Yang, Jingsen Zhang, Zhiyuan Chen, Jiakai Tang, Xu Chen, Yankai Lin, Wayne Xin Zhao, Zhewei Wei, Ji-Rong Wen",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2308.11432",
+      "screening": {
+        "paper_id": "2308.11432",
+        "decision": "include",
+        "reason": "Duplicate entry of the survey on LLM-based autonomous agents (W4393065402), serves as a backup reference for the same domain.",
+        "coverage_role": "Domain Survey",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "2309.07864",
+      "arxiv_id": "2309.07864",
+      "openalex_id": "W4386794445",
+      "doi": "https://doi.org/10.48550/arxiv.2309.07864",
+      "pdf_url": "https://arxiv.org/pdf/2309.07864",
+      "title": "The Rise and Potential of Large Language Model Based Agents: A Survey",
+      "authors": "Zhiheng Xi, Wen-Xiang Chen, Xin Guo, Wei He, Yiwen Ding, Boyang Hong, Ming Zhang, Junzhe Wang, Senjie Jin, Enyu Zhou, Rui Zheng, Xiaoran Fan, Xiao Wang, Limao Xiong, Yuhao Zhou, Weiran Wang, Changhao Jiang, Yicheng Zou, Xiangyang Liu, Zhangyue Yin, Shihan Dou, Rongxiang Weng, Wensen Cheng, Qi Zhang, Wenjuan Qin, Yongyan Zheng, Xipeng Qiu, Huang, Xuanjing, Tao Gui",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2309.07864",
+      "screening": {
+        "paper_id": "2309.07864",
+        "decision": "include",
+        "reason": "Survey on LLM-based agents covering frameworks (brain, perception, action), applications, and open problems, providing a structural classification.",
+        "coverage_role": "Domain Survey",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "W4387835442",
+      "arxiv_id": "",
+      "openalex_id": "W4387835442",
+      "doi": "https://doi.org/10.1145/3586183.3606763",
+      "pdf_url": "https://dl.acm.org/doi/pdf/10.1145/3586183.3606763",
+      "title": "Generative Agents: Interactive Simulacra of Human Behavior",
+      "authors": "Joon Sung Park, Joseph O’Brien, Carrie J. Cai, Meredith Ringel Morris, Percy Liang, Michael S. Bernstein",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1145/3586183.3606763",
+      "screening": {
+        "paper_id": "W4387835442",
+        "decision": "include",
+        "reason": "Generative Agents paper introducing an architecture with observation, planning, and reflection, providing evidence for memory and planning components.",
+        "coverage_role": "Agent Architecture",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "2312.10997",
+      "arxiv_id": "2312.10997",
+      "openalex_id": "W4389984066",
+      "doi": "https://doi.org/10.48550/arxiv.2312.10997",
+      "pdf_url": "https://arxiv.org/pdf/2312.10997",
+      "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+      "authors": "Yunfan Gao, Yun Xiong, Xinyu Gao, Kangxiang Jia, Jinliu Pan, Yuxi Bi, Yi Dai, Jiawei Sun, Wang, Meng, Wang, Haofen",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2312.10997",
+      "screening": {
+        "paper_id": "2312.10997",
+        "decision": "include",
+        "reason": "Survey on Retrieval-Augmented Generation (RAG), a key technique for memory and knowledge integration in agents, covering evaluation frameworks.",
+        "coverage_role": "Technique Survey",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "W4389518608",
+      "arxiv_id": "",
+      "openalex_id": "W4389518608",
+      "doi": "https://doi.org/10.18653/v1/2023.emnlp-main.187",
+      "pdf_url": "https://aclanthology.org/2023.emnlp-main.187.pdf",
+      "title": "API-Bank: A Comprehensive Benchmark for Tool-Augmented LLMs",
+      "authors": "Minghao Li, Yingxiu Zhao, Bowen Yu, Feifan Song, Hangyu Li, Haiyang Yu, Zhoujun Li, Fei Huang, Yongbin Li",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.187",
+      "screening": {
+        "paper_id": "W4389518608",
+        "decision": "include",
+        "reason": "API-Bank benchmark specifically designed for tool-augmented LLMs, addressing the 'tool use' evaluation aspect of the research question.",
+        "coverage_role": "Benchmark",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4413801638",
+      "arxiv_id": "",
+      "openalex_id": "W4413801638",
+      "doi": "https://doi.org/10.1056/aidbp2500144",
+      "pdf_url": "https://ai.nejm.org/doi/pdf/10.1056/AIdbp2500144",
+      "title": "MedAgentBench: A Virtual EHR Environment to Benchmark Medical LLM Agents",
+      "authors": "Yixing Jiang, Kameron Collin Black, Gloria Geng, Dae-Gyun Park, James Zou, Andrew Y. Ng, Jonathan H. Chen",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.1056/aidbp2500144",
+      "screening": {
+        "paper_id": "W4413801638",
+        "decision": "include",
+        "reason": "MedAgentBench benchmark for medical LLM agents, providing a specific example of a complex, interactive evaluation environment for long-horizon tasks.",
+        "coverage_role": "Benchmark",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "2507.21504",
+      "arxiv_id": "2507.21504",
+      "openalex_id": "W4412877164",
+      "doi": "https://doi.org/10.1145/3711896.3736570",
+      "pdf_url": "https://arxiv.org/pdf/2507.21504",
+      "title": "Evaluation and Benchmarking of LLM Agents: A Survey",
+      "authors": "Mahmoud Mohammadi, Yipeng Li, Jane C. Lo, Wendy Yip",
+      "publication_year": 2025,
+      "source_url": "https://arxiv.org/abs/2507.21504",
+      "screening": {
+        "paper_id": "2507.21504",
+        "decision": "include",
+        "reason": "Survey on evaluation and benchmarking of LLM agents, directly addressing the 'how to evaluate' and 'metrics' aspects of the research question.",
+        "coverage_role": "Evaluation Survey",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4411700982",
+      "arxiv_id": "",
+      "openalex_id": "W4411700982",
+      "doi": "https://doi.org/10.1007/s41019-025-00296-9",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s41019-025-00296-9.pdf",
+      "title": "LLM-Based Agents for Tool Learning: A Survey",
+      "authors": "Weikai Xu, Chengrui Huang, Shen Gao, Shuo Shang",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.1007/s41019-025-00296-9",
+      "screening": {
+        "paper_id": "W4411700982",
+        "decision": "include",
+        "reason": "Survey on LLM-based agents for tool learning, covering tool retrieval, planning, and benchmarks, addressing the tool use sub-theme.",
+        "coverage_role": "Technique Survey",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "W4402901320",
+      "arxiv_id": "",
+      "openalex_id": "W4402901320",
+      "doi": "https://doi.org/10.1057/s41599-024-03611-3",
+      "pdf_url": "https://www.nature.com/articles/s41599-024-03611-3.pdf",
+      "title": "Large language models empowered agent-based modeling and simulation: a survey and perspectives",
+      "authors": "Chen Gao, Xiaochong Lan, Nian Li, Yuan Yuan, Jingtao Ding, Zhilun Zhou, Fengli Xu, Yong Li",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1057/s41599-024-03611-3",
+      "screening": {
+        "paper_id": "W4402901320",
+        "decision": "reserve",
+        "reason": "Survey on LLM-empowered agent-based modeling and simulation, covering evaluation challenges in complex environments, relevant to long-horizon tasks.",
+        "coverage_role": "Application Survey",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4393867901",
+      "arxiv_id": "",
+      "openalex_id": "W4393867901",
+      "doi": "https://doi.org/10.1038/s41746-024-01083-y",
+      "pdf_url": "https://www.nature.com/articles/s41746-024-01083-y.pdf",
+      "title": "Evaluating large language models as agents in the clinic",
+      "authors": "Nikita Mehandru, Brenda Y. Miao, Eduardo Rodriguez Almaraz, Madhumita Sushil, Atul J. Butte, Ahmed M. Alaa",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1038/s41746-024-01083-y",
+      "screening": {
+        "paper_id": "W4393867901",
+        "decision": "reserve",
+        "reason": "Paper on evaluating LLM agents in the clinic, providing a specific domain example of high-fidelity simulation and workflow impact evaluation.",
+        "coverage_role": "Domain Application",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4393160747",
+      "arxiv_id": "",
+      "openalex_id": "W4393160747",
+      "doi": "https://doi.org/10.1609/aaai.v38i17.29936",
+      "pdf_url": "https://ojs.aaai.org/index.php/AAAI/article/download/29936/31635",
+      "title": "ExpeL: LLM Agents Are Experiential Learners",
+      "authors": "Andrew Zhao, Daniel Huang, Quentin Xu, Matthieu Gaetan Lin, Yong‐Jin Liu, Gao Huang",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1609/aaai.v38i17.29936",
+      "screening": {
+        "paper_id": "W4393160747",
+        "decision": "reserve",
+        "reason": "ExpeL paper introducing experiential learning for LLM agents, providing evidence for long-term learning and memory mechanisms.",
+        "coverage_role": "Agent Capability",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "2303.08774",
+      "arxiv_id": "2303.08774",
+      "openalex_id": "W4327810158",
+      "doi": "https://doi.org/10.4230/lipics.cosit.2024.11",
+      "pdf_url": "https://arxiv.org/pdf/2303.08774",
+      "title": "GPT-4 Technical Report",
+      "authors": "OpenAI, Achiam, Josh, Adler, Steven, Agarwal, Sandhini, Ahmad, Lama, Akkaya, Ilge, Aleman, Florencia Leoni, Almeida, Diogo, Altenschmidt, Janko, Altman, Sam, Anadkat, Shyamal, Avila, Red, Babuschkin, Igor, Balaji, Suchir, Balcom, Valerie, Baltescu, Paul, Bao, Haiming, Bavarian, Mohammad, Belgum, Jeff, Bello, Irwan, Berdine, Jake, Bernadett-Shapiro, Gabriel, Berner, Christopher, Bogdonoff, Lenny, Boiko, Oleg, Boyd, Madelaine, Brakman, Anna-Luisa, Brockman, Greg, Brooks, Tim, Brundage, Miles, Button, Kevin, Cai, Trevor, Campbell, Rosie, Cann, Andrew, Carey, Brittany, Carlson, Chelsea, Carmichael, Rory, Chan, Brooke, Chang, Che, Chantzis, Fotis, Chen, Derek, Chen, Sully, Chen, Ruby, Chen, Jason, Chen, Mark, Chess, Ben, Cho, Chester, Chu, Casey, Chung, Hyung Won, Cummings, Dave, Currier, Jeremiah, Dai, Yunxing, Decareaux, Cory, Degry, Thomas, Deutsch, Noah, Deville, Damien, Dhar, Arka, Dohan, David, Dowling, Steve, Dunning, Sheila, Ecoffet, Adrien, Eleti, Atty, Eloundou, Tyna, Farhi, David, Fedus, Liam, Felix, Niko, Fishman, Simón Posada, Forte, Juston, Fulford, Isabella, Gao, Leo, Georges, Elie, Gibson, Christian, Goel, Vik, Gogineni, Tarun, Goh, Gabriel, Gontijo-Lopes, Rapha, Gordon, Jonathan, Grafstein, Morgan, Gray, Scott, Greene, Ryan, Gross, Joshua, Gu, Shixiang Shane, Guo, Yufei, Hallacy, Chris, Han, Jesse, Harris, Jeff, He, Yuchen, Heaton, Mike, Heidecke, Johannes, Hesse, Chris, Hickey, Alan, Hickey, Wade, Hoeschele, Peter, Houghton, Brandon, Hsu, Kenny, Hu, Shengli, Hu, Xin, Huizinga, Joost, Jain, Shantanu, Jain, Shawn",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2303.08774",
+      "screening": {
+        "paper_id": "2303.08774",
+        "decision": "reserve",
+        "reason": "GPT-4 Technical Report, providing foundational evidence on LLM capabilities and limitations relevant to agent performance.",
+        "coverage_role": "Foundational Evidence",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "W4283170666",
+      "arxiv_id": "",
+      "openalex_id": "W4283170666",
+      "doi": "https://doi.org/10.1145/3531146.3533088",
+      "pdf_url": "https://dl.acm.org/doi/pdf/10.1145/3531146.3533088",
+      "title": "Taxonomy of Risks posed by Language Models",
+      "authors": "Laura Weidinger, Jonathan Uesato, Maribeth Rauh, Conor Griffin, Po-Sen Huang, John Mellor, Amelia Glaese, Myra Cheng, Borja Balle, Atoosa Kasirzadeh, Courtney Biles, Sasha Brown, Zac Kenton, Will Hawkins, Tom Stepleton, Abeba Birhane, Lisa Anne Hendricks, Laura Rimell, William Isaac, Julia Haas, Sean Legassick, Geoffrey Irving, Iason Gabriel",
+      "publication_year": 2022,
+      "source_url": "https://doi.org/10.1145/3531146.3533088",
+      "screening": {
+        "paper_id": "W4283170666",
+        "decision": "reserve",
+        "reason": "Taxonomy of risks posed by Language Models, addressing the 'effectiveness risks' and safety evaluation aspect of the research question.",
+        "coverage_role": "Risk Analysis",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4396723768",
+      "arxiv_id": "",
+      "openalex_id": "W4396723768",
+      "doi": "https://doi.org/10.1038/s42256-024-00832-8",
+      "pdf_url": "https://www.nature.com/articles/s42256-024-00832-8.pdf",
+      "title": "Augmenting large language models with chemistry tools",
+      "authors": "Andres M. Bran, Sam Cox, Oliver Schilter, Carlo Baldassari, Andrew Dickson White, Philippe Schwaller",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1038/s42256-024-00832-8",
+      "screening": {
+        "paper_id": "W4396723768",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2204.14198",
+      "arxiv_id": "2204.14198",
+      "openalex_id": "W4225323055",
+      "doi": "https://doi.org/10.48550/arxiv.2204.14198",
+      "pdf_url": "https://arxiv.org/pdf/2204.14198",
+      "title": "Flamingo: a Visual Language Model for Few-Shot Learning",
+      "authors": "Alayrac, Jean-Baptiste, Jeff Donahue, Pauline Luc, Antoine Miech, Iain Barr, Yana Hasson, Karel Lenc, Arthur Mensch, Katie Millican, Malcolm Reynolds, Roman Ring, Eliza Rutherford, Serkan Cabi, Tengda Han, Zhitao Gong, Sina Samangooei, Marianne Monteiro, Jacob Menick, Sebastian Borgeaud, Andrew Brock, Aida Nematzadeh, Sahand Sharifzadeh, Mikołaj Bińkowski, Ricardo Barreira, Oriol Vinyals, Andrew Zisserman, Karen Simonyan",
+      "publication_year": 2022,
+      "source_url": "https://arxiv.org/abs/2204.14198",
+      "screening": {
+        "paper_id": "2204.14198",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "1207.4708",
+      "arxiv_id": "1207.4708",
+      "openalex_id": "W2150468603",
+      "doi": "https://doi.org/10.1613/jair.3912",
+      "pdf_url": "https://arxiv.org/pdf/1207.4708",
+      "title": "The Arcade Learning Environment: An Evaluation Platform for General Agents",
+      "authors": "M. G. Bellemare, Y. Naddaf, J. Veness, M. Bowling",
+      "publication_year": 2013,
+      "source_url": "https://arxiv.org/abs/1207.4708",
+      "screening": {
+        "paper_id": "1207.4708",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2501.12948",
+      "arxiv_id": "2501.12948",
+      "openalex_id": "W4406779522",
+      "doi": "https://doi.org/10.4230/oasics.icpec.2025.4",
+      "pdf_url": "https://arxiv.org/pdf/2501.12948",
+      "title": "Can Open Large Language Models Catch Vulnerabilities?",
+      "authors": "DeepSeek-AI, Guo, Daya, Yang, Dejian, Zhang, Haowei, Junxiao Song, Wang, Peiyi, Qihao Zhu, Runxin Xu, Ruoyu Zhang, Shirong Ma, Xiao Bi, Xiaokang Zhang, Xingkai Yu, Yu Wu, Zhenhua Wu, Zhibin Gou, Zhihong Shao, Zhuoshu Li, Ziyi Gao, Aixin Liu, Bing Xue, Bingxuan Wang, Bowen Wu, Bei Feng, Chengda Lu, Chenggang Zhao, Chengqi Deng, Chenyu Zhang, Chong Ruan, Damai Dai, Deli Chen, Dongjie Ji, Erhang Li, Fangyun Lin, Dai, Fucong, Fuli Luo, Guangbo Hao, Guan-Ting Chen, Guowei Li, Hongjun Zhang, Han Bao, Hanwei Xu, Haocheng Wang, Honghui Ding, Huajian Xin, Huazuo Gao, Hui Qu, Hui Li, Jianzhong Guo, Jiashi Li, Jiawei Wang, Jingchang Chen, Jingyang Yuan, Junjie Qiu, Junlong Li, Jiali Cai, Jiaqi Ni, Jian Liang, Jing Chen, Kai Dong, Kai Hu, Kaige Gao, Kang Guan, Kexin Huang, Kuai Yu, Lean Wang, Lecong Zhang, Liang Zhao, Litong Wang, Liyue Zhang, Lei Xu, L. Xia, Mingchuan Zhang, Minghua Zhang, Minghui Tang, Meng Li, Miaojun Wang, Mingming Li, Ning Tian, Panpan Huang, Peng Zhang, Qiancheng Wang, Qinyu Chen, Qiushi Du, Ruiqi Ge, Ruisong Zhang, Pan, Ruizhe, Runji Wang, R. J. Chen, Rong Jin, Ruyi Chen, Shanghao Lu, Shangyan Zhou, Shanhuang Chen, Shengfeng Ye, Shiyu Wang, Shuiping Yu, Shunfeng Zhou, Shuting Pan, Sansan Li",
+      "publication_year": 2025,
+      "source_url": "https://arxiv.org/abs/2501.12948",
+      "screening": {
+        "paper_id": "2501.12948",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W1552847225",
+      "arxiv_id": "",
+      "openalex_id": "W1552847225",
+      "doi": "https://doi.org/10.3233/sw-140134",
+      "pdf_url": "https://content.iospress.com:443/download/semantic-web/sw134?id=semantic-web%2Fsw134",
+      "title": "DBpedia – A large-scale, multilingual knowledge base extracted from Wikipedia",
+      "authors": "Jens Lehmann, Robert Isele, Max Jakob, Anja Jentzsch, Dimitris Kontokostas, Pablo N. Mendes, Sebastian Hellmann, Mohamed Morsey, Patrick van Kleef, Sören Auer, Christian Bizer",
+      "publication_year": 2015,
+      "source_url": "https://doi.org/10.3233/sw-140134",
+      "screening": {
+        "paper_id": "W1552847225",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "1906.05113",
+      "arxiv_id": "1906.05113",
+      "openalex_id": "W2953303875",
+      "doi": "https://doi.org/10.1109/access.2020.2983149",
+      "pdf_url": "https://arxiv.org/pdf/1906.05113",
+      "title": "A Survey of Autonomous Driving: <i>Common Practices and Emerging Technologies</i>",
+      "authors": "Ekim Yurtsever, Jacob Lambert, Alexander Carballo, Kazuya Takeda",
+      "publication_year": 2020,
+      "source_url": "https://arxiv.org/abs/1906.05113",
+      "screening": {
+        "paper_id": "1906.05113",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4389727268",
+      "arxiv_id": "",
+      "openalex_id": "W4389727268",
+      "doi": "https://doi.org/10.1038/s41586-023-06924-6",
+      "pdf_url": "https://www.nature.com/articles/s41586-023-06924-6_reference.pdf",
+      "title": "Mathematical discoveries from program search with large language models",
+      "authors": "Bernardino Romera‐Paredes, Mohammadamin Barekatain, Alexander Novikov, Matej Balog, Manish Kumar, Emilien Dupont, Francisco J. R. Ruiz, Jordan S. Ellenberg, Pengming Wang, Omar Fawzi, Pushmeet Kohli, Alhussein Fawzi",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1038/s41586-023-06924-6",
+      "screening": {
+        "paper_id": "W4389727268",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2402.06196",
+      "arxiv_id": "2402.06196",
+      "openalex_id": "W4391766565",
+      "doi": "https://doi.org/10.48550/arxiv.2402.06196",
+      "pdf_url": "https://arxiv.org/pdf/2402.06196",
+      "title": "Large Language Models: A Survey",
+      "authors": "Shervin Minaee, Tomas Mikolov, Nikzad, Narjes, Meysam Chenaghlu, Richard Socher, Xavier Amatriain, Jianfeng Gao",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2402.06196",
+      "screening": {
+        "paper_id": "2402.06196",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4406152263",
+      "arxiv_id": "",
+      "openalex_id": "W4406152263",
+      "doi": "https://doi.org/10.1038/s41591-024-03425-5",
+      "pdf_url": "https://www.nature.com/articles/s41591-024-03425-5.pdf",
+      "title": "The TRIPOD-LLM reporting guideline for studies using large language models",
+      "authors": "Jack Gallifant, Majid Afshar, Saleem Ameen, Yindalon Aphinyanaphongs, Shan Chen, Giovanni Cacciamani, Dina Demner‐Fushman, Dmitriy Dligach, Roxana Daneshjou, Chrystinne Oliveira Fernandes, Lasse Hyldig Hansen, Adam Landman, Lisa Soleymani Lehmann, Liam G. McCoy, Timothy A. Miller, Amy C. Moreno, Nikolaj Munch, David Restrepo, Guergana Savova, Renato Umeton, Judy Wawira Gichoya, Professor Gary S. Collins, Karel G.M. Moons, Leo Anthony Celi, Danielle S. Bitterman",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.1038/s41591-024-03425-5",
+      "screening": {
+        "paper_id": "W4406152263",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4392503764",
+      "arxiv_id": "",
+      "openalex_id": "W4392503764",
+      "doi": "https://doi.org/10.1145/3643540",
+      "pdf_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11806945/pdf/nihms-2052486.pdf",
+      "title": "Mental-LLM",
+      "authors": "Xuhai Xu, Bingsheng Yao, Yuanzhe Dong, Saadia Gabriel, Hong Yu, James Hendler, Marzyeh Ghassemi, Anind K. Dey, Dakuo Wang",
+      "publication_year": 2024,
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/11806945",
+      "screening": {
+        "paper_id": "W4392503764",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4401671778",
+      "arxiv_id": "",
+      "openalex_id": "W4401671778",
+      "doi": "https://doi.org/10.1007/s10462-024-10888-y",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s10462-024-10888-y.pdf",
+      "title": "Large language models (LLMs): survey, technical frameworks, and future challenges",
+      "authors": "Pranjal Kumar",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1007/s10462-024-10888-y",
+      "screening": {
+        "paper_id": "W4401671778",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4393231265",
+      "arxiv_id": "",
+      "openalex_id": "W4393231265",
+      "doi": "https://doi.org/10.3389/frai.2024.1293084",
+      "pdf_url": "https://www.frontiersin.org/articles/10.3389/frai.2024.1293084/pdf?isPublishedV2=False",
+      "title": "Knowledge sharing in manufacturing using LLM-powered tools: user study and model benchmarking",
+      "authors": "Samuel Kernan Freire, Chaofan Wang, Mina Foosherian, Stefan Wellsandt, Santiago Ruiz-Arenas, Evangelos Niforatos",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.3389/frai.2024.1293084",
+      "screening": {
+        "paper_id": "W4393231265",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4408167800",
+      "arxiv_id": "",
+      "openalex_id": "W4408167800",
+      "doi": "https://doi.org/10.3390/s25061666",
+      "pdf_url": "https://www.mdpi.com/1424-8220/25/6/1666/pdf?version=1741366243",
+      "title": "Generative AI and LLMs for Critical Infrastructure Protection: Evaluation Benchmarks, Agentic AI, Challenges, and Opportunities",
+      "authors": "Yagmur Yigit, Mohamed Amine Ferrag, Mohamed Chahine Ghanem, Iqbal H. Sarker, Λέανδρος Μαγλαράς, Christos Chrysoulas, Naghmeh Moradpoor, Norbert Tihanyi, Helge Janicke",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.3390/s25061666",
+      "screening": {
+        "paper_id": "W4408167800",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2303.11366",
+      "arxiv_id": "2303.11366",
+      "openalex_id": "W4353112996",
+      "doi": "https://doi.org/10.48550/arxiv.2303.11366",
+      "pdf_url": "https://arxiv.org/pdf/2303.11366",
+      "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+      "authors": "Noah Shinn, Cassano, Federico, Berman, Edward, Gopinath, Ashwin, Narasimhan, Karthik, Yao, Shunyu",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2303.11366",
+      "screening": {
+        "paper_id": "2303.11366",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4401545735",
+      "arxiv_id": "",
+      "openalex_id": "W4401545735",
+      "doi": "https://doi.org/10.1145/3688399",
+      "pdf_url": "https://dl.acm.org/doi/pdf/10.1145/3688399",
+      "title": "Designing Heterogeneous LLM Agents for Financial Sentiment Analysis",
+      "authors": "Frank Xing",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1145/3688399",
+      "screening": {
+        "paper_id": "W4401545735",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4392193191",
+      "arxiv_id": "",
+      "openalex_id": "W4392193191",
+      "doi": "https://doi.org/10.1186/s13000-024-01464-7",
+      "pdf_url": "https://diagnosticpathology.biomedcentral.com/counter/pdf/10.1186/s13000-024-01464-7",
+      "title": "Challenges and barriers of using large language models (LLM) such as ChatGPT for diagnostic medicine with a focus on digital pathology – a recent scoping review",
+      "authors": "Ehsan Ullah, Anil V. Parwani, Mirza Mansoor Baig, Rajendra Singh",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1186/s13000-024-01464-7",
+      "screening": {
+        "paper_id": "W4392193191",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4402670135",
+      "arxiv_id": "",
+      "openalex_id": "W4402670135",
+      "doi": "https://doi.org/10.18653/v1/2024.findings-acl.738",
+      "pdf_url": "https://aclanthology.org/2024.findings-acl.738.pdf",
+      "title": "MM-LLMs: Recent Advances in MultiModal Large Language Models",
+      "authors": "Duzhen Zhang, Yahan Yu, Jiahua Dong, Chenxing Li, Dan Su, Chenhui Chu, Dong Yu",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.18653/v1/2024.findings-acl.738",
+      "screening": {
+        "paper_id": "W4402670135",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W2922903482",
+      "arxiv_id": "",
+      "openalex_id": "W2922903482",
+      "doi": "https://doi.org/10.1257/jep.33.2.3",
+      "pdf_url": "https://www.aeaweb.org/articles/pdf/doi/10.1257/jep.33.2.3",
+      "title": "Automation and New Tasks: How Technology Displaces and Reinstates Labor",
+      "authors": "Daron Acemoğlu, Pascual Restrepo",
+      "publication_year": 2019,
+      "source_url": "https://doi.org/10.1257/jep.33.2.3",
+      "screening": {
+        "paper_id": "W2922903482",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W3122161814",
+      "arxiv_id": "",
+      "openalex_id": "W3122161814",
+      "doi": "https://doi.org/10.1016/j.jedc.2016.06.001",
+      "pdf_url": "https://www.sciencedirect.com/science/article/pii/S0165188915301020",
+      "title": "Agent based-stock flow consistent macroeconomics: Towards a benchmark model",
+      "authors": "Alessandro Caiani, Antoine Godin, Eugenio Caverzasi, Mauro Gallegati, Stephen Kinsella, Joseph E. Stiglitz",
+      "publication_year": 2016,
+      "source_url": "https://doi.org/10.1016/j.jedc.2016.06.001",
+      "screening": {
+        "paper_id": "W3122161814",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4389523765",
+      "arxiv_id": "",
+      "openalex_id": "W4389523765",
+      "doi": "https://doi.org/10.18653/v1/2023.emnlp-main.923",
+      "pdf_url": "https://aclanthology.org/2023.emnlp-main.923.pdf",
+      "title": "Is ChatGPT Good at Search? Investigating Large Language Models as Re-Ranking Agents",
+      "authors": "Weiwei Sun, Lingyong Yan, Xinyu Ma, Shuaiqiang Wang, Pengjie Ren, Zhumin Chen, Dawei Yin, Zhaochun Ren",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.923",
+      "screening": {
+        "paper_id": "W4389523765",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W3156295478",
+      "arxiv_id": "",
+      "openalex_id": "W3156295478",
+      "doi": "https://doi.org/10.1007/s10462-021-09996-w",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s10462-021-09996-w.pdf",
+      "title": "Multi-agent deep reinforcement learning: a survey",
+      "authors": "Sven Gronauer, Klaus Diepold",
+      "publication_year": 2021,
+      "source_url": "https://doi.org/10.1007/s10462-021-09996-w",
+      "screening": {
+        "paper_id": "W3156295478",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W3121342653",
+      "arxiv_id": "",
+      "openalex_id": "W3121342653",
+      "doi": "https://doi.org/10.1007/s10994-021-05961-4",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s10994-021-05961-4.pdf",
+      "title": "Challenges of real-world reinforcement learning: definitions, benchmarks and analysis",
+      "authors": "Gabriel Dulac-Arnold, Nir Levine, Daniel J. Mankowitz, Jerry Li, Cosmin Păduraru, Sven Gowal, Todd Hester",
+      "publication_year": 2021,
+      "source_url": "https://doi.org/10.1007/s10994-021-05961-4",
+      "screening": {
+        "paper_id": "W3121342653",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4386142022",
+      "arxiv_id": "",
+      "openalex_id": "W4386142022",
+      "doi": "https://doi.org/10.1007/s12559-023-10179-8",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s12559-023-10179-8.pdf",
+      "title": "Interpreting Black-Box Models: A Review on Explainable Artificial Intelligence",
+      "authors": "Vikas Hassija, Vinay Chamola, Atmesh Mahapatra, Abhinandan Singal, Divyansh Goel, Kaizhu Huang, Simone Scardapane, Indro Spinelli, Mufti Mahmud, Amir Hussain",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1007/s12559-023-10179-8",
+      "screening": {
+        "paper_id": "W4386142022",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W3130450512",
+      "arxiv_id": "",
+      "openalex_id": "W3130450512",
+      "doi": "https://doi.org/10.1007/s10618-023-00933-9",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s10618-023-00933-9.pdf",
+      "title": "Benchmarking and survey of explanation methods for black box models",
+      "authors": "Francesco Bodria, Fosca Giannotti, Riccardo Guidotti, Francesca Naretto, Dino Pedreschi, Salvatore Rinzivillo",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1007/s10618-023-00933-9",
+      "screening": {
+        "paper_id": "W3130450512",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4287024925",
+      "arxiv_id": "",
+      "openalex_id": "W4287024925",
+      "doi": "https://doi.org/10.4230/oasics.icpec.2023.9",
+      "pdf_url": "https://drops.dagstuhl.de/storage/01oasics/oasics-vol112-icpec2023/OASIcs.ICPEC.2023.9/OASIcs.ICPEC.2023.9.pdf",
+      "title": "Knowledge Engineering Using Large Language Models",
+      "authors": "Freitas, Tiago Carvalho, Costa Neto, Alvaro, Pereira, Maria João Varanda, Henriques, Pedro Rangel",
+      "publication_year": 2023,
+      "source_url": "https://drops.dagstuhl.de/entities/document/10.4230/OASIcs.ICPEC.2023.9",
+      "screening": {
+        "paper_id": "W4287024925",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "1705.08926",
+      "arxiv_id": "1705.08926",
+      "openalex_id": "W2962938168",
+      "doi": "https://doi.org/10.48550/arxiv.1705.08926",
+      "pdf_url": "https://arxiv.org/pdf/1705.08926",
+      "title": "Counterfactual Multi-Agent Policy Gradients",
+      "authors": "Jakob Foerster, Gregory Farquhar, Triantafyllos Afouras, Nantas Nardelli, Shimon Whiteson",
+      "publication_year": 2017,
+      "source_url": "https://arxiv.org/abs/1705.08926",
+      "screening": {
+        "paper_id": "1705.08926",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    }
+  ],
+  "retrieval_attempts": [
+    {
+      "paper_id": "2307.06435",
+      "success": true,
+      "citation_id": "P1"
+    },
+    {
+      "paper_id": "2307.03109",
+      "success": true,
+      "citation_id": "P2"
+    },
+    {
+      "paper_id": "2303.18223",
+      "success": true,
+      "citation_id": "P3"
+    },
+    {
+      "paper_id": "W4393065402",
+      "success": true,
+      "citation_id": "P4"
+    },
+    {
+      "paper_id": "2308.11432",
+      "success": true,
+      "citation_id": "P5"
+    },
+    {
+      "paper_id": "2309.07864",
+      "success": true,
+      "citation_id": "P6"
+    },
+    {
+      "paper_id": "W4387835442",
+      "success": false,
+      "message": "❌ 下载失败：HTTP 403。该论文可能没有开放 PDF，或下载链接/arXiv ID 有误。"
+    },
+    {
+      "paper_id": "2312.10997",
+      "success": true,
+      "citation_id": "P7"
+    },
+    {
+      "paper_id": "W4389518608",
+      "success": true,
+      "citation_id": "P8"
+    },
+    {
+      "paper_id": "W4413801638",
+      "success": false,
+      "message": "❌ 下载失败：HTTP 403。该论文可能没有开放 PDF，或下载链接/arXiv ID 有误。"
+    },
+    {
+      "paper_id": "2507.21504",
+      "success": true,
+      "citation_id": "P9"
+    },
+    {
+      "paper_id": "W4411700982",
+      "success": true,
+      "citation_id": "P10"
+    },
+    {
+      "paper_id": "W4402901320",
+      "success": true,
+      "citation_id": "P11"
+    },
+    {
+      "paper_id": "W4393867901",
+      "success": true,
+      "citation_id": "P12"
+    }
+  ]
+}

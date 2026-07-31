@@ -1,0 +1,4592 @@
+[
+  {
+    "decision_id": "decision_8e8e40b4b90f",
+    "candidate_id": "candidate_cf94be53c83d",
+    "paper_id": "2310.11511",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Introduces Self-RAG framework for retrieval and self-reflection to enhance factuality.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Introduces a new framework called Self-Reflective Retrieval-Augmented Generation (Self-RAG) that enhances an LM's quality and factuality through retrieval and self-reflection."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "The framework trains a single arbitrary LM that adapts..."
+      },
+      {
+        "criterion": "Reviews only for classification/landscape, not for performance/cost conclusions",
+        "judgement": "not_met",
+        "evidence": "The paper introduces a new framework and discusses training a model."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract provided."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "We introduce a new framework called Self-Reflective Retrieval-Augmented Generation (Self-RAG) that enhances an LM's quality and factuality through retrieval and self-reflection."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:58:34.698921+00:00"
+  },
+  {
+    "decision_id": "decision_02cd4b3c7302",
+    "candidate_id": "candidate_471cb8c5f5fc",
+    "paper_id": "2512.10787",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Proposes SEAL-RAG to mitigate context dilution in multi-hop RAG via a fixed-budget strategy.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Proposes SEAL-RAG, a training-free controller that adopts a 'replace, don't expand' strategy to fight context dilution under a fixed retrieval depth k."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "The paper proposes a new controller and strategy."
+      },
+      {
+        "criterion": "Reviews only for classification/landscape, not for performance/cost conclusions",
+        "judgement": "not_met",
+        "evidence": "The paper proposes a new method (SEAL-RAG)."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract provided."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "We propose SEAL-RAG, a training-free controller that adopts a 'replace, don't expand' strategy to fight context dilution under a fixed retrieval depth k."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:58:34.724771+00:00"
+  },
+  {
+    "decision_id": "decision_77fd7406bd78",
+    "candidate_id": "candidate_f187259d6567",
+    "paper_id": "2603.15994",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Proposes write-time gating for selective memory in RAG to improve accuracy under noise.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Introduces write-time gating that filters incoming knowledge objects... while maintaining version chains."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Using real LLM evaluation without oracle access to quality labels, write gating achieves 100 percent accuracy versus 13 percent for ungated stores."
+      },
+      {
+        "criterion": "Reviews only for classification/landscape, not for performance/cost conclusions",
+        "judgement": "not_met",
+        "evidence": "The paper introduces a new mechanism and presents experimental results."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract provided."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "We introduce write-time gating that filters incoming knowledge objects... Using real LLM evaluation without oracle access to quality labels, write gating achieves 100 percent accuracy versus 13 percent for ungated stores."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:58:34.747544+00:00"
+  },
+  {
+    "decision_id": "decision_4391e702364d",
+    "candidate_id": "candidate_2f8877ac0852",
+    "paper_id": "2408.05933",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Case study optimizing RAG techniques for automotive PDF chatbots with locally deployed models.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "This study focuses on enhancing Retrieval-Augmented Generation (RAG) techniques... Our method addresses key challenges in automotive document processing, including multi-column layouts and technical specifications."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "This is a case study with Locally Deployed Ollama Models."
+      },
+      {
+        "criterion": "Reviews only for classification/landscape, not for performance/cost conclusions",
+        "judgement": "not_met",
+        "evidence": "The paper proposes a multi-dimensional optimization approach."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract provided."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "This study focuses on enhancing Retrieval-Augmented Generation (RAG) techniques for processing complex automotive industry documents using locally deployed Ollama models."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:58:34.769337+00:00"
+  },
+  {
+    "decision_id": "decision_74030bd5bc86",
+    "candidate_id": "candidate_caf72ac31419",
+    "paper_id": "2512.07015",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Proposes FVA-RAG to mitigate retrieval sycophancy and hallucinations in RAG.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "We propose FVA-RAG (Falsification-Verification Alignment RAG), a pipeline that inverts the standard RAG workflow by treating the initial response as a draft hypothesis and explicitly retrieving anti-context."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "We evaluate on the full TruthfulQA-Generation benchmark (N=817)..."
+      },
+      {
+        "criterion": "Reviews only for classification/landscape, not for performance/cost conclusions",
+        "judgement": "not_met",
+        "evidence": "The paper proposes a new pipeline (FVA-RAG)."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract provided."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "We propose FVA-RAG (Falsification-Verification Alignment RAG), a pipeline that inverts the standard RAG workflow by treating the initial response as a draft hypothesis and explicitly retrieving anti-context to stress-test it."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:58:34.791657+00:00"
+  },
+  {
+    "decision_id": "decision_ab432b37b257",
+    "candidate_id": "candidate_9d2cd3474993",
+    "paper_id": "2410.20753",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Proposes Plan*RAG for efficient test-time planning in RAG to enable structured multi-hop reasoning.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "We introduce Plan*RAG, a novel framework that enables structured multi-hop reasoning in retrieval-augmented generation (RAG) through test-time reasoning plan generation."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "The paper introduces a novel framework and discusses efficiency through parallel execution."
+      },
+      {
+        "criterion": "Reviews only for classification/landscape, not for performance/cost conclusions",
+        "judgement": "not_met",
+        "evidence": "The paper introduces a novel framework (Plan*RAG)."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract provided."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "We introduce Plan*RAG, a novel framework that enables structured multi-hop reasoning in retrieval-augmented generation (RAG) through test-time reasoning plan generation."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:58:34.810880+00:00"
+  },
+  {
+    "decision_id": "decision_797a14e310ef",
+    "candidate_id": "candidate_c2401f9821df",
+    "paper_id": "2408.04662",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "The paper introduces a toolkit for citation generation, not a study of RAG retrieval mechanisms, reliability evaluation, or computational cost of the RAG system itself.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "not_met",
+        "evidence": "Enabling Large Language Models (LLMs) to generate citations in Question-Answering (QA) tasks... To cope with the problems above, we introduce Citekit, an open-source and modular toolkit..."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "uncertain",
+        "evidence": "It is a toolkit, not a primary experimental study of RAG performance."
+      },
+      {
+        "criterion": "Reviews only for classification/landscape, not for performance/cost conclusions",
+        "judgement": "not_met",
+        "evidence": "The paper introduces a toolkit."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract provided."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "To cope with the problems above, we introduce Citekit, an open-source and modular toolkit designed to facilitate the implementation and evaluation of existing citation generation methods..."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:58:34.830445+00:00"
+  },
+  {
+    "decision_id": "decision_826eeaa86ef9",
+    "candidate_id": "candidate_e6b1f6a8d698",
+    "paper_id": "2506.08479",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Proposes Adaptive-k retrieval for efficient context selection in RAG without tuning or iteration.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "We present Adaptive-k retrieval, a simple and effective single-pass method that adaptively selects the number of passages based on the distribution of the similarity scores."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "The paper presents a new retrieval method and discusses its performance."
+      },
+      {
+        "criterion": "Reviews only for classification/landscape, not for performance/cost conclusions",
+        "judgement": "not_met",
+        "evidence": "The paper proposes a new method (Adaptive-k)."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract provided."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "We present Adaptive-k retrieval, a simple and effective single-pass method that adaptively selects the number of passages based on the distribution of the similarity scores between the query and the candidate passages."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:58:34.852120+00:00"
+  },
+  {
+    "decision_id": "decision_a94ef59ad8bb",
+    "candidate_id": "candidate_e39b950618d7",
+    "paper_id": "2506.09542",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly proposes and studies a RAG architecture (KG-Infused RAG) incorporating external knowledge graphs.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Proposes KG-Infused RAG framework incorporating pre-existing large-scale KGs into RAG."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Proposes a framework to enhance retrieval and generation using spreading activation."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Paper is from arXiv, implying full text availability."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "To address these issues, we propose KG-Infused RAG, a framework that incorporates pre-existing large-scale KGs into RAG and applies spreading activation to enhance both retrieval and generation."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:17.191574+00:00"
+  },
+  {
+    "decision_id": "decision_d498b434ddf1",
+    "candidate_id": "candidate_8f60f439531c",
+    "paper_id": "2409.15515",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG control mechanisms (decision logic for retrieval) in conversational QA settings.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Proposes a method for LLMs to decide when to retrieve in RAG settings given a conversational context."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Proposes a method for enabling LLMs to decide when to retrieve in RAG settings."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Paper is from arXiv, implying full text availability."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "In this work, we propose a method for enabling LLMs to decide when to retrieve in RAG settings given a conversational context."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:17.215135+00:00"
+  },
+  {
+    "decision_id": "decision_7ad84a80d3d2",
+    "candidate_id": "candidate_e8cd3099262c",
+    "paper_id": "2410.01782",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG architecture (Open-RAG) and reasoning capabilities with open-source LLMs.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Introduces Open-RAG to enhance reasoning capabilities in RAG with open-source LLMs."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Transforms LLM into MoE model and trains to navigate distractors."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Paper is from arXiv, implying full text availability."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "We introduce Open-RAG, designed to enhance reasoning capabilities in RAG with open-source LLMs."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:17.256657+00:00"
+  },
+  {
+    "decision_id": "decision_7555c5810e19",
+    "candidate_id": "candidate_35434655829b",
+    "paper_id": "2510.22710",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG reliability (RaCoT) for long-tail queries and semantic ambiguity.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Proposes RaCoT (Retrieval-aware Contrastive-of-Thought) to enhance LLM reasoning reliability in RAG."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Proposes a framework to shift contrastive thinking to the pre-retrieval stage."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Paper is from arXiv, implying full text availability."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "RaCoT (Retrieval-aware Contrastive-of-Thought), a novel framework that shifts contrastive thinking to the pre-retrieval stage."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:17.280671+00:00"
+  },
+  {
+    "decision_id": "decision_2a69d847f709",
+    "candidate_id": "candidate_db8e523c4209",
+    "paper_id": "2607.03028",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "Focuses on a benchmark for record retrieval over heterogeneous sources, not specifically on RAG architecture or systems.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "not_met",
+        "evidence": "Paper introduces HETERQA, a benchmark for record retrieval over heterogeneous sources, rather than a RAG system or architecture."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Provides a comprehensive benchmark with 857 QA pairs."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Paper is from arXiv, implying full text availability."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "HETERQA: Benchmarking Record Retrieval over Multiple Heterogeneous Sources."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:17.300265+00:00"
+  },
+  {
+    "decision_id": "decision_8271491997b9",
+    "candidate_id": "candidate_fe79c8a4602a",
+    "paper_id": "2602.07086",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly evaluates RAG variants (Standard RAG, Self-RAG, CoRAG) for specific generation tasks (SQL/API).",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Evaluates RAG variants for SQL query generation and REST API call generation."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Comprehensive evaluation of three RAG variants across specific tasks."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Paper is from arXiv, implying full text availability."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "This paper presents a comprehensive evaluation of three retrieval-augmented generation (RAG) variants -- standard RAG, Self-RAG [Asai et al., 2024], and CoRAG [Wang et al., 2025] -- across SQL query generation, REST API call generation."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:17.318963+00:00"
+  },
+  {
+    "decision_id": "decision_2bff35998602",
+    "candidate_id": "candidate_042bd2489b6b",
+    "paper_id": "2512.00007",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG architecture (SAFE system) for fact-checking applications.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Presents SAFE, an agent system combining LLMs with RAG for fact-checking."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Evaluates systems on 50 fake news articles with annotated claims."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Paper is from arXiv, implying full text availability."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "This study presents SAFE (system for accurate fact extraction and evaluation), an agent system that combines large language models with retrieval-augmented generation (RAG) to improve automated fact-checking."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:17.338196+00:00"
+  },
+  {
+    "decision_id": "decision_b38f2ff876ca",
+    "candidate_id": "candidate_2edb0c642c3d",
+    "paper_id": "2607.24162",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG pipeline optimization and computational cost (Agent-UCT).",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Introduces Agent-UCT for optimizing agentic workflows, specifically mentioning RAG pipelines, with a focus on cost-awareness."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Proposes a tree search algorithm for workflow optimization."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Paper is from arXiv, implying full text availability."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "Agent-UCT (Agent-based Cost-Aware Upper Confidence Bounds Applied to Trees), a tree search algorithm that extends UCT... reducing redundant execution while maintaining efficiency."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:17.357626+00:00"
+  },
+  {
+    "decision_id": "decision_177c584d6f89",
+    "candidate_id": "candidate_4d6b3ad3907c",
+    "paper_id": "2603.16169",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": "directly_study_rag",
+    "reason": "Directly studies CRAG architecture and provides empirical evaluation.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Presents a fully open-source reproduction of CRAG, evaluating retrieval quality and corrective actions."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Evaluates performance on PopQA and ARC-Challenge using an open-source pipeline."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract indicates a full paper is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "excerpt": "Open-Source Reproduction and Explainability Analysis of Corrective Retrieval Augmented Generation (CRAG)... We evaluate on PopQA and ARC-Challenge, demonstrating that our open-source pipeline achieves comparable performance..."
+      }
+    ],
+    "confidence": 0.95,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:59.359913+00:00"
+  },
+  {
+    "decision_id": "decision_0f058bdb841c",
+    "candidate_id": "candidate_9b4cc2f7276d",
+    "paper_id": "2401.15884",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": "directly_study_rag",
+    "reason": "Proposes the CRAG mechanism and evaluates its performance.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Proposes Corrective Retrieval Augmented Generation (CRAG) to improve robustness via a lightweight retrieval evaluator."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Designs a retrieval evaluator and discusses triggering different knowledge retrieval actions."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract indicates a full paper is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "excerpt": "Corrective Retrieval Augmented Generation (CRAG) improves the robustness of RAG systems... a lightweight retrieval evaluator is designed to assess the overall quality of retrieved documents..."
+      }
+    ],
+    "confidence": 0.95,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:59.388924+00:00"
+  },
+  {
+    "decision_id": "decision_ad762e11ecec",
+    "candidate_id": "candidate_a7c34ecb0f91",
+    "paper_id": "2506.20274",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": "benchmark_evaluation",
+    "reason": "Proposes an evaluation benchmark using CRAG, providing empirical data on model performance.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Uses corrective retrieval-augmented generation (CRAG) as a core component of the evaluation pipeline."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Curates a robust 9,700-sample benchmark and evaluates six leading models."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract indicates a full paper is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "excerpt": "develop a scalable pipeline combining LLM-as-a-Labeler, LLM-as-a-Judge, and corrective retrieval-augmented generation (CRAG), curating a robust 9,700-sample benchmark."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:59.409535+00:00"
+  },
+  {
+    "decision_id": "decision_925e5f1cab70",
+    "candidate_id": "candidate_39fa952efb1c",
+    "paper_id": "2502.19629",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": "directly_study_rag",
+    "reason": "Proposes CRAG-MoW, a novel RAG paradigm for multi-modal search.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Introduces Mixture-of-Workflows for Self-Corrective Retrieval-Augmented Generation (CRAG-MoW)."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Evaluates multi-modal outputs through an orchestration agent."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract indicates a full paper is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "excerpt": "Mixture-of-Workflows for Self-Corrective Retrieval-Augmented Generation (CRAG-MoW) - a novel paradigm that orchestrates multiple agentic workflows employing distinct CRAG strategies..."
+      }
+    ],
+    "confidence": 0.95,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:59.429773+00:00"
+  },
+  {
+    "decision_id": "decision_e5daf21638c7",
+    "candidate_id": "candidate_081a011d2025",
+    "paper_id": "2509.20190",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": "directly_study_rag",
+    "reason": "Proposes a self-corrective RAG framework for security test generation.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Leverages a four-step self-corrective Retrieval-Augmented Generation (RAG) framework."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Automates the generation of executable security test cases from attack trees."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract indicates a full paper is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "excerpt": "Leveraging Large Language Models (LLMs) and a four-step self-corrective Retrieval-Augmented Generation (RAG) framework, STAF automates the generation of executable security test cases..."
+      }
+    ],
+    "confidence": 0.95,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:59.449415+00:00"
+  },
+  {
+    "decision_id": "decision_373eddc8f55e",
+    "candidate_id": "candidate_f89a3183b8b2",
+    "paper_id": "2403.10081",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": "directly_study_rag",
+    "reason": "Proposes DRAGIN, a dynamic RAG paradigm.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Proposes Dynamic Retrieval Augmented Generation (DRAGIN) paradigm to decide when and what to retrieve."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Addresses limitations of current dynamic RAG methods."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract indicates a full paper is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "excerpt": "Dynamic retrieval augmented generation (RAG) paradigm actively decides when and what to retrieve during the text generation process... To overcome these limitations, we in..."
+      }
+    ],
+    "confidence": 0.95,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:59.473146+00:00"
+  },
+  {
+    "decision_id": "decision_e1cb95ae3c2a",
+    "candidate_id": "candidate_67148cb60cf7",
+    "paper_id": "2510.02829",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "Research focuses on stakeholder perspectives on climate change and land use, not RAG mechanisms.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "not_met",
+        "evidence": "Paper analyzes climate and land use change perceptions using machine learning, with no mention of RAG."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "not_met",
+        "evidence": "Focus is on environmental science and stakeholder analysis."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "uncertain",
+        "evidence": "Irrelevant to the research question."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "excerpt": "Stakeholders across 21 European islands were consulted on climate and land use change issues... Climate and land use change impact perceptions were analysed with machine learning..."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:59.494331+00:00"
+  },
+  {
+    "decision_id": "decision_a827bc7d02cd",
+    "candidate_id": "candidate_9815dc58f5cd",
+    "paper_id": "2309.01431",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": "benchmark_evaluation",
+    "reason": "Establishes a benchmark for RAG evaluation, analyzing reliability and robustness.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Establishes Retrieval-Augmented Generation Benchmark (RGB) to analyze RAG performance."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Analyzes performance of different LLMs in 4 fundamental abilities required for RAG."
+      },
+      {
+        "criterion": "Full text available for verification",
+        "judgement": "met",
+        "evidence": "Abstract indicates a full paper is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "excerpt": "Retrieval-Augmented Generation (RAG) is a promising approach... We analyze the performance of different large language models in 4 fundamental abilities required for RAG... establish Retrieval-Augmented Generation Benchmark (RGB)..."
+      }
+    ],
+    "confidence": 0.95,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T12:59:59.514681+00:00"
+  },
+  {
+    "decision_id": "decision_c57051a4d5e5",
+    "candidate_id": "candidate_851b70a4f09f",
+    "paper_id": "2311.18760",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "The paper focuses on Task Automation (decomposition, tool selection) and Tool Graphs, which is distinct from Retrieval-Augmented Generation (RAG) mechanisms, retrieval control, or reliability evaluation.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Abstract discusses task decomposition and tool selection for autonomous agents, not retrieval mechanisms."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:00:20.485689+00:00"
+  },
+  {
+    "decision_id": "decision_34f2412f5e3b",
+    "candidate_id": "candidate_5839c11ac016",
+    "paper_id": "2310.15773",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "The paper focuses on Sentence Simplification (TS) benchmarks, which is a specific NLP task and not related to RAG system evaluation.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Abstract describes a benchmark for text simplification tasks."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:00:20.511447+00:00"
+  },
+  {
+    "decision_id": "decision_1bfa8918168a",
+    "candidate_id": "candidate_10e40d1da60d",
+    "paper_id": "2602.01479",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "The paper focuses on Japanese Finance language understanding benchmarks, which is a domain-specific task unrelated to RAG system evaluation.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Abstract describes a benchmark for financial language understanding tasks."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:00:20.532014+00:00"
+  },
+  {
+    "decision_id": "decision_4faabf2adf59",
+    "candidate_id": "candidate_a1a67c7c8386",
+    "paper_id": "2411.02429",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "The paper focuses on Research Idea Generation benchmarks, which is a generative task unrelated to RAG system evaluation.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Abstract describes a benchmark for generating research ideas."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:00:20.554664+00:00"
+  },
+  {
+    "decision_id": "decision_15cb1bc8bea8",
+    "candidate_id": "candidate_67695039f2f7",
+    "paper_id": "2502.08281",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "The paper focuses on Text Simplification (TS) benchmarks, which is a specific NLP task and not related to RAG system evaluation.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Abstract describes a benchmark for text simplification tasks."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:00:20.582405+00:00"
+  },
+  {
+    "decision_id": "decision_a9a6b9cefe90",
+    "candidate_id": "candidate_f0976b70bbe8",
+    "paper_id": "2505.03427",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "The paper focuses on Arabic Medical tasks benchmarks, which is a domain-specific task unrelated to RAG system evaluation.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Abstract describes a benchmark for Arabic medical tasks."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:00:20.603378+00:00"
+  },
+  {
+    "decision_id": "decision_61adf097aa62",
+    "candidate_id": "candidate_958167e1cd0b",
+    "paper_id": "2605.17937",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "The paper focuses on Automated Quantitative Strategy Backtesting benchmarks, which is a financial domain task unrelated to RAG system evaluation.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Abstract describes a benchmark for quantitative backtesting."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:00:20.624495+00:00"
+  },
+  {
+    "decision_id": "decision_93e35b8175e4",
+    "candidate_id": "candidate_d25923977c1a",
+    "paper_id": "2412.11142",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "The paper focuses on Anomaly Detection (AD) benchmarks in NLP, which is a specific task unrelated to RAG system evaluation.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Abstract describes a benchmark for anomaly detection tasks."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:00:20.644863+00:00"
+  },
+  {
+    "decision_id": "decision_4b526c4eaef2",
+    "candidate_id": "candidate_7e32241e9a5a",
+    "paper_id": "2402.18060",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "Not directly related to RAG mechanisms, evaluation, reliability, or cost",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Paper focuses on medical QA benchmarking and datasets, not RAG systems."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:01:13.238775+00:00"
+  },
+  {
+    "decision_id": "decision_a331928c0438",
+    "candidate_id": "candidate_ae043b424d55",
+    "paper_id": "2506.00894",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "Not directly related to RAG mechanisms, evaluation, reliability, or cost",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Paper focuses on code migration benchmarking, not RAG."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:01:13.267139+00:00"
+  },
+  {
+    "decision_id": "decision_a94e47965ca0",
+    "candidate_id": "candidate_2c5a673c55ff",
+    "paper_id": "2409.13385",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "other",
+    "reason": "Review paper (Survey) - Protocol excludes reviews that are only for classification/landscape, not to support performance or cost conclusions",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Paper is a survey on Contextual Compression in RAG, not original empirical research."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:01:13.287052+00:00"
+  },
+  {
+    "decision_id": "decision_e4c936c4eaf9",
+    "candidate_id": "candidate_651654d0fd11",
+    "paper_id": "2312.10997",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "other",
+    "reason": "Review paper (Survey) - Protocol excludes reviews that are only for classification/landscape, not to support performance or cost conclusions",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Paper is a general survey of RAG paradigms (Naive, Advanced, Modular), not original empirical research."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:01:13.306333+00:00"
+  },
+  {
+    "decision_id": "decision_4195add0fecc",
+    "candidate_id": "candidate_222fcc00045c",
+    "paper_id": "2502.06872",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "other",
+    "reason": "Review paper (Survey) - Protocol excludes reviews that are only for classification/landscape, not to support performance or cost conclusions",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "not_met",
+        "evidence": "Paper is a survey on trustworthy RAG, not original empirical research."
+      }
+    ],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:01:13.340570+00:00"
+  },
+  {
+    "decision_id": "decision_4e92aaff805d",
+    "candidate_id": "candidate_3a041cb6279e",
+    "paper_id": "2510.13856",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": "direct_relevance",
+    "reason": "Directly studies RAG architecture (Multimodal RAG) and retrieval control (textual/visual examples)",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "met",
+        "evidence": "Paper presents a RAG framework for Medical VQA, incorporating textual and visual examples for retrieval."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "excerpt": "MasonNLP system... employs a general-domain, instruction-tuned large language model with a retrieval-augmented generation (RAG) framework that incorporates textual and visual examples from in-domain data."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:01:13.362097+00:00"
+  },
+  {
+    "decision_id": "decision_ad605bc94001",
+    "candidate_id": "candidate_c232d0d21486",
+    "paper_id": "2412.15235",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": "direct_relevance",
+    "reason": "Directly studies RAG architecture (Ontology-Grounded Retrieval)",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "met",
+        "evidence": "Paper presents OG-RAG, a method designed to enhance RAG by anchoring retrieval in domain-specific ontologies."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "excerpt": "This paper presents OG-RAG, an Ontology-Grounded Retrieval Augmented Generation method designed to enhance LLM-generated responses by anchoring retrieval processes in domain-specific ontologies."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:01:13.382796+00:00"
+  },
+  {
+    "decision_id": "decision_50163fa42a64",
+    "candidate_id": "candidate_ddb5319f354c",
+    "paper_id": "2411.19443",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": "direct_relevance",
+    "reason": "Directly studies RAG architecture (Autonomous Iterative Retrieval)",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "met",
+        "evidence": "Paper presents Auto-RAG, an autonomous iterative retrieval model that engages in multi-turn dialogues with the retriever."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "excerpt": "In this paper, we introduce Auto-RAG, an autonomous iterative retrieval model centered on the LLM's powerful decision-making capabilities. Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries."
+      }
+    ],
+    "confidence": 1.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:01:13.402480+00:00"
+  },
+  {
+    "decision_id": "decision_a3e2e8786f53",
+    "candidate_id": "candidate_ec6ff9241ae3",
+    "paper_id": "2410.13192",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG performance by evaluating Self-Generated Documents (Self-Docs), identifying factors shaping their contribution to RAG performance and providing a taxonomy for their use.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation or computational cost",
+        "judgement": "met",
+        "evidence": "Investigates overall effectiveness of Self-Docs and factors shaping their contribution to RAG performance."
+      },
+      {
+        "criterion": "Provide original experiments, benchmarks, or empirically verified technical frameworks",
+        "judgement": "met",
+        "evidence": "Conducts experiments to identify key factors and develop a taxonomy grounded in Systemic Functional Linguistics."
+      }
+    ],
+    "evidence": [],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:01:39.142469+00:00"
+  },
+  {
+    "decision_id": "decision_89fb4c21499d",
+    "candidate_id": "candidate_5b3b8c95795e",
+    "paper_id": "2502.00306",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG mechanism (membership inference attack) and provides empirical evidence of a novel technique.",
+    "criterion_judgements": [
+      {
+        "criterion": "directly_study_RAG_architecture",
+        "judgement": "met",
+        "evidence": "Abstract describes 'Interrogation Attack (IA)', a technique targeting RAG datastore."
+      },
+      {
+        "criterion": "original_experiments",
+        "judgement": "met",
+        "evidence": "Abstract describes a novel membership inference technique."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "Retrieval-Augmented Generation (RAG) enables Large Language Models (LLMs) to generate grounded responses by leveraging external knowledge databases without altering model parameters... In this work, we present Interrogation Attack (IA), a membership inference technique targeting documents in the RAG datastore."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:02:25.689950+00:00"
+  },
+  {
+    "decision_id": "decision_2b8059d6af7b",
+    "candidate_id": "candidate_a00045c44a71",
+    "paper_id": "2510.22344",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Introduces a novel iterative RAG framework (FAIR-RAG) with an Iterative Refinement Cycle, providing empirical evidence.",
+    "criterion_judgements": [
+      {
+        "criterion": "directly_study_RAG_architecture",
+        "judgement": "met",
+        "evidence": "Abstract introduces FAIR-RAG, an agentic framework with an Iterative Refinement Cycle."
+      },
+      {
+        "criterion": "original_experiments",
+        "judgement": "met",
+        "evidence": "Abstract describes a novel framework for complex queries."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "We introduce FAIR-RAG, a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process. At its core is an Iterative Refinement Cycle governed by a module we term Structured Evidence Assessment (SEA)."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:02:25.719593+00:00"
+  },
+  {
+    "decision_id": "decision_881c02825a20",
+    "candidate_id": "candidate_3a0dc864b697",
+    "paper_id": "2601.05264",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "other",
+    "reason": "This is a comprehensive systematic literature review. Protocol excludes reviews from supporting performance or cost conclusions (though it provides frameworks).",
+    "criterion_judgements": [
+      {
+        "criterion": "directly_study_RAG_architecture",
+        "judgement": "uncertain",
+        "evidence": "Abstract describes a review of RAG architectures."
+      },
+      {
+        "criterion": "original_experiments",
+        "judgement": "not_met",
+        "evidence": "Abstract states it is a 'comprehensive systematic literature review'."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "This article provides a comprehensive systematic literature review of academic studies... We provide quantitative assessment frameworks..."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:02:25.746222+00:00"
+  },
+  {
+    "decision_id": "decision_e9c6dc424124",
+    "candidate_id": "candidate_b4127f421b4d",
+    "paper_id": "2503.16581",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Empirical study of RAG performance (reliability/accuracy) using 13 open-source LLMs in a specific domain.",
+    "criterion_judgements": [
+      {
+        "criterion": "directly_study_RAG_architecture",
+        "judgement": "met",
+        "evidence": "Abstract describes investigating RAG in Quranic studies."
+      },
+      {
+        "criterion": "original_experiments",
+        "judgement": "met",
+        "evidence": "Abstract mentions a study of 13 open-source LLMs."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "In this study, we investigate 13 open-source LLMs... A Retrieval-Augmented Generation (RAG) is used to make up for the problem..."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:02:25.767000+00:00"
+  },
+  {
+    "decision_id": "decision_f92b4a8bfdf2",
+    "candidate_id": "candidate_b8d9021f2fbd",
+    "paper_id": "2502.01113",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Introduces GFM-RAG, a novel graph-enhanced RAG model, providing empirical evidence.",
+    "criterion_judgements": [
+      {
+        "criterion": "directly_study_RAG_architecture",
+        "judgement": "met",
+        "evidence": "Abstract introduces GFM-RAG, a graph foundation model for RAG."
+      },
+      {
+        "criterion": "original_experiments",
+        "judgement": "met",
+        "evidence": "Abstract describes a novel graph neural network for RAG."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "To address this, we introduce GFM-RAG, a novel graph foundation model (GFM) for retrieval augmented generation. GFM-RAG is powered by an innovative graph neural network that reasons over..."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:02:25.787171+00:00"
+  },
+  {
+    "decision_id": "decision_78e9d4334bbb",
+    "candidate_id": "candidate_5dcee47aa91b",
+    "paper_id": "2412.05838",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Proposes a multi-agent RAG system for diverse data sources, providing empirical evidence.",
+    "criterion_judgements": [
+      {
+        "criterion": "directly_study_RAG_architecture",
+        "judgement": "met",
+        "evidence": "Abstract proposes a multi-agent RAG system."
+      },
+      {
+        "criterion": "original_experiments",
+        "judgement": "met",
+        "evidence": "Abstract describes a specialized agent architecture."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "This paper proposes a multi-agent RAG system to address this limitation. Specialized agents, each optimized for a specific data source, handle query generation..."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:02:25.807907+00:00"
+  },
+  {
+    "decision_id": "decision_32b6a7648fee",
+    "candidate_id": "candidate_975a97426ca5",
+    "paper_id": "2603.09891",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "other",
+    "reason": "Overview of a benchmark track (TREC 2025), not a primary research paper with original experiments or frameworks.",
+    "criterion_judgements": [
+      {
+        "criterion": "directly_study_RAG_architecture",
+        "judgement": "uncertain",
+        "evidence": "Abstract describes the TREC 2025 RAG Track setup."
+      },
+      {
+        "criterion": "original_experiments",
+        "judgement": "not_met",
+        "evidence": "Abstract describes an 'Overview' of a track, not original research."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "The second edition of the TREC Retrieval Augmented Generation (RAG) Track advances research on systems that integrate retrieval and generation... The track leverages the MS MARCO V2.1 corpus..."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:02:25.830813+00:00"
+  },
+  {
+    "decision_id": "decision_4394e3bfe0d4",
+    "candidate_id": "candidate_a4d463e778ef",
+    "paper_id": "2604.19899",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Reproduces and extends MetaRAG, providing new experimental evidence on RAG mechanisms.",
+    "criterion_judgements": [
+      {
+        "criterion": "directly_study_RAG_architecture",
+        "judgement": "met",
+        "evidence": "Abstract describes reproducing Metacognitive RAG."
+      },
+      {
+        "criterion": "original_experiments",
+        "judgement": "met",
+        "evidence": "Abstract mentions reproducing and extending the original experimental setup."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "In this reproducibility paper, we reproduce MetaRAG following its original experimental setup and extend it in two directions..."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:02:25.854579+00:00"
+  },
+  {
+    "decision_id": "decision_83f34cbc075d",
+    "candidate_id": "candidate_b08e81f0fa5b",
+    "paper_id": "2411.16133",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG mechanism (Context Awareness Gate) and reliability (impact of irrelevant information).",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Abstract discusses investigating the impact of retrieving irrelevant information and proposing a Context Awareness Gate to mitigate retrieval issues."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "In this work, we investigate the impact of retrieving irrelevant information in open-domain question answering... To address this challenge, we propose..."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:03:02.364322+00:00"
+  },
+  {
+    "decision_id": "decision_54fcac4df366",
+    "candidate_id": "candidate_823aed747288",
+    "paper_id": "2607.01852",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG mechanism (chunking strategies) and reliability evaluation (RAGAs framework).",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Abstract describes evaluating cluster-based semantic chunking strategies for RAG using the RAGAs framework to assess faithfulness and retrieval quality."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "We evaluate if cluster-based semantic chunking improves retrieval and answer quality compared to fixed-size and recursive chunking evaluating on long, structured academic theses using the Retrieval Augmented Generation Assessment (RAGAs) framework."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:03:02.405852+00:00"
+  },
+  {
+    "decision_id": "decision_1b3ab4feca86",
+    "candidate_id": "candidate_23dcaaa6cf85",
+    "paper_id": "2411.08891",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG mechanism (calibration-oriented retrieval) and reliability (decision making accuracy).",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Abstract proposes a novel retrieval method called Calibrated RAG to ensure that the human user's decisions are well-calibrated."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "To prevent LLMs from generating incorrect information on topics they are unsure of... we propose a novel retrieval method called Calibrated RAG..."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:03:02.434449+00:00"
+  },
+  {
+    "decision_id": "decision_bf1594fcfb26",
+    "candidate_id": "candidate_4e5dcc26622f",
+    "paper_id": "2412.14457",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG mechanism (visual source attribution) and reliability (verifiability).",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Abstract proposes VISA combining answer generation with visual source attribution to enhance the verifiability of RAG systems."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "To address this challenge, we propose Retrieval Augmented Generation with Visual Source Attribution (VISA)... to enhance the verifiability of retrieval-augmented generation (RAG) systems."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:03:02.454838+00:00"
+  },
+  {
+    "decision_id": "decision_ac81164a72bd",
+    "candidate_id": "candidate_605dce558154",
+    "paper_id": "2509.01030",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "Application specific to place names, not a study of general RAG mechanism/reliability/cost.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "not_met",
+        "evidence": "Abstract presents a pipeline design for identifying place name origins, which is a specific application rather than a study of general RAG mechanisms."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "This chapter presents a retrieval augmented generation pipeline design for identifying origins of place names..."
+      }
+    ],
+    "confidence": 0.8,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:03:02.476800+00:00"
+  },
+  {
+    "decision_id": "decision_5cdc05d2e7f1",
+    "candidate_id": "candidate_910d7604f65d",
+    "paper_id": "2505.04680",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "exclude",
+    "reason_code": "not_relevant",
+    "reason": "Application specific to health documents, not a study of general RAG mechanism/reliability/cost.",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "not_met",
+        "evidence": "Abstract assesses RAG potentials in health document synthesis, which is a specific domain application rather than a study of general RAG mechanisms."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "This report assesses the potentials and shortcomings of such approaches in the automatic knowledge synthesis of different types of documents in the health domain."
+      }
+    ],
+    "confidence": 0.8,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:03:02.500691+00:00"
+  },
+  {
+    "decision_id": "decision_d8158a8689a4",
+    "candidate_id": "candidate_fc18652bea12",
+    "paper_id": "2406.13249",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG mechanism (semantic gap, R^2-Former).",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Abstract proposes R^2AG to incorporate retrieval information and fill the semantic gap between LLMs and retrievers."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "This paper proposes R^2AG, a novel enhanced RAG framework to fill this gap by incorporating Retrieval information into Retrieval Augmented Generation."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:03:02.521433+00:00"
+  },
+  {
+    "decision_id": "decision_7e770f38c652",
+    "candidate_id": "candidate_ade4b71e2e3f",
+    "paper_id": "2501.15470",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "include",
+    "reason_code": null,
+    "reason": "Directly studies RAG mechanism (iterative retrieval, planning).",
+    "criterion_judgements": [
+      {
+        "criterion": "Directly study RAG architecture, retrieval control, reliability evaluation, or computational cost",
+        "judgement": "met",
+        "evidence": "Abstract introduces CogPlanner for iterative query reformulation and retrieval strategies in Multimodal Retrieval Augmented Generation."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": null,
+        "excerpt": "Specifically, we propose CogPlanner, an agentic plug-and-play framework... which iteratively determines query reformulation and retrieval strategies..."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4.7-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:03:02.543355+00:00"
+  },
+  {
+    "decision_id": "decision_a55b71baf0e5",
+    "candidate_id": "candidate_388d3fa4cd16",
+    "paper_id": "10.20944/preprints202510.0418.v1",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "insufficient_evidence",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_rag_architecture",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_benchmark",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_articles_only_for_classification",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text_for_verification",
+        "judgement": "uncertain",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": ""
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:22:02.314958+00:00"
+  },
+  {
+    "decision_id": "decision_28c56c9d64bf",
+    "candidate_id": "candidate_418aabacf1f3",
+    "paper_id": "10.21203/rs.3.rs-9882260/v1",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "insufficient_evidence",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_rag_architecture",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_benchmark",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_articles_only_for_classification",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text_for_verification",
+        "judgement": "uncertain",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": ""
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:22:02.358023+00:00"
+  },
+  {
+    "decision_id": "decision_03f1ce6a4076",
+    "candidate_id": "candidate_90756cd3efc3",
+    "paper_id": "10.55248/gengpi.6.0125.0635",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "insufficient_evidence",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_rag_architecture",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_benchmark",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_articles_only_for_classification",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text_for_verification",
+        "judgement": "uncertain",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": ""
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:22:02.383933+00:00"
+  },
+  {
+    "decision_id": "decision_994ac8681991",
+    "candidate_id": "candidate_424a9de1e3d4",
+    "paper_id": "10.59350/wek8b-sbj84",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "insufficient_evidence",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_rag_architecture",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_benchmark",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_articles_only_for_classification",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text_for_verification",
+        "judgement": "uncertain",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": ""
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:22:02.405015+00:00"
+  },
+  {
+    "decision_id": "decision_aea0f6a47121",
+    "candidate_id": "candidate_e7062779ba28",
+    "paper_id": "10.2139/ssrn.4895062",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "insufficient information",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_of_RAG_architecture",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_benchmark",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_articles_for_classification",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text_for_verification",
+        "judgement": "uncertain",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": ""
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:28:38.282964+00:00"
+  },
+  {
+    "decision_id": "decision_b9bace38fca1",
+    "candidate_id": "candidate_eb8c508cd270",
+    "paper_id": "10.1515/9783112226780-009",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "insufficient information",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_of_RAG_architecture",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_benchmark",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_articles_for_classification",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text_for_verification",
+        "judgement": "uncertain",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": ""
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:28:38.321554+00:00"
+  },
+  {
+    "decision_id": "decision_4491a95308b5",
+    "candidate_id": "candidate_bdc13fc03bd1",
+    "paper_id": "10.1002/9781394374717.ch02",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "insufficient information",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_of_RAG_architecture",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_benchmark",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_articles_for_classification",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text_for_verification",
+        "judgement": "uncertain",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": ""
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:28:38.345973+00:00"
+  },
+  {
+    "decision_id": "decision_3330212f3a0f",
+    "candidate_id": "candidate_a773712a610e",
+    "paper_id": "10.2139/ssrn.5253805",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "insufficient information",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_of_RAG_architecture",
+        "judgement": "met",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_benchmark",
+        "judgement": "met",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_articles_for_classification",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text_for_verification",
+        "judgement": "uncertain",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": ""
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:28:38.366959+00:00"
+  },
+  {
+    "decision_id": "decision_95bb7b7ee858",
+    "candidate_id": "candidate_91cc42d68314",
+    "paper_id": "10.1109/TSP.2003.810281",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "insufficient_information",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_rag_architecture",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_benchmark",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_articles",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text",
+        "judgement": "uncertain",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": ""
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:32:40.367265+00:00"
+  },
+  {
+    "decision_id": "decision_7d0b123ca721",
+    "candidate_id": "candidate_228ac5aac90e",
+    "paper_id": "10.1016/J.IPM.2025.104369",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "insufficient_information",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_rag_architecture",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_benchmark",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_articles",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text",
+        "judgement": "uncertain",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": ""
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:32:40.402243+00:00"
+  },
+  {
+    "decision_id": "decision_891a13c8c182",
+    "candidate_id": "candidate_703ea0fcc064",
+    "paper_id": "10.5555/3709347.3743516",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "title_abstract",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "insufficient_information",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_rag_architecture",
+        "judgement": "met",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_benchmark",
+        "judgement": "uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_articles",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text",
+        "judgement": "uncertain",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": ""
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:32:40.425286+00:00"
+  },
+  {
+    "decision_id": "decision_56207f77f78b",
+    "candidate_id": "candidate_2f8877ac0852",
+    "paper_id": "2408.05933",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:33:22.285352+00:00"
+  },
+  {
+    "decision_id": "decision_087173dd2259",
+    "candidate_id": "candidate_042bd2489b6b",
+    "paper_id": "2512.00007",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:33:22.318323+00:00"
+  },
+  {
+    "decision_id": "decision_6bca241fc65e",
+    "candidate_id": "candidate_2edb0c642c3d",
+    "paper_id": "2607.24162",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:33:22.347613+00:00"
+  },
+  {
+    "decision_id": "decision_3aa3aaa6a53f",
+    "candidate_id": "candidate_a7c34ecb0f91",
+    "paper_id": "2506.20274",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:33:22.374068+00:00"
+  },
+  {
+    "decision_id": "decision_63a4eabedf4a",
+    "candidate_id": "candidate_3a041cb6279e",
+    "paper_id": "2510.13856",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:33:22.395402+00:00"
+  },
+  {
+    "decision_id": "decision_b1b91abb5d03",
+    "candidate_id": "candidate_b4127f421b4d",
+    "paper_id": "2503.16581",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:33:22.419921+00:00"
+  },
+  {
+    "decision_id": "decision_c45b55ebc21d",
+    "candidate_id": "candidate_cf94be53c83d",
+    "paper_id": "2310.11511",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_rag_architecture",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_framework",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_article_usage",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text",
+        "judgement": "met",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "SELF-RAG (7B and 13B parameters) significantly outperforms state-of-the-art LLMs and retrieval-augmented models on a diverse set of tasks."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:35:00.145342+00:00"
+  },
+  {
+    "decision_id": "decision_c61ee9c93e65",
+    "candidate_id": "candidate_471cb8c5f5fc",
+    "paper_id": "2512.10787",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_rag_architecture",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_framework",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_article_usage",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text",
+        "judgement": "met",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "page": 1,
+        "section": "Abstract",
+        "excerpt": "SEAL-RAG improves answer correctness by +3 to +13 pp and evidence precision by +12 to +18 pp over Self-RAG on HotpotQA (k = 3)."
+      },
+      {
+        "page": 2,
+        "section": "Abstract",
+        "excerpt": "SEAL-RAG maintains 89–96% Precision compared to 34% for Basic RAG and 26% for CRAG."
+      },
+      {
+        "page": 12,
+        "section": "Table 7",
+        "excerpt": "SEAL-RAG significantly outperforms both variants in Accuracy and Precision (p < 0.001) against Adaptive-k on 2Wiki-MultiHopQA (k = 5)."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:35:00.182252+00:00"
+  },
+  {
+    "decision_id": "decision_66f3d761c39d",
+    "candidate_id": "candidate_f187259d6567",
+    "paper_id": "2603.15994",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_rag_architecture",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_framework",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_article_usage",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text",
+        "judgement": "met",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Write gating achieves 100 percent accuracy versus 13 percent for ungated stores. Write gating matches Self-RAG accuracy at one-ninth the query-time cost."
+      },
+      {
+        "section": "Figure 5",
+        "page": 10,
+        "excerpt": "Write gating outperforms Self-RAG by +6.2pp."
+      },
+      {
+        "section": "Validation on real Wikipedia data across 20 entities",
+        "page": 19,
+        "excerpt": "Write gating achieves 98.1% accuracy versus 85.2% ungated (+12.9pp) and maintains 97.7% at 8:1 distractor ratios."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:35:00.212667+00:00"
+  },
+  {
+    "decision_id": "decision_18e0b91fb337",
+    "candidate_id": "candidate_caf72ac31419",
+    "paper_id": "2512.07015",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study_rag_architecture",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "original_experiment_or_framework",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "review_article_usage",
+        "judgement": "not_met",
+        "evidence": ""
+      },
+      {
+        "criterion": "sufficient_full_text",
+        "judgement": "met",
+        "evidence": ""
+      }
+    ],
+    "evidence": [],
+    "confidence": null,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:35:00.235150+00:00"
+  },
+  {
+    "decision_id": "decision_487fe25cdd22",
+    "candidate_id": "candidate_9d2cd3474993",
+    "paper_id": "2410.20753",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "AI response did not contain a valid decision for this record.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:35:00.257177+00:00"
+  },
+  {
+    "decision_id": "decision_925de239cee7",
+    "candidate_id": "candidate_e6b1f6a8d698",
+    "paper_id": "2506.08479",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "AI response did not contain a valid decision for this record.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:35:00.279353+00:00"
+  },
+  {
+    "decision_id": "decision_eb890c465f72",
+    "candidate_id": "candidate_e39b950618d7",
+    "paper_id": "2506.09542",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "evidence_level",
+    "reason": "Evidence level is secondary, which is allowed according to the evidence hierarchy policy.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "met",
+        "evidence": "The paper discusses RAG architecture and factual accuracy."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "not_met",
+        "evidence": "The paper does not provide original experiments."
+      },
+      {
+        "criterion": "review_article",
+        "judgement": "not_met",
+        "evidence": "The paper is not a review article."
+      },
+      {
+        "criterion": "full_text_accessible",
+        "judgement": "met",
+        "evidence": "The paper is accessible with full text."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:36:28.316020+00:00"
+  },
+  {
+    "decision_id": "decision_6cc22e8bd0cb",
+    "candidate_id": "candidate_8f60f439531c",
+    "paper_id": "2409.15515",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "evidence_level",
+    "reason": "Evidence level is primary, which is required according to the evidence hierarchy policy.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "not_met",
+        "evidence": "The paper does not directly study RAG architecture."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "not_met",
+        "evidence": "The paper does not provide original experiments."
+      },
+      {
+        "criterion": "review_article",
+        "judgement": "not_met",
+        "evidence": "The paper is not a review article."
+      },
+      {
+        "criterion": "full_text_accessible",
+        "judgement": "met",
+        "evidence": "The paper is accessible with full text."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:36:28.342904+00:00"
+  },
+  {
+    "decision_id": "decision_f9e5d1b8ec39",
+    "candidate_id": "candidate_e8cd3099262c",
+    "paper_id": "2410.01782",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "evidence_level",
+    "reason": "Evidence level is primary, which is required according to the evidence hierarchy policy.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "not_met",
+        "evidence": "The paper does not directly study RAG architecture."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "not_met",
+        "evidence": "The paper does not provide original experiments."
+      },
+      {
+        "criterion": "review_article",
+        "judgement": "not_met",
+        "evidence": "The paper is not a review article."
+      },
+      {
+        "criterion": "full_text_accessible",
+        "judgement": "met",
+        "evidence": "The paper is accessible with full text."
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:36:28.365703+00:00"
+  },
+  {
+    "decision_id": "decision_df14e9f73059",
+    "candidate_id": "candidate_35434655829b",
+    "paper_id": "2510.22710",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": "evidence_level",
+    "reason": "Evidence level is primary, which is required according to the evidence hierarchy policy.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": null,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:36:28.390864+00:00"
+  },
+  {
+    "decision_id": "decision_5cd5c96a7eb9",
+    "candidate_id": "candidate_fe79c8a4602a",
+    "paper_id": "2602.07086",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "AI response did not contain a valid decision for this record.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:36:28.413606+00:00"
+  },
+  {
+    "decision_id": "decision_ae8eaad3a50c",
+    "candidate_id": "candidate_4d6b3ad3907c",
+    "paper_id": "2603.16169",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "AI response did not contain a valid decision for this record.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:36:28.436543+00:00"
+  },
+  {
+    "decision_id": "decision_767d6f93f8a7",
+    "candidate_id": "candidate_9b4cc2f7276d",
+    "paper_id": "2401.15884",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "primary_evidence",
+    "reason": "Primary evidence of CRAG improving the performance of RAG and Self-RAG with quantitative results.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "met",
+        "evidence": "The paper directly studies the RAG architecture and provides empirical evidence."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "met",
+        "evidence": "The paper reports original experimental results."
+      },
+      {
+        "criterion": "full_text_accessibility",
+        "judgement": "met",
+        "evidence": "The full text is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:38:07.789335+00:00"
+  },
+  {
+    "decision_id": "decision_a47889e67aa7",
+    "candidate_id": "candidate_39fa952efb1c",
+    "paper_id": "2502.19629",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "primary_evidence",
+    "reason": "Primary evidence of CRAG-MoWs achieving performance comparable to GPT-4o with quantitative results.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "met",
+        "evidence": "The paper directly studies the CRAG-MoW architecture and provides empirical evidence."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "met",
+        "evidence": "The paper reports original experimental results."
+      },
+      {
+        "criterion": "full_text_accessibility",
+        "judgement": "met",
+        "evidence": "The full text is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:38:07.815577+00:00"
+  },
+  {
+    "decision_id": "decision_aa69cad7d1ee",
+    "candidate_id": "candidate_081a011d2025",
+    "paper_id": "2509.20190",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "primary_evidence",
+    "reason": "Primary evidence of STAF improving the performance of LLMs in security test generation with quantitative results.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "met",
+        "evidence": "The paper directly studies the STAF framework and provides empirical evidence."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "met",
+        "evidence": "The paper reports original experimental results."
+      },
+      {
+        "criterion": "full_text_accessibility",
+        "judgement": "met",
+        "evidence": "The full text is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:38:07.839251+00:00"
+  },
+  {
+    "decision_id": "decision_bf2ffb90f8fe",
+    "candidate_id": "candidate_f89a3183b8b2",
+    "paper_id": "2403.10081",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "insufficient_information",
+    "reason": "Insufficient information provided to meet inclusion criteria.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "met",
+        "evidence": "The paper directly studies the STAF framework and provides empirical evidence."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "met",
+        "evidence": "The paper reports original experimental results."
+      },
+      {
+        "criterion": "full_text_accessibility",
+        "judgement": "met",
+        "evidence": "The full text is available."
+      }
+    ],
+    "evidence": [],
+    "confidence": null,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:38:07.862778+00:00"
+  },
+  {
+    "decision_id": "decision_23a9ff17b3bd",
+    "candidate_id": "candidate_9815dc58f5cd",
+    "paper_id": "2309.01431",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "AI response did not contain a valid decision for this record.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:38:07.884567+00:00"
+  },
+  {
+    "decision_id": "decision_496ae0bb3b71",
+    "candidate_id": "candidate_c232d0d21486",
+    "paper_id": "2412.15235",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "AI response did not contain a valid decision for this record.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:38:07.907255+00:00"
+  },
+  {
+    "decision_id": "decision_240853b88de8",
+    "candidate_id": "candidate_ddb5319f354c",
+    "paper_id": "2411.19443",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "primary_evidence",
+    "reason": "The paper presents a primary study on Auto-RAG, which is a Retrieval-Augmented Generation system. It provides evidence of its performance across six benchmarks.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "met",
+        "evidence": "The paper directly studies the RAG architecture and its performance."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "met",
+        "evidence": "The paper provides evidence of the system's performance on various benchmarks."
+      },
+      {
+        "criterion": "full_text_access",
+        "judgement": "met",
+        "evidence": "The full text of the paper is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:39:36.650031+00:00"
+  },
+  {
+    "decision_id": "decision_bdf3d3013035",
+    "candidate_id": "candidate_ec6ff9241ae3",
+    "paper_id": "2410.13192",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "primary_evidence",
+    "reason": "The paper presents a primary study on the integration of Self-Docs with RAG systems. It provides evidence of the performance improvements achieved with this approach.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "met",
+        "evidence": "The paper directly studies the integration of Self-Docs with RAG systems."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "met",
+        "evidence": "The paper provides evidence of performance improvements with Self-Docs."
+      },
+      {
+        "criterion": "full_text_access",
+        "judgement": "met",
+        "evidence": "The full text of the paper is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:39:36.686823+00:00"
+  },
+  {
+    "decision_id": "decision_0832f15fd64c",
+    "candidate_id": "candidate_5b3b8c95795e",
+    "paper_id": "2502.00306",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "primary_evidence",
+    "reason": "The paper presents a primary study on membership inference attacks for RAG systems. It provides evidence of the effectiveness of the Interrogation Attack.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "met",
+        "evidence": "The paper directly studies membership inference attacks on RAG systems."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "met",
+        "evidence": "The paper provides evidence of the effectiveness of the Interrogation Attack."
+      },
+      {
+        "criterion": "full_text_access",
+        "judgement": "met",
+        "evidence": "The full text of the paper is available."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "The Interrogation Attack (IA) demonstrates successful inference with just 30 queries while remaining stealthy."
+      },
+      {
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "The attack achieves a 2× improvement in TPR@1%FPR over prior inference attacks across diverse RAG configurations."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:39:36.713504+00:00"
+  },
+  {
+    "decision_id": "decision_8a6af203d522",
+    "candidate_id": "candidate_a00045c44a71",
+    "paper_id": "2510.22344",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "secondary_evidence",
+    "reason": "The paper presents a secondary study on the FAIR-RAG framework, which is a novel agentic framework for RAG. It",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": null,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:39:36.736298+00:00"
+  },
+  {
+    "decision_id": "decision_fd3ea149f20b",
+    "candidate_id": "candidate_5dcee47aa91b",
+    "paper_id": "2412.05838",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "AI response did not contain a valid decision for this record.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:39:36.759842+00:00"
+  },
+  {
+    "decision_id": "decision_d25c628ec2dc",
+    "candidate_id": "candidate_b8d9021f2fbd",
+    "paper_id": "2502.01113",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "AI response did not contain a valid decision for this record.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:39:36.786046+00:00"
+  },
+  {
+    "decision_id": "decision_1d039f7614aa",
+    "candidate_id": "candidate_a4d463e778ef",
+    "paper_id": "2604.19899",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "direct_study",
+    "reason": "Directly studies RAG architecture and retrieval control.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "met",
+        "evidence": "The paper directly studies the RAG architecture and retrieval control."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "met",
+        "evidence": "The paper provides an original experiment with a sample size of 500."
+      },
+      {
+        "criterion": "full_text_accessibility",
+        "judgement": "met",
+        "evidence": "The full text is accessible for verification."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:40:52.321905+00:00"
+  },
+  {
+    "decision_id": "decision_831d84913806",
+    "candidate_id": "candidate_b08e81f0fa5b",
+    "paper_id": "2411.16133",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "direct_study",
+    "reason": "Directly studies RAG architecture and retrieval control.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "met",
+        "evidence": "The paper directly studies the RAG architecture and retrieval control."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "not_met",
+        "evidence": "The paper does not provide an original experiment."
+      },
+      {
+        "criterion": "full_text_accessibility",
+        "judgement": "met",
+        "evidence": "The full text is accessible for verification."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) has emerged as a widely adopted approach to mitigate the limitations of large language models (LLMs) in answering domain-specific questions."
+      },
+      {
+        "section": "II. RELATED WORK",
+        "page": 2,
+        "excerpt": "CAG leverages both query transformation and dynamic prompting to enhance the reliability of RAG pipelines in both open-domain and closed-domain question answering tasks."
+      },
+      {
+        "section": "III. SYSTEM DESIGN",
+        "page": 3,
+        "excerpt": "The complexity of the Vector Candidates method is O(1), as it relies solely on the number of contexts, regardless of the number of input requests."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:40:52.381998+00:00"
+  },
+  {
+    "decision_id": "decision_9d57a8128545",
+    "candidate_id": "candidate_823aed747288",
+    "paper_id": "2607.01852",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "include",
+    "reason_code": "direct_study",
+    "reason": "Directly studies RAG architecture and retrieval control.",
+    "criterion_judgements": [
+      {
+        "criterion": "direct_study",
+        "judgement": "met",
+        "evidence": "The paper directly studies the RAG architecture and retrieval control."
+      },
+      {
+        "criterion": "original_experiment",
+        "judgement": "not_met",
+        "evidence": "The paper does not provide an original experiment."
+      },
+      {
+        "criterion": "full_text_accessibility",
+        "judgement": "met",
+        "evidence": "The full text is accessible for verification."
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "The paper directly studies the RAG architecture and retrieval control."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:40:52.409467+00:00"
+  },
+  {
+    "decision_id": "decision_03e81095b655",
+    "candidate_id": "candidate_fc18652bea12",
+    "paper_id": "2406.13249",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "AI response did not contain a valid decision for this record.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:40:52.436836+00:00"
+  },
+  {
+    "decision_id": "decision_182d5b7ebd6d",
+    "candidate_id": "candidate_23dcaaa6cf85",
+    "paper_id": "2411.08891",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "AI response did not contain a valid decision for this record.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:40:52.462016+00:00"
+  },
+  {
+    "decision_id": "decision_c87f7a6bf891",
+    "candidate_id": "candidate_4e5dcc26622f",
+    "paper_id": "2412.14457",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "AI response did not contain a valid decision for this record.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:40:52.486586+00:00"
+  },
+  {
+    "decision_id": "decision_4a37d0cf8194",
+    "candidate_id": "candidate_ade4b71e2e3f",
+    "paper_id": "2501.15470",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "uncertain",
+    "reason_code": null,
+    "reason": "",
+    "criterion_judgements": [
+      {
+        "criterion": "直接研究RAG架构、检索控制、可靠性评价或计算成本",
+        "judgement": "not_met|uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "提供原始实验、基准或具有实证验证的技术框架",
+        "judgement": "not_met|uncertain",
+        "evidence": ""
+      },
+      {
+        "criterion": "综述文章仅用于分类与研究版图，不得支撑性能或成本结论",
+        "judgement": "met",
+        "evidence": ""
+      },
+      {
+        "criterion": "能够获得足以核验机制和结果的全文",
+        "judgement": "met",
+        "evidence": ""
+      }
+    ],
+    "evidence": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "CogPlanner, an agentic plug-and-play framework inspired by human cognitive processes, which iteratively determines query reformulation and retrieval strategies to generate accurate and contextually relevant responses."
+      },
+      {
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The MRAG Planning task is decomposed into two interrelated sub-tasks: (1) Information acquisition that discerns the truly necessary information required by the MLLMs and devises the appropriate retrieval strategies accordingly. (2) Query reformulation, which involves decomposing complex, multi-hop queries into manageable atomic sub-queries and refining them for clarity and informativeness."
+      },
+      {
+        "section": "Methodology",
+        "page": 5,
+        "excerpt": "The sequential modeling process is formalized as follows: Q𝑡=F𝑄𝑅(Q𝑡−1, D𝑡), A𝑡=F𝐼𝐴(Q𝑡, D𝑡). Both the retrieval decision-making function F𝐼𝐴and query reformulation function F𝑄𝑅are implemented through MLLM generation."
+      }
+    ],
+    "confidence": 0.0,
+    "reviewer": "ai",
+    "actor_type": "ai",
+    "actor_id": "independent_ai",
+    "model_version": "glm-4-flash",
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T13:41:23.773259+00:00"
+  },
+  {
+    "decision_id": "decision_18cca763e90d",
+    "candidate_id": "candidate_2f8877ac0852",
+    "paper_id": "2408.05933",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:01:43.599420+00:00"
+  },
+  {
+    "decision_id": "decision_d2399fed8800",
+    "candidate_id": "candidate_042bd2489b6b",
+    "paper_id": "2512.00007",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:01:43.632311+00:00"
+  },
+  {
+    "decision_id": "decision_d0b5abd14139",
+    "candidate_id": "candidate_2edb0c642c3d",
+    "paper_id": "2607.24162",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:01:43.661505+00:00"
+  },
+  {
+    "decision_id": "decision_3e8f2e2046ee",
+    "candidate_id": "candidate_a7c34ecb0f91",
+    "paper_id": "2506.20274",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:01:43.690940+00:00"
+  },
+  {
+    "decision_id": "decision_6716d6d7d678",
+    "candidate_id": "candidate_3a041cb6279e",
+    "paper_id": "2510.13856",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:01:43.716714+00:00"
+  },
+  {
+    "decision_id": "decision_e77ba7bfa20d",
+    "candidate_id": "candidate_b4127f421b4d",
+    "paper_id": "2503.16581",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:01:43.745976+00:00"
+  },
+  {
+    "decision_id": "decision_c1c0eb0e4038",
+    "candidate_id": "candidate_2f8877ac0852",
+    "paper_id": "2408.05933",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:10:15.460966+00:00"
+  },
+  {
+    "decision_id": "decision_ad44f76c576f",
+    "candidate_id": "candidate_042bd2489b6b",
+    "paper_id": "2512.00007",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:10:15.498057+00:00"
+  },
+  {
+    "decision_id": "decision_2d3fa9440c03",
+    "candidate_id": "candidate_2edb0c642c3d",
+    "paper_id": "2607.24162",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:10:15.527684+00:00"
+  },
+  {
+    "decision_id": "decision_bcd01535995e",
+    "candidate_id": "candidate_a7c34ecb0f91",
+    "paper_id": "2506.20274",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:10:15.552897+00:00"
+  },
+  {
+    "decision_id": "decision_81cd70b3630e",
+    "candidate_id": "candidate_3a041cb6279e",
+    "paper_id": "2510.13856",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:10:15.580298+00:00"
+  },
+  {
+    "decision_id": "decision_b0c8fe741bf3",
+    "candidate_id": "candidate_b4127f421b4d",
+    "paper_id": "2503.16581",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:10:15.608977+00:00"
+  },
+  {
+    "decision_id": "decision_28dc9a6b3ab9",
+    "candidate_id": "candidate_2f8877ac0852",
+    "paper_id": "2408.05933",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:12:26.321637+00:00"
+  },
+  {
+    "decision_id": "decision_d82a5d4670e0",
+    "candidate_id": "candidate_042bd2489b6b",
+    "paper_id": "2512.00007",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:12:26.387264+00:00"
+  },
+  {
+    "decision_id": "decision_3815ce03f4ee",
+    "candidate_id": "candidate_2edb0c642c3d",
+    "paper_id": "2607.24162",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:12:26.440147+00:00"
+  },
+  {
+    "decision_id": "decision_1e42423b9d0c",
+    "candidate_id": "candidate_a7c34ecb0f91",
+    "paper_id": "2506.20274",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:12:26.474974+00:00"
+  },
+  {
+    "decision_id": "decision_2447d92bb5ae",
+    "candidate_id": "candidate_3a041cb6279e",
+    "paper_id": "2510.13856",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:12:26.503450+00:00"
+  },
+  {
+    "decision_id": "decision_ddceaab27743",
+    "candidate_id": "candidate_b4127f421b4d",
+    "paper_id": "2503.16581",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:12:26.533654+00:00"
+  },
+  {
+    "decision_id": "decision_caa22705d844",
+    "candidate_id": "candidate_2f8877ac0852",
+    "paper_id": "2408.05933",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:39:31.216137+00:00"
+  },
+  {
+    "decision_id": "decision_cca96d8698cd",
+    "candidate_id": "candidate_042bd2489b6b",
+    "paper_id": "2512.00007",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:39:31.249225+00:00"
+  },
+  {
+    "decision_id": "decision_271e3f8ab981",
+    "candidate_id": "candidate_2edb0c642c3d",
+    "paper_id": "2607.24162",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:39:31.284422+00:00"
+  },
+  {
+    "decision_id": "decision_3d96f103336b",
+    "candidate_id": "candidate_a7c34ecb0f91",
+    "paper_id": "2506.20274",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:39:31.326372+00:00"
+  },
+  {
+    "decision_id": "decision_4db375cc4946",
+    "candidate_id": "candidate_3a041cb6279e",
+    "paper_id": "2510.13856",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:39:31.359722+00:00"
+  },
+  {
+    "decision_id": "decision_d725103032c6",
+    "candidate_id": "candidate_b4127f421b4d",
+    "paper_id": "2503.16581",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:39:31.386485+00:00"
+  },
+  {
+    "decision_id": "decision_b933288ff265",
+    "candidate_id": "candidate_2f8877ac0852",
+    "paper_id": "2408.05933",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:43:11.803074+00:00"
+  },
+  {
+    "decision_id": "decision_f9fb273f62d5",
+    "candidate_id": "candidate_042bd2489b6b",
+    "paper_id": "2512.00007",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:43:11.843850+00:00"
+  },
+  {
+    "decision_id": "decision_307e4563f464",
+    "candidate_id": "candidate_2edb0c642c3d",
+    "paper_id": "2607.24162",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:43:11.870496+00:00"
+  },
+  {
+    "decision_id": "decision_d8afb7c63281",
+    "candidate_id": "candidate_a7c34ecb0f91",
+    "paper_id": "2506.20274",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:43:11.894840+00:00"
+  },
+  {
+    "decision_id": "decision_58a327486f63",
+    "candidate_id": "candidate_3a041cb6279e",
+    "paper_id": "2510.13856",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:43:11.922569+00:00"
+  },
+  {
+    "decision_id": "decision_1db6231d7664",
+    "candidate_id": "candidate_b4127f421b4d",
+    "paper_id": "2503.16581",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "protocol_version": 1,
+    "stage": "full_text",
+    "decision": "exclude",
+    "reason_code": "full_text_unavailable",
+    "reason": "No retained structured full-text evidence was available for this comparison run.",
+    "criterion_judgements": [],
+    "evidence": [],
+    "confidence": 1.0,
+    "reviewer": "system",
+    "actor_type": "system",
+    "actor_id": "fulltext_availability_check",
+    "model_version": null,
+    "blinded_to_peer": true,
+    "supersedes_decision_id": null,
+    "created_at": "2026-07-31T14:43:11.965847+00:00"
+  }
+]

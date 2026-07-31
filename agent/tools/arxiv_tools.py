@@ -11,7 +11,8 @@ from core.tools import BaseTool
 
 # ━━━ 全局 arXiv API 限流器（所有 arXiv 工具共享）━━━
 _ARXIV_LAST_CALL_TS = 0.0
-_ARXIV_MIN_INTERVAL_SEC = float(os.getenv("ARXIV_MIN_INTERVAL_SEC", "5.0"))
+_ARXIV_MIN_INTERVAL_SEC = float(os.getenv("ARXIV_MIN_INTERVAL_SEC", "3.0"))
+_ARXIV_REQUEST_TIMEOUT_SEC = float(os.getenv("ARXIV_REQUEST_TIMEOUT_SEC", "30.0"))
 
 
 def _arxiv_rate_limit_wait():
@@ -58,20 +59,66 @@ def _build_query_variants(query: str) -> list[str]:
     return _deduplicate_preserve_order(variants)
 
 
+_ARXIV_FIELD_PREFIX = re.compile(
+    r"(?i)(?:^|[\s(])(?:all|ti|au|abs|co|jr|cat|rn|id):"
+)
+_BOOLEAN_OPERATOR = re.compile(r"(?i)\b(ANDNOT|AND|OR)\b")
+
+
+def compile_arxiv_query(query: str) -> str:
+    """Compile a portable Boolean query into arXiv API field syntax.
+
+    arXiv does not interpret ``A OR B`` as two all-field clauses when the
+    caller simply prefixes the whole string with ``all:``.  Each free-text
+    clause must be fielded separately.  Already fielded expert queries are
+    preserved verbatim so callers can use ``ti:``, ``abs:``, ``cat:``, etc.
+    """
+    raw = re.sub(r"\s+", " ", str(query or "")).strip()
+    if not raw:
+        return ""
+    if _ARXIV_FIELD_PREFIX.search(raw):
+        return raw
+
+    parts = _BOOLEAN_OPERATOR.split(raw)
+    compiled: list[str] = []
+    for index, part in enumerate(parts):
+        text = part.strip()
+        if not text:
+            continue
+        if index % 2 == 1 and _BOOLEAN_OPERATOR.fullmatch(text):
+            compiled.append(text.upper())
+            continue
+
+        leading_match = re.match(r"^\(*", text)
+        trailing_match = re.search(r"\)*$", text)
+        leading = leading_match.group(0) if leading_match else ""
+        trailing = trailing_match.group(0) if trailing_match else ""
+        core_end = len(text) - len(trailing) if trailing else len(text)
+        core = text[len(leading):core_end].strip().strip('"').strip()
+        if not core:
+            compiled.append(text)
+            continue
+        escaped = core.replace("\\", "\\\\").replace('"', '\\"')
+        compiled.append(f'{leading}all:"{escaped}"{trailing}')
+
+    return " ".join(compiled) or f'all:"{raw}"'
+
+
 def _fetch_arxiv_entries(query: str, max_results: int, base_url: str, user_agent: str,
                          start: int = 0) -> tuple[list[ET.Element], str]:
-    encoded_query = urllib.parse.quote(query)
-    url = f"{base_url}?search_query=all:{encoded_query}&start={max(0, start)}&max_results={max_results}"
+    compiled_query = compile_arxiv_query(query)
+    encoded_query = urllib.parse.quote(compiled_query, safe="")
+    url = f"{base_url}?search_query={encoded_query}&start={max(0, start)}&max_results={max_results}"
     req = urllib.request.Request(url, headers={"User-Agent": user_agent})
 
     _arxiv_rate_limit_wait()
-    with urllib.request.urlopen(req) as response:
+    with urllib.request.urlopen(req, timeout=_ARXIV_REQUEST_TIMEOUT_SEC) as response:
         xml_data = response.read()
 
     root = ET.fromstring(xml_data)
     ns = {'atom': 'http://www.w3.org/2005/Atom'}
     entries = root.findall('atom:entry', ns)
-    return entries, query
+    return entries, compiled_query
 
 class ArxivSearchTool(BaseTool):
     name = "arxiv_search"
@@ -92,7 +139,7 @@ class ArxivSearchTool(BaseTool):
             start = max(0, int(kwargs.get("start", 0)))
         except (TypeError, ValueError):
             start = 0
-        base_url = os.getenv("ARXIV_API_BASE", "http://export.arxiv.org/api/query")
+        base_url = os.getenv("ARXIV_API_BASE", "https://export.arxiv.org/api/query")
         user_agent = os.getenv("ARXIV_USER_AGENT", "AcademicResearchAgent/1.0")
         try:
             retry_limit = max(1, int(os.getenv("ARXIV_SEARCH_RETRY_LIMIT", "3")))
@@ -109,7 +156,6 @@ class ArxivSearchTool(BaseTool):
                 max_retries = 3
                 for attempt in range(max_retries):
                     try:
-                        _arxiv_rate_limit_wait()
                         if start:
                             entries, _ = _fetch_arxiv_entries(candidate, max_results, base_url, user_agent, start)
                         else:
@@ -193,7 +239,7 @@ class ArxivFetchTool(BaseTool):
         # 去掉版本后缀（如 v3），避免部分 ID 被 arXiv 限流更严格地对待
         clean_id = re.sub(r'v\d+$', '', str(paper_id).strip())
             
-        base_url = os.getenv("ARXIV_API_BASE", "http://export.arxiv.org/api/query")
+        base_url = os.getenv("ARXIV_API_BASE", "https://export.arxiv.org/api/query")
         user_agent = os.getenv("ARXIV_USER_AGENT", "AcademicResearchAgent/1.0")
         url = f"{base_url}?id_list={clean_id}"
         
@@ -204,7 +250,7 @@ class ArxivFetchTool(BaseTool):
             for attempt in range(max_retries):
                 try:
                     _arxiv_rate_limit_wait()
-                    with urllib.request.urlopen(req) as response:
+                    with urllib.request.urlopen(req, timeout=_ARXIV_REQUEST_TIMEOUT_SEC) as response:
                         xml_data = response.read()
                     break
                 except urllib.error.HTTPError as cand_http_err:

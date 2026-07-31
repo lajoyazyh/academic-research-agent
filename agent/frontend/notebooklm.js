@@ -23,6 +23,9 @@
     _autoPollTimer: null,
     _searchLoopCustomized: false,
     lastAction: "",
+    scientific: null,
+    reviewProtocol: null,
+    _resumeAutoAfterScreening: false,
     provider: {
       provider_id: "zhipu",
       api_key: "",
@@ -153,6 +156,21 @@
     this.els.repositoryResearchModal = document.getElementById("repositoryResearchModal");
     this.els.repositoryResearchResult = document.getElementById("repositoryResearchResult");
     this.els.repositoryList = document.getElementById("repositoryList");
+    this.els.protocolCard = document.getElementById("protocolCard");
+    this.els.protocolEditBtn = document.getElementById("protocolEditBtn");
+    this.els.protocolModal = document.getElementById("protocolModal");
+    this.els.protocolMode = document.getElementById("protocolMode");
+    this.els.protocolCandidateCap = document.getElementById("protocolCandidateCap");
+    this.els.protocolQuestion = document.getElementById("protocolQuestion");
+    this.els.protocolSources = document.getElementById("protocolSources");
+    this.els.protocolFields = document.getElementById("protocolFields");
+    this.els.protocolLanguages = document.getElementById("protocolLanguages");
+    this.els.protocolDocuments = document.getElementById("protocolDocuments");
+    this.els.protocolDateFrom = document.getElementById("protocolDateFrom");
+    this.els.protocolDateTo = document.getElementById("protocolDateTo");
+    this.els.protocolInclusion = document.getElementById("protocolInclusion");
+    this.els.protocolExclusion = document.getElementById("protocolExclusion");
+    this.els.protocolMessage = document.getElementById("protocolMessage");
   },
 
   loadProviderConfig() {
@@ -977,6 +995,7 @@
 
   async initConsole() {
     this.bindConsoleActions();
+    this.localizeScientificUi();
     const searchAdvanced = document.getElementById("searchAdvanced");
     if (searchAdvanced && window.matchMedia("(max-width: 720px)").matches) searchAdvanced.removeAttribute("open");
     this.setMobileWorkspacePanel("sources");
@@ -988,6 +1007,7 @@
       return;
     }
     await this.loadSession(sessionId);
+    await this.loadScientificState();
   },
 
   bindConsoleActions() {
@@ -1007,6 +1027,11 @@
     });
     this.els.cancelSearchBtn?.addEventListener("click", () => this.cancelSearch());
     this.els.autoRunBtn?.addEventListener("click", () => this.startAutoRun());
+    this.els.protocolEditBtn?.addEventListener("click", () => this.openProtocolModal());
+    document.getElementById("protocolModalClose")?.addEventListener("click", () => this.closeProtocolModal());
+    document.getElementById("protocolSaveDraft")?.addEventListener("click", () => this.saveProtocol(false));
+    document.getElementById("protocolConfirm")?.addEventListener("click", () => this.saveProtocol(true));
+    this.els.protocolMode?.addEventListener("change", () => this.applyProtocolModeDefaults());
     this.els.apiConfigBtn?.addEventListener("click", () => { window.location.href = "/app/profile#api"; });
     this.els.apiConfigClose?.addEventListener("click", () => this.closeApiConfigModal());
     this.els.apiConfigSave?.addEventListener("click", () => this.saveApiConfig());
@@ -1067,6 +1092,360 @@
 
     // 初始化对话助手拖拽缩放
     this.initChatResize();
+  },
+
+  apiErrorMessage(data, fallback) {
+    if (!data) return fallback;
+    if (typeof data.message === "string" && data.message) return data.message;
+    if (typeof data.detail === "string" && data.detail) return data.detail;
+    if (data.detail && typeof data.detail.message === "string") return data.detail.message;
+    return fallback;
+  },
+
+  localizeScientificUi() {
+    if (!window.academicLocale?.isEnglish()) return;
+    const text = {
+      protocolModalTitle: "Research protocol",
+      protocolModalHint: "Confirm the protocol before searching. Changes after discovery create a new version and require re-screening.",
+      protocolModeFieldLabel: "Review mode",
+      protocolCapFieldLabel: "Candidate record cap",
+      protocolQuestionFieldLabel: "Research question",
+      protocolSourcesFieldLabel: "Sources (comma separated)",
+      protocolFieldsFieldLabel: "Search fields (comma separated)",
+      protocolLanguagesFieldLabel: "Language limits (comma separated)",
+      protocolDocumentsFieldLabel: "Document types (comma separated)",
+      protocolScreeningFieldLabel: "Screening strategy",
+      protocolDateFromFieldLabel: "Date from",
+      protocolDateToFieldLabel: "Date to",
+      protocolInclusionFieldLabel: "Inclusion criteria (one per line)",
+      protocolExclusionFieldLabel: "Exclusion criteria (one per line)",
+      protocolCheckpointText: "Confirmation locks this version. Later edits preserve the original candidate records but do not silently reuse earlier screening decisions.",
+      protocolSaveDraft: "Save draft",
+      flowCandidatesLabel: "Found",
+      flowDeduplicatedLabel: "Unique",
+      flowScreenedLabel: "Screened",
+      flowFullTextLabel: "Full text",
+      flowIncludedLabel: "Included",
+      flowConflictsLabel: "Conflicts",
+    };
+    Object.entries(text).forEach(([id, value]) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value;
+    });
+    const confirmLabel = document.querySelector("#protocolConfirm span");
+    if (confirmLabel) confirmLabel.textContent = "Confirm protocol";
+    const editLabel = document.querySelector("#protocolEditBtn span");
+    if (editLabel) editLabel.textContent = "Protocol";
+    const options = {
+      rapid: "Rapid evidence review",
+      systematic: "Systematic review",
+      scoping: "Scoping review / systematic mapping",
+      technical: "Computer science and AI technical survey",
+    };
+    Array.from(this.els.protocolMode?.options || []).forEach((option) => {
+      option.textContent = options[option.value] || option.textContent;
+    });
+  },
+
+  async loadScientificState() {
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId) return null;
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/scientific`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(this.apiErrorMessage(data, "方法学状态加载失败"));
+      this.state.scientific = data;
+      this.state.reviewProtocol = data.protocol || null;
+      if (this.state.currentSession) {
+        this.state.currentSession.review_protocol = data.protocol || null;
+        this.state.currentSession.inclusion_snapshot = data.inclusion_snapshot || null;
+      }
+      this.renderProtocolSummary();
+      return data;
+    } catch (error) {
+      console.warn("方法学状态加载失败：", error);
+      this.state.reviewProtocol = this.state.currentSession?.review_protocol || null;
+      this.renderProtocolSummary();
+      return null;
+    }
+  },
+
+  protocolModeName(mode) {
+    if (window.academicLocale?.isEnglish()) {
+      const namesEn = {
+        rapid: "Rapid evidence review",
+        systematic: "Systematic review",
+        scoping: "Scoping review / systematic mapping",
+        technical: "Computer science and AI technical survey",
+      };
+      return namesEn[mode] || namesEn.rapid;
+    }
+    const names = {
+      rapid: "快速证据综述",
+      systematic: "严格系统综述",
+      scoping: "范围综述 / 系统映射",
+      technical: "计算机与 AI 技术综述",
+    };
+    return names[mode] || names.rapid;
+  },
+
+  renderProtocolSummary() {
+    const protocol = this.state.reviewProtocol || this.state.currentSession?.review_protocol || {};
+    const flow = this.state.scientific?.flow || {};
+    const confirmed = protocol.status === "confirmed";
+    const isEn = window.academicLocale?.isEnglish();
+    const modeLabel = document.getElementById("protocolModeLabel");
+    const statusLabel = document.getElementById("protocolStatusLabel");
+    const dot = document.getElementById("protocolStatusDot");
+    if (modeLabel) modeLabel.textContent = `${this.protocolModeName(protocol.mode)} · v${protocol.version || 1}`;
+    if (statusLabel) {
+      statusLabel.textContent = confirmed
+        ? (isEn
+          ? `Protocol confirmed · queries ${flow.queries_completed || 0}/${flow.queries_planned || 0} · cap ${protocol.candidate_cap || 100}`
+          : `协议已确认 · 检索计划 ${flow.queries_completed || 0}/${flow.queries_planned || 0} · 上限 ${protocol.candidate_cap || 100}`)
+        : (isEn ? "Confirm the protocol before searching" : "研究协议待确认，确认后才能检索");
+    }
+    dot?.classList.toggle("confirmed", confirmed);
+    const values = {
+      flowCandidates: flow.discovered || 0,
+      flowDeduplicated: flow.unique_candidates || 0,
+      flowScreened: flow.title_abstract_screened || 0,
+      flowFullText: flow.full_text_assessed || 0,
+      flowIncluded: flow.included || 0,
+      flowConflicts: flow.screening_conflicts || 0,
+    };
+    Object.entries(values).forEach(([id, value]) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = String(value);
+    });
+    const audit = this.state.scientific?.methodology_report || {};
+    const auditBody = document.getElementById("protocolAuditBody");
+    if (auditBody) {
+      const reconciliation = audit.reconciliation || {};
+      const queries = audit.search_queries || [];
+      const reasons = audit.exclusion_reason_counts || {};
+      const conflicts = audit.unresolved_conflicts || [];
+      auditBody.innerHTML = `
+        <p><strong>${audit.reconciled ? "流程数量已对账" : "流程数量尚未对账"}</strong></p>
+        <p>检索式 ${queries.length} 条；完成 ${queries.filter((item) => item.status === "completed").length} 条；待裁决 ${conflicts.length} 条。</p>
+        <p>排除原因：${Object.keys(reasons).length
+          ? Object.entries(reasons).map(([key, value]) => `${this.escapeHtml(key)} ${value}`).join(" · ")
+          : "尚未记录"}</p>
+        <p class="muted">筛选方式：单名研究者与 AI 独立复核，分歧由研究者裁决；不等同于双人类独立筛选。</p>
+        ${protocol.mode === "systematic" && (flow.included || 0) > 0
+          ? '<button type="button" class="secondary-btn compact-btn" data-scientific-action="ai-screen">运行独立 AI 全文复核</button>'
+          : ""}
+        ${conflicts.length ? `<div class="screening-conflict-list">${conflicts.map((item) => `
+          <div class="screening-conflict-item">
+            <strong>${this.escapeHtml(item.paper_id || item.candidate_id || "")}</strong>
+            <span>人工：${this.escapeHtml(item.human_decision || "")} · AI：${this.escapeHtml(item.ai_decision || "")}</span>
+            <div>
+              <button type="button" class="mini-btn" data-resolve-paper="${this.escapeHtml(item.paper_id || "")}" data-resolve-stage="${this.escapeHtml(item.stage || "")}" data-resolve-decision="include">裁决纳入</button>
+              <button type="button" class="mini-btn" data-resolve-paper="${this.escapeHtml(item.paper_id || "")}" data-resolve-stage="${this.escapeHtml(item.stage || "")}" data-resolve-decision="exclude">裁决排除</button>
+            </div>
+          </div>`).join("")}</div>` : ""}
+      `;
+      auditBody.querySelector('[data-scientific-action="ai-screen"]')?.addEventListener("click", () => {
+        this.runIndependentAiScreening();
+      });
+      auditBody.querySelectorAll("[data-resolve-paper]").forEach((button) => {
+        button.addEventListener("click", () => {
+          this.resolveScientificConflict(
+            button.dataset.resolvePaper,
+            button.dataset.resolveStage,
+            button.dataset.resolveDecision,
+          );
+        });
+      });
+    }
+  },
+
+  async runIndependentAiScreening() {
+    const sessionId = this.state.currentSessionId;
+    const paperIds = (this.state.currentSession?.papers || [])
+      .filter((paper) => paper.status === "accepted")
+      .map((paper) => paper.paper_id);
+    if (!sessionId || !paperIds.length) return;
+    this.setConsoleStatus("screening", "正在运行不可见人工决定的独立 AI 全文复核…");
+    try {
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/screening/ai-review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(this.withProvider({ paper_ids: paperIds, stage: "full_text" })),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(this.apiErrorMessage(data, "AI 独立复核失败"));
+      await this.loadScientificState();
+      this.setConsoleStatus(
+        data.conflicts?.some((item) => item.status === "unresolved") ? "screening" : "plan_confirmed",
+        data.conflicts?.some((item) => item.status === "unresolved")
+          ? "AI复核完成，请处理筛选分歧"
+          : "AI复核完成，未发现未解决分歧",
+      );
+    } catch (error) {
+      this.setConsoleStatus("error", error.message || "AI 独立复核失败");
+    }
+  },
+
+  async resolveScientificConflict(paperId, stage, decision) {
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId || !paperId) return;
+    const reason = window.prompt(
+      decision === "include" ? "请输入裁决纳入理由" : "请输入裁决排除理由",
+      "",
+    );
+    if (!reason?.trim()) return;
+    const payload = {
+      paper_id: paperId,
+      stage,
+      decision,
+      reason,
+      reason_code: decision === "exclude" ? "other" : null,
+      actor_id: "project_owner",
+    };
+    const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/screening/conflicts/resolve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      this.setConsoleStatus("error", this.apiErrorMessage(data, "筛选分歧裁决失败"));
+      return;
+    }
+    await this.loadScientificState();
+    this.setConsoleStatus("plan_confirmed", "筛选分歧已记录裁决");
+  },
+
+  async openProtocolModal() {
+    if (!this.state.reviewProtocol) await this.loadScientificState();
+    const protocol = this.state.reviewProtocol || {
+      mode: "rapid",
+      candidate_cap: 100,
+      research_question: this.state.currentSession?.topic || "",
+      sources: ["arXiv", "OpenAlex", "Crossref", "Semantic Scholar", "DBLP"],
+      inclusion_criteria: [],
+      exclusion_criteria: [],
+    };
+    if (this.els.protocolMode) this.els.protocolMode.value = protocol.mode || "rapid";
+    if (this.els.protocolCandidateCap) this.els.protocolCandidateCap.value = protocol.candidate_cap || 100;
+    if (this.els.protocolQuestion) this.els.protocolQuestion.value = protocol.research_question || "";
+    if (this.els.protocolSources) this.els.protocolSources.value = (protocol.sources || []).join(", ");
+    if (this.els.protocolFields) this.els.protocolFields.value = (protocol.search_field_scope || ["title", "abstract", "keywords"]).join(", ");
+    if (this.els.protocolLanguages) this.els.protocolLanguages.value = (protocol.languages || ["en", "zh"]).join(", ");
+    if (this.els.protocolDocuments) this.els.protocolDocuments.value = (protocol.document_types || ["journal_article", "conference_paper", "preprint"]).join(", ");
+    if (this.els.protocolDateFrom) this.els.protocolDateFrom.value = protocol.date_from || "";
+    if (this.els.protocolDateTo) this.els.protocolDateTo.value = protocol.date_to || "";
+    if (this.els.protocolInclusion) this.els.protocolInclusion.value = (protocol.inclusion_criteria || []).join("\n");
+    if (this.els.protocolExclusion) this.els.protocolExclusion.value = (protocol.exclusion_criteria || []).join("\n");
+    if (this.els.protocolMessage) this.els.protocolMessage.textContent = protocol.status === "confirmed"
+      ? "当前版本已锁定；保存修改将创建新版本。"
+      : "请确认检索范围和纳排标准。";
+    this.els.protocolModal?.classList.add("active");
+  },
+
+  closeProtocolModal() {
+    this.els.protocolModal?.classList.remove("active");
+  },
+
+  applyProtocolModeDefaults() {
+    const mode = this.els.protocolMode?.value || "rapid";
+    const defaults = { rapid: 100, systematic: 500, scoping: 500, technical: 300 };
+    const current = Number(this.els.protocolCandidateCap?.value || 0);
+    if (!current || (this.state.reviewProtocol && current === Number(this.state.reviewProtocol.candidate_cap))) {
+      this.els.protocolCandidateCap.value = defaults[mode];
+    }
+  },
+
+  collectProtocolForm() {
+    const lines = (value) => String(value || "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+    const sources = String(this.els.protocolSources?.value || "")
+      .split(/[,，;\n]/).map((item) => item.trim()).filter(Boolean);
+    const csv = (value) => String(value || "")
+      .split(/[,，;\n]/).map((item) => item.trim()).filter(Boolean);
+    return {
+      mode: this.els.protocolMode?.value || "rapid",
+      candidate_cap: Number(this.els.protocolCandidateCap?.value || 100),
+      research_question: String(this.els.protocolQuestion?.value || "").trim(),
+      sources,
+      search_field_scope: csv(this.els.protocolFields?.value),
+      languages: csv(this.els.protocolLanguages?.value),
+      document_types: csv(this.els.protocolDocuments?.value),
+      date_from: this.els.protocolDateFrom?.value || null,
+      date_to: this.els.protocolDateTo?.value || null,
+      inclusion_criteria: lines(this.els.protocolInclusion?.value),
+      exclusion_criteria: lines(this.els.protocolExclusion?.value),
+      language: window.academicLocale?.isEnglish() ? "en" : "zh-CN",
+    };
+  },
+
+  async saveProtocol(confirmProtocol) {
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId) return false;
+    const payload = this.collectProtocolForm();
+    if (
+      !payload.research_question
+      || !payload.sources.length
+      || !payload.search_field_scope.length
+      || !payload.languages.length
+      || !payload.document_types.length
+      || !payload.inclusion_criteria.length
+      || !payload.exclusion_criteria.length
+    ) {
+      if (this.els.protocolMessage) this.els.protocolMessage.textContent = "研究问题、数据源、字段、语言、文献类型以及纳排标准均不能为空。";
+      return false;
+    }
+    try {
+      if (this.els.protocolMessage) this.els.protocolMessage.textContent = "正在保存研究协议…";
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/protocol`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      let data = await response.json();
+      if (!response.ok) throw new Error(this.apiErrorMessage(data, "协议保存失败"));
+      if (confirmProtocol) {
+        const confirmResponse = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/protocol/confirm`, {
+          method: "POST",
+        });
+        data = await confirmResponse.json();
+        if (!confirmResponse.ok) throw new Error(this.apiErrorMessage(data, "协议确认失败"));
+      }
+      this.state.reviewProtocol = data;
+      this.closeProtocolModal();
+      await this.loadScientificState();
+      this.setConsoleStatus(
+        data.status === "confirmed" ? "plan_confirmed" : "planning",
+        data.status === "confirmed" ? "研究协议已确认，可以开始检索" : "研究协议草案已保存",
+      );
+      return true;
+    } catch (error) {
+      if (this.els.protocolMessage) this.els.protocolMessage.textContent = error.message;
+      return false;
+    }
+  },
+
+  async ensureProtocolConfirmed() {
+    if (!this.state.reviewProtocol) await this.loadScientificState();
+    if (this.state.reviewProtocol?.status === "confirmed") return true;
+    await this.openProtocolModal();
+    this.setConsoleStatus("planning", "请先确认研究协议");
+    return false;
+  },
+
+  async confirmCurrentInclusion(paperIds) {
+    const sessionId = this.state.currentSessionId;
+    if (!sessionId || !paperIds.length) return null;
+    const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/inclusion-snapshots/confirm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paper_ids: paperIds }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(this.apiErrorMessage(data, "最终纳入确认失败"));
+    await this.reloadCurrentSession();
+    await this.loadScientificState();
+    return data.snapshot;
   },
 
   initPaperListScroll() {
@@ -1182,6 +1561,11 @@
       this.state.activeRunId = run.run_id;
       if (run.status === "running") {
         this.recoverActiveRun(run);
+        return;
+      }
+      if (run.status === "waiting_for_confirmation") {
+        this.state._resumeAutoAfterScreening = true;
+        this.setConsoleStatus("screening", run.message || "请确认最终纳入论文后继续自动生成。");
         return;
       }
       if (run.status === "interrupted" || (run.retryable && ["error", "partial", "cancelled"].includes(run.status))) {
@@ -1386,6 +1770,7 @@
     this.renderNotesBlock();
     this.renderReviewBlock();
     this.renderRepositorySources();
+    this.renderProtocolSummary();
     this.renderDetailPanel();
     this.renderChatContext();
     this.updateChatPlaceholder();
@@ -1499,10 +1884,11 @@
     const countChip = document.getElementById("paperCountChip");
     if (countChip) {
       const acceptedCount = papers.filter(p => p.status === "accepted").length;
+      const candidateCount = papers.filter(p => p.status === "pending").length;
       const hasNotesCount = papers.filter(p => p.has_notes).length;
       countChip.innerHTML = acceptedCount > 0
-        ? `<i class="fa-solid fa-check"></i> ${papers.length} 篇（${acceptedCount} 已纳入，${hasNotesCount} 有笔记）`
-        : `<i class="fa-solid fa-check"></i> ${papers.length} 篇（${hasNotesCount} 有笔记）`;
+        ? `<i class="fa-solid fa-filter-circle-check"></i> ${papers.length} 条（${candidateCount} 候选，${acceptedCount} 最终纳入）`
+        : `<i class="fa-solid fa-filter"></i> ${papers.length} 条候选记录`;
     }
 
     if (!papers.length) {
@@ -1546,6 +1932,11 @@
         : '';
       const decisionIcon = paper.status === "rejected"
         ? '<span class="chip" title="已标记为不纳入"><i class="fa-solid fa-ban"></i> 已排除</span>'
+        : paper.screening_stage === "title_abstract" && paper.screening_decision === "include"
+          ? '<span class="chip ok" title="标题和摘要初筛通过，仍需确认最终纳入"><i class="fa-solid fa-list-check"></i> 初筛通过</span>'
+          : '';
+      const evidenceBasisIcon = paper.evidence_basis === "abstract"
+        ? '<span class="chip warn" title="当前证据仅来自摘要，不能支撑强结论"><i class="fa-solid fa-triangle-exclamation"></i> 仅摘要</span>'
         : '';
       const selectedClass = paper.status === "accepted" ? "accepted" : "";
 
@@ -1558,11 +1949,12 @@
             ${statusIcon}
             ${reviewIcon}
             ${decisionIcon}
+            ${evidenceBasisIcon}
             ${paper.added_at ? `<span class="chip"><i class="fa-regular fa-clock"></i> ${this.formatDate(paper.added_at)}</span>` : ""}
           </div>
         </div>
         <div class="paper-actions">
-          <button class="paper-include-btn ${selectedClass}" data-action="accept" ${isUpdating ? "disabled" : ""} aria-pressed="${paper.status === 'accepted'}" aria-label="${paper.status === 'accepted' ? '从综述中移除' : '纳入综述'}">${isUpdating ? '<i class="fa-solid fa-circle-notch fa-spin"></i><span>保存中</span>' : `<i class="fa-solid fa-check"></i><span>${paper.status === 'accepted' ? '已纳入' : '纳入综述'}</span>`}</button>
+          <button class="paper-include-btn ${selectedClass}" data-action="accept" ${isUpdating ? "disabled" : ""} aria-pressed="${paper.status === 'accepted'}" aria-label="${paper.status === 'accepted' ? '从最终纳入集合移除' : '加入最终纳入集合'}">${isUpdating ? '<i class="fa-solid fa-circle-notch fa-spin"></i><span>保存中</span>' : `<i class="fa-solid fa-check"></i><span>${paper.status === 'accepted' ? '最终纳入' : '纳入综述'}</span>`}</button>
           <details class="paper-more-menu">
             <summary class="mini-btn" aria-label="打开论文操作菜单"><i class="fa-solid fa-ellipsis-vertical"></i></summary>
             <div>
@@ -1606,7 +1998,12 @@
     const hasDraft = Boolean(draft.trim());
     const topic = this.state.currentSession?.topic || "综述";
     const quality = this.state.currentSession?.review_quality || {};
-    const qualityPassed = quality.status === "passed" || quality.passed === true;
+    const scientificGate = quality.scientific_gate || {};
+    const scientificOk = scientificGate.ok !== false;
+    const qualityPassed = (quality.status === "passed" || quality.passed === true) && scientificOk;
+    const outputLabel = quality.output_label === "systematic_review_draft"
+      ? "系统综述底稿"
+      : "投稿前研究底稿";
 
     if (hasDraft) {
       const outputFile = this.state.currentSessionId;
@@ -1615,6 +2012,7 @@
         <div class="panel-block-head">
           <strong>📝 综述</strong>
           <span class="chip ok"><i class="fa-solid fa-check-circle"></i> 已生成</span>
+          <span class="chip ${quality.output_label === "systematic_review_draft" ? "ok" : "warn"}">${outputLabel}</span>
         </div>
         <div class="review-title-link" id="reviewTitleLink" style="cursor:pointer;padding:10px 0;border:1px solid var(--line);border-radius:12px;padding:14px;">
           <h4 style="margin:0;font-size:0.95rem;color:var(--accent);">${this.escapeHtml(topic)}</h4>
@@ -1636,6 +2034,8 @@
                 ${(quality.unsupported_claims || []).length ? `<p><strong>缺少引用的实质论断：</strong>${this.escapeHtml(String(quality.unsupported_claims.length))} 处</p>` : ""}
                 ${(quality.invalid_citations || []).length ? `<p><strong>无法验证的引用：</strong>${this.escapeHtml((quality.invalid_citations || []).join("、"))}</p>` : ""}
                 ${(quality.abstract_only_sources || []).length ? `<p><strong>仅基于摘要的来源：</strong>${this.escapeHtml((quality.abstract_only_sources || []).join("、"))}</p>` : ""}
+                ${(scientificGate.blockers || []).length ? `<p><strong>方法学门禁：</strong>${this.escapeHtml((scientificGate.blockers || []).join("、"))}</p>` : ""}
+                ${(quality.claim_audit?.invalid_citation_ids || []).length ? `<p><strong>Claim Ledger 无效引用：</strong>${this.escapeHtml(quality.claim_audit.invalid_citation_ids.join("、"))}</p>` : ""}
                 <p>优先补齐全文或删除无法由来源支持的表述，再重新生成综述。</p>
               </div>
             </details>` : ""}
@@ -2841,6 +3241,7 @@
       alert("当前没有活跃的会话");
       return;
     }
+    if (!(await this.ensureProtocolConfirmed())) return;
 
     const topic = session.topic || "";
     if (!topic.trim()) {
@@ -2851,10 +3252,14 @@
     if (targetNewPapers === null) return;
     const maxSearchLoops = this.getSearchLoopLimit(targetNewPapers);
     if (maxSearchLoops === null) return;
-    if (!confirm(`“自动进行”将尝试新增至少 ${targetNewPapers} 篇论文，最多执行 ${maxSearchLoops} 轮，再依次生成笔记、分析和综述。若先达到轮数上限，流程会保留已有结果并停止，是否继续？`)) return;
+    const resumeFrom = this.state._resumeAutoAfterScreening ? "notes" : "plan";
+    const autoMessage = resumeFrom === "notes"
+      ? "将从已确认的最终纳入集合继续生成结构化证据、质量分析和综述草稿，是否继续？"
+      : `“自动进行”将检索约 ${targetNewPapers} 篇新增候选论文，最多执行 ${maxSearchLoops} 轮，并在最终纳入检查点暂停。是否继续？`;
+    if (!confirm(autoMessage)) return;
 
     // 如果还在 planning 阶段且无关键词，先自动生成关键词再启动
-    if (!session.keywords || !session.keywords.length || session.state === "planning") {
+    if (resumeFrom === "plan" && (!session.keywords || !session.keywords.length || session.state === "planning")) {
       this.setConsoleStatus("planning", "正在生成关键词规划...");
       try {
         const planResp = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/run/plan`, {
@@ -2904,10 +3309,14 @@
           topic,
           max_loops: maxSearchLoops,
           min_papers: targetNewPapers,
+          resume_from: resumeFrom,
+          protocol_version: this.state.reviewProtocol?.version || null,
+          inclusion_snapshot_id: this.state.scientific?.inclusion_snapshot?.snapshot_id || null,
         })),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || "启动失败");
+      if (!response.ok) throw new Error(this.apiErrorMessage(data, "启动失败"));
+      this.state._resumeAutoAfterScreening = false;
       this.state.activeRunId = data.run_id || null;
     } catch (error) {
       this.state._autoRunning = false;
@@ -2970,6 +3379,7 @@
             planning: "正在规划关键词...",
             searching: "正在检索论文...",
             search_complete: "搜索完成，即将生成笔记...",
+            screening: "等待确认最终纳入论文…",
             search_partial: "检索部分完成，尚未达到目标",
             search_failed: "检索失败，本轮未新增论文",
             reviewing_notes: "正在生成笔记...",
@@ -2993,6 +3403,36 @@
 
         // 更新按钮状态
         this.updateActionButtons();
+
+        if (runStatus === "waiting_for_confirmation") {
+          clearInterval(this.state._autoPollTimer);
+          this.state._autoPollTimer = null;
+          this.state._autoRunning = false;
+          await this.reloadCurrentSession();
+          await this.loadScientificState();
+          this.state._resumeAutoAfterScreening = true;
+          const paperIds = (this.state.currentSession?.papers || [])
+            .filter((paper) => paper.status === "accepted")
+            .map((paper) => paper.paper_id);
+          if (!paperIds.length) {
+            this.setConsoleStatus(
+              "screening",
+              "候选文献初筛已完成。请逐篇选择“纳入综述”，然后再次点击“自动进行”。",
+            );
+          } else if (confirm(`已选择 ${paperIds.length} 篇论文。确认这是最终纳入集合并继续自动生成吗？`)) {
+            try {
+              await this.confirmCurrentInclusion(paperIds);
+              this.state._resumeAutoAfterScreening = true;
+              await this.startAutoRun();
+            } catch (error) {
+              this.setConsoleStatus("error", `最终纳入确认失败：${error.message}`);
+            }
+          } else {
+            this.setConsoleStatus("screening", "请调整纳入论文后，再次点击“自动进行”继续。");
+          }
+          this.updateActionButtons();
+          return;
+        }
 
         // 检查是否完成
         if (["done", "partial", "error", "cancelled", "interrupted"].includes(runStatus)) {
@@ -3458,6 +3898,7 @@
     this.state.lastAction = "search";
     const session = this.state.currentSession;
     if (!session || !this.state.currentSessionId) return;
+    if (!(await this.ensureProtocolConfirmed())) return;
 
     if (!session.keywords || !session.keywords.length) {
       this.openKeywordModal(session.topic, session.keywords || []);
@@ -3495,7 +3936,7 @@
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.detail || "搜索失败");
+        throw new Error(this.apiErrorMessage(data, "搜索失败"));
       }
       this.state.activeRunId = data.run_id || null;
 
@@ -3543,6 +3984,7 @@
             this.setConsoleStatus(polled.state, outcomeMessage);
             this.state._searchStartPaperIds = [];
             if (polled.state === "search_complete") this.trackProductEvent("first_search_completed");
+            await this.loadScientificState();
           }
         } catch (error) {
           clearInterval(this.state.pollTimer);
@@ -3572,6 +4014,7 @@
     if (!confirm(`${actionLabel}将严格使用当前纳入的 ${paperIds.length} 篇论文，并保存为新版本。是否继续？`)) return;
 
     try {
+      await this.confirmCurrentInclusion(paperIds);
       this.setConsoleStatus("writing", "正在生成综述草稿...");
       const response = await fetch(`/api/sessions/${encodeURIComponent(this.state.currentSessionId)}/run/write`, {
         method: "POST",
@@ -3580,10 +4023,11 @@
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.detail || "写作失败");
+        throw new Error(this.apiErrorMessage(data, "写作失败"));
       }
 
       await this.reloadCurrentSession();
+      await this.loadScientificState();
       this.switchViewMode("review");
       this.setConsoleStatus("reviewing_draft", "综述已生成，可以继续提问或提交修改建议");
       this.trackProductEvent("first_review_generated");
@@ -3870,6 +4314,7 @@
       this.state.currentSession = data;
       this.state._updatingPaperId = null;
       this.renderConsoleSession();
+      await this.loadScientificState();
       const actionLabel = status === "accepted" ? "已纳入综述" : status === "rejected" ? "已排除" : "已移出综述";
       this.setConsoleStatus(data.state, actionLabel);
     } catch (error) {

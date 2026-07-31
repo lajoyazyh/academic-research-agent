@@ -77,6 +77,8 @@ class RunPhaseRequest(BaseModel):
     exclude_ids: Optional[list[str]] = None
     max_loops: int = Field(default=20, ge=1, le=80)
     min_papers: int = 3
+    protocol_version: int | None = None
+    inclusion_snapshot_id: str | None = None
     provider: ProviderConfig | None = None
 
 
@@ -97,6 +99,9 @@ class AutoRunRequest(BaseModel):
     topic: str
     max_loops: int = Field(default=20, ge=1, le=80)
     min_papers: int = Field(default=3, ge=1, le=15)
+    resume_from: str = "plan"
+    protocol_version: int | None = None
+    inclusion_snapshot_id: str | None = None
     provider: ProviderConfig | None = None
 
 

@@ -1,0 +1,470 @@
+[
+  {
+    "paper_id": "2312.10997",
+    "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+    "authors": "Yunfan Gao, Yun Xiong, Xinyu Gao, Kangxiang Jia, Jinliu Pan, Yuxi Bi, Yi Dai, Jiawei Sun, Wang, Meng, Wang, Haofen",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2312.10997",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) showcase impressive capabilities but encounter challenges like hallucination, outdated knowledge, and non-transparent, untraceable reasoning"
+  },
+  {
+    "paper_id": "W4393147129",
+    "title": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+    "authors": "Jiawei Chen, Hongyu Lin, Xianpei Han, Le Sun",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1609/aaai.v38i16.29728",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-Augmented Generation (RAG) is a promising approach for mitigating the hallucination of large language models (LLMs). However, existing"
+  },
+  {
+    "paper_id": "W4389520468",
+    "title": "Enhancing Retrieval-Augmented Large Language Models with Iterative Retrieval-Generation Synergy",
+    "authors": "Zhihong Shao, Yeyun Gong, Yelong Shen, Minlie Huang, Nan Duan, Weizhu Chen",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.findings-emnlp.620",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-augmented generation has raise extensive attention as it is promising to address the limitations of large language models"
+  },
+  {
+    "paper_id": "W4392597393",
+    "title": "Integrating Retrieval-Augmented Generation with Large Language Models in Nephrology: Advancing Practical Applications",
+    "authors": "Jing Miao, Charat Thongprayoon, Supawadee Suppadungsuk, Oscar A. Garcia Valencia, Wisit Cheungpasitporn",
+    "year": 2024,
+    "source_url": "https://doi.org/10.3390/medicina60030445",
+    "abstract_available": true,
+    "abstract_excerpt": "The integration of large language models (LLMs) into healthcare, particularly in nephrology, represents a significant advancement in applying"
+  },
+  {
+    "paper_id": "W4395050972",
+    "title": "Optimization of hepatological clinical guidelines interpretation by large language models: a retrieval augmented generation-based framework",
+    "authors": "Simone Kresevic, Mauro Giuffrè, Miloš Ajčević, Agostino Accardo, Lory Saveria Crocè, Dennis Shung",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1038/s41746-024-01091-y",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) can potentially transform healthcare, particularly in providing the right information to the right provider"
+  },
+  {
+    "paper_id": "W4392544551",
+    "title": "Development of a liver disease–specific large language model chat interface using retrieval-augmented generation",
+    "authors": "Jin Ge, Steve Sun, Joseph F. Owens, Victor Galvez, Oksana Gologorskaya, Jennifer C. Lai, Mark J. Pletcher, Ki Lai",
+    "year": 2024,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/11706764",
+    "abstract_available": true,
+    "abstract_excerpt": "BACKGROUND AND AIMS: Large language models (LLMs) have significant capabilities in clinical information processing tasks. Commercially available LLMs,"
+  },
+  {
+    "paper_id": "W4409157497",
+    "title": "Retrieval augmented generation for 10 large language models and its generalizability in assessing medical fitness",
+    "authors": "Yu He Ke, Liyuan Jin, Kabilan Elangovan, Hairil Rizal Abdullah, Nan Liu, Alex Tiong Heng Sia, Chai Rick Soh, Joshua Yi Min Tung, Jasmine Chiat Ling Ong, Chang‐Fu Kuo, Shaochun Wu, Vesela Kovacheva, Daniel Shu Wei Ting",
+    "year": 2025,
+    "source_url": "https://doi.org/10.1038/s41746-025-01519-z",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) hold promise for medical applications but often lack domain-specific expertise. Retrieval Augmented Generation (RAG)"
+  },
+  {
+    "paper_id": "W4406421570",
+    "title": "Improving large language model applications in biomedicine with retrieval-augmented generation: a systematic review, meta-analysis, and clinical development guidelines",
+    "authors": "Siru Liu, Allison B. McCoy, Adam Wright",
+    "year": 2025,
+    "source_url": "https://doi.org/10.1093/jamia/ocaf008",
+    "abstract_available": true,
+    "abstract_excerpt": "OBJECTIVE: The objectives of this study are to synthesize findings from recent research of retrieval-augmented generation (RAG) and"
+  },
+  {
+    "paper_id": "W4388778348",
+    "title": "In-Context Retrieval-Augmented Language Models",
+    "authors": "Ori Ram, Yoav Levine, Itay Dalmedigos, Dor Muhlgay, Amnon Shashua, Kevin Leyton‐Brown, Yoav Shoham",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1162/tacl_a_00605",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Retrieval-Augmented Language Modeling (RALM) methods, which condition a language model (LM) on relevant documents from a grounding"
+  },
+  {
+    "paper_id": "2309.01431",
+    "title": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+    "authors": "Jiawei Chen, Hongyu Lin, Xianpei Han, Le Sun",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2309.01431",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-Augmented Generation (RAG) is a promising approach for mitigating the hallucination of large language models (LLMs). However, existing"
+  },
+  {
+    "paper_id": "W4384071683",
+    "title": "Large language models encode clinical knowledge",
+    "authors": "Karan Singhal, Shekoofeh Azizi, Tao Tu, S. Sara Mahdavi, Jason Lee, Hyung Won Chung, Nathan Scales, Ajay Kumar Tanwani, Heather Cole-Lewis, Stephen Pfohl, Perry W. Payne, Martin Seneviratne, Paul Gamble, Christopher Kelly, Abubakr Babiker, Nathanael Schärli, Aakanksha Chowdhery, P. Mansfield, Dina Demner‐Fushman, Blaise Agüera y Arcas, Dale R. Webster, Greg S. Corrado, Yossi Matias, Katherine Chou, Juraj Gottweis, Nenad Tomašev, Yun Liu, Alvin Rajkomar, Joëlle Barral, Christopher Semturs, Alan Karthikesalingam, Vivek Natarajan",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1038/s41586-023-06291-2",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Large language models (LLMs) have demonstrated impressive capabilities, but the bar for clinical applications is high. Attempts"
+  },
+  {
+    "paper_id": "W4391221150",
+    "title": "Almanac — Retrieval-Augmented Language Models for Clinical Medicine",
+    "authors": "Cyril Zakka, Rohan Shad, Akash Chaurasia, Alex R. Dalal, Jennifer L. Kim, Michael Moor, Robyn Fong, C. Phillips, Kevin Alexander, Euan A. Ashley, Jack Boyd, Kathleen Boyd, Karen G. Hirsch, Curt Langlotz, Rita Lee, Joanna Melia, Joanna Nelson, Karim Sallam, Stacey Tullis, Melissa A. Vogelsong, John P. Cunningham, William Hiesinger",
+    "year": 2024,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/10857783",
+    "abstract_available": true,
+    "abstract_excerpt": "BACKGROUND: Large language models (LLMs) have recently shown impressive zero-shot capabilities, whereby they can use auxiliary data, without"
+  },
+  {
+    "paper_id": "W4402671152",
+    "title": "DRAGIN: Dynamic Retrieval Augmented Generation based on the Real-time Information Needs of Large Language Models",
+    "authors": "Weihang Su, Yichen Tang, Qingyao Ai, Zhijing Wu, Yiqun Liu",
+    "year": 2024,
+    "source_url": "https://doi.org/10.18653/v1/2024.acl-long.702",
+    "abstract_available": true,
+    "abstract_excerpt": "Dynamic retrieval augmented generation (RAG) paradigm actively decides when and what to retrieve during the text generation process"
+  },
+  {
+    "paper_id": "W4389519118",
+    "title": "Active Retrieval Augmented Generation",
+    "authors": "Zhengbao Jiang, Frank F. Xu, Luyu Gao, Zhiqing Sun, Qian Liu, Jane Dwivedi-Yu, Yiming Yang, Jamie Callan, Graham Neubig",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.495",
+    "abstract_available": true,
+    "abstract_excerpt": "Zhengbao Jiang, Frank Xu, Luyu Gao, Zhiqing Sun, Qian Liu, Jane Dwivedi-Yu, Yiming Yang, Jamie Callan, Graham Neubig."
+  },
+  {
+    "paper_id": "2404.10981",
+    "title": "A Survey on Retrieval-Augmented Text Generation for Large Language Models",
+    "authors": "Yizheng Huang, Jimmy Xiangji Huang",
+    "year": 2026,
+    "source_url": "https://arxiv.org/abs/2404.10981",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-Augmented Generation (RAG) merges information retrieval (IR) techniques with deep learning advancements to address the static limitations of"
+  },
+  {
+    "paper_id": "W4400955423",
+    "title": "Enhancement of the Performance of Large Language Models in Diabetes Education through Retrieval-Augmented Generation: Comparative Study",
+    "authors": "Dingqiao Wang, J. K. Liang, Jinguo Ye, Jingni Li, J Li, Qikai Zhang, Qiuling Hu, Caineng Pan, Dongliang Wang, Z Y Liu, Wen Shi, Danli Shi, Fei Li, Bo Qu, Yingfeng Zheng",
+    "year": 2024,
+    "source_url": "https://doi.org/10.2196/58041",
+    "abstract_available": true,
+    "abstract_excerpt": "BACKGROUND: Large language models (LLMs) demonstrated advanced performance in processing clinical information. However, commercially available LLMs lack specialized"
+  },
+  {
+    "paper_id": "W4402670290",
+    "title": "Benchmarking Retrieval-Augmented Generation for Medicine",
+    "authors": "Guangzhi Xiong, Qiao Jin, Zhiyong Lu, Aidong Zhang",
+    "year": 2024,
+    "source_url": "https://doi.org/10.18653/v1/2024.findings-acl.372",
+    "abstract_available": true,
+    "abstract_excerpt": "While large language models (LLMs) have achieved state-of-the-art performance on a wide range of medical question answering (QA)"
+  },
+  {
+    "paper_id": "2303.18223",
+    "title": "A Survey of Large Language Models",
+    "authors": "Wayne Xin Zhao, Kun Zhou, Junyi Li, Tianyi Tang, Zican Dong, Yupeng Hou, Beichen Zhang, Yingqian Min, Junjie Zhang, Peiyu Liu, Xiaolei Wang, Yifan Du, Yushuo Chen, Yushuo Chen, Zhipeng Chen, Jinhao Jiang, Ruiyang Ren, Yifan Li, Xinyu Tang, Peiyu Liu, Yiwen Hu, Jian‐Yun Nie, Ji-Rong Wen",
+    "year": 2026,
+    "source_url": "https://arxiv.org/abs/2303.18223",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract The rapid evolution of large language models (LLMs) has driven a transformative shift in artificial intelligence (AI),"
+  },
+  {
+    "paper_id": "W4405538634",
+    "title": "SurgeryLLM: a retrieval-augmented generation large language model framework for surgical decision support and workflow enhancement",
+    "authors": "Chin Siang Ong, Nicholas T. Obey, Yanan Zheng, Arman Cohan, Eric B. Schneider",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1038/s41746-024-01391-3",
+    "abstract_available": true,
+    "abstract_excerpt": "SurgeryLLM, a large language model framework using Retrieval Augmented Generation demonstrably incorporated domain-specific knowledge from current evidence-based surgical"
+  },
+  {
+    "paper_id": "W4388594005",
+    "title": "Development of a Liver Disease-Specific Large Language Model Chat Interface using Retrieval Augmented Generation",
+    "authors": "Jin Ge, Steve Sun, Joseph F. Owens, Victor Galvez, Oksana Gologorskaya, Jennifer C. Lai, Mark J. Pletcher, Ki Lai",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1101/2023.11.10.23298364",
+    "abstract_available": true,
+    "abstract_excerpt": "Background: Large language models (LLMs) have significant capabilities in clinical information processing tasks. Commercially available LLMs, however, are"
+  },
+  {
+    "paper_id": "W4404783798",
+    "title": "RULE: Reliable Multimodal RAG for Factuality in Medical Vision Language Models",
+    "authors": "Peng Xia, Kangyu Zhu, Haoran Li, Hongtu Zhu, Yun Li, Gang Li, Linjun Zhang, Huaxiu Yao",
+    "year": 2024,
+    "source_url": "https://doi.org/10.18653/v1/2024.emnlp-main.62",
+    "abstract_available": true,
+    "abstract_excerpt": "The recent emergence of Medical Large Vision Language Models (Med-LVLMs) has enhanced medical diagnosis.However, current Med-LVLMs frequently encounter"
+  },
+  {
+    "paper_id": "W4401815218",
+    "title": "Factuality challenges in the era of large language models and opportunities for fact-checking",
+    "authors": "Isabelle Augenstein, Timothy Baldwin, Meeyoung Cha, Tanmoy Chakraborty, Giovanni Luca Ciampaglia, David Corney, Renée DiResta, Emilio Ferrara, Scott A. Hale, Alon Halevy, Eduard Hovy, Heng Ji, Filippo Menczer, Rubén Míguez, Preslav Nakov, Dietram A. Scheufele, Shivam Sharma, Giovanni Zagni",
+    "year": 2024,
+    "source_url": "https://researchprofiles.ku.dk/da/publications/09e1c6db-4b66-4913-a22b-e913b1dc2f58",
+    "abstract_available": false,
+    "abstract_excerpt": ""
+  },
+  {
+    "paper_id": "W4409348640",
+    "title": "Retrieval-Augmented Generation (RAG) Chatbots for Education: A Survey of Applications",
+    "authors": "Jakub Swacha, Michał Gracel",
+    "year": 2025,
+    "source_url": "https://doi.org/10.3390/app15084234",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-Augmented Generation (RAG) overcomes the main barrier for the adoption of LLM-based chatbots in education: hallucinations. The uncomplicated"
+  },
+  {
+    "paper_id": "W4399305008",
+    "title": "KRAGEN: a knowledge graph-enhanced RAG framework for biomedical problem solving using large language models",
+    "authors": "Nicholas Matsumoto, Jay Moran, Hyun‐Jun Choi, Miguel Hernandez, Mythreye Venkatesan, Paul P. Wang, Jason H. Moore",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1093/bioinformatics/btae353",
+    "abstract_available": true,
+    "abstract_excerpt": "MOTIVATION: Answering and solving complex problems using a large language model (LLM) given a certain domain such as"
+  },
+  {
+    "paper_id": "W4414128336",
+    "title": "Retrieval-Augmented Generation (RAG) in Healthcare: A Comprehensive Review",
+    "authors": "Fnu Neha, Deepshikha Bhati, Deepak Kumar Shukla",
+    "year": 2025,
+    "source_url": "https://doi.org/10.3390/ai6090226",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-Augmented Generation (RAG) enhances large language models (LLMs) by integrating external knowledge retrieval to improve factual consistency and"
+  },
+  {
+    "paper_id": "W4409282347",
+    "title": "Customized Retrieval Augmented Generation and Benchmarking for EDA Tool Documentation QA",
+    "authors": "Yuan Pu, Zhuolun He, Tairu Qiu, Haoyuan Wu, Bei Yu",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1145/3676536.3676730",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval augmented generation (RAG) enhances the accuracy and reliability of generative AI models by sourcing factual information from"
+  },
+  {
+    "paper_id": "W4409177398",
+    "title": "Enhancing Health Information Retrieval with RAG by prioritizing topical relevance and factual accuracy",
+    "authors": "Rishabh Upadhyay, Marco Viviani",
+    "year": 2025,
+    "source_url": "https://doi.org/10.1007/s10791-025-09505-5",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract The exponential surge in online health information, coupled with its increasing use by non-experts, highlights the pressing"
+  },
+  {
+    "paper_id": "W4402371950",
+    "title": "QA-RAG: Exploring LLM Reliance on External Knowledge",
+    "authors": "Aigerim Mansurova, Aiganym Mansurova, Aiganym Mansurova, Aiganym Mansurova, Aliya Nugumanova",
+    "year": 2024,
+    "source_url": "https://doi.org/10.3390/bdcc8090115",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) can store factual knowledge within their parameters and have achieved superior results in question-answering"
+  },
+  {
+    "paper_id": "W4404021177",
+    "title": "A survey on augmenting knowledge graphs (KGs) with large language models (LLMs): models, evaluation metrics, benchmarks, and challenges",
+    "authors": "Nourhan Ibrahim, Samar AboulEla, Ahmed Ibrahim, Rasha Kashef",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1007/s44163-024-00175-8",
+    "abstract_available": true,
+    "abstract_excerpt": "Integrating Large Language Models (LLMs) with Knowledge Graphs (KGs) enhances the interpretability and performance of AI systems. This"
+  },
+  {
+    "paper_id": "W4409716856",
+    "title": "Hallucination‐Free? Assessing the Reliability of Leading <scp>AI</scp> Legal Research Tools",
+    "authors": "Varun Magesh, Faiz Surani, Matthew Dahl, Mirac Suzgun, Christopher D. Manning, Daniel E. Ho",
+    "year": 2025,
+    "source_url": "https://doi.org/10.1111/jels.12413",
+    "abstract_available": true,
+    "abstract_excerpt": "ABSTRACT Legal practice has witnessed a sharp rise in products incorporating artificial intelligence (AI). Such tools are designed"
+  },
+  {
+    "paper_id": "2310.07521",
+    "title": "Survey on Factuality in Large Language Models: Knowledge, Retrieval and Domain-Specificity",
+    "authors": "Cunxiang Wang, Xiaoze Liu, Yuanhao Yue, Xiangru Tang, Tianhang Zhang, Jiayang, Cheng, Yunzhi Yao, Wen‐Yang Gao, Xuming Hu, Zehan Qi, Yidong Wang, Linyi Yang, Jindong Wang, Xing Xie, Zheng Zhang, Yue Zhang",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2310.07521",
+    "abstract_available": true,
+    "abstract_excerpt": "This survey addresses the crucial issue of factuality in Large Language Models (LLMs). As LLMs find applications across"
+  },
+  {
+    "paper_id": "2507.21504",
+    "title": "Evaluation and Benchmarking of LLM Agents: A Survey",
+    "authors": "Mahmoud Mohammadi, Yipeng Li, Jane C. Lo, Wendy Yip",
+    "year": 2025,
+    "source_url": "https://arxiv.org/abs/2507.21504",
+    "abstract_available": true,
+    "abstract_excerpt": "The rise of LLM-based agents has opened new frontiers in AI applications, yet evaluating these agents remains a"
+  },
+  {
+    "paper_id": "2401.08406",
+    "title": "RAG vs Fine-tuning: Pipelines, Tradeoffs, and a Case Study on Agriculture",
+    "authors": "Angels de Luis Balaguer, Vinamra Benara, Renato L. F. Cunha, Roberto de Moura Estevão Filho, Todd Hendry, Daniel M. Holstein, Jennifer Marsman, Nick Mecklenburg, Sara Malvar, Leonardo O. Nunes, Rafael Padilha, Morris Sharp, Bruno Silva, Swati Sharma, Vijay Aski, Ranveer Chandra",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2401.08406",
+    "abstract_available": true,
+    "abstract_excerpt": "There are two common ways in which developers are incorporating proprietary and domain-specific data when building applications of"
+  },
+  {
+    "paper_id": "2403.10446",
+    "title": "Enhancing LLM Factual Accuracy with RAG to Counter Hallucinations: A Case Study on Domain-Specific Queries in Private Knowledge-Bases",
+    "authors": "Jiarui Li, Ye Yuan, Zehua Zhang",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2403.10446",
+    "abstract_available": true,
+    "abstract_excerpt": "We proposed an end-to-end system design towards utilizing Retrieval Augmented Generation (RAG) to improve the factual accuracy of"
+  },
+  {
+    "paper_id": "W4408167800",
+    "title": "Generative AI and LLMs for Critical Infrastructure Protection: Evaluation Benchmarks, Agentic AI, Challenges, and Opportunities",
+    "authors": "Yagmur Yigit, Mohamed Amine Ferrag, Mohamed Chahine Ghanem, Iqbal H. Sarker, Λέανδρος Μαγλαράς, Christos Chrysoulas, Naghmeh Moradpoor, Norbert Tihanyi, Helge Janicke",
+    "year": 2025,
+    "source_url": "https://doi.org/10.3390/s25061666",
+    "abstract_available": true,
+    "abstract_excerpt": "Critical National Infrastructures (CNIs)-including energy grids, water systems, transportation networks, and communication frameworks-are essential to modern society yet"
+  },
+  {
+    "paper_id": "W4416037024",
+    "title": "OmniEval: An Omnidirectional and Automatic RAG Evaluation Benchmark in Financial Domain",
+    "authors": "Shuting Wang, Jiejun Tan, Zhicheng Dou, Ji-Rong Wen",
+    "year": 2025,
+    "source_url": "https://doi.org/10.18653/v1/2025.emnlp-main.292",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-augmented generation (RAG) has emerged as a key application of large language models (LLMs), especially in vertical domains"
+  },
+  {
+    "paper_id": "2402.19473",
+    "title": "Retrieval-Augmented Generation for AI-Generated Content: A Survey",
+    "authors": "Penghao Zhao, Hailin Zhang, Qinhan Yu, Zhengren Wang, Yunteng Geng, Fangcheng Fu, L. Yang, Wentao Zhang, Jiang, Jie, Cui, Bin",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2402.19473",
+    "abstract_available": true,
+    "abstract_excerpt": "Advancements in model algorithms, the growth of foundational models, and access to high-quality datasets have propelled the evolution"
+  },
+  {
+    "paper_id": "2401.15884",
+    "title": "Corrective Retrieval Augmented Generation",
+    "authors": "Shi-Qi Yan, Jia-Chen Gu, Yun Zhu, Zhen-Hua Ling",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2401.15884",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) inevitably exhibit hallucinations since the accuracy of generated texts cannot be secured solely by"
+  },
+  {
+    "paper_id": "1709.10010",
+    "title": "Advanced capabilities for materials modelling with Q <scp>uantum</scp> ESPRESSO",
+    "authors": "P Giannozzi, O Andreussi, T Brumme, O Bunau, M Buongiorno Nardelli, M Calandra, R Car, C Cavazzoni, D Ceresoli, M Cococcioni, N Colonna, I Carnimeo, A Dal Corso, S de Gironcoli, P Delugas, R A DiStasio, A Ferretti, A Floris, G Fratesi, G Fugallo, R Gebauer, U Gerstmann, F Giustino, T Gorni, J Jia, M Kawamura, H-Y Ko, A Kokalj, E Küçükbenli, M Lazzeri, M Marsili, N Marzari, F Mauri, N L Nguyen, H-V Nguyen, A Otero-de-la-Roza, L Paulatto, S Poncé, D Rocca, R Sabatini, B Santra, M Schlipf, A P Seitsonen, A Smogunov, I Timrov, T Thonhauser, P Umari, N Vast, X Wu, S Baroni",
+    "year": 2017,
+    "source_url": "https://arxiv.org/abs/1709.10010",
+    "abstract_available": true,
+    "abstract_excerpt": "Quantum EXPRESSO is an integrated suite of open-source computer codes for quantum simulations of materials using state-of-the-art electronic-structure"
+  },
+  {
+    "paper_id": "W4412889887",
+    "title": "Knowledge Graph Retrieval-Augmented Generation for LLM-based Recommendation",
+    "authors": "Shijie Wang, Wenqi Fan, Yue Feng, Lin Shanru, Xinyu Ma, Shuaiqiang Wang, Dawei Yin",
+    "year": 2025,
+    "source_url": "https://doi.org/10.18653/v1/2025.acl-long.1317",
+    "abstract_available": true,
+    "abstract_excerpt": "Shijie Wang, Wenqi Fan, Yue Feng, Lin Shanru, Xinyu Ma, Shuaiqiang Wang, Dawei Yin. Proceedings of the 63rd"
+  },
+  {
+    "paper_id": "W4404783788",
+    "title": "Retrieval Augmented Generation or Long-Context LLMs? A Comprehensive Study and Hybrid Approach",
+    "authors": "Zhuowan Li, Cheng Li, Mingyang Zhang, Qiaozhu Mei, Michael Bendersky",
+    "year": 2024,
+    "source_url": "https://doi.org/10.18653/v1/2024.emnlp-industry.66",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval Augmented Generation (RAG) has been a powerful tool for Large Language Models (LLMs) to efficiently process overly"
+  },
+  {
+    "paper_id": "W4412887933",
+    "title": "Ask in Any Modality: A Comprehensive Survey on Multimodal Retrieval-Augmented Generation",
+    "authors": "Mohammad Mahdi Abootorabi, Amirhosein Zobeiri, Mahdi Dehghani, Mohammadali Mohammadkhani, Bardia Mohammadi, Omid Ghahroodi, Mahdieh Soleymani Baghshah, Ehsaneddin Asgari",
+    "year": 2025,
+    "source_url": "https://doi.org/10.18653/v1/2025.findings-acl.861",
+    "abstract_available": true,
+    "abstract_excerpt": "Mohammad Mahdi Abootorabi, Amirhosein Zobeiri, Mahdi Dehghani, Mohammadali Mohammadkhani, Bardia Mohammadi, Omid Ghahroodi, Mahdieh Soleymani Baghshah, Ehsaneddin Asgari."
+  },
+  {
+    "paper_id": "W4411120331",
+    "title": "Rationale-Guided Retrieval Augmented Generation for Medical Question Answering",
+    "authors": "Jiwoong Sohn, Yein Park, Chanwoong Yoon, Sihyeon Park, Hyeon Seok Hwang, Mujeen Sung, Hyunjae Kim, Jaewoo Kang",
+    "year": 2025,
+    "source_url": "https://doi.org/10.18653/v1/2025.naacl-long.635",
+    "abstract_available": true,
+    "abstract_excerpt": "Jiwoong Sohn, Yein Park, Chanwoong Yoon, Sihyeon Park, Hyeon Hwang, Mujeen Sung, Hyunjae Kim, Jaewoo Kang. Proceedings of"
+  },
+  {
+    "paper_id": "2407.13193",
+    "title": "Retrieval-augmented generation for natural language processing: a survey",
+    "authors": "Shangyu Wu, Ying Xiong, Yufei Cui, Haolun Wu, Can Chen, Ye Yuan, Lianming Huang, Xue Liu, Tei‐Wei Kuo, Nan Guan, Chun Jason Xue",
+    "year": 2026,
+    "source_url": "https://arxiv.org/abs/2407.13193",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) have achieved strong empirical performance in various fields, benefiting from their huge amount of"
+  },
+  {
+    "paper_id": "W4404792869",
+    "title": "R2AG: Incorporating Retrieval Information into Retrieval Augmented Generation",
+    "authors": "Fuda Ye, Shuangyin Li, Yongqi Zhang, Lei Chen",
+    "year": 2024,
+    "source_url": "https://doi.org/10.18653/v1/2024.findings-emnlp.678",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval augmented generation (RAG) has been applied in many scenarios to augment large language models (LLMs) with external"
+  },
+  {
+    "paper_id": "W4410600121",
+    "title": "Document GraphRAG: Knowledge Graph Enhanced Retrieval Augmented Generation for Document Question Answering Within the Manufacturing Domain",
+    "authors": "Simon Knollmeyer, Oğuz Caymazer, Daniel Großmann",
+    "year": 2025,
+    "source_url": "https://doi.org/10.3390/electronics14112102",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-Augmented Generation (RAG) systems have shown significant potential for domain-specific Question Answering (QA) tasks, although persistent challenges in"
+  },
+  {
+    "paper_id": "W4413114507",
+    "title": "Retrieval-Augmented Generation (RAG) in Healthcare: A Comprehensive Review",
+    "authors": "Fnu Neha, Deepshikha Bhati, Deepak Kumar Shukla",
+    "year": 2025,
+    "source_url": "https://doi.org/10.20944/preprints202508.1022.v1",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-Augmented Generation (RAG) enhances large language models (LLMs) by integrating external knowledge retrieval to improve factual consistency and"
+  },
+  {
+    "paper_id": "2409.10102",
+    "title": "Trustworthiness in Retrieval-Augmented Generation Systems: A Survey",
+    "authors": "Yujia Zhou, Zhang, Wenbo, Shao, Jingying, Yan Liu, Xiaoxi Li, Jin, Jiajie, Hongjin Qian, Zheng Liu, Li, Chaozhuo, Zhang, Jason Chen, Zhicheng Dou, Philip S. Yu, Mao, Jiaxin",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2409.10102",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-Augmented Generation (RAG) has quickly grown into a pivotal paradigm in the development of Large Language Models (LLMs)."
+  },
+  {
+    "paper_id": "W4409362682",
+    "title": "Improving Retrieval Augmented Language Model with Self-Reasoning",
+    "authors": "Yuan Xia, Jingbo Zhou, Zhenhui Shi, Jun Chen, Haifeng Huang",
+    "year": 2025,
+    "source_url": "https://doi.org/10.1609/aaai.v39i24.34743",
+    "abstract_available": true,
+    "abstract_excerpt": "The Retrieval-Augmented Language Model (RALM) has demonstrated remarkable performance on knowledge-intensive tasks by integrating external knowledge during inference,"
+  },
+  {
+    "paper_id": "W4408046520",
+    "title": "Use of Retrieval-Augmented Large Language Model for COVID-19 Fact-Checking: Development and Usability Study",
+    "authors": "Hai Li, Jingyi Huang, Mengmeng Ji, Yuyi Yang, Ruopeng An",
+    "year": 2025,
+    "source_url": "https://doi.org/10.2196/66098",
+    "abstract_available": true,
+    "abstract_excerpt": "Background The COVID-19 pandemic has been accompanied by an “infodemic,” where the rapid spread of misinformation has exacerbated"
+  },
+  {
+    "paper_id": "W4412888476",
+    "title": "Document Segmentation Matters for Retrieval-Augmented Generation",
+    "authors": "Zhitong Wang, Cheng Gao, Chaojun Xiao, Yufei Huang, Shuzheng Si, Kangyang Luo, Yuzhuo Bai, Wenhao Li, Tangjian Duan, Chuancheng Lv, Guoshan Lu, Gang Chen, Fanchao Qi, Maosong Sun",
+    "year": 2025,
+    "source_url": "https://doi.org/10.18653/v1/2025.findings-acl.422",
+    "abstract_available": true,
+    "abstract_excerpt": "Zhitong Wang, Cheng Gao, Chaojun Xiao, Yufei Huang, Shuzheng Si, Kangyang Luo, Yuzhuo Bai, Wenhao Li, Tangjian Duan,"
+  },
+  {
+    "paper_id": "W4416035209",
+    "title": "Retrieval-Augmented Generation with Estimation of Source Reliability",
+    "authors": "Jeongyeon Hwang, Junyoung Park, Hyejin Park, Dong‐Woo Kim, Sangdon Park, Jungseul Ok",
+    "year": 2025,
+    "source_url": "https://doi.org/10.18653/v1/2025.emnlp-main.1738",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-Augmented Generation (RAG) is an effective approach to enhance the factual accuracy of large language models (LLMs) by"
+  }
+]

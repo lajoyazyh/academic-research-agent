@@ -1,0 +1,389 @@
+[
+  {
+    "paper_id": "2303.18223",
+    "title": "A Survey of Large Language Models",
+    "authors": "Wayne Xin Zhao, Kun Zhou, Junyi Li, Tianyi Tang, Zican Dong, Yupeng Hou, Beichen Zhang, Yingqian Min, Junjie Zhang, Peiyu Liu, Xiaolei Wang, Yifan Du, Yushuo Chen, Yushuo Chen, Zhipeng Chen, Jinhao Jiang, Ruiyang Ren, Yifan Li, Xinyu Tang, Peiyu Liu, Yiwen Hu, Jian‐Yun Nie, Ji-Rong Wen",
+    "year": 2026,
+    "source_url": "https://arxiv.org/abs/2303.18223",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract The rapid evolution of large language models (LLMs) has driven a transformative shift in artificial intelligence (AI),"
+  },
+  {
+    "paper_id": "W4393065402",
+    "title": "A survey on large language model based autonomous agents",
+    "authors": "Lei Wang, Chen Ma, Xueyang Feng, Zeyu Zhang, Hao Yang, Jingsen Zhang, Zhiyuan Chen, Jiakai Tang, Xu Chen, Yankai Lin, Wayne Xin Zhao, Zhewei Wei, Ji-Rong Wen",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1007/s11704-024-40231-1",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Autonomous agents have long been a research focus in academic and industry communities. Previous research often focuses"
+  },
+  {
+    "paper_id": "2309.01219",
+    "title": "Siren's Song in the AI Ocean: A Survey on Hallucination in Large Language Models",
+    "authors": "Yue Zhang, Yafu Li, Leyang Cui, Deng Cai, Lemao Liu, Tingchen Fu, Xinting Huang, Enbo Zhao, Yu Zhang, Xu, Chen, Yulong Chen, Longyue Wang, Anh Tuan Luu, Wei Bi, Freda Shi, Shuming Shi",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2309.01219",
+    "abstract_available": true,
+    "abstract_excerpt": "While large language models (LLMs) have demonstrated remarkable capabilities across a range of downstream tasks, a significant concern"
+  },
+  {
+    "paper_id": "2311.05232",
+    "title": "A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions",
+    "authors": "Lei Huang, Weijiang Yu, Weitao Ma, Wei‐Hong Zhong, Zhangyin Feng, Haotian Wang, Qianglong Chen, Weihua Peng, Xiaocheng Feng, Bing Qin, Ting Liu",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2311.05232",
+    "abstract_available": true,
+    "abstract_excerpt": "The emergence of large language models (LLMs) has marked a significant breakthrough in natural language processing (NLP), fueling"
+  },
+  {
+    "paper_id": "W4390490761",
+    "title": "Explainability for Large Language Models: A Survey",
+    "authors": "Haiyan Zhao, Hanjie Chen, Fan Yang, Ninghao Liu, Huiqi Deng, Hengyi Cai, Shuaiqiang Wang, Dawei Yin, Mengnan Du",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1145/3639372",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) have demonstrated impressive capabilities in natural language processing. However, their internal mechanisms are still"
+  },
+  {
+    "paper_id": "W4412158322",
+    "title": "🧜Siren’s Song in the AI Ocean: A Survey on Hallucination in Large Language Models",
+    "authors": "Yue Zhang, Yafu Li, Leyang Cui, Cai Deng, Lemao Liu, Tingchen Fu, Xinting Huang, Enbo Zhao, Yanwen Zhang, Yulong Chen, Longyue Wang, Ahn Tuan Luu, Wei Bi, Freda Shi, Shuming Shi",
+    "year": 2025,
+    "source_url": "https://doi.org/10.1162/coli.a.16",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract While large language models (LLMs) have demonstrated remarkable capabilities across a range of downstream tasks, a significant"
+  },
+  {
+    "paper_id": "W4321351832",
+    "title": "Artificial Hallucinations in ChatGPT: Implications in Scientific Writing",
+    "authors": "Hussam Alkaissi, Samy I. McFarlane",
+    "year": 2023,
+    "source_url": "https://doi.org/10.7759/cureus.35179",
+    "abstract_available": true,
+    "abstract_excerpt": "While still in its infancy, ChatGPT (Generative Pretrained Transformer), introduced in November 2022, is bound to hugely impact"
+  },
+  {
+    "paper_id": "2401.01313",
+    "title": "A Comprehensive Survey of Hallucination Mitigation Techniques in Large Language Models",
+    "authors": "S. M Towhidul Islam Tonmoy, S M Mehedi Zaman, Vinija Jain, Anku Rani, Vipula Rawte, Aman Chadha, Amitava Das",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2401.01313",
+    "abstract_available": true,
+    "abstract_excerpt": "As Large Language Models (LLMs) continue to advance in their ability to write human-like text, a key challenge"
+  },
+  {
+    "paper_id": "W4389518784",
+    "title": "HaluEval: A Large-Scale Hallucination Evaluation Benchmark for Large Language Models",
+    "authors": "Junyi Li, Xiaoxue Cheng, Xin Zhao, Jian‐Yun Nie, Ji-Rong Wen",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.397",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs), such as ChatGPT, are prone to generate hallucinations, i.e., content that conflicts with the"
+  },
+  {
+    "paper_id": "W4402670429",
+    "title": "Chain-of-Verification Reduces Hallucination in Large Language Models",
+    "authors": "Shehzaad Dhuliawala, Mojtaba Komeili, Jing Xu, Roberta Răileanu, Xian Li, Aslı Çelikyılmaz, Jason Weston",
+    "year": 2024,
+    "source_url": "https://doi.org/10.18653/v1/2024.findings-acl.212",
+    "abstract_available": true,
+    "abstract_excerpt": "Generation of plausible yet incorrect factual information, termed hallucination, is an unsolved issue in large language models.We study"
+  },
+  {
+    "paper_id": "2402.06196",
+    "title": "Large Language Models: A Survey",
+    "authors": "Shervin Minaee, Tomas Mikolov, Nikzad, Narjes, Meysam Chenaghlu, Richard Socher, Xavier Amatriain, Jianfeng Gao",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2402.06196",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) have drawn a lot of attention due to their strong performance on a wide"
+  },
+  {
+    "paper_id": "W4383737134",
+    "title": "A Survey on Large Language Models: Applications, Challenges, Limitations, and Practical Usage",
+    "authors": "Muhammad Usman Hadi, qasem al tashi, Rizwan Qureshi, Abbas Shah, Amgad Muneer, Muhammad Irfan, Anas Zafar, Muhammad Bilal Shaikh, Naveed Akhtar, Syed Zohaib Hassan, Maged Shoman, Jia Wu, Seyedali Mirjalili, Mubarak Shah",
+    "year": 2023,
+    "source_url": "https://doi.org/10.36227/techrxiv.23589741.v1",
+    "abstract_available": true,
+    "abstract_excerpt": "Within the vast expanse of computerized language processing, a revolutionary entity known as Large Language Models (LLMs) has"
+  },
+  {
+    "paper_id": "W4391855109",
+    "title": "A Review on Large Language Models: Architectures, Applications, Taxonomies, Open Issues and Challenges",
+    "authors": "Mohaimenul Azam Khan Raiaan, Md. Saddam Hossain Mukta, Kaniz Fatema, Nur Mohammad Fahad, Sadman Sakib, Most. Marufatul Jannat Mim, Jubaer Ahmad, Mohammed Eunus Ali, Sami Azam",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1109/access.2024.3365742",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) recently demonstrated extraordinary capability, including natural language processing (NLP), language translation, text generation, question"
+  },
+  {
+    "paper_id": "W4388994228",
+    "title": "Large Language Models in Finance: A Survey",
+    "authors": "Yinheng Li, Shaofei Wang, Han Ding, Hang Chen",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1145/3604237.3626869",
+    "abstract_available": true,
+    "abstract_excerpt": "Recent advances in large language models (LLMs) have opened new possibilities for artificial intelligence applications in finance. In"
+  },
+  {
+    "paper_id": "2401.11817",
+    "title": "Hallucination is Inevitable: An Innate Limitation of Large Language Models",
+    "authors": "Ziwei Xu, Sanjay Jain, Mohan Kankanhalli",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2401.11817",
+    "abstract_available": true,
+    "abstract_excerpt": "Hallucination has been widely recognized to be a significant drawback for large language models (LLMs). There have been"
+  },
+  {
+    "paper_id": "W4401671778",
+    "title": "Large language models (LLMs): survey, technical frameworks, and future challenges",
+    "authors": "Pranjal Kumar",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1007/s10462-024-10888-y",
+    "abstract_available": true,
+    "abstract_excerpt": "Artificial intelligence (AI) has significantly impacted various fields. Large language models (LLMs) like GPT-4, BARD, PaLM, Megatron-Turing NLG,"
+  },
+  {
+    "paper_id": "2304.10592",
+    "title": "MiniGPT-4: Enhancing Vision-Language Understanding with Advanced Large Language Models",
+    "authors": "Deyao Zhu, Jun Chen, Xiaoqian Shen, Xiang Li, Mohamed Elhoseiny",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2304.10592",
+    "abstract_available": true,
+    "abstract_excerpt": "The recent GPT-4 has demonstrated extraordinary multi-modal abilities, such as directly generating websites from handwritten text and identifying"
+  },
+  {
+    "paper_id": "2307.03109",
+    "title": "A Survey on Evaluation of Large Language Models",
+    "authors": "Yupeng Chang, Xu Wang, Jindong Wang, Yuan-Hsuan Wu, Linyi Yang, Kaijie Zhu, Hao Chen, Xiaoyuan Yi, Cunxiang Wang, Yidong Wang, Wei Ye, Yue Zhang, Yi Chang, Philip S. Yu, Qiang Yang, Xing Xie",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2307.03109",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) are gaining increasing popularity in both academia and industry, owing to their unprecedented performance"
+  },
+  {
+    "paper_id": "W4393147129",
+    "title": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+    "authors": "Jiawei Chen, Hongyu Lin, Xianpei Han, Le Sun",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1609/aaai.v38i16.29728",
+    "abstract_available": true,
+    "abstract_excerpt": "Retrieval-Augmented Generation (RAG) is a promising approach for mitigating the hallucination of large language models (LLMs). However, existing"
+  },
+  {
+    "paper_id": "W4404239715",
+    "title": "Large language models for generative information extraction: a survey",
+    "authors": "Derong Xu, Wei Chen, Wenjun Peng, Chao Zhang, Tong Xu, Xiangyu Zhao, Xian Wu, Yefeng Zheng, Yan Wang, Enhong Chen",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1007/s11704-024-40555-y",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Information Extraction (IE) aims to extract structural knowledge from plain natural language texts. Recently, generative Large Language"
+  },
+  {
+    "paper_id": "W4384071683",
+    "title": "Large language models encode clinical knowledge",
+    "authors": "Karan Singhal, Shekoofeh Azizi, Tao Tu, S. Sara Mahdavi, Jason Lee, Hyung Won Chung, Nathan Scales, Ajay Kumar Tanwani, Heather Cole-Lewis, Stephen Pfohl, Perry W. Payne, Martin Seneviratne, Paul Gamble, Christopher Kelly, Abubakr Babiker, Nathanael Schärli, Aakanksha Chowdhery, P. Mansfield, Dina Demner‐Fushman, Blaise Agüera y Arcas, Dale R. Webster, Greg S. Corrado, Yossi Matias, Katherine Chou, Juraj Gottweis, Nenad Tomašev, Yun Liu, Alvin Rajkomar, Joëlle Barral, Christopher Semturs, Alan Karthikesalingam, Vivek Natarajan",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1038/s41586-023-06291-2",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Large language models (LLMs) have demonstrated impressive capabilities, but the bar for clinical applications is high. Attempts"
+  },
+  {
+    "paper_id": "W4399803256",
+    "title": "Detecting hallucinations in large language models using semantic entropy",
+    "authors": "Sebastian Farquhar, Jannik Kossen, Lorenz Kuhn, Yarin Gal",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1038/s41586-024-07421-0",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Large language model (LLM) systems, such as ChatGPT 1 or Gemini 2 , can show impressive reasoning"
+  },
+  {
+    "paper_id": "W4389523832",
+    "title": "Evaluating Object Hallucination in Large Vision-Language Models",
+    "authors": "Yifan Li, Yifan Du, Kun Zhou, Jinpeng Wang, Zhao Xin, Ji-Rong Wen",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.20",
+    "abstract_available": true,
+    "abstract_excerpt": "Inspired by the superior language abilities of large language models (LLM), large vision-language models (LVLM) have been recently"
+  },
+  {
+    "paper_id": "W4392669753",
+    "title": "A Multitask, Multilingual, Multimodal Evaluation of ChatGPT on Reasoning, Hallucination, and Interactivity",
+    "authors": "Yejin Bang, Samuel Cahyawijaya, Nayeon Lee, Wenliang Dai, Dan Su, Bryan Wilie, Holy Lovenia, Ziwei Ji, Tiezheng Yu, Willy Chung, V. Quyet, Yan Xu, Pascale Fung",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.ijcnlp-main.45",
+    "abstract_available": true,
+    "abstract_excerpt": "Yejin Bang, Samuel Cahyawijaya, Nayeon Lee, Wenliang Dai, Dan Su, Bryan Wilie, Holy Lovenia, Ziwei Ji, Tiezheng Yu,"
+  },
+  {
+    "paper_id": "W4389520749",
+    "title": "SelfCheckGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models",
+    "authors": "Potsawee Manakul, Adian Liusie, Mark Gales",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.557",
+    "abstract_available": true,
+    "abstract_excerpt": "Generative Large Language Models (LLMs) such as GPT-3 are capable of generating highly fluent responses to a wide"
+  },
+  {
+    "paper_id": "2204.14198",
+    "title": "Flamingo: a Visual Language Model for Few-Shot Learning",
+    "authors": "Alayrac, Jean-Baptiste, Jeff Donahue, Pauline Luc, Antoine Miech, Iain Barr, Yana Hasson, Karel Lenc, Arthur Mensch, Katie Millican, Malcolm Reynolds, Roman Ring, Eliza Rutherford, Serkan Cabi, Tengda Han, Zhitao Gong, Sina Samangooei, Marianne Monteiro, Jacob Menick, Sebastian Borgeaud, Andrew Brock, Aida Nematzadeh, Sahand Sharifzadeh, Mikołaj Bińkowski, Ricardo Barreira, Oriol Vinyals, Andrew Zisserman, Karen Simonyan",
+    "year": 2022,
+    "source_url": "https://arxiv.org/abs/2204.14198",
+    "abstract_available": true,
+    "abstract_excerpt": "Building models that can be rapidly adapted to novel tasks using only a handful of annotated examples is"
+  },
+  {
+    "paper_id": "W3155807546",
+    "title": "Retrieval Augmentation Reduces Hallucination in Conversation",
+    "authors": "Kurt Shuster, Spencer Poff, Moya Chen, Douwe Kiela, Jason Weston",
+    "year": 2021,
+    "source_url": "https://doi.org/10.18653/v1/2021.findings-emnlp.320",
+    "abstract_available": true,
+    "abstract_excerpt": "Despite showing increasingly human-like conversational abilities, state-of-the-art dialogue models often suffer from factual incorrectness and hallucination of knowledge"
+  },
+  {
+    "paper_id": "W4389519928",
+    "title": "Towards Mitigating LLM Hallucination via Self Reflection",
+    "authors": "Ziwei Ji, Tiezheng Yu, Yan Xu, Nayeon Lee, Etsuko Ishii, Pascale Fung",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.findings-emnlp.123",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) have shown promise for generative and knowledge-intensive tasks including question-answering (QA) tasks. However, the"
+  },
+  {
+    "paper_id": "2312.10997",
+    "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+    "authors": "Yunfan Gao, Yun Xiong, Xinyu Gao, Kangxiang Jia, Jinliu Pan, Yuxi Bi, Yi Dai, Jiawei Sun, Wang, Meng, Wang, Haofen",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2312.10997",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) showcase impressive capabilities but encounter challenges like hallucination, outdated knowledge, and non-transparent, untraceable reasoning"
+  },
+  {
+    "paper_id": "2302.04023",
+    "title": "A Multitask, Multilingual, Multimodal Evaluation of ChatGPT on Reasoning, Hallucination, and Interactivity",
+    "authors": "Yejin Bang, Samuel Cahyawijaya, Nayeon Lee, Wenliang Dai, Dan Su, Bryan Wilie, Holy Lovenia, Ziwei Ji, Tiezheng Yu, Willy Chung, Quyet V. Do, Yan Xu, Pascale Fung",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2302.04023",
+    "abstract_available": true,
+    "abstract_excerpt": "This paper proposes a framework for quantitatively evaluating interactive LLMs such as ChatGPT using publicly available data sets."
+  },
+  {
+    "paper_id": "W4406152279",
+    "title": "Toward expert-level medical question answering with large language models",
+    "authors": "K. K. Singhal, Tao Tu, Juraj Gottweis, Rory Sayres, Ellery Wulczyn, Mohamed Amin, Le Hou, Kevin Clark, Stephen Pfohl, Heather Cole-Lewis, Darlene Neal, Qazi Mamunur Rashid, Mike Schaekermann, Amy Wang, Dev Dash, Jonathan H. Chen, Nigam H. Shah, Sami Lachgar, P. Mansfield, Sushant Prakash, Bradley Green, Ewa Dominowska, Blaise Agüera y Arcas, Nenad Tomašev, Yun Liu, Renee Wong, Christopher Semturs, S. Sara Mahdavi, Joëlle Barral, Dale R. Webster, Greg S. Corrado, Yossi Matias, Shekoofeh Azizi, Alan Karthikesalingam, Vivek Natarajan",
+    "year": 2025,
+    "source_url": "https://doi.org/10.1038/s41591-024-03423-7",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) have shown promise in medical question answering, with Med-PaLM being the first to exceed"
+  },
+  {
+    "paper_id": "W4396723768",
+    "title": "Augmenting large language models with chemistry tools",
+    "authors": "Andres M. Bran, Sam Cox, Oliver Schilter, Carlo Baldassari, Andrew Dickson White, Philippe Schwaller",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1038/s42256-024-00832-8",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) have shown strong performance in tasks across domains but struggle with chemistry-related problems. These"
+  },
+  {
+    "paper_id": "W4414677042",
+    "title": "Survey and analysis of hallucinations in large language models: attribution to prompting strategies or model behavior",
+    "authors": "Dang Anh-Hoang, Vu Tran, Le-Minh Nguyen",
+    "year": 2025,
+    "source_url": "https://doi.org/10.3389/frai.2025.1622292",
+    "abstract_available": true,
+    "abstract_excerpt": "Hallucination in Large Language Models (LLMs) refers to outputs that appear fluent and coherent but are factually incorrect,"
+  },
+  {
+    "paper_id": "W4410343193",
+    "title": "A framework to assess clinical safety and hallucination rates of LLMs for medical text summarisation",
+    "authors": "Elham Asgari, Nina Montaña-Brown, Magda Dubois, Saleh Khalil, Jasmine Balloch, Joshua Au Yeung, Dominic Pimenta",
+    "year": 2025,
+    "source_url": "https://doi.org/10.1038/s41746-025-01670-7",
+    "abstract_available": true,
+    "abstract_excerpt": "Integrating large language models (LLMs) into healthcare can enhance workflow efficiency and patient care by automating tasks such"
+  },
+  {
+    "paper_id": "2403.14473",
+    "title": "The ethics of ChatGPT in medicine and healthcare: a systematic review on Large Language Models (LLMs)",
+    "authors": "Joschka Haltaufderheide, Robert Ranisch",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2403.14473",
+    "abstract_available": true,
+    "abstract_excerpt": "With the introduction of ChatGPT, Large Language Models (LLMs) have received enormous attention in healthcare. Despite potential benefits,"
+  },
+  {
+    "paper_id": "W4401484139",
+    "title": "Towards trustworthy LLMs: a review on debiasing and dehallucinating in large language models",
+    "authors": "Zichao Lin, Shuyan Guan, Wending Zhang, Huiyan Zhang, Huiyan Zhang, Yugang Li, Huaping Zhang, Huaping Zhang",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1007/s10462-024-10896-y",
+    "abstract_available": true,
+    "abstract_excerpt": "Recently, large language models (LLMs) have attracted considerable attention due to their remarkable capabilities. However, LLMs’ generation of"
+  },
+  {
+    "paper_id": "2305.11747",
+    "title": "HaluEval: A Large-Scale Hallucination Evaluation Benchmark for Large Language Models",
+    "authors": "Junyi Li, Xiaoxue Cheng, Wayne Xin Zhao, Jian‐Yun Nie, Ji-Rong Wen",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2305.11747",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs), such as ChatGPT, are prone to generate hallucinations, i.e., content that conflicts with the"
+  },
+  {
+    "paper_id": "2403.06710",
+    "title": "HILL: A Hallucination Identifier for Large Language Models",
+    "authors": "Florian Leiser, Sven Eckhardt, Valentin Leuthe, Merlin Knaeble, Alexander Maedche, Gerhard Schwabe, Ali Sunyaev",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2403.06710",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) are prone to hallucinations, i.e., nonsensical, unfaithful, and undesirable text. Users tend to overrely"
+  },
+  {
+    "paper_id": "2309.06794",
+    "title": "Cognitive Mirage: A Review of Hallucinations in Large Language Models",
+    "authors": "Hongbin Ye, Tong Liu, Aijia Zhang, Hua, Wei, Weiqiang Jia",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2309.06794",
+    "abstract_available": true,
+    "abstract_excerpt": "As large language models continue to develop in the field of AI, text generation systems are susceptible to"
+  },
+  {
+    "paper_id": "W4389636360",
+    "title": "Can Large Language Models Transform Computational Social Science?",
+    "authors": "Caleb Ziems, William A. Held, Omar Ahmed Shaikh, Jiaao Chen, Zhehao Zhang, Diyi Yang",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1162/coli_a_00502",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Large language models (LLMs) are capable of successfully performing many language processing tasks zero-shot (without training data)."
+  },
+  {
+    "paper_id": "2404.11457",
+    "title": "Bias and Unfairness in Information Retrieval Systems: New Challenges in the LLM Era",
+    "authors": "Sunhao Dai, Xu Chen, Shicheng Xu, Liang Pang, Zhenhua Dong, Jun Xu",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2404.11457",
+    "abstract_available": true,
+    "abstract_excerpt": "With the rapid advancements of large language models (LLMs), information retrieval (IR) systems, such as search engines and"
+  },
+  {
+    "paper_id": "W4416037109",
+    "title": "From Generation to Judgment: Opportunities and Challenges of LLM-as-a-judge",
+    "authors": "Da-Wei Li, Bohan Jiang, Lili Huang, Alimohammad Beigi, Chengshuai Zhao, Zhen Tan, Amrita Bhattacharjee, Yuxuan Jiang, Canyu Chen, Tianhao Wu, Kan Shu, Lu Cheng, H.L. Liu",
+    "year": 2025,
+    "source_url": "https://doi.org/10.18653/v1/2025.emnlp-main.138",
+    "abstract_available": true,
+    "abstract_excerpt": "Dawei Li, Bohan Jiang, Liangjie Huang, Alimohammad Beigi, Chengshuai Zhao, Zhen Tan, Amrita Bhattacharjee, Yuxuan Jiang, Canyu Chen,"
+  },
+  {
+    "paper_id": "W4389518833",
+    "title": "A New Benchmark and Reverse Validation Method for Passage-level Hallucination Detection",
+    "authors": "Shiping Yang, Renliang Sun, Xiaojun Wan",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.findings-emnlp.256",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) have shown their ability to collaborate effectively with humans in real-world scenarios. However, LLMs"
+  }
+]

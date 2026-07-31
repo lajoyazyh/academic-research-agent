@@ -131,6 +131,7 @@ class SessionManager:
         (session_dir / "repositories").mkdir(parents=True, exist_ok=True)
         (session_dir / "draft").mkdir(parents=True, exist_ok=True)
         (session_dir / "traces").mkdir(parents=True, exist_ok=True)
+        (session_dir / "methodology").mkdir(parents=True, exist_ok=True)
 
         now = datetime.datetime.now().isoformat()
         initial_state = SessionState.PLAN_CONFIRMED.value if keywords else SessionState.PLANNING.value
@@ -142,6 +143,7 @@ class SessionManager:
             "updated_at": now,
             "rewrite_count": 0,
             "skills": skills or {},
+            "workflow_version": 2,
         }
         self._write_json(session_dir / "metadata.json", metadata)
 
@@ -160,6 +162,17 @@ class SessionManager:
                         norm.append(k)
             if norm:
                 self._write_json(session_dir / "plan" / "confirmed_keywords.json", norm)
+
+        # Every newly created project starts with an explicit, editable review
+        # protocol. It remains a draft until the user confirms the first
+        # scientific-method checkpoint.
+        from backend.scientific_review import ScientificReviewService
+        ScientificReviewService(self).create_protocol(
+            session_id,
+            topic=topic,
+            mode="rapid",
+            language="zh-CN",
+        )
 
         return self.load_session(session_id)
 
@@ -242,6 +255,19 @@ class SessionManager:
         repositories = self._read_json(session_dir / "repositories" / "sources.json") or []
         review_quality = self._read_json(session_dir / "review" / "quality.json") or {}
         search_runs = self._read_json(session_dir / "plan" / "search_runs.json") or []
+        protocols = self._read_json(session_dir / "methodology" / "protocols.json") or []
+        current_protocol_ref = self._read_json(session_dir / "methodology" / "current_protocol.json") or {}
+        current_protocol = next(
+            (
+                item for item in protocols
+                if item.get("protocol_id") == current_protocol_ref.get("protocol_id")
+            ),
+            protocols[-1] if protocols else None,
+        )
+        candidates = self._read_json(session_dir / "methodology" / "candidates.json") or []
+        inclusion_snapshots = self._read_json(
+            session_dir / "methodology" / "inclusion_snapshots.json"
+        ) or []
         accepted_ids = sorted(
             p.get("paper_id", "") for p in papers if p.get("status") == "accepted" and p.get("paper_id")
         )
@@ -259,6 +285,7 @@ class SessionManager:
             "created_at": metadata.get("created_at", ""),
             "updated_at": metadata.get("updated_at", ""),
             "rewrite_count": metadata.get("rewrite_count", 0),
+            "workflow_version": metadata.get("workflow_version", 1),
             "skills": metadata.get("skills", {}),
             "review_referenced_papers": metadata.get("review_referenced_papers", []),
             "initial_plan": initial_plan,
@@ -276,6 +303,10 @@ class SessionManager:
             "review_is_stale": review_is_stale,
             "accepted_paper_ids": accepted_ids,
             "search_runs": search_runs,
+            "review_protocol": current_protocol,
+            "protocols": protocols,
+            "candidates": candidates,
+            "inclusion_snapshot": inclusion_snapshots[-1] if inclusion_snapshots else None,
             "conversations": conversations,
         }
 
@@ -412,6 +443,11 @@ class SessionManager:
                 "pdf_status": paper.get("pdf_status", ""),
                 "pdf_error": paper.get("pdf_error", ""),
                 "pdf_filename": paper.get("pdf_filename", ""),
+                "candidate_id": paper.get("candidate_id", ""),
+                "screening_stage": paper.get("screening_stage", ""),
+                "screening_decision": paper.get("screening_decision", ""),
+                "screening_reason": paper.get("screening_reason", ""),
+                "screening_confidence": paper.get("screening_confidence"),
             }
             papers.append(norm)
             self.save_papers_list(session_id, papers)
@@ -542,6 +578,11 @@ class SessionManager:
             p.setdefault("pdf_filename", "")
             p.setdefault("evidence_basis", "")
             p.setdefault("evidence_updated_at", "")
+            p.setdefault("candidate_id", "")
+            p.setdefault("screening_stage", "")
+            p.setdefault("screening_decision", "")
+            p.setdefault("screening_reason", "")
+            p.setdefault("screening_confidence", None)
 
             # Normalize values: if a field is a list, join it. For most fields we then
             # truncate at the first line break (handling literal "\\n" sequences),

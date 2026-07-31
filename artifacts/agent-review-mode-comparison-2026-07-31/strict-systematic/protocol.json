@@ -1,0 +1,106 @@
+{
+  "protocol_id": "protocol_4f0e3924f9e2",
+  "version": 1,
+  "status": "confirmed",
+  "methodology_schema_version": 2,
+  "legacy_incomplete_methodology": false,
+  "mode": "systematic",
+  "language": "zh-CN",
+  "research_question": "检索增强生成系统在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面有哪些可验证证据与适用边界？",
+  "framework": "PICOC（计算机与AI技术问题）",
+  "candidate_cap": 100,
+  "sources": [
+    "arxiv",
+    "crossref",
+    "dblp"
+  ],
+  "languages": [
+    "English"
+  ],
+  "document_types": [
+    "journal article",
+    "conference paper",
+    "preprint"
+  ],
+  "search_field_scope": [
+    "title",
+    "abstract",
+    "keywords"
+  ],
+  "date_from": "2020-01-01",
+  "date_to": "2026-07-31",
+  "search_strategy": {
+    "field_scope": [
+      "title",
+      "abstract",
+      "keywords"
+    ],
+    "language_limits": [
+      "English"
+    ],
+    "document_type_limits": [
+      "journal article",
+      "conference paper",
+      "preprint"
+    ],
+    "date_from": "2020-01-01",
+    "date_to": "2026-07-31",
+    "query_peer_reviewed": false
+  },
+  "screening_policy": {
+    "title_abstract": "independent AI screening; uncertain records retained",
+    "full_text": "independent AI screening over structured full-text evidence",
+    "conflict_resolution": "human adjudication required; not performed in this automated test",
+    "test_operator_confirmation": false
+  },
+  "evidence_hierarchy_policy": {
+    "primary_required_for": [
+      "performance",
+      "cost",
+      "mechanism effectiveness",
+      "practice recommendation"
+    ],
+    "secondary_allowed_for": [
+      "background",
+      "taxonomy",
+      "research landscape"
+    ]
+  },
+  "inclusion_criteria": [
+    "直接研究RAG架构、检索控制、可靠性评价或计算成本",
+    "提供原始实验、基准或具有实证验证的技术框架",
+    "综述文章仅用于分类与研究版图，不得支撑性能或成本结论",
+    "能够获得足以核验机制和结果的全文"
+  ],
+  "exclusion_criteria": [
+    "研究问题与RAG机制、评价、可靠性或成本无直接关系",
+    "只有观点或产品描述而无可核验技术证据",
+    "缺少可用全文，无法完成依赖全文的筛选与质量评价"
+  ],
+  "extraction_fields": [
+    "study_design",
+    "population_or_dataset",
+    "intervention_or_method",
+    "comparator_or_baseline",
+    "sample_size",
+    "outcomes_and_metrics",
+    "main_results",
+    "uncertainty",
+    "limitations",
+    "funding_and_conflicts",
+    "evidence_locations"
+  ],
+  "primary_outcomes": [],
+  "comparison_dimensions": [
+    "study_design",
+    "population",
+    "outcome",
+    "context"
+  ],
+  "appraisal_profile": "computer_ai",
+  "synthesis_method": "SWiM structured narrative synthesis",
+  "base_protocol_id": null,
+  "created_at": "2026-07-31T12:57:45.785728+00:00",
+  "updated_at": "2026-07-31T12:57:45.813575+00:00",
+  "confirmed_at": "2026-07-31T12:57:45.813575+00:00"
+}

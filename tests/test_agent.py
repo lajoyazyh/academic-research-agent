@@ -27,10 +27,11 @@ def test_client_init_without_key_uses_defaults(monkeypatch):
         pass
 
     class DummyOpenAI:
-        def __init__(self, api_key, base_url, http_client):
+        def __init__(self, api_key, base_url, http_client, max_retries=2):
             captured["api_key"] = api_key
             captured["base_url"] = base_url
             captured["http_client"] = http_client
+            captured["max_retries"] = max_retries
             self.chat = type("Chat", (), {"completions": type("Completions", (), {"create": lambda *a, **k: None})()})()
 
     monkeypatch.setattr(llm_client_module.httpx, "Client", lambda **kwargs: DummyHttpClient())
@@ -44,6 +45,7 @@ def test_client_init_without_key_uses_defaults(monkeypatch):
     assert captured["api_key"] == "your-api-key-here"
     assert captured["base_url"] == "https://open.bigmodel.cn/api/paas/v4/"
     assert isinstance(captured["http_client"], DummyHttpClient)
+    assert captured["max_retries"] == 0
 
 
 def test_client_chat_builds_messages(monkeypatch):
@@ -63,7 +65,7 @@ def test_client_chat_builds_messages(monkeypatch):
             return DummyResponse()
 
     class DummyOpenAI:
-        def __init__(self, api_key, base_url, http_client):
+        def __init__(self, api_key, base_url, http_client, max_retries=2):
             self.chat = type("Chat", (), {"completions": DummyCompletions()})()
 
     monkeypatch.setattr(llm_client_module, "OpenAI", DummyOpenAI)

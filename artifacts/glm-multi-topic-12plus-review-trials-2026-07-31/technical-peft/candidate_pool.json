@@ -1,0 +1,425 @@
+[
+  {
+    "paper_id": "W4322766882",
+    "title": "Parameter-efficient fine-tuning of large-scale pre-trained language models",
+    "authors": "Ning Ding, Yujia Qin, Guang Yang, Fuchao Wei, Zonghan Yang, Yusheng Su, Shengding Hu, Yulin Chen, Chi-Min Chan, Weize Chen, Jing Yi, Weilin Zhao, Xiaozhi Wang, Zhiyuan Liu, Hai-Tao Zheng, Jianfei Chen, Yang Liu, Jie Tang, Juanzi Li, Maosong Sun",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1038/s42256-023-00626-4",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract With the prevalence of pre-trained language models (PLMs) and the pre-training–fine-tuning paradigm, it has been continuously shown"
+  },
+  {
+    "paper_id": "W4389524317",
+    "title": "LLM-Adapters: An Adapter Family for Parameter-Efficient Fine-Tuning of Large Language Models",
+    "authors": "Zhiqiang Hu, Lei Wang, Yihuai Lan, Wanyu Xu, Ee‐Peng Lim, Lidong Bing, Xing Xu, Soujanya Poria, Roy Lee",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.319",
+    "abstract_available": true,
+    "abstract_excerpt": "The success of large language models (LLMs), like GPT-4 and ChatGPT, has led to the development of numerous"
+  },
+  {
+    "paper_id": "2303.16199",
+    "title": "LLaMA-Adapter: Efficient Fine-tuning of Language Models with Zero-init Attention",
+    "authors": "Renrui Zhang, Jiaming Han, Liu, Chris, Peng Gao, Aojun Zhou, Xiangfei Hu, Shilin Yan, Pan Lu, Hongsheng Li, Yu Qiao",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2303.16199",
+    "abstract_available": true,
+    "abstract_excerpt": "We present LLaMA-Adapter, a lightweight adaption method to efficiently fine-tune LLaMA into an instruction-following model. Using 52K self-instruct"
+  },
+  {
+    "paper_id": "W4221145545",
+    "title": "Delta Tuning: A Comprehensive Study of Parameter Efficient Methods for Pre-trained Language Models",
+    "authors": "Ning Ding, Yujia Qin, Guang Yang, Fuchao Wei, Zonghan Yang, Yusheng Su, Shengding Hu, Yulin Chen, Chi-Min Chan, Weize Chen, Jing Yi, Weilin Zhao, Xiaozhi Wang, Zhiyuan Liu, Hai-Tao Zheng, Jianfei Chen, Yang Liu, Jie Tang, Juanzi Li, Maosong Sun",
+    "year": 2022,
+    "source_url": "https://doi.org/10.21203/rs.3.rs-1553541/v1",
+    "abstract_available": false,
+    "abstract_excerpt": ""
+  },
+  {
+    "paper_id": "2305.14314",
+    "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+    "authors": "Tim Dettmers, Artidoro Pagnoni, Ari Holtzman, Luke Zettlemoyer",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2305.14314",
+    "abstract_available": true,
+    "abstract_excerpt": "We present QLoRA, an efficient finetuning approach that reduces memory usage enough to finetune a 65B parameter model"
+  },
+  {
+    "paper_id": "2403.14608",
+    "title": "Parameter-Efficient Fine-Tuning for Large Models: A Comprehensive Survey",
+    "authors": "Zeyu Han, Chao Gao, Jinyang Liu, Jeff, Zhang",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2403.14608",
+    "abstract_available": true,
+    "abstract_excerpt": "Large models represent a groundbreaking advancement in multiple application fields, enabling remarkable achievements across various tasks. However, their"
+  },
+  {
+    "paper_id": "2304.15010",
+    "title": "LLaMA-Adapter V2: Parameter-Efficient Visual Instruction Model",
+    "authors": "Peng Gao, Jiaming Han, Renrui Zhang, Ziyi Lin, Shijie Geng, Aojun Zhou, Wei Zhang, Pan Lu, Conghui He, Xiangyu Yue, Hongsheng Li, Yu Qiao",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2304.15010",
+    "abstract_available": true,
+    "abstract_excerpt": "How to efficiently transform large language models (LLMs) into instruction followers is recently a popular research direction, while"
+  },
+  {
+    "paper_id": "2307.06435",
+    "title": "A Comprehensive Overview of Large Language Models",
+    "authors": "Humza Naveed, Asad Ullah Khan, Shi Qiu, Muhammad Saqib, Saeed Anwar, Muhammad Usman, Akhtar, Naveed, Nick Barnes, Ajmal Mian",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2307.06435",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) have recently demonstrated remarkable capabilities in natural language processing tasks and beyond. This success"
+  },
+  {
+    "paper_id": "W3206816211",
+    "title": "UniPELT: A Unified Framework for Parameter-Efficient Language Model Tuning",
+    "authors": "Yuning Mao, Lambert Mathias, Rui Hou, Amjad Almahairi, Hao Ma, Jiawei Han, Scott Yih, Madian Khabsa",
+    "year": 2022,
+    "source_url": "https://doi.org/10.18653/v1/2022.acl-long.433",
+    "abstract_available": true,
+    "abstract_excerpt": "Yuning Mao, Lambert Mathias, Rui Hou, Amjad Almahairi, Hao Ma, Jiawei Han, Scott Yih, Madian Khabsa. Proceedings of"
+  },
+  {
+    "paper_id": "2402.06196",
+    "title": "Large Language Models: A Survey",
+    "authors": "Shervin Minaee, Tomas Mikolov, Nikzad, Narjes, Meysam Chenaghlu, Richard Socher, Xavier Amatriain, Jianfeng Gao",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2402.06196",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs) have drawn a lot of attention due to their strong performance on a wide"
+  },
+  {
+    "paper_id": "2303.15647",
+    "title": "Scaling Down to Scale Up: A Guide to Parameter-Efficient Fine-Tuning",
+    "authors": "Vladislav Lialin, Vijeta Deshpande, Yao, Xiaowei, Rumshisky, Anna",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2303.15647",
+    "abstract_available": true,
+    "abstract_excerpt": "This paper presents a systematic overview of parameter-efficient fine-tuning methods, covering over 50 papers published between early 2019"
+  },
+  {
+    "paper_id": "2312.12148",
+    "title": "Parameter-Efficient Fine-Tuning Methods for Pretrained Language Models: A Critical Review and Assessment",
+    "authors": "Lingling Xu, Haoran Xie, S. Joe Qin, Xiaohui Tao, Fu Lee Wang",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2312.12148",
+    "abstract_available": true,
+    "abstract_excerpt": "With the continuous growth in the number of parameters of transformer-based pretrained language models (PLMs), particularly the emergence"
+  },
+  {
+    "paper_id": "2306.07967",
+    "title": "One-for-All: Generalized LoRA for Parameter-Efficient Fine-tuning",
+    "authors": "Arnav Chavan, Zhuang Liu, Deepak Gupta, Eric P. Xing, Zhiqiang Shen",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2306.07967",
+    "abstract_available": true,
+    "abstract_excerpt": "We present Generalized LoRA (GLoRA), an advanced approach for universal parameter-efficient fine-tuning tasks. Enhancing Low-Rank Adaptation (LoRA), GLoRA"
+  },
+  {
+    "paper_id": "W4385572883",
+    "title": "AdaMix: Mixture-of-Adaptations for Parameter-efficient Model Tuning",
+    "authors": "Yaqing Wang, Sahaj Agarwal, Subhabrata Mukherjee, Xiaodong Liu, Jing Gao, Ahmed Hassan Awadallah, Jianfeng Gao",
+    "year": 2022,
+    "source_url": "https://doi.org/10.18653/v1/2022.emnlp-main.388",
+    "abstract_available": true,
+    "abstract_excerpt": "Yaqing Wang, Sahaj Agarwal, Subhabrata Mukherjee, Xiaodong Liu, Jing Gao, Ahmed Hassan Awadallah, Jianfeng Gao. Proceedings of the"
+  },
+  {
+    "paper_id": "W4385572063",
+    "title": "FedPETuning: When Federated Learning Meets the Parameter-Efficient Tuning Methods of Pre-trained Language Models",
+    "authors": "Zhuo Zhang, Yuanhang Yang, Yong Dai, Qifan Wang, Yue Yu, Lizhen Qu, Zenglin Xu",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.findings-acl.632",
+    "abstract_available": true,
+    "abstract_excerpt": "With increasing concerns about data privacy, there is an increasing necessity of fine-tuning pre-trained language models (PLMs) for"
+  },
+  {
+    "paper_id": "W4404782226",
+    "title": "Heterogeneous LoRA for Federated Fine-tuning of On-Device Foundation Models",
+    "authors": "Yae Jee Cho, Luyang Liu, Zheng Xu, Aldi Fahrezi, Gauri Joshi",
+    "year": 2024,
+    "source_url": "https://doi.org/10.18653/v1/2024.emnlp-main.717",
+    "abstract_available": true,
+    "abstract_excerpt": "Foundation models (FMs) adapt surprisingly well to downstream tasks with fine-tuning.However, their colossal parameter space prohibits their training"
+  },
+  {
+    "paper_id": "2308.10792",
+    "title": "Instruction Tuning for Large Language Models: A Survey",
+    "authors": "Shengyu Zhang, Linfeng Dong, Xiaoya Li, Sen Zhang, Xiaofei Sun, Shuhe Wang, Jiwei Li, Runyi Hu, Tianwei Zhang, Fei Wu, Guoyin Wang",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2308.10792",
+    "abstract_available": true,
+    "abstract_excerpt": "This paper surveys research works in the quickly advancing field of instruction tuning (IT), which can also be"
+  },
+  {
+    "paper_id": "W3205717164",
+    "title": "SPoT: Better Frozen Model Adaptation through Soft Prompt Transfer",
+    "authors": "Tu Vu, Brian Lester, Noah Constant, Rami Al‐Rfou, Daniel Cer",
+    "year": 2022,
+    "source_url": "https://doi.org/10.18653/v1/2022.acl-long.346",
+    "abstract_available": true,
+    "abstract_excerpt": "There has been growing interest in parameterefficient methods to apply pre-trained language models to downstream tasks. Building on"
+  },
+  {
+    "paper_id": "W4401021891",
+    "title": "Parameter-efficient fine-tuning on large protein language models improves signal peptide prediction",
+    "authors": "Shuai Zeng, Duolin Wang, Lei Jiang, Dong Xu",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1101/gr.279132.124",
+    "abstract_available": true,
+    "abstract_excerpt": "Signal peptides (SPs) play a crucial role in protein translocation in cells. The development of large protein language"
+  },
+  {
+    "paper_id": "2309.12307",
+    "title": "LongLoRA: Efficient Fine-tuning of Long-Context Large Language Models",
+    "authors": "Yukang Chen, Shengju Qian, Haotian Tang, Xin Lai, Zhijian Liu, Song Han, Jiaya Jia",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2309.12307",
+    "abstract_available": true,
+    "abstract_excerpt": "We present LongLoRA, an efficient fine-tuning approach that extends the context sizes of pre-trained large language models (LLMs),"
+  },
+  {
+    "paper_id": "W4386566659",
+    "title": "DyLoRA: Parameter-Efficient Tuning of Pre-trained Models using Dynamic Search-Free Low-Rank Adaptation",
+    "authors": "Mojtaba Valipour, Mehdi Rezagholizadeh, Ivan Kobyzev, Ali Ghodsi",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.eacl-main.239",
+    "abstract_available": true,
+    "abstract_excerpt": "With the ever-growing size of pretrained models (PMs), fine-tuning them has become more expensive and resource-hungry. As a"
+  },
+  {
+    "paper_id": "W4402667093",
+    "title": "LlamaFactory: Unified Efficient Fine-Tuning of 100+ Language Models",
+    "authors": "Yaowei Zheng, Richong Zhang, Junhao Zhang, YeYanhan YeYanhan, Zheyan Luo",
+    "year": 2024,
+    "source_url": "https://doi.org/10.18653/v1/2024.acl-demos.38",
+    "abstract_available": false,
+    "abstract_excerpt": ""
+  },
+  {
+    "paper_id": "W4402670757",
+    "title": "LoRAPrune: Structured Pruning Meets Low-Rank Parameter-Efficient Fine-Tuning",
+    "authors": "Mingyang Zhang, H. S. Chen, Chunhua Shen, Zhen Yang, Linlin Ou, Xinyi Yu, Bohan Zhuang",
+    "year": 2024,
+    "source_url": "https://doi.org/10.18653/v1/2024.findings-acl.178",
+    "abstract_available": true,
+    "abstract_excerpt": "Large Language Models (LLMs), such as LLaMA and T5, have shown exceptional performance across various tasks through finetuning.Although"
+  },
+  {
+    "paper_id": "W4392193048",
+    "title": "Adapted large language models can outperform medical experts in clinical text summarization",
+    "authors": "Dave Van Veen, Cara Van Uden, Louis Blankemeier, Jean-Benoit Delbrouck, Asad Aali, Christian Bluethgen, Anuj Pareek, Malgorzata Polacin, Eduardo Pontes Reis, Anna Seehofnerová, Nidhi Rohatgi, Poonam Hosamani, William Collins, Neera Ahuja, Curtis P. Langlotz, Jason Hom, Sergios Gatidis, John M. Pauly, Akshay Chaudhari",
+    "year": 2024,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/11479659",
+    "abstract_available": false,
+    "abstract_excerpt": ""
+  },
+  {
+    "paper_id": "2402.09353",
+    "title": "DoRA: Weight-Decomposed Low-Rank Adaptation",
+    "authors": "Shih-Yang Liu, Chien-Yi Wang, Hongxu Yin, Pavlo Molchanov, Yu-Chiang Frank Wang, Kwang‐Ting Cheng, Min-Hung Chen",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2402.09353",
+    "abstract_available": true,
+    "abstract_excerpt": "Among the widely used parameter-efficient fine-tuning (PEFT) methods, LoRA and its variants have gained considerable popularity because of"
+  },
+  {
+    "paper_id": "2407.11046",
+    "title": "A survey on LoRA of large language models",
+    "authors": "Yuren Mao, Yuhang Ge, Yijiang Fan, Wenyi Xu, Yu Mi, Zhonghao Hu, Yunjun Gao",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2407.11046",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract Low-Rank Adaptation (LoRA), which updates the dense neural network layers with pluggable low-rank matrices, is one of"
+  },
+  {
+    "paper_id": "2309.14717",
+    "title": "QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models",
+    "authors": "Yuhui Xu, Lingxi Xie, Xiaotao Gu, Xin Chen, Heng Chang, Hengheng Zhang, Chen, Zhengsu, Xiaopeng Zhang, Qi Tian",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2309.14717",
+    "abstract_available": true,
+    "abstract_excerpt": "Recently years have witnessed a rapid development of large language models (LLMs). Despite the strong ability in many"
+  },
+  {
+    "paper_id": "W4389524340",
+    "title": "Sparse Low-rank Adaptation of Pre-trained Language Models",
+    "authors": "Ning Ding, Xingtai Lv, Qiaosen Wang, Yulin Chen, Bowen Zhou, Zhiyuan Liu, Maosong Sun",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.252",
+    "abstract_available": true,
+    "abstract_excerpt": "Fine-tuning pre-trained large language models in a parameter-efficient manner is widely studied for its effectiveness and efficiency. The"
+  },
+  {
+    "paper_id": "W4382202657",
+    "title": "On the Effectiveness of Parameter-Efficient Fine-Tuning",
+    "authors": "Zihao Fu, Haoran Yang, Anthony Man–Cho So, Wai Lam, Lidong Bing, Nigel Collier",
+    "year": 2023,
+    "source_url": "https://doi.org/10.1609/aaai.v37i11.26505",
+    "abstract_available": true,
+    "abstract_excerpt": "Fine-tuning pre-trained models has been ubiquitously proven to be effective in a wide range of NLP tasks. However,"
+  },
+  {
+    "paper_id": "W4401042811",
+    "title": "ALoRA: Allocating Low-Rank Adaptation for Fine-tuning Large Language Models",
+    "authors": "Zhaojia Liu, Jiawen Lyn, Wei Zhu, Xing Tian",
+    "year": 2024,
+    "source_url": "https://doi.org/10.18653/v1/2024.naacl-long.35",
+    "abstract_available": true,
+    "abstract_excerpt": "Zequan Liu, Jiawen Lyn, Wei Zhu, Xing Tian, Yvette Graham. Proceedings of the 2024 Conference of the North"
+  },
+  {
+    "paper_id": "W4393147284",
+    "title": "OWQ: Outlier-Aware Weight Quantization for Efficient Fine-Tuning and Inference of Large Language Models",
+    "authors": "Changhun Lee, Jungyu Jin, Taesu Kim, Hyungjun Kim, Eunhyeok Park",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1609/aaai.v38i12.29237",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) with hundreds of billions of parameters require powerful server-grade GPUs for inference, limiting their"
+  },
+  {
+    "paper_id": "2402.12354",
+    "title": "LoRA+: Efficient Low Rank Adaptation of Large Models",
+    "authors": "Soufiane Hayou, N. C. Ghosh, Bin Yu",
+    "year": 2024,
+    "source_url": "https://arxiv.org/abs/2402.12354",
+    "abstract_available": true,
+    "abstract_excerpt": "In this paper, we show that Low Rank Adaptation (LoRA) as originally introduced in Hu et al. (2021)"
+  },
+  {
+    "paper_id": "W4404869895",
+    "title": "Fine-Tuning Large Language Models for Specialized Use Cases",
+    "authors": "DM Anisuzzaman, Jeffrey G. Malins, Paul A. Friedman, Zachi I. Attia",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1016/j.mcpdig.2024.11.005",
+    "abstract_available": true,
+    "abstract_excerpt": "Large language models (LLMs) are a type of artificial intelligence, which operate by predicting and assembling sequences of"
+  },
+  {
+    "paper_id": "2310.08659",
+    "title": "LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models",
+    "authors": "Yixiao Li, Yifan Yu, Liang Chen, Pengcheng He, Nikos Karampatziakis, Weizhu Chen, Tuo Zhao",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2310.08659",
+    "abstract_available": true,
+    "abstract_excerpt": "Quantization is an indispensable technique for serving Large Language Models (LLMs) and has recently found its way into"
+  },
+  {
+    "paper_id": "W4399849668",
+    "title": "Democratizing protein language models with parameter-efficient fine-tuning",
+    "authors": "Samuel Sledzieski, Meghana Kshirsagar, Minkyung Baek, Rahul Dodhia, Juan Lavista Ferres, Bonnie Berger",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1073/pnas.2405840121",
+    "abstract_available": true,
+    "abstract_excerpt": "Proteomics has been revolutionized by large protein language models (PLMs), which learn unsupervised representations from large corpora of"
+  },
+  {
+    "paper_id": "2303.18223",
+    "title": "A Survey of Large Language Models",
+    "authors": "Wayne Xin Zhao, Kun Zhou, Junyi Li, Tianyi Tang, Zican Dong, Yupeng Hou, Beichen Zhang, Yingqian Min, Junjie Zhang, Peiyu Liu, Xiaolei Wang, Yifan Du, Yushuo Chen, Yushuo Chen, Zhipeng Chen, Jinhao Jiang, Ruiyang Ren, Yifan Li, Xinyu Tang, Peiyu Liu, Yiwen Hu, Jian‐Yun Nie, Ji-Rong Wen",
+    "year": 2026,
+    "source_url": "https://arxiv.org/abs/2303.18223",
+    "abstract_available": true,
+    "abstract_excerpt": "Abstract The rapid evolution of large language models (LLMs) has driven a transformative shift in artificial intelligence (AI),"
+  },
+  {
+    "paper_id": "2308.03303",
+    "title": "LoRA-FA: Efficient and Effective Low Rank Representation Fine-tuning",
+    "authors": "Longteng Zhang, Lin Zhang, Shaohuai Shi, Xiaowen Chu, Bo Li",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2308.03303",
+    "abstract_available": true,
+    "abstract_excerpt": "Fine-tuning large language models (LLMs) is crucial for improving their performance on downstream tasks, but full-parameter fine-tuning (Full-FT)"
+  },
+  {
+    "paper_id": "W4404210426",
+    "title": "A fine-tuning enhanced RAG system with quantized influence measure as AI judge",
+    "authors": "Keshav Rangan, Yiqiao Yin",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1038/s41598-024-79110-x",
+    "abstract_available": true,
+    "abstract_excerpt": "This study presents an innovative enhancement to retrieval-augmented generation (RAG) systems by seamlessly integrating fine-tuned large language models"
+  },
+  {
+    "paper_id": "W3174770825",
+    "title": "Prefix-Tuning: Optimizing Continuous Prompts for Generation",
+    "authors": "Xiang Lisa Li, Percy Liang",
+    "year": 2021,
+    "source_url": "https://doi.org/10.18653/v1/2021.acl-long.353",
+    "abstract_available": true,
+    "abstract_excerpt": "Xiang Lisa Li, Percy Liang. Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and"
+  },
+  {
+    "paper_id": "2305.03726",
+    "title": "Otter: A Multi-Modal Model with In-Context Instruction Tuning",
+    "authors": "Bo Li, Yuanhan Zhang, Liangyu Chen, Jinghao Wang, Pu, Fanyi, Cahyono, Joshua Adrian, Yang, Jingkang, Liu, Ziwei",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2305.03726",
+    "abstract_available": true,
+    "abstract_excerpt": "Recent advances in Large Multimodal Models (LMMs) have unveiled great potential as visual assistants. However, most existing works"
+  },
+  {
+    "paper_id": "W4409098775",
+    "title": "LLM Fine-Tuning: Concepts, Opportunities, and Challenges",
+    "authors": "Xiao-Kun Wu, Min Chen, Wanyi Li, Rui Wang, Lingbin Lu, Jia Liu, Kai Hwang, Yixue Hao, Yanru Pan, Qingguo Meng, Kaibin Huang, Long Hu, Mohsen Guizani, Naipeng Chao, Giancarlo Fortino, Fei Lin, Yonglin Tian, Dusit Niyato, Fei-Yue Wang",
+    "year": 2025,
+    "source_url": "https://doi.org/10.3390/bdcc9040087",
+    "abstract_available": true,
+    "abstract_excerpt": "As a foundation of large language models, fine-tuning drives rapid progress, broad applicability, and profound impacts on human–AI"
+  },
+  {
+    "paper_id": "W4385573776",
+    "title": "ATTEMPT: Parameter-Efficient Multi-task Tuning via Attentional Mixtures of Soft Prompts",
+    "authors": "Akari Asai, Mohammadreza Salehi, Matthew E. Peters, Hannaneh Hajishirzi",
+    "year": 2022,
+    "source_url": "https://doi.org/10.18653/v1/2022.emnlp-main.446",
+    "abstract_available": true,
+    "abstract_excerpt": "This work introduces a new multi-task, parameter-efficient language model (LM) tuning method that learns to transfer knowledge across"
+  },
+  {
+    "paper_id": "W4385570529",
+    "title": "Residual Prompt Tuning: improving prompt tuning with residual reparameterization",
+    "authors": "Anastasia Razdaibiedina, Yuning Mao, Madian Khabsa, Mike Lewis, Rui Hou, Jimmy Ba, Amjad Almahairi",
+    "year": 2023,
+    "source_url": "https://doi.org/10.18653/v1/2023.findings-acl.421",
+    "abstract_available": true,
+    "abstract_excerpt": "Prompt tuning is one of the successful approaches for parameter-efficient tuning of pre-trained language models. Despite being arguably"
+  },
+  {
+    "paper_id": "W4385573610",
+    "title": "Revisiting Parameter-Efficient Tuning: Are We Really There Yet?",
+    "authors": "Guanzheng Chen, Fangyu Liu, Zaiqiao Meng, Shangsong Liang",
+    "year": 2022,
+    "source_url": "https://doi.org/10.18653/v1/2022.emnlp-main.168",
+    "abstract_available": true,
+    "abstract_excerpt": "Parameter-Efficient Tuning (PETuning) methods have been deemed by many as the new paradigm for using pretrained language models"
+  },
+  {
+    "paper_id": "W4393148183",
+    "title": "LION: Implicit Vision Prompt Tuning",
+    "authors": "Haixin Wang, Jianlong Chang, Yihang Zhai, Xiao Luo, Jinan Sun, Zhouchen Lin, Qi Tian",
+    "year": 2024,
+    "source_url": "https://doi.org/10.1609/aaai.v38i6.28345",
+    "abstract_available": true,
+    "abstract_excerpt": "Despite recent promising performances across a range of vision tasks, vision Transformers still have an issue of high"
+  },
+  {
+    "paper_id": "2303.02861",
+    "title": "Multitask Prompt Tuning Enables Parameter-Efficient Transfer Learning",
+    "authors": "Zhen Wang, Rameswar Panda, Leonid Karlinsky, Rogério Feris, Huan Sun, Yoon Kim",
+    "year": 2023,
+    "source_url": "https://arxiv.org/abs/2303.02861",
+    "abstract_available": true,
+    "abstract_excerpt": "Prompt tuning, in which a base pretrained model is adapted to each task via conditioning on learned prompt"
+  },
+  {
+    "paper_id": "2205.14865",
+    "title": "Prompt-aligned Gradient for Prompt Tuning",
+    "authors": "Beier Zhu, Yulei Niu, Yucheng Han, Yue Wu, Hanwang Zhang",
+    "year": 2022,
+    "source_url": "https://arxiv.org/abs/2205.14865",
+    "abstract_available": true,
+    "abstract_excerpt": "Thanks to the large pre-trained vision-language models (VLMs) like CLIP, we can craft a zero-shot classifier by \"prompt\","
+  }
+]

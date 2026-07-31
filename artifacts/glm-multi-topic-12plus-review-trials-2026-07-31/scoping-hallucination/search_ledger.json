@@ -1,0 +1,23 @@
+[
+  {
+    "source": "openalex",
+    "query": "large language model hallucination survey detection mitigation",
+    "success": true,
+    "result_count": 20,
+    "error": null
+  },
+  {
+    "source": "openalex",
+    "query": "factuality evaluation hallucination language models",
+    "success": true,
+    "result_count": 20,
+    "error": null
+  },
+  {
+    "source": "openalex",
+    "query": "hallucination benchmark attribution faithfulness LLM",
+    "success": true,
+    "result_count": 20,
+    "error": null
+  }
+]

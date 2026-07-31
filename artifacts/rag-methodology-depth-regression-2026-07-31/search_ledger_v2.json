@@ -1,0 +1,59 @@
+[
+  {
+    "query_id": "openalex-q1",
+    "source": "openalex",
+    "original_query": "retrieval augmented generation language models",
+    "compiled_query": "retrieval augmented generation language models",
+    "field_mapping": null,
+    "filters": {
+      "date_range": null,
+      "language": null,
+      "document_type": null
+    },
+    "executed_at": null,
+    "cursor": null,
+    "hit_count": 20,
+    "success": true,
+    "failure": null,
+    "retry_count": null,
+    "historical_metadata_status": "missing_not_imputed"
+  },
+  {
+    "query_id": "openalex-q2",
+    "source": "openalex",
+    "original_query": "RAG evaluation factuality reliability benchmark",
+    "compiled_query": "RAG evaluation factuality reliability benchmark",
+    "field_mapping": null,
+    "filters": {
+      "date_range": null,
+      "language": null,
+      "document_type": null
+    },
+    "executed_at": null,
+    "cursor": null,
+    "hit_count": 20,
+    "success": true,
+    "failure": null,
+    "retry_count": null,
+    "historical_metadata_status": "missing_not_imputed"
+  },
+  {
+    "query_id": "openalex-q3",
+    "source": "openalex",
+    "original_query": "self retrieval corrective retrieval augmented generation",
+    "compiled_query": "self retrieval corrective retrieval augmented generation",
+    "field_mapping": null,
+    "filters": {
+      "date_range": null,
+      "language": null,
+      "document_type": null
+    },
+    "executed_at": null,
+    "cursor": null,
+    "hit_count": 19,
+    "success": true,
+    "failure": null,
+    "retry_count": null,
+    "historical_metadata_status": "missing_not_imputed"
+  }
+]

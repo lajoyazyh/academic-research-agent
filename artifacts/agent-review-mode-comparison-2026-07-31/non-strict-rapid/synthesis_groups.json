@@ -1,0 +1,293 @@
+[
+  {
+    "synthesis_group_id": "group_6ec46210c827bdb39279",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "label": "unclassified",
+    "paper_ids": [
+      "2512.10787",
+      "2506.09542"
+    ],
+    "primary_paper_ids": [],
+    "secondary_paper_ids": [
+      "2512.10787",
+      "2506.09542"
+    ],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "Replace-Not-Expand Mechanics via Entity-Centric Utility"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "fixed retrieval depth k",
+      "strict latency and token budgets",
+      "corpus-based RAG methods"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T15:18:17.378401+00:00"
+  },
+  {
+    "synthesis_group_id": "group_b83d2826da44a3461716",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "label": "fva-rag",
+    "paper_ids": [
+      "2512.07015"
+    ],
+    "primary_paper_ids": [
+      "2512.07015"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "Contradiction scoring function"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "falsification-first architecture",
+      "counter-evidence retrieval"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T15:18:17.378420+00:00"
+  },
+  {
+    "synthesis_group_id": "group_b5106e3411b9297f2cff",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "label": "retrieval-augmented generation (rag)",
+    "paper_ids": [
+      "2409.15515",
+      "2602.07086"
+    ],
+    "primary_paper_ids": [
+      "2409.15515",
+      "2602.07086"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "conversational QA"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T15:18:17.378429+00:00"
+  },
+  {
+    "synthesis_group_id": "group_07635653b1f222cf22f5",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "label": "open-rag framework",
+    "paper_ids": [
+      "2410.01782"
+    ],
+    "primary_paper_ids": [
+      "2410.01782"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "hybrid adaptive retrieval method"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "knowledge-intensive tasks"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T15:18:17.378435+00:00"
+  },
+  {
+    "synthesis_group_id": "group_c22370f82ffe38cfd325",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "label": "corrective retrieval augmented generation (crag)",
+    "paper_ids": [
+      "2603.16169",
+      "2401.15884"
+    ],
+    "primary_paper_ids": [
+      "2603.16169",
+      "2401.15884"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "Scores above upper threshold τ + for Correct, below lower threshold τ − for Incorrect, between τ − and τ + for Ambiguous",
+      "confidence degree based on retrieval evaluator"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T15:18:17.378441+00:00"
+  },
+  {
+    "synthesis_group_id": "group_57cc0eacb419c0b9326b",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "label": "ontology-grounded retrieval-augmented generation (og-rag)",
+    "paper_ids": [
+      "2412.15235"
+    ],
+    "primary_paper_ids": [
+      "2412.15235"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "Optimization algorithm to retrieve minimal set of hyperedges"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "Domains where fact-based reasoning is essential"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T15:18:17.378446+00:00"
+  },
+  {
+    "synthesis_group_id": "group_c99877ac7d569e652681",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "label": "graph foundation model for retrieval augmented generation (gfm-rag)",
+    "paper_ids": [
+      "2502.01113"
+    ],
+    "primary_paper_ids": [
+      "2502.01113"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "unseen datasets for retrieval without any domain-specific fine-tuning"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T15:18:17.378450+00:00"
+  },
+  {
+    "synthesis_group_id": "group_34e3264e944240e36fb2",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "label": "multi-agent rag system with specialized agents (relational, graph, document, text) and centralized query execution",
+    "paper_ids": [
+      "2412.05838"
+    ],
+    "primary_paper_ids": [
+      "2412.05838"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "identify_data_source(Q)"
+    ],
+    "failure_conditions": [
+      "No suitable agent found for query generation"
+    ],
+    "applicable_tasks_or_conditions": [
+      "diverse data sources",
+      "relational databases",
+      "document stores",
+      "graph databases"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T15:18:17.378455+00:00"
+  },
+  {
+    "synthesis_group_id": "group_59e8f8c51bab80289d69",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "inclusion_snapshot_id": "inclusion_49dcaa33aa47",
+    "label": "['metacognitive retrieval-augmented generation (metarag)', 'rerankers (point-wise, list-wise)']",
+    "paper_ids": [
+      "2604.19899"
+    ],
+    "primary_paper_ids": [
+      "2604.19899"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "similarity score falls below a predefined threshold"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "multi-hop question answering",
+      "complex tasks requiring reasoning steps"
+    ],
+    "engineering_costs": [
+      "detailed cost analysis (Table 6) including requests, tokens, latency, and USD"
+    ],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T15:18:17.378460+00:00"
+  }
+]

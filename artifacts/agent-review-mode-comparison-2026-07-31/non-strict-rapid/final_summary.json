@@ -1,0 +1,28 @@
+{
+  "mode": "rapid",
+  "display_name": "非严格模式（rapid）",
+  "title": "检索增强生成的架构、评价与可靠性证据综述",
+  "model": "glm-4-flash-250414",
+  "generation_entrypoint": "backend.routes.agent.run_write_phase",
+  "candidate_count": 99,
+  "duplicate_count": 0,
+  "queries_completed": 19,
+  "queries_planned": 19,
+  "title_abstract_screened": 74,
+  "full_text_assessed": 40,
+  "included_count": 12,
+  "quality_gate_ok": false,
+  "quality_gate_label": "incomplete_research_draft",
+  "quality_gate_blockers": [
+    "citation_claim_audit_failed"
+  ],
+  "quality_gate_warnings": [
+    "quantitative_results_require_context",
+    "screening_decisions_unresolved"
+  ],
+  "claim_audit_passed": false,
+  "review_characters": 12253,
+  "completed_at": "2026-07-31T15:29:37.647980+00:00",
+  "api_key_retained": false,
+  "old_review_reused": false
+}

@@ -1,0 +1,31 @@
+{
+  "cases": [
+    {
+      "case_id": "technical-peft",
+      "included_record_count": 12,
+      "unique_study_count": 12,
+      "version_linked_record_count": 0
+    },
+    {
+      "case_id": "technical-rag",
+      "included_record_count": 12,
+      "unique_study_count": 12,
+      "version_linked_record_count": 0
+    },
+    {
+      "case_id": "scoping-hallucination",
+      "included_record_count": 12,
+      "unique_study_count": 12,
+      "version_linked_record_count": 0
+    },
+    {
+      "case_id": "scoping-agent-evaluation",
+      "included_record_count": 12,
+      "unique_study_count": 11,
+      "version_linked_record_count": 1,
+      "detail": "P4 and P5 are the journal and preprint records of the same survey."
+    }
+  ],
+  "future_run_status": "fixed",
+  "future_run_change": "Candidate deduplication now uses normalized titles before provider-specific identifiers."
+}

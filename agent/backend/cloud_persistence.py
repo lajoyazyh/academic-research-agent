@@ -317,6 +317,23 @@ class SupabaseWorkspaceStore:
         review_quality = _read_json(review_dir / "quality.json", {}) or {}
         search_runs = _read_json(session_dir / "plan" / "search_runs.json", []) or []
         conversations = _read_json(session_dir / "chats" / "index.json", []) or []
+        methodology_dir = session_dir / "methodology"
+        scientific = {
+            name[:-5]: _read_json(methodology_dir / name, [] if name not in {"current_protocol.json"} else {})
+            for name in (
+                "protocols.json",
+                "current_protocol.json",
+                "search_queries.json",
+                "candidates.json",
+                "screening_decisions.json",
+                "extractions.json",
+                "appraisals.json",
+                "inclusion_snapshots.json",
+                "synthesis_groups.json",
+                "claims.json",
+                "review_versions.json",
+            )
+        }
         accepted_ids = sorted(
             str(paper.get("paper_id"))
             for paper in papers
@@ -330,6 +347,7 @@ class SupabaseWorkspaceStore:
             "created_at": metadata.get("created_at", ""),
             "updated_at": metadata.get("updated_at", ""),
             "rewrite_count": metadata.get("rewrite_count", 0),
+            "workflow_version": metadata.get("workflow_version", 1),
             "skills": metadata.get("skills", {}),
             "review_referenced_papers": metadata.get("review_referenced_papers", []),
             "initial_plan": initial_plan,
@@ -348,6 +366,7 @@ class SupabaseWorkspaceStore:
             "accepted_paper_ids": accepted_ids,
             "search_runs": search_runs,
             "conversations": conversations,
+            "scientific": scientific,
         }
         total_notes = sum(
             1 for paper in papers
@@ -379,6 +398,7 @@ class SupabaseWorkspaceStore:
             "rewrite_count": snapshot.get("rewrite_count", 0),
             "skills": snapshot.get("skills", {}),
             "review_referenced_papers": snapshot.get("review_referenced_papers", []),
+            "workflow_version": snapshot.get("workflow_version", 1),
         }
         files: list[tuple[Path, Any, bool]] = [
             (target / "metadata.json", metadata, True),
@@ -394,6 +414,8 @@ class SupabaseWorkspaceStore:
             (target / "notes" / "draft_notes.md", snapshot.get("notes", ""), False),
             (target / "review" / "current_review.md", snapshot.get("review", ""), False),
         ]
+        for name, value in (snapshot.get("scientific") or {}).items():
+            files.append((target / "methodology" / f"{name}.json", value, True))
         version = _integer(snapshot.get("review_version")) or 0
         if version and snapshot.get("review"):
             files.append((target / "review" / f"review_v{version}.md", snapshot["review"], False))
@@ -777,6 +799,7 @@ class SupabaseWorkspaceStore:
         self._upsert("research_sessions", session_row, "user_id,session_id")
         self._sync_papers(user_id, session_id, snapshot.get("papers") or [])
         self._sync_artifacts(user_id, session_id, snapshot)
+        self._sync_scientific(user_id, session_id, snapshot.get("scientific") or {})
         self._sync_conversations(user_id, session_dir)
         self._sync_runs(user_id, session_id)
         if include_external_files:
@@ -827,6 +850,7 @@ class SupabaseWorkspaceStore:
             ("repositories", 0, None, snapshot.get("repositories") or []),
             ("review_quality", 0, None, snapshot.get("review_quality") or {}),
             ("search_runs", 0, None, snapshot.get("search_runs") or []),
+            ("scientific_methodology", 0, None, snapshot.get("scientific") or {}),
         ]
         now = datetime.datetime.now(datetime.timezone.utc).isoformat()
         rows = [
@@ -846,6 +870,220 @@ class SupabaseWorkspaceStore:
         self._replace_children(
             "research_artifacts", user_id, session_id, rows, "user_id,session_id,kind,version"
         )
+
+    def _sync_scientific(self, user_id: str, session_id: str, scientific: dict) -> None:
+        """Mirror scientific workflow state into queryable Postgres relations."""
+        if not scientific:
+            return
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        protocols = scientific.get("protocols") or []
+        search_queries = scientific.get("search_queries") or []
+        candidates = scientific.get("candidates") or []
+        decisions = scientific.get("screening_decisions") or []
+        extractions = scientific.get("extractions") or []
+        appraisals = scientific.get("appraisals") or []
+        snapshots = scientific.get("inclusion_snapshots") or []
+        synthesis_groups = scientific.get("synthesis_groups") or []
+        claims = scientific.get("claims") or []
+        review_versions = scientific.get("review_versions") or []
+        try:
+            protocol_rows = [{
+                "user_id": user_id,
+                "session_id": session_id,
+                "protocol_id": str(item.get("protocol_id") or ""),
+                "version": int(item.get("version") or 1),
+                "status": str(item.get("status") or "draft"),
+                "mode": str(item.get("mode") or "rapid"),
+                "research_question": str(item.get("research_question") or ""),
+                "candidate_cap": int(item.get("candidate_cap") or 100),
+                "methodology_schema_version": int(item.get("methodology_schema_version") or 1),
+                "legacy_incomplete_methodology": bool(item.get("legacy_incomplete_methodology", True)),
+                "protocol": item,
+                "created_at": _timestamp(item.get("created_at")) or now,
+                "updated_at": _timestamp(item.get("updated_at")) or now,
+            } for item in protocols if item.get("protocol_id")]
+            self._replace_children(
+                "review_protocols", user_id, session_id, protocol_rows,
+                "user_id,session_id,protocol_id",
+            )
+
+            query_rows = [{
+                "user_id": user_id,
+                "session_id": session_id,
+                "search_query_id": str(item.get("search_query_id") or ""),
+                "protocol_id": str(item.get("protocol_id") or ""),
+                "source": str(item.get("source") or ""),
+                "query_text": str(item.get("query") or ""),
+                "original_query": str(item.get("original_query") or item.get("query") or ""),
+                "compiled_query": str(item.get("compiled_query") or item.get("query") or ""),
+                "field_scope": item.get("field_scope") or [],
+                "filters": item.get("filters") or {},
+                "execution_metadata": item.get("execution_metadata") or {},
+                "executed_at": _timestamp(item.get("executed_at")),
+                "hit_count": item.get("hit_count"),
+                "attempt_count": int(item.get("attempt_count") or 0),
+                "status": str(item.get("status") or "pending"),
+                "query_data": item,
+                "created_at": _timestamp(item.get("created_at")) or now,
+                "completed_at": _timestamp(item.get("completed_at")),
+            } for item in search_queries if item.get("search_query_id") and item.get("protocol_id")]
+            self._replace_children(
+                "review_search_queries", user_id, session_id, query_rows,
+                "user_id,session_id,search_query_id",
+            )
+
+            candidate_rows = [{
+                "user_id": user_id,
+                "session_id": session_id,
+                "candidate_id": str(item.get("candidate_id") or ""),
+                "protocol_id": str(item.get("protocol_id") or ""),
+                "paper_id": str(item.get("paper_id") or ""),
+                "status": str(item.get("status") or "candidate"),
+                "screening_stage": str(item.get("screening_stage") or "discovered"),
+                "record": item,
+                "discovered_at": _timestamp(item.get("discovered_at")) or now,
+                "updated_at": _timestamp(item.get("updated_at")) or now,
+            } for item in candidates if item.get("candidate_id") and item.get("protocol_id")]
+            self._replace_children(
+                "research_candidates", user_id, session_id, candidate_rows,
+                "user_id,session_id,candidate_id",
+            )
+
+            decision_rows = [{
+                "user_id": user_id,
+                "session_id": session_id,
+                "decision_id": str(item.get("decision_id") or ""),
+                "protocol_id": str(item.get("protocol_id") or ""),
+                "candidate_id": str(item.get("candidate_id") or ""),
+                "paper_id": str(item.get("paper_id") or ""),
+                "stage": str(item.get("stage") or "title_abstract"),
+                "decision": str(item.get("decision") or "uncertain"),
+                "reason_code": item.get("reason_code"),
+                "reviewer": str(item.get("reviewer") or "human"),
+                "actor_type": str(item.get("actor_type") or item.get("reviewer") or "human"),
+                "actor_id": item.get("actor_id"),
+                "model_version": item.get("model_version"),
+                "blinded_to_peer": bool(item.get("blinded_to_peer", False)),
+                "supersedes_decision_id": item.get("supersedes_decision_id"),
+                "decision_data": item,
+                "created_at": _timestamp(item.get("created_at")) or now,
+            } for item in decisions if item.get("decision_id") and item.get("candidate_id")]
+            self._replace_children(
+                "screening_decisions", user_id, session_id, decision_rows,
+                "user_id,session_id,decision_id",
+            )
+
+            extraction_rows = [{
+                "user_id": user_id,
+                "session_id": session_id,
+                "extraction_id": str(item.get("extraction_id") or ""),
+                "protocol_id": str(item.get("protocol_id") or ""),
+                "paper_id": str(item.get("paper_id") or ""),
+                "evidence_basis": str(item.get("evidence_basis") or "unknown"),
+                "review_status": str(item.get("review_status") or "ai_draft"),
+                "schema_version": int(item.get("schema_version") or 1),
+                "study_or_article_type": str(item.get("study_or_article_type") or "unclear"),
+                "evidence_level": str(item.get("evidence_level") or "unclear"),
+                "quantitative_results": item.get("quantitative_results") or [],
+                "technical_mechanism": item.get("technical_mechanism") or {},
+                "extraction": item,
+                "created_at": _timestamp(item.get("created_at")) or now,
+                "updated_at": _timestamp(item.get("updated_at")) or now,
+            } for item in extractions if item.get("extraction_id") and item.get("protocol_id")]
+            self._replace_children(
+                "evidence_extractions", user_id, session_id, extraction_rows,
+                "user_id,session_id,extraction_id",
+            )
+
+            appraisal_rows = [{
+                "user_id": user_id,
+                "session_id": session_id,
+                "appraisal_id": str(item.get("appraisal_id") or ""),
+                "protocol_id": str(item.get("protocol_id") or ""),
+                "paper_id": str(item.get("paper_id") or ""),
+                "profile": str(item.get("profile") or "general"),
+                "overall_judgement": str(item.get("overall_judgement") or "unclear"),
+                "schema_version": int(item.get("schema_version") or 1),
+                "completeness": item.get("completeness") or {},
+                "appraisal": item,
+                "created_at": _timestamp(item.get("created_at")) or now,
+            } for item in appraisals if item.get("appraisal_id") and item.get("protocol_id")]
+            self._replace_children(
+                "study_appraisals", user_id, session_id, appraisal_rows,
+                "user_id,session_id,appraisal_id",
+            )
+
+            snapshot_rows = [{
+                "user_id": user_id,
+                "session_id": session_id,
+                "snapshot_id": str(item.get("snapshot_id") or ""),
+                "protocol_id": str(item.get("protocol_id") or ""),
+                "version": int(item.get("version") or 1),
+                "paper_ids": item.get("paper_ids") or [],
+                "confirmed_by": str(item.get("confirmed_by") or "human"),
+                "confirmed_at": _timestamp(item.get("confirmed_at")) or now,
+            } for item in snapshots if item.get("snapshot_id") and item.get("protocol_id")]
+            self._replace_children(
+                "inclusion_snapshots", user_id, session_id, snapshot_rows,
+                "user_id,session_id,snapshot_id",
+            )
+
+            synthesis_rows = [{
+                "user_id": user_id,
+                "session_id": session_id,
+                "synthesis_group_id": str(item.get("synthesis_group_id") or item.get("group_id") or ""),
+                "protocol_id": str(item.get("protocol_id") or ""),
+                "inclusion_snapshot_id": str(item.get("inclusion_snapshot_id") or ""),
+                "synthesis_data": item,
+                "created_at": _timestamp(item.get("created_at")) or now,
+            } for item in synthesis_groups if (
+                (item.get("synthesis_group_id") or item.get("group_id"))
+                and item.get("inclusion_snapshot_id")
+            )]
+            self._replace_children(
+                "synthesis_groups", user_id, session_id, synthesis_rows,
+                "user_id,session_id,synthesis_group_id",
+            )
+
+            claim_rows = [{
+                "user_id": user_id,
+                "session_id": session_id,
+                "claim_id": str(item.get("claim_id") or ""),
+                "protocol_id": str(item.get("protocol_id") or ""),
+                "inclusion_snapshot_id": str(item.get("inclusion_snapshot_id") or ""),
+                "claim_text": str(item.get("claim_text") or item.get("claim") or ""),
+                "support_status": str(item.get("support_status") or "unverified"),
+                "claim_type": str(item.get("claim_type") or "unclassified"),
+                "evidence_level": str(item.get("evidence_level") or "unverified"),
+                "evidence_fit": bool(item.get("evidence_fit", False)),
+                "numeric_context_complete": bool(item.get("numeric_context_complete", False)),
+                "normative_strength_ok": bool(item.get("normative_strength_ok", False)),
+                "claim_data": item,
+                "created_at": _timestamp(item.get("created_at")) or now,
+            } for item in claims if item.get("claim_id") and item.get("inclusion_snapshot_id")]
+            self._replace_children(
+                "review_claims", user_id, session_id, claim_rows,
+                "user_id,session_id,claim_id",
+            )
+
+            review_rows = [{
+                "user_id": user_id,
+                "session_id": session_id,
+                "review_version_id": str(item.get("review_version_id") or ""),
+                "protocol_id": str(item.get("protocol_id") or ""),
+                "inclusion_snapshot_id": item.get("inclusion_snapshot_id"),
+                "version": int(item.get("version") or 1),
+                "output_label": str(item.get("output_label") or "incomplete_research_draft"),
+                "version_data": item,
+                "created_at": _timestamp(item.get("created_at")) or now,
+            } for item in review_versions if item.get("review_version_id") and item.get("protocol_id")]
+            self._replace_children(
+                "review_versions", user_id, session_id, review_rows,
+                "user_id,session_id,review_version_id",
+            )
+        except RemoteStoreError as exc:
+            if not self._missing_relation(exc):
+                raise
 
     def _sync_conversations(self, user_id: str, session_dir: Path) -> None:
         session_id = session_dir.name

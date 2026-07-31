@@ -389,7 +389,6 @@ class PaperRegisterTool(BaseTool):
             return f"❌ 论文登记失败：无法访问研究项目 Session：{exc}"
         if not session:
             return f"❌ 论文登记失败：Session {self.session_id} 不存在，已停止下载。"
-
         # Check canonical identifiers before downloading.  The same work may be
         # returned as an arXiv id, DOI or provider-specific URL on later runs.
         duplicate = mgr.find_duplicate_paper(
@@ -425,35 +424,91 @@ class PaperRegisterTool(BaseTool):
                 "ℹ️ 论文已存在，未新增；已尝试补全 PDF："
                 f"{duplicate.get('title') or title}\n   {pdf_msg}"
             )
-        if not abstract:
-            return "❌ paper_register 失败：缺少 abstract。请先用搜索或详情工具获取摘要，再判断相关性并收录。"
-
-        # ━━━ 主题相关性审核 ━━━
-        topic = session.get("topic", "")
-        if topic:
-            if not self._passes_lexical_relevance(topic, title, abstract):
+        protocol = {}
+        try:
+            from backend.scientific_review import ScientificReviewService
+            scientific = ScientificReviewService(mgr)
+            protocol = scientific.ensure_protocol(
+                self.session_id,
+                topic=session.get("topic", ""),
+            )
+            flow = scientific.flow_counts(self.session_id)
+            if flow.get("unique_candidates", 0) >= int(protocol.get("candidate_cap", 100)):
                 return (
-                    f"❌ 审核未通过：论文与研究主题「{topic}」只有单一宽泛词重合，"
-                    "不足以视为直接相关。请回到上一批结果选择更贴近主题的候选。"
+                    "ℹ️ 候选文献已达到研究协议上限 "
+                    f"{protocol.get('candidate_cap')} 条，未继续登记。"
                 )
-            try:
-                from llms.client import LLMClient
-                llm = LLMClient(self.provider_config)
-                if llm.language == "en":
-                    relevance_system = "Judge topical relevance conservatively. Answer only yes or no."
-                    relevance_prompt = (
-                        f"Research topic: {topic}\nPaper title: {title[:150]}\n"
-                        f"First 500 characters of the abstract: {abstract[:500]}\n\n"
-                        "Is this paper directly relevant to the research topic?"
-                    )
-                else:
-                    relevance_system = "你只回答 yes 或 no。"
-                    relevance_prompt = f"研究主题：{topic}\n论文标题：{title[:150]}\n摘要前 500 字：{abstract[:500]}\n\n这篇论文与上述研究主题直接相关吗？"
-                answer = llm.chat(relevance_system, relevance_prompt, []).strip().lower()
-            except Exception as exc:
-                return f"❌ 相关性审核失败：{exc}。本轮未登记该论文，请重试或选择其他论文。"
-            if not answer.startswith(("yes", "是")):
-                return f"❌ 审核未通过：摘要与当前研究主题「{topic}」不直接相关。请继续搜索主题匹配的论文。"
+        except Exception:
+            scientific = None
+
+        # ━━━ 标题/摘要初筛 ━━━
+        # This is deliberately not a final inclusion decision. Search results
+        # enter the candidate pool and must pass the full-text/human gate before
+        # they can be used in a review.
+        topic = session.get("topic", "")
+        screening_decision = "uncertain" if not abstract else "include"
+        relevance_confidence = 0.35 if not abstract else 0.75
+        relevance_reason = "Passed conservative lexical and title/abstract relevance checks."
+        criterion_judgements = []
+        if not abstract:
+            relevance_reason = "Abstract unavailable; title-only candidate requires human or full-text review."
+            criterion_judgements = [{
+                "criterion": "Sufficient title/abstract information for screening",
+                "judgement": "uncertain",
+                "evidence": title,
+            }]
+        elif topic:
+            if not self._passes_lexical_relevance(topic, title, abstract):
+                screening_decision = "exclude"
+                relevance_confidence = 0.9
+                relevance_reason = "Only a broad lexical overlap with the research question was found."
+                criterion_judgements = [{
+                    "criterion": "Direct relevance to the confirmed research question",
+                    "judgement": "not_met",
+                    "evidence": f"{title}. {abstract[:600]}",
+                }]
+            else:
+                try:
+                    from llms.client import LLMClient
+                    llm = LLMClient(self.provider_config)
+                    criteria = protocol.get("inclusion_criteria") or [
+                        "The study directly addresses the research question."
+                    ]
+                    if llm.language == "en":
+                        relevance_system = "Screen title/abstract evidence conservatively and return only valid JSON."
+                        relevance_prompt = (
+                            f"Research topic: {topic}\nPaper title: {title[:150]}\n"
+                            f"Abstract: {abstract[:1200]}\n"
+                            f"Inclusion criteria: {json.dumps(criteria, ensure_ascii=False)}\n\n"
+                            'Return {"decision":"include|exclude|uncertain","confidence":0.0,'
+                            '"reason":"...","criterion_judgements":[{"criterion":"...",'
+                            '"judgement":"met|not_met|uncertain","evidence":"..."}]}.'
+                        )
+                    else:
+                        relevance_system = "请保守地执行标题摘要筛选，只返回合法 JSON。"
+                        relevance_prompt = (
+                            f"研究主题：{topic}\n论文标题：{title[:150]}\n摘要：{abstract[:1200]}\n"
+                            f"纳入标准：{json.dumps(criteria, ensure_ascii=False)}\n\n"
+                            '返回 {"decision":"include|exclude|uncertain","confidence":0.0,'
+                            '"reason":"...","criterion_judgements":[{"criterion":"...",'
+                            '"judgement":"met|not_met|uncertain","evidence":"..."}]}。'
+                        )
+                    answer = llm.chat(relevance_system, relevance_prompt, []).strip().lower()
+                    match = re.search(r"\{[\s\S]*\}", answer)
+                    parsed = json.loads(match.group()) if match else {}
+                    candidate_decision = str(parsed.get("decision") or "").lower()
+                    if candidate_decision in {"include", "exclude", "uncertain"}:
+                        screening_decision = candidate_decision
+                        relevance_confidence = float(parsed.get("confidence") or relevance_confidence)
+                        relevance_reason = str(parsed.get("reason") or relevance_reason)
+                        criterion_judgements = parsed.get("criterion_judgements") or []
+                    elif not answer.startswith(("yes", "是")):
+                        screening_decision = "exclude"
+                        relevance_reason = "The title/abstract screening model judged the record not directly relevant."
+                except Exception:
+                    screening_decision = "uncertain"
+                    relevance_confidence = 0.0
+                    relevance_reason = "Automated title/abstract screening failed; human review is required."
 
         # Persist and verify metadata first.  Only this transition is allowed to
         # produce the success marker consumed by the Agent and UI.
@@ -464,13 +519,17 @@ class PaperRegisterTool(BaseTool):
             "authors": authors,
             "source": "agent_search",
             "source_type": "doi" if is_doi else "arxiv",
-            "status": "accepted",
+            "status": "rejected" if screening_decision == "exclude" else "pending",
             "abstract": abstract[:1500],
             "notes": "",
             "has_notes": False,
             "doi": clean_id if is_doi else "",
             "arxiv_id": arxiv_id or (clean_id if not is_doi else ""),
             "source_url": pdf_url,
+            "screening_stage": "title_abstract",
+            "screening_decision": screening_decision,
+            "screening_reason": relevance_reason,
+            "screening_confidence": relevance_confidence,
             "added_at": datetime.datetime.now().isoformat(),
         }
         try:
@@ -480,6 +539,40 @@ class PaperRegisterTool(BaseTool):
             return f"❌ 论文登记失败：{title} (ID: {clean_id})\n   原因: {exc}"
         if not registered_paper:
             return f"❌ 论文登记失败：{title} (ID: {clean_id})\n   原因: 写入后无法从 Session 读取该论文"
+
+        try:
+            review_service = scientific or ScientificReviewService(mgr)
+            candidate = review_service.register_candidate(self.session_id, registered_paper)
+            review_service.record_screening(
+                self.session_id,
+                paper_id=str(registered_paper.get("paper_id") or safe_id),
+                stage="title_abstract",
+                decision=screening_decision,
+                reason_code="not_relevant" if screening_decision == "exclude" else None,
+                reason=relevance_reason,
+                criterion_judgements=criterion_judgements or [{
+                    "criterion": "Direct relevance to the confirmed research question",
+                    "judgement": "met" if screening_decision == "include" else screening_decision,
+                    "evidence": f"{title}. {abstract[:600]}",
+                }],
+                evidence=[{"basis": "title_abstract", "excerpt": abstract[:800]}],
+                confidence=relevance_confidence,
+                reviewer="ai",
+            )
+            if candidate.get("candidate_id"):
+                current = mgr.find_duplicate_paper(self.session_id, registered_paper) or registered_paper
+                current["candidate_id"] = candidate["candidate_id"]
+                papers = mgr.get_papers(self.session_id)
+                papers = [
+                    current if item.get("paper_id") == current.get("paper_id") else item
+                    for item in papers
+                ]
+                mgr.save_papers_list(self.session_id, papers)
+                registered_paper = current
+        except Exception as exc:
+            # The paper is still durably registered; surface the degraded
+            # methodology ledger without incorrectly claiming final inclusion.
+            paper_entry["screening_reason"] = f"Scientific ledger update pending: {exc}"
 
         self.registered_paper_ids.add(str(registered_paper.get("paper_id") or safe_id))
         pdf_downloaded, pdf_msg, pdf_path = self._try_download_pdf(
@@ -501,7 +594,17 @@ class PaperRegisterTool(BaseTool):
             source_url=pdf_url,
         )
         delivery = pdf_msg if pdf_downloaded else f"{pdf_msg}\n   元数据已保存，后续可手动上传 PDF。"
-        summary = f"✅ 论文新增成功: {title}\n   ID: {clean_id} ({'DOI' if is_doi else 'arXiv'})\n   ✅ 已登记到论文列表\n   {delivery}"
+        screening_label = {
+            "include": "通过标题/摘要初筛",
+            "exclude": "标题/摘要初筛排除",
+            "uncertain": "标题/摘要信息不足，进入人工队列",
+        }.get(screening_decision, "待筛选")
+        summary = (
+            f"✅ 论文新增成功: {title}\n"
+            f"   ID: {clean_id} ({'DOI' if is_doi else 'arXiv'})\n"
+            f"   已登记为候选文献；{screening_label}；尚未最终纳入综述\n"
+            f"   {delivery}"
+        )
         if abstract:
             summary += f"\n   摘要前 200 字: {abstract[:200]}..."
         return summary

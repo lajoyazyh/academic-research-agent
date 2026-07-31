@@ -39,8 +39,21 @@ class LLMClient:
         if not os.getenv("OPENAI_API_BASE"):
             os.environ["OPENAI_API_BASE"] = self.base_url
 
-        http_client = httpx.Client(proxy=None)
-        self.client = OpenAI(api_key=self.api_key, base_url=self.base_url, http_client=http_client)
+        # Bound provider hangs so long-running research runs can record a
+        # retryable failure instead of remaining stuck indefinitely.
+        http_client = httpx.Client(
+            proxy=None,
+            timeout=httpx.Timeout(90.0, connect=15.0),
+        )
+        # Retry policy belongs to the resumable pipeline, where attempts can be
+        # surfaced and checkpointed. Hidden SDK retries can otherwise multiply
+        # the 90-second timeout and make a single batch appear hung for minutes.
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url=self.base_url,
+            http_client=http_client,
+            max_retries=0,
+        )
 
     def _ensure_configured(self):
         is_real_openai_client = self.client.__class__.__module__.startswith("openai")

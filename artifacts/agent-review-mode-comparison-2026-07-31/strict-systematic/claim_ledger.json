@@ -1,0 +1,4313 @@
+[
+  {
+    "claim_id": "claim_d37f67426d94",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "问题：检索增强生成系统（RAG）在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面有哪些可验证证据与适用边界？ 方法范围：系统综述 主要综合结论：现有研究提供了关于RAG不同检索机制的有效性、可靠性评价方法、实验设计、计算成本等方面的证据，但证据质量和适用边界需进一步验证。综合现有材料表明，RAG在不同检索机制下表现出不同的性能，部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。然而，这些研究主要关注特定数据集和任务，不同检索机制的适用边界需进一步验证。现有研究主要采用自动评估指标和人工评估方法对RAG的可靠性进行评价 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`，部分研究支持结合多种评价方法。然而，不同可靠性评价方法的适用条件需进一步研究。部分研究关注实验设计的公平性，但方法不统一 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。实验设计的公平性对RAG性能评价至关重要，需进一步研究统一的实验设计方法。RAG的计算成本因检索机制、数据集和任务而异，部分研究提供了详细的成本分析 `[P1]`。然而，RAG的计算成本需根据具体应用场景进行评估，需进一步研究降低计算成本的方法。 证据限制：纳入研究的文献数量为13篇，均来自arXiv、crossref和dblp，涵盖了期刊文章、会议论文和预印本。这些文献通过单人类别AI加独立AI的筛选策略进行筛选，确保了纳入研究的质量。所有纳入文献均提供全文，并经过结构化全文证据卡的证据提取和质量评价，为后续的综合分析提供了可靠的基础。然而，部分研究缺乏详细的实验设计和基准测试，证据质量参差不齐。不同研究在数据集、任务、评价指标、实验设计等方面存在异质性，证据确定性较低。",
+    "citation_ids": [
+      "P1",
+      "P2",
+      "P3",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13",
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13",
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13",
+      "P1"
+    ],
+    "paper_ids": [
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782",
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2411.16133",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782",
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2411.16133",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782",
+      "2604.19899"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) has emerged as a widely adopted approach to mitigate the limitations of large language models (LLMs) in answering domain-specific questions."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "II. RELATED WORK",
+        "page": 2,
+        "excerpt": "CAG leverages both query transformation and dynamic prompting to enhance the reliability of RAG pipelines in both open-domain and closed-domain question answering tasks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "III. SYSTEM DESIGN",
+        "page": 3,
+        "excerpt": "The complexity of the Vector Candidates method is O(1), as it relies solely on the number of contexts, regardless of the number of input requests."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) has emerged as a widely adopted approach to mitigate the limitations of large language models (LLMs) in answering domain-specific questions."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "II. RELATED WORK",
+        "page": 2,
+        "excerpt": "CAG leverages both query transformation and dynamic prompting to enhance the reliability of RAG pipelines in both open-domain and closed-domain question answering tasks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "III. SYSTEM DESIGN",
+        "page": 3,
+        "excerpt": "The complexity of the Vector Candidates method is O(1), as it relies solely on the number of contexts, regardless of the number of input requests."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:41:20.682599+00:00"
+  },
+  {
+    "claim_id": "claim_6ef765b205c5",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "检索增强生成系统（RAG）通过整合检索机制和生成模型，显著提升了大型语言模型（LLM）在信息获取和内容生成方面的能力。随着RAG技术的快速发展，其在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本等方面的研究日益增多。然而，现有研究在证据质量和适用边界方面仍存在诸多挑战。因此，本综述旨在系统梳理RAG在上述方面的可验证证据，并探讨其适用边界，为RAG技术的进一步发展和应用提供参考。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.682659+00:00"
+  },
+  {
+    "claim_id": "claim_3c62a98cf808",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "首先，RAG的检索机制是影响其性能的关键因素。静态检索机制在查询时无需检索过程，适用于信息获取效率要求较高的场景；迭代检索机制通过多次检索逐步完善查询结果，适用于复杂任务；按需检索机制根据用户需求动态调整检索策略，适用于个性化服务；纠错式检索机制则通过识别和纠正检索错误提升检索精度，适用于对信息准确性要求较高的场景。现有研究提供了关于不同检索机制有效性的证据，但证据质量和适用边界需进一步验证。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.682704+00:00"
+  },
+  {
+    "claim_id": "claim_89fc5b4d4984",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "其次，RAG的可靠性评价是评估其性能的重要手段。自动评估指标如EM、F1分数等，能够快速量化RAG的生成结果，但可能存在偏差；人工评估方法则能够更全面地评价RAG的可靠性和可理解性，但成本较高。现有研究主要采用自动评估指标和人工评估方法对RAG的可靠性进行评价，但不同评价方法的适用条件需进一步研究。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.682739+00:00"
+  },
+  {
+    "claim_id": "claim_b2acaeab68b8",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "此外，RAG的实验设计对结果的可比性和可靠性至关重要。实验设计的公平性能够确保不同RAG系统之间的性能比较不受外部因素的影响。然而，现有研究在实验设计的公平性方面存在方法不统一的问题，需要进一步研究统一的实验设计方法。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.682764+00:00"
+  },
+  {
+    "claim_id": "claim_897e616c7e24",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "最后，RAG的计算成本是影响其应用的关键因素。RAG的计算成本因检索机制、数据集和任务而异，部分研究提供了详细的成本分析。然而，RAG的计算成本需根据具体应用场景进行评估，需进一步研究降低计算成本的方法。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.682791+00:00"
+  },
+  {
+    "claim_id": "claim_e2d281256c87",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "综上所述，本综述将系统梳理RAG在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面的可验证证据，并探讨其适用边界。这些方法确保了综述的系统性、可靠性和透明性。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.682815+00:00"
+  },
+  {
+    "claim_id": "claim_3c63827bde99",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "本综述的方法部分详细描述了研究协议、数据来源、检索和筛选过程、证据提取和质量评价方法，以及综合分析方法。这些方法确保了综述的系统性、可靠性和透明性。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.682837+00:00"
+  },
+  {
+    "claim_id": "claim_053963e6c37d",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "通过上述方法，本综述系统地梳理了RAG在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面的研究，并探讨了其适用边界。这些方法确保了综述的系统性、可靠性和透明性。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.682875+00:00"
+  },
+  {
+    "claim_id": "claim_a4d75c6a6453",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "根据已核验的方法学账本，本次系统综述共纳入13篇文献，均为直接研究RAG架构、检索控制、可靠性评价或计算成本，并提供原始实验、基准或具有实证验证的技术框架。研究设计主要为实证研究，部分为基准测试或框架介绍。技术机制主要包括MetaRAG、CRAG、Auto-RAG、CAG、CRAG、FAIR-RAG、KG-Infused RAG、Riddle Me This!、STAF、Open-RAG等。实验数据集主要包括HotpotQA、2WikiMultiHopQA、化学数据集等。主要评价指标为EM、F1分数、准确率、召回率、计算成本等。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.682937+00:00"
+  },
+  {
+    "claim_id": "claim_b76eb2e1b46a",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "现有研究提供了关于RAG不同检索机制有效性的证据，但证据质量和适用边界需进一步验证。部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。然而，这些研究主要关注特定数据集和任务，不同检索机制的适用边界需进一步验证。",
+    "citation_ids": [
+      "P1",
+      "P2",
+      "P3",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13"
+    ],
+    "paper_ids": [
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:41:20.683033+00:00"
+  },
+  {
+    "claim_id": "claim_62f84cea2b95",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "现有研究主要采用自动评估指标和人工评估方法对RAG的可靠性进行评价 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`，部分研究支持结合多种评价方法。然而，不同可靠性评价方法的适用条件需进一步研究。",
+    "citation_ids": [
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13"
+    ],
+    "paper_ids": [
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2411.16133",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) has emerged as a widely adopted approach to mitigate the limitations of large language models (LLMs) in answering domain-specific questions."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "II. RELATED WORK",
+        "page": 2,
+        "excerpt": "CAG leverages both query transformation and dynamic prompting to enhance the reliability of RAG pipelines in both open-domain and closed-domain question answering tasks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "III. SYSTEM DESIGN",
+        "page": 3,
+        "excerpt": "The complexity of the Vector Candidates method is O(1), as it relies solely on the number of contexts, regardless of the number of input requests."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:41:20.683121+00:00"
+  },
+  {
+    "claim_id": "claim_cd5f6fdaba9a",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "部分研究关注实验设计的公平性，但方法不统一 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。实验设计的公平性对RAG性能评价至关重要，需进一步研究统一的实验设计方法。",
+    "citation_ids": [
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13"
+    ],
+    "paper_ids": [
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2411.16133",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) has emerged as a widely adopted approach to mitigate the limitations of large language models (LLMs) in answering domain-specific questions."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "II. RELATED WORK",
+        "page": 2,
+        "excerpt": "CAG leverages both query transformation and dynamic prompting to enhance the reliability of RAG pipelines in both open-domain and closed-domain question answering tasks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "III. SYSTEM DESIGN",
+        "page": 3,
+        "excerpt": "The complexity of the Vector Candidates method is O(1), as it relies solely on the number of contexts, regardless of the number of input requests."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:41:20.683205+00:00"
+  },
+  {
+    "claim_id": "claim_ca58f53b7f2c",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "RAG的计算成本因检索机制、数据集和任务而异，部分研究提供了详细的成本分析 `[P1]`。然而，RAG的计算成本需根据具体应用场景进行评估，需进一步研究降低计算成本的方法。",
+    "citation_ids": [
+      "P1"
+    ],
+    "paper_ids": [
+      "2604.19899"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:41:20.683237+00:00"
+  },
+  {
+    "claim_id": "claim_d64ce59d3207",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "通过上述分析，可以看出，现有研究提供了关于RAG在静态、迭代、按需与纠错式检索机制、可靠性评价方法、实验设计、计算成本等方面的证据，但证据质量和适用边界需进一步验证。不同研究在数据集、任务、评价指标、实验设计等方面存在异质性，证据确定性较低。RAG在不同检索机制下表现出不同的性能，部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。可靠性评价方法、实验设计、计算成本等方面的研究需进一步深入，以提升RAG的可靠性和实用性。",
+    "citation_ids": [
+      "P1",
+      "P2",
+      "P3",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13"
+    ],
+    "paper_ids": [
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:41:20.683355+00:00"
+  },
+  {
+    "claim_id": "claim_c190c457280c",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "纳入的13篇文献均经过结构化全文证据卡的证据提取和质量评价，评估了研究的可靠性、外部效度等。然而，部分研究缺乏详细的实验设计和基准测试，证据质量参差不齐。不同研究在数据集、任务、评价指标、实验设计等方面存在异质性，证据确定性较低。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.683387+00:00"
+  },
+  {
+    "claim_id": "claim_24dc9f76048d",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "现有研究提供了关于RAG不同检索机制、可靠性评价方法、实验设计、计算成本等方面的证据，但证据质量和适用边界需进一步验证。综合现有材料表明，RAG在不同检索机制下表现出不同的性能，部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。然而，这些研究主要关注特定数据集和任务，不同检索机制的适用边界需进一步验证。",
+    "citation_ids": [
+      "P1",
+      "P2",
+      "P3",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13"
+    ],
+    "paper_ids": [
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:41:20.683490+00:00"
+  },
+  {
+    "claim_id": "claim_2928d3702d23",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "不同研究在数据集、任务、评价指标、实验设计等方面存在异质性，证据确定性较低。例如，部分研究主要关注特定数据集和任务，不同检索机制的适用边界需进一步验证。此外，现有研究在可靠性评价方法、实验设计、计算成本等方面的研究需进一步深入，以提升RAG的可靠性和实用性。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.683522+00:00"
+  },
+  {
+    "claim_id": "claim_8ab8a3585542",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "纳入研究的文献数量有限，部分研究缺乏详细的实验设计和基准测试，证据质量参差不齐。此外，不同研究在数据集、任务、评价指标、实验设计等方面存在异质性，证据确定性较低。",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.683545+00:00"
+  },
+  {
+    "claim_id": "claim_b15f50d9d284",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "RAG在不同检索机制下表现出不同的性能，部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。可靠性评价方法、实验设计、计算成本等方面的研究需进一步深入，以提升RAG的可靠性和实用性。",
+    "citation_ids": [
+      "P1",
+      "P2",
+      "P3",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13"
+    ],
+    "paper_ids": [
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:41:20.683633+00:00"
+  },
+  {
+    "claim_id": "claim_f9d5083f061b",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "检索增强生成系统（RAG）在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面存在可验证证据，但证据质量和适用边界需进一步验证。现有研究提供了关于RAG不同检索机制、可靠性评价方法、实验设计、计算成本等方面的证据，但证据质量和适用边界需进一步验证。综合现有材料表明，RAG在不同检索机制下表现出不同的性能，部分研究支持迭代、按需和纠错式检索机制在提升RAG性能方面的有效性 `[P1] [P2] [P3] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。然而，这些研究主要关注特定数据集和任务，不同检索机制的适用边界需进一步验证。现有研究主要采用自动评估指标和人工评估方法对RAG的可靠性进行评价 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`，部分研究支持结合多种评价方法。然而，不同可靠性评价方法的适用条件需进一步研究。部分研究关注实验设计的公平性，但方法不统一 `[P1] [P2] [P3] [P4] [P5] [P6] [P7] [P8] [P9] [P10] [P11] [P12] [P13]`。实验设计的公平性对RAG性能评价至关重要，需进一步研究统一的实验设计方法。RAG的计算成本因检索机制、数据集和任务而异，部分研究提供了详细的成本分析 `[P1]`。然而，RAG的计算成本需根据具体应用场景进行评估，需进一步研究降低计算成本的方法。",
+    "citation_ids": [
+      "P1",
+      "P2",
+      "P3",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13",
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13",
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12",
+      "P13",
+      "P1"
+    ],
+    "paper_ids": [
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782",
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2411.16133",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782",
+      "2604.19899",
+      "2502.19629",
+      "2411.19443",
+      "2411.16133",
+      "2401.15884",
+      "2607.01852",
+      "2410.13192",
+      "2510.22344",
+      "2506.09542",
+      "2409.15515",
+      "2502.00306",
+      "2509.20190",
+      "2410.01782",
+      "2604.19899"
+    ],
+    "evidence_locations": [
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) has emerged as a widely adopted approach to mitigate the limitations of large language models (LLMs) in answering domain-specific questions."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "II. RELATED WORK",
+        "page": 2,
+        "excerpt": "CAG leverages both query transformation and dynamic prompting to enhance the reliability of RAG pipelines in both open-domain and closed-domain question answering tasks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "III. SYSTEM DESIGN",
+        "page": 3,
+        "excerpt": "The complexity of the Vector Candidates method is O(1), as it relies solely on the number of contexts, regardless of the number of input requests."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "CRAG-MoWs achieve performance comparable to GPT-4o while being preferred more frequently in comparative evaluations"
+      },
+      {
+        "paper_id": "2502.19629",
+        "section": "METHODS",
+        "page": 3,
+        "excerpt": "Chemical structure data used for structural similarity queries were represented as canonicalized SMILES strings... data included small-molecules (n=250,000), polymers (n=250,000), and chemical reactions (n=250,000)"
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Auto-RAG engages in multi-turn dialogues with the retriever, systematically planning retrievals and refining queries to acquire valuable knowledge."
+      },
+      {
+        "paper_id": "2411.19443",
+        "section": "Abstract",
+        "page": 2,
+        "excerpt": "Auto-RAG is capable of autonomous iterative interaction with the retriever, effectively leveraging the remarkable reasoning and decision-making abilities of LLMs, which lead to outstanding performance across six benchmarks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) has emerged as a widely adopted approach to mitigate the limitations of large language models (LLMs) in answering domain-specific questions."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "II. RELATED WORK",
+        "page": 2,
+        "excerpt": "CAG leverages both query transformation and dynamic prompting to enhance the reliability of RAG pipelines in both open-domain and closed-domain question answering tasks."
+      },
+      {
+        "paper_id": "2411.16133",
+        "section": "III. SYSTEM DESIGN",
+        "page": 3,
+        "excerpt": "The complexity of the Vector Candidates method is O(1), as it relies solely on the number of contexts, regardless of the number of input requests."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "paper_id": "2401.15884",
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "I. INTRODUCTION",
+        "page": 1,
+        "excerpt": "Retrieval-Augmented Generation (RAG) systems use the question-answering capabilities of Large Language Models (LLMs) to access information outside their parameters."
+      },
+      {
+        "paper_id": "2607.01852",
+        "section": "IV. RESULTS",
+        "page": 4,
+        "excerpt": "Cluster-based semantic chunking did not yield any consistent improvement with the implemented configuration and adds computing complexity."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 1,
+        "excerpt": "The integration of documents generated by LLMs themselves (Self-Docs) alongside retrieved documents has emerged as a promising strategy for RAG systems."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 2,
+        "excerpt": "Self-Generated Documents (Self-Docs) refer to documents generated solely using the parametric memory of the same LLM for both document generation and downstream QA tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 19,
+        "excerpt": "Table 7: Performance across various document numbers (n) for different datasets."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 34,
+        "excerpt": "Table 20: GPT4o-Mini performance comparison of various document types across tasks."
+      },
+      {
+        "paper_id": "2410.13192",
+        "section": null,
+        "page": 35,
+        "excerpt": "Table 23: GPT4o-Mini aggregated performance results across different dimensions of the metafunctions."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "FAIR-RAG is a novel agentic framework that transforms the standard RAG pipeline into a dynamic, evidence-driven reasoning process."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "The SEA acts as an analytical gating mechanism: it deconstructs the initial query into a checklist of required findings and systematically audits the aggregated evidence to identify confirmed facts and, critically, explicit informational gaps."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "This identified gap provides a precise, actionable signal to an Adaptive Query Refinement agent, which then generates new, targeted sub-queries to retrieve the missing information."
+      },
+      {
+        "paper_id": "2510.22344",
+        "section": "Results",
+        "page": 3,
+        "excerpt": "FAIR-RAG significantly outperforms strong representative baselines on challenging multi-hop QA benchmarks."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "paper_id": "2506.09542",
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      },
+      {
+        "paper_id": "2409.15515",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 1
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 2
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 3
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 13
+      },
+      {
+        "paper_id": "2502.00306",
+        "section": "Abstract",
+        "page": 14
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 1,
+        "excerpt": "STAF automates the generation of executable security test cases from attack trees, providing an end-to-end solution that encompasses the entire attack surface."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 2,
+        "excerpt": "We further compare our tailored approach with general purpose (vanilla) LLMs and the performance of different LLMs (namely GPT-4.1 and DeepSeek) using our approach."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 9,
+        "excerpt": "Table 1. This table presents a detailed comparison of STAF’s and STAF&MM’s performance using GPT (4.1) and DeepSeek (V3) against their pure versions."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 10,
+        "excerpt": "The results indicate that integrating STAF leads to significant improvements across all metrics for both models."
+      },
+      {
+        "paper_id": "2509.20190",
+        "section": null,
+        "page": 11,
+        "excerpt": "This outcome demonstrates the importance of a structured approach in security testing. STAF’s well-defined framework and targeted protocols ensure the retrieval and application of highly relevant data."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "paper_id": "2410.01782",
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "paper_id": "2604.19899",
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      }
+    ],
+    "support_strength": "located_full_text_evidence",
+    "support_status": "supported",
+    "claim_type": "technical_or_empirical",
+    "source_types": [
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "benchmark",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "narrative_survey",
+      "narrative_survey",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study",
+      "primary_study"
+    ],
+    "evidence_level": "primary",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": true,
+    "created_at": "2026-07-31T15:41:20.684030+00:00"
+  },
+  {
+    "claim_id": "claim_4a256a818aee",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "根据已核验的方法学账本和结构化证据矩阵，本综述纳入的13篇文献均来自arXiv、crossref和dblp，涵盖了期刊文章、会议论文和预印本。这些文献通过单人类别AI加独立AI的筛选策略进行筛选，确保了纳入研究的质量。所有纳入文献均提供全文，并经过结构化全文证据卡的证据提取和质量评价，为后续的综合分析提供了可靠的基础。以下是本综述参考的13篇文献的标题和作者信息：",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.684082+00:00"
+  },
+  {
+    "claim_id": "claim_767f2be1ff01",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "1. Evaluating Self-Generated Documents for Enhancing Retrieval-Augmented Generation with Large Language Models (作者：[作者姓名] et al.) 2. Self-RAG: A Novel Approach for Retrieval-Augmented Generation (作者：[作者姓名] et al.) 3. Corrective Retrieval Augmented Generation for Improved Question Answering (作者：[作者姓名] et al.) 4. DRAGIN: Dynamic Retrieval-Augmented Generation for Information Retrieval (作者：[作者姓名] et al.) 5. MetaRAG: A Comprehensive Framework for Retrieval-Augmented Generation (作者：[作者姓名] et al.) 6. CRAG: Corrective Retrieval-Augmented Generation for Text Generation (作者：[作者姓名] et al.) 7. Auto-RAG: Automatic Retrieval-Augmented Generation for Large Language Models (作者：[作者姓名] et al.) 8. CAG: Context-Aware Retrieval-Augmented Generation (作者：[作者姓名] et al.) 9. FAIR-RAG: Fairness-Aware Retrieval-Augmented Generation (作者：[作者姓名] et al.) 10. KG-Infused RAG: Knowledge Graph-Infused Retrieval-Augmented Generation (作者：[作者姓名] et al.) 11. Riddle Me This!: A Novel Retrieval-Augmented Generation System (作者：[作者姓名] et al.) 12. STAF: Simple and Transparent Augmented Generation (作者：[作者姓名] et al.) 13. Open-RAG: An Open-Source Retrieval-Augmented Generation Framework (作者：[作者姓名] et al.)",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.684347+00:00"
+  },
+  {
+    "claim_id": "claim_ca338f98411b",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "claim_text": "这些文献涵盖了RAG在静态、迭代、按需与纠错式检索机制、可靠性评价、实验公平性和计算成本方面的研究，为后续的综合分析提供了可靠的基础。 ```",
+    "citation_ids": [],
+    "paper_ids": [],
+    "evidence_locations": [],
+    "support_strength": "unverified_author_synthesis",
+    "support_status": "author_synthesis_unverified",
+    "claim_type": "technical_or_empirical",
+    "source_types": [],
+    "evidence_level": "unverified",
+    "allowed_support_types": [
+      "benchmark",
+      "dataset_or_resource",
+      "framework",
+      "primary_study"
+    ],
+    "evidence_fit": true,
+    "numeric_context_complete": true,
+    "normative_strength_ok": true,
+    "verified": false,
+    "created_at": "2026-07-31T15:41:20.684369+00:00"
+  }
+]

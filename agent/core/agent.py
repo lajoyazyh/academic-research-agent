@@ -10,13 +10,15 @@ from datetime import datetime
 class BaseAgent:
     def __init__(self, tools: List[BaseTool], max_loops: int = 5, provider_config: dict | None = None,
                  min_new_papers: int = 3,
-                 paper_progress_getter: Callable[[], int] | None = None):
+                 paper_progress_getter: Callable[[], int] | None = None,
+                 finish_gate: Callable[[list[dict]], tuple[bool, str]] | None = None):
         self.llm = LLMClient(provider_config)
         self.language = getattr(self.llm, "language", "zh-CN")
         self.tools: Dict[str, BaseTool] = {tool.name: tool for tool in tools}
         self.max_loops = max_loops
         self.min_new_papers = max(1, int(min_new_papers or 3))
         self.paper_progress_getter = paper_progress_getter
+        self.finish_gate = finish_gate
         self.traces = []
         self.error_history = []  # 记录连续同类错误，供给构化 Reflexion 使用
         self._critique_round = False  # Pre-FINISH 自主质检标记
@@ -252,8 +254,18 @@ All reasoning, observations you generate, and final prose must be English. Prese
                     _should_allow = True
                     _finish_tag = ""
 
+                finish_gate_message = ""
+                if _should_allow and not _finish_tag and self.finish_gate:
+                    try:
+                        gate_allowed, finish_gate_message = self.finish_gate(self.traces)
+                    except Exception as exc:
+                        gate_allowed = False
+                        finish_gate_message = f"Search coverage gate failed: {exc}"
+                    if not gate_allowed:
+                        _should_allow = False
+
                 if not _should_allow:
-                    gate_msg = (
+                    gate_msg = finish_gate_message or (
                         f"Quality gate: only {recorded_count} papers have been registered, but at least {_min_papers} are required. "
                         "Use paper_register for relevant candidates before finishing."
                         if english

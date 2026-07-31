@@ -1,0 +1,297 @@
+{
+  "review_mode": "scoping",
+  "taxonomy_or_method_families": [
+    {
+      "name": "Hallucination Taxonomy",
+      "description": "Various frameworks categorize hallucinations based on the source of inconsistency.",
+      "families": [
+        {
+          "type": "Conflict-based",
+          "description": "Categorizes hallucinations based on the relationship between the output and input/context/world knowledge (e.g., Input-conflicting, Context-conflicting, Fact-conflicting).",
+          "source": "P2"
+        },
+        {
+          "type": "Nature-based",
+          "description": "Distinguishes between factuality hallucination (discrepancy with real-world facts) and faithfulness hallucination (divergence from source content).",
+          "source": "P3"
+        },
+        {
+          "type": "Attribution-based",
+          "description": "Classifies hallucinations based on whether they stem from prompting strategies (Prompt-Dominant) or internal model behavior (Model-Dominant).",
+          "source": "P12"
+        }
+      ]
+    },
+    {
+      "name": "Mitigation Taxonomy",
+      "description": "Categorizes techniques into post-generation refinement and model development.",
+      "families": [
+        {
+          "type": "Prompt Engineering",
+          "description": "Includes Retrieval-Augmented Generation (RAG), Chain-of-Verification (CoVe), and Self-Reflection.",
+          "source": "P4, P6, P9"
+        },
+        {
+          "type": "Model Development",
+          "description": "Includes decoding strategies, knowledge graphs, loss functions, and supervised fine-tuning.",
+          "source": "P4"
+        }
+      ]
+    },
+    {
+      "name": "Detection Methodologies",
+      "description": "Approaches to identify hallucinations without ground truth.",
+      "families": [
+        {
+          "type": "Uncertainty Estimation",
+          "description": "Logit-based, verbalize-based, and consistency-based methods.",
+          "source": "P2, P7"
+        },
+        {
+          "type": "Self-Consistency",
+          "description": "Sampling-based methods like SelfCheckGPT that measure informational consistency across multiple outputs.",
+          "source": "P5, P8"
+        }
+      ]
+    }
+  ],
+  "synthesis_groups": [
+    {
+      "name": "Conceptualization of Hallucination",
+      "question_answered": "How is the problem of LLM hallucination defined and categorized?",
+      "included_sources": [
+        "P2",
+        "P3",
+        "P12"
+      ],
+      "consensus": [
+        "Hallucination is universally defined as the generation of content that is inconsistent with reality or source material.",
+        "There is a consensus that hallucinations are not monolithic but manifest differently depending on the context (e.g., conflicting with input vs. conflicting with world knowledge)."
+      ],
+      "disagreements": [
+        "There is no unified standard taxonomy; researchers use different lenses (conflict vs. nature vs. attribution)."
+      ],
+      "heterogeneity": [
+        "P2 focuses on the type of conflict (Input/Context/Fact), while P3 focuses on the nature of the error (Factuality/Faithfulness), and P12 focuses on the root cause (Prompt vs. Model)."
+      ],
+      "boundary": "These taxonomies primarily apply to text-based LLMs; multimodal hallucinations require specific definitions (e.g., object hallucination)."
+    },
+    {
+      "name": "Evaluation and Benchmarking",
+      "question_answered": "How is hallucination evaluated, and what benchmarks exist?",
+      "included_sources": [
+        "P1",
+        "P3",
+        "P5",
+        "P10",
+        "P11"
+      ],
+      "consensus": [
+        "Evaluation relies on a mix of automatic metrics (Accuracy, F1, ROUGE, FACTSCORE) and human annotation.",
+        "Benchmarks have been developed for specific domains (Medical, RAG, LVLMs)."
+      ],
+      "disagreements": [
+        "Metrics vary significantly across domains; e.g., POPE for object hallucination in LVLMs vs. TruthfulQA for factual consistency."
+      ],
+      "heterogeneity": [
+        "P5 uses a sampling-then-filtering approach for HalluEval, while P10 uses a polling-based approach (Yes/No) for object hallucination.",
+        "P11 evaluates RAG capabilities (noise robustness, negative rejection) rather than just generation quality."
+      ],
+      "boundary": "Current benchmarks often focus on English and high-resource domains; evaluation in low-resource languages or long contexts remains under-explored."
+    },
+    {
+      "name": "Detection Mechanisms",
+      "question_answered": "How can hallucinations be detected without ground truth?",
+      "included_sources": [
+        "P2",
+        "P5",
+        "P7",
+        "P8"
+      ],
+      "consensus": [
+        "Detection is possible using uncertainty estimation and self-consistency checks.",
+        "External knowledge can significantly improve detection accuracy."
+      ],
+      "disagreements": [
+        "Different methods have different strengths: Semantic Entropy (P7) is good for black-box models, while SelfCheckGPT (P8) is zero-resource but computationally expensive."
+      ],
+      "heterogeneity": [
+        "P2 categorizes detection into logit, verbalize, and consistency methods.",
+        "P5 demonstrates that even ChatGPT struggles to detect its own hallucinations (62.59% accuracy)."
+      ],
+      "boundary": "Detection methods often struggle with 'high-confidence hallucinations' (fluent but incorrect) and consistent errors learned from training data."
+    },
+    {
+      "name": "Mitigation Strategies",
+      "question_answered": "What methods are used to reduce hallucinations?",
+      "included_sources": [
+        "P2",
+        "P4",
+        "P6",
+        "P9"
+      ],
+      "consensus": [
+        "RAG and Retrieval-Augmented Generation are the most common mitigation techniques.",
+        "Chain-of-Verification and Self-Reflection are effective post-generation refinements."
+      ],
+      "disagreements": [
+        "While effective, some methods (like CoVe) significantly increase inference overhead."
+      ],
+      "heterogeneity": [
+        "P4 categorizes mitigation into Prompt Engineering (RAG, prompting) and Model Development (decoding, fine-tuning).",
+        "P9 focuses on iterative self-reflection specifically for medical QA, while P6 focuses on general CoVe for longform generation."
+      ],
+      "boundary": "Mitigation techniques often rely on labeled data or external knowledge, limiting their applicability in zero-shot or low-resource settings."
+    },
+    {
+      "name": "Scenarios and Limitations",
+      "question_answered": "In which scenarios do hallucinations occur, and what are the limitations?",
+      "included_sources": [
+        "P1",
+        "P3",
+        "P11",
+        "P12"
+      ],
+      "consensus": [
+        "Hallucinations are prevalent in RAG systems due to noisy retrieval and context conflicts.",
+        "LLMs struggle with low-resource domains and long context modeling.",
+        "Hallucination attribution varies by model (some are Prompt-Dominant, others Model-Dominant)."
+      ],
+      "disagreements": [
+        "The severity of hallucination varies; e.g., P12 notes LLaMA 2 is highly prompt-sensitive, while DeepSeek is model-behavior dominant."
+      ],
+      "heterogeneity": [
+        "P1 highlights limitations in IR and Recommendation Systems.",
+        "P10 identifies object hallucination as a specific issue in LVLMs.",
+        "P11 identifies negative rejection and information integration as bottlenecks in RAG."
+      ],
+      "boundary": "Evidence gaps exist regarding real-world deployment readiness, ethical risks in high-stakes domains (like healthcare), and generalizability to non-English languages."
+    }
+  ],
+  "cross_study_comparability": [
+    {
+      "aspect": "Models",
+      "heterogeneity": "Studies use diverse models (GPT-4, LLaMA, Vicuna, DeepSeek, Falcon, Mistral). Direct comparison of hallucination rates across models is difficult due to differing architectures and training data.",
+      "note": "P12 attempts to compare attribution (Prompt vs. Model) across models, but findings are model-specific."
+    },
+    {
+      "aspect": "Tasks",
+      "heterogeneity": "Studies cover QA, Summarization, Medical, IR, and Multimodal tasks. A method effective for Medical QA (P9) may not generalize to general Summarization (P6).",
+      "note": "P5 focuses on QA and Dialogue, while P10 focuses on Image Captioning/VQA."
+    },
+    {
+      "aspect": "Metrics",
+      "heterogeneity": "Metrics range from standard NLP metrics (BLEU, ROUGE) to hallucination-specific metrics (FACTSCORE, CHAIR, POPE).",
+      "note": "P5 uses Accuracy, while P7 uses AUROC/AURAC. P10 uses Precision/Recall for object detection."
+    }
+  ],
+  "evidence_gaps": [
+    {
+      "gap": "Long Context Hallucination",
+      "description": "P1 and P3 note limitations in long context modeling, but there is a lack of specific benchmarks and mitigation strategies tailored to hallucinations in very long documents or massive context windows.",
+      "source": "P1, P3"
+    },
+    {
+      "gap": "Low-Resource Domains",
+      "description": "P1 and P4 highlight that LLMs perform poorly in low-resource domains (e.g., minor language translation), yet there is limited research on hallucination in these specific contexts.",
+      "source": "P1, P4"
+    },
+    {
+      "gap": "High-Stakes Real-World Deployment",
+      "description": "P9 mentions ethical risks in healthcare and that methods are not yet ready for direct real-world deployment. There is a gap in longitudinal studies or real-world deployment evidence.",
+      "source": "P9"
+    },
+    {
+      "gap": "Multimodal Hallucination Mechanisms",
+      "description": "While P10 evaluates object hallucination in LVLMs, the underlying mechanisms (e.g., visual instruction bias) are not fully understood compared to text hallucinations.",
+      "source": "P10"
+    },
+    {
+      "gap": "Unified Evaluation Protocols",
+      "description": "P12 notes the lack of standard protocols for hallucination evaluation across tasks/domains, making cross-study comparison difficult.",
+      "source": "P12"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "C1",
+      "claim": "LLM hallucinations are multifaceted and lack a unified definition, with taxonomies ranging from conflict-based (Input/Context/Fact) to nature-based (Factuality/Faithfulness) and attribution-based (Prompt vs. Model).",
+      "support": [
+        "P2",
+        "P3",
+        "P12"
+      ],
+      "strength": "high",
+      "boundary": "These taxonomies primarily apply to text-based LLMs; multimodal hallucinations require specific definitions."
+    },
+    {
+      "claim_id": "C2",
+      "claim": "Retrieval-Augmented Generation (RAG) is the dominant mitigation strategy but introduces new challenges such as noisy retrieval, context conflicts, and poor negative rejection capabilities.",
+      "support": [
+        "P3",
+        "P11"
+      ],
+      "strength": "high",
+      "boundary": "RAG effectiveness is highly dependent on the quality of the retrieval mechanism and the granularity of context chunking."
+    },
+    {
+      "claim_id": "C3",
+      "claim": "Detection methods relying on self-consistency (e.g., SelfCheckGPT) and uncertainty estimation (e.g., Semantic Entropy) are effective for black-box models but struggle with high-confidence hallucinations.",
+      "support": [
+        "P5",
+        "P7",
+        "P8",
+        "P12"
+      ],
+      "strength": "high",
+      "boundary": "Detection accuracy is often dependent on the number of samples generated and the quality of the proxy model used for evaluation."
+    },
+    {
+      "claim_id": "C4",
+      "claim": "Mitigation techniques like Chain-of-Verification (CoVe) and Self-Reflection significantly improve factual consistency but incur high computational costs and inference overhead.",
+      "support": [
+        "P6",
+        "P9"
+      ],
+      "strength": "high",
+      "boundary": "These methods are computationally intensive and may not be suitable for real-time, low-latency applications without optimization."
+    },
+    {
+      "claim_id": "C5",
+      "claim": "Current research heavily favors English and high-resource domains (Medical, General QA), leaving significant evidence gaps regarding hallucinations in low-resource languages, long contexts, and real-world high-stakes deployment.",
+      "support": [
+        "P1",
+        "P4",
+        "P9"
+      ],
+      "strength": "moderate",
+      "boundary": "The generalizability of findings from English-centric benchmarks to other languages or modalities remains unproven."
+    }
+  ],
+  "recommended_outline": [
+    {
+      "section": "Introduction to Hallucination",
+      "content": "Define hallucination, contrast with error, and introduce the lack of a unified taxonomy (C1)."
+    },
+    {
+      "section": "Taxonomy and Attribution",
+      "content": "Discuss different frameworks (P2, P3, P12) and the debate between Prompt-Dominant vs. Model-Dominant origins."
+    },
+    {
+      "section": "Evaluation and Benchmarking",
+      "content": "Review existing benchmarks (HaluEval, POPE, RGB) and metrics, highlighting heterogeneity (C2)."
+    },
+    {
+      "section": "Detection Mechanisms",
+      "content": "Analyze uncertainty estimation and self-consistency methods, noting limitations with high-confidence errors (C3)."
+    },
+    {
+      "section": "Mitigation Strategies",
+      "content": "Compare RAG, CoVe, and Self-Reflection, discussing the trade-off between performance and computational cost (C4)."
+    },
+    {
+      "section": "Scenarios and Limitations",
+      "content": "Examine hallucinations in specific domains (Medical, LVLMs, RAG) and identify evidence gaps (C5)."
+    }
+  ]
+}

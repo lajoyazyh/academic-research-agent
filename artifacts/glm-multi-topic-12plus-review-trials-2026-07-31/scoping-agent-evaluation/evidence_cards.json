@@ -1,0 +1,1063 @@
+[
+  {
+    "citation_id": "P1",
+    "study_or_article_type": "Survey",
+    "research_objective": "To provide a comprehensive overview of Large Language Models (LLMs), covering architectures, training, evaluation benchmarks, and applications, serving as a foundational reference for the field.",
+    "method_or_framework": "Systematic literature review and classification of LLMs into seven branches: Pre-Training, Fine-Tuning, Efficient, Inference, Evaluation, Applications, and Challenges.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLMs with 10B+ parameters (e.g., GPT-3, BLOOM, PaLM, LLaMA, Gopher)",
+        "Pre-trained Language Models (PLMs) transitioning to LLMs"
+      ],
+      "tasks_or_contexts": [
+        "Natural Language Processing (NLP) tasks",
+        "Multimodal tasks (e.g., visual reasoning, multimodal CoT)",
+        "Robotics",
+        "Datasets and benchmarking",
+        "Efficiency",
+        "Applications (e.g., medical, coding)"
+      ],
+      "datasets": [
+        "Various datasets mentioned in the literature (e.g., GLUE, SuperGLUE, SQuAD, BoolQ, DROP, TruthfulQA, MMLU, MATH, BIG-bench)",
+        "Datasets for specific domains like medical (CMB), legal (CUAD), and hate speech (Ethos)"
+      ],
+      "baselines": [
+        "Traditional language modeling (LM)",
+        "Task-specific models"
+      ],
+      "metrics": [
+        "Accuracy",
+        "Performance gains",
+        "Training stability metrics (e.g., gradient norm, variance)",
+        "Calibration"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LLMs have demonstrated remarkable capabilities in natural language processing and generalization, transitioning from PLMs to LLMs by significantly increasing parameters and training data.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "Minor changes in architecture and training strategies have a big impact on performance and stability due to the gigantic scale of LLMs.",
+        "support_type": "author_claim",
+        "page": 24
+      },
+      {
+        "finding": "Layer normalization (Pre-norm) is more common among LLMs for stabilizing training.",
+        "support_type": "author_claim",
+        "page": 24
+      },
+      {
+        "finding": "Training stability issues like divergence can be mitigated by restarting training from earlier checkpoints, skipping batches, or using embedding layer gradient shrink.",
+        "support_type": "author_claim",
+        "page": 24
+      },
+      {
+        "finding": "There is an increasing trend towards instruction-tuned and open-source models.",
+        "support_type": "reported_result",
+        "page": 2
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      "Training cost is calculated by multiplying GPU/TPU hourly rate with number of GPUs and training time (e.g., Gopher cost 13.19 Mil, Yuan 1.0 cost 1.32 Mil).",
+      "Training parallelism is crucial, with 3D parallelism (data, pipeline, tensor) being most utilized.",
+      "Megatron-LM and DeepSpeed are key libraries for scalable distributed training and inference."
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "It is challenging to perceive the bigger picture of advances due to the rapid development and plethora of literature.",
+      "The survey refers readers interested in smaller pre-trained models to other works."
+    ],
+    "validity_risks": [
+      "The survey relies on existing literature which may contain biases or varying standards of reporting.",
+      "The 'gigantic scale' of models makes minor changes impactful, potentially introducing instability if not carefully managed."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "2307.06435",
+    "title": "A Comprehensive Overview of Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P2",
+    "study_or_article_type": "Survey",
+    "research_objective": "To provide a comprehensive review of LLM evaluation methods, focusing on three dimensions: what to evaluate, where to evaluate, and how to evaluate.",
+    "method_or_framework": "Categorization of evaluation tasks (NLP, reasoning, medical, ethics, etc.), benchmarks, and metrics. It divides benchmarks into general tasks, specific downstream tasks, and multi-modal tasks.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Large Language Models (LLMs)",
+        "Chatbots",
+        "Foundation models"
+      ],
+      "tasks_or_contexts": [
+        "General NLP tasks (sentiment analysis, classification, NLI, summarization, translation, QA)",
+        "Reasoning (math, science, engineering)",
+        "Medical applications",
+        "Ethics, biases, and trustworthiness",
+        "Agent applications",
+        "Social and natural sciences",
+        "Robustness and OOD (Out-of-Distribution) scenarios"
+      ],
+      "datasets": [
+        "GLUE, SuperGLUE",
+        "MMLU, MATH, APPS",
+        "Chatbot Arena, MT-Bench, HELM",
+        "DynaBench, OpenLLM, AlpacaEval",
+        "ARB, TRUSTGPT, EmotionBench, SafetyBench",
+        "ToolBench, FRESHQA, CMB, CUAD"
+      ],
+      "baselines": [
+        "Traditional NLP models",
+        "Human evaluation"
+      ],
+      "metrics": [
+        "Accuracy",
+        "Elo rating system",
+        "Multi-metric (e.g., HELM)",
+        "Execution success rate (ToolBench)",
+        "Toxicity, bias, value-alignment scores"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "Evaluation should be treated as an essential discipline to better assist the development of LLMs.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "Chatbot Arena and MT-Bench are significant benchmarks that contribute to evaluating chatbot models in realistic scenarios.",
+        "support_type": "reported_result",
+        "page": 23
+      },
+      {
+        "finding": "HELM provides a comprehensive assessment of LLMs across various aspects like language understanding, generation, coherence, and context sensitivity.",
+        "support_type": "reported_result",
+        "page": 23
+      },
+      {
+        "finding": "DynaBench supports dynamic benchmark testing, exploring effects of closed-loop integration and model robustness to adversarial attacks.",
+        "support_type": "reported_result",
+        "page": 24
+      },
+      {
+        "finding": "ToolBench evaluates LLMs' aptitude in understanding complex instructions and utilizing software tools.",
+        "support_type": "reported_result",
+        "page": 25
+      },
+      {
+        "finding": "SafetyBench reveals substantial security flaws in current LLMs.",
+        "support_type": "reported_result",
+        "page": 25
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "A comprehensive overview capturing the entire gamut of evaluations is still lacking.",
+      "The ongoing evolution of LLMs presents novel aspects for evaluation, challenging existing protocols."
+    ],
+    "validity_risks": [
+      "The survey relies on existing benchmarks which may not fully capture the dynamic nature of LLM capabilities.",
+      "Human-crafted evaluation approaches may not fully reflect emergent abilities."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "2307.03109",
+    "title": "A Survey on Evaluation of Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P3",
+    "study_or_article_type": "Survey",
+    "research_objective": "Review recent advances of LLMs, focusing on pre-training, adaptation tuning, utilization, and capacity evaluation.",
+    "method_or_framework": "Systematic literature review covering four major aspects: pre-training, adaptation tuning, utilization, and capacity evaluation.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Large Language Models (LLMs) including GPT-3, GPT-4, ChatGPT, LLaMA, PaLM",
+        "Pre-trained Language Models (PLMs) and Statistical/Neural Language Models"
+      ],
+      "tasks_or_contexts": [
+        "Natural Language Processing (NLP) tasks",
+        "Information Retrieval (IR) tasks",
+        "Recommendation systems",
+        "Multimodal tasks (MLLMs)",
+        "General-purpose task solving"
+      ],
+      "datasets": [
+        "arXiv papers statistics (cumulative numbers of papers containing 'language model' and 'large language model')",
+        "Various NLP datasets (mentioned generally, not specific names)",
+        "Visual instruction datasets (for MLLMs)"
+      ],
+      "baselines": [
+        "Statistical language models",
+        "Neural language models",
+        "Small-scale models (e.g., BERT, GPT-2)"
+      ],
+      "metrics": [
+        "Task solving capacity",
+        "Performance improvement",
+        "Emergent abilities (e.g., in-context learning)",
+        "Hallucination rates (e.g., object hallucination in MLLMs)",
+        "Relevance evaluation (in IR)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LLMs display emergent abilities (e.g., in-context learning) that are not present in smaller models when parameter scale exceeds a certain level.",
+        "support_type": "author_claim",
+        "page": 3
+      },
+      {
+        "finding": "LLMs can serve as general-purpose task solvers, extending task scope from specific tasks to complex real-world tasks.",
+        "support_type": "author_claim",
+        "page": 3
+      },
+      {
+        "finding": "LLMs are capable of being as general-purpose task solvers but require high overhead for inference, have limitations in modeling long texts, and need special adaptation (e.g., instruction tuning) for specific tasks like text ranking.",
+        "support_type": "author_claim",
+        "page": 72
+      },
+      {
+        "finding": "LLM-based recommendation models in zero/few-shot settings tend to perform worse than traditional ID-based recommenders, indicating a lack of understanding of personalized user behaviors and domain-specific collaborative semantics.",
+        "support_type": "author_claim",
+        "page": 73
+      },
+      {
+        "finding": "Current MLLMs often struggle with object hallucination, where the model's responses contain inconsistent content with the image.",
+        "support_type": "author_claim",
+        "page": 74
+      },
+      {
+        "finding": "LLMs are not directly well suited for existing IR systems due to high inference overhead, limitations in modeling long texts, and the need for special adaptation.",
+        "support_type": "author_claim",
+        "page": 72
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "Inference Overhead",
+        "detail": "LLMs require high overhead for inference, which poses a challenge for deployment in real-world recommender systems.",
+        "page": 72
+      },
+      {
+        "aspect": "Memory Overhead",
+        "detail": "LLMs have limitations in long context modeling, making it difficult to process huge amounts of user-item interaction data.",
+        "page": 73
+      },
+      {
+        "aspect": "Tuning Costs",
+        "detail": "Instruction tuning alleviates the gap between LLMs and recommender systems but suffers from high tuning costs.",
+        "page": 73
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "LLMs cannot effectively process NLP tasks in low-resource domains (e.g., minor language translation).",
+      "LLMs are hard to well address generation tasks about low-resource languages and domains.",
+      "LLMs still cannot effectively process the NLP tasks in low-resource domains.",
+      "It is still challenging for LLMs to handle complex semantic relations in classic NLP tasks (e.g., nested entity extraction).",
+      "LLMs have limited capacities in long context modeling.",
+      "LLM-based recommendation models in zero/few-shot settings tend to perform worse than traditional ID-based recommenders."
+    ],
+    "validity_risks": [
+      "Hallucination risk in MLLMs (object hallucination).",
+      "Hyper-accuracy distortion in LLM-based conversation agents (e.g., ChatGPT, GPT-4).",
+      "Potential for LLMs to produce harmful contents in mental well-being support applications."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "2303.18223",
+    "title": "A Survey of Large Language Models",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P4",
+    "study_or_article_type": "Survey",
+    "research_objective": "Present a comprehensive survey of LLM-based autonomous agents, covering construction, applications, and evaluation strategies.",
+    "method_or_framework": "Systematic review of LLM-based autonomous agents, proposing a unified framework and summarizing evaluation strategies.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLM-based autonomous agents (e.g., WebGPT, ReAct, AutoGPT, MetaGPT, Voyager, ChatDev)",
+        "Agents in social simulation (e.g., Social Simulacra, Generative Agents, S3)",
+        "Agents in education (e.g., Math Agents, CodeHelp, EduChat)",
+        "Agents in engineering (e.g., Civil engineering, CS & Software engineering)"
+      ],
+      "tasks_or_contexts": [
+        "Social science (ideology detection, political speech analysis, economic behavior simulation)",
+        "Natural science (mathematical problem solving, scientific research)",
+        "Engineering (civil engineering design, software engineering coding/testing)",
+        "General autonomous task solving"
+      ],
+      "datasets": [
+        "Reddit posts (for mental well-being support evaluation)",
+        "Various agent-based simulation environments (e.g., virtual towns, social networks)"
+      ],
+      "baselines": [
+        "Traditional machine learning agents",
+        "Human participants (for comparison in psychology experiments)"
+      ],
+      "metrics": [
+        "Subjective evaluation (human feedback, alignment with human results)",
+        "Objective evaluation (task success rates, consensus answers)",
+        "Capability acquisition strategies (fine-tuning vs. no fine-tuning)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LLMs have shown potential in attaining human-like intelligence, leading to a surge in research on LLM-based autonomous agents.",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "Agent architectures can be designed with modules such as Profile, Memory, Planning, and Action to enhance LLM capabilities.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "LLM-based agents can help users cope with anxieties, social isolation and depression, but may produce harmful contents.",
+        "support_type": "reported_result",
+        "page": 14
+      },
+      {
+        "finding": "LLMs are capable of generating results that align with those from studies involving human participants in psychology experiments.",
+        "support_type": "reported_result",
+        "page": 13
+      },
+      {
+        "finding": "Agents can be evaluated using subjective strategies (e.g., human feedback, crowd-sourcing) and objective strategies (e.g., task success, consensus).",
+        "support_type": "author_claim",
+        "page": 13
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "aspect": "Agent Capability Acquisition",
+        "detail": "Strategies include fine-tuning LLMs or using them without fine-tuning.",
+        "page": 2
+      },
+      {
+        "aspect": "Memory Operations",
+        "detail": "Memory operations can be read/write only or include read/write/reflection.",
+        "page": 13
+      },
+      {
+        "aspect": "Memory Structures",
+        "detail": "Structures include unified memory (in-context learning) and hybrid memory (short-term and long-term).",
+        "page": 4
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "Previous agents assumed simple and heuristic policy functions in isolated environments, diverging from human learning processes.",
+      "Agents obtained from previous studies are usually far from replicating human-level decision processes in unconstrained, open-domain settings.",
+      "Handcrafting agent profiles is labor-intensive when dealing with a large number of agents.",
+      "LLM-generation method may lack precise control over agent profiles."
+    ],
+    "validity_risks": [
+      "Agents may produce harmful contents.",
+      "Models like ChatGPT and GPT-4 can provide too perfect estimates (hyper-accuracy distortion)."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4393065402",
+    "title": "A survey on large language model based autonomous agents",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P5",
+    "study_or_article_type": "Survey",
+    "research_objective": "To provide a comprehensive survey of LLM-based autonomous agents, covering their construction (architecture and capability acquisition), applications, and evaluation strategies.",
+    "method_or_framework": "Taxonomy and Unified Framework. The authors propose a unified agent framework comprising a profiling module, a memory module, a planning module, and an action module (Fig. 2). They categorize agent capability acquisition into fine-tuning methods and non-fine-tuning methods (e.g., mechanism engineering).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLM-based autonomous agents (e.g., WebGPT, Voyager, ToolBench, AgentSims, AutoGPT, AgentGPT, ChatDev, RecAgent, GITM, MIND2WEB, CO-LLM, TALM, HuggingGPT, DEPS, RoCo, PREFER, Social Simulacra, Generative Agents, AgentSims, SocialAI School, S3, CGMI, Chatlaw, Agentbench, Webarena, Bolaa, Gentopia, Emotionbench, Agentbench, Webarena, etc.)"
+      ],
+      "tasks_or_contexts": [
+        "Social Science (Psychology, Political Science, Social Simulation, Research Assistant)",
+        "Natural Science (Experiment Assistant, Education)",
+        "Engineering (Civil Engineering, Computer Science, Aerospace, Jurisprudence, Industrial Automation, Robotics & Embodied AI)"
+      ],
+      "datasets": [
+        "Reddit posts (for mental well-being support)",
+        "Various benchmarks (Agentbench, Webarena, etc.)"
+      ],
+      "baselines": [
+        "Not explicitly detailed as baselines in the survey text, but various agent models are compared and categorized."
+      ],
+      "metrics": [
+        "Subjective Evaluation (Human Annotation, Turing Test)",
+        "Objective Evaluation (Evaluation Metric, Evaluation Protocol, Evaluation Benchmark)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LLMs possess comprehensive internal world knowledge, enabling informed actions without specific domain training, unlike traditional RL agents.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "A unified framework for agent architecture design is proposed, encompassing profiling, memory, planning, and action modules.",
+        "support_type": "author_claim",
+        "page": 4
+      },
+      {
+        "finding": "Agent capability acquisition strategies include fine-tuning (adjusting model parameters) and non-fine-tuning (prompt engineering, mechanism engineering).",
+        "support_type": "author_claim",
+        "page": 21
+      },
+      {
+        "finding": "LLM-based agents can help users cope with anxieties, social isolation, and depression, but may produce harmful contents.",
+        "support_type": "reported_result",
+        "page": 22
+      },
+      {
+        "finding": "LLM-based agents can simulate social phenomena (e.g., harmful information propagation) and human daily life in virtual environments.",
+        "support_type": "reported_result",
+        "page": 22
+      },
+      {
+        "finding": "Evaluation strategies for LLM-based agents include subjective (human annotation, Turing test) and objective (metrics, protocols, benchmarks) approaches.",
+        "support_type": "author_claim",
+        "page": 22
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "Previous studies often assume agents act based on simple heuristic policies in isolated environments, diverging from human learning processes.",
+      "Non-fine-tuning methods cannot incorporate too much task information due to LLM input context window limitations.",
+      "Designing optimal prompts and mechanisms is challenging due to the large search space."
+    ],
+    "validity_risks": [
+      "Hallucination issue prevalent in LLMs (mitigated by self-attention mechanism in some models).",
+      "Hyper-accuracy distortion may influence downstream applications."
+    ],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "2308.11432",
+    "title": "A Survey on Large Language Model based Autonomous Agents",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P6",
+    "study_or_article_type": "Survey",
+    "research_objective": "To provide a comprehensive survey on LLM-based agents, tracing the concept of agents, presenting a general framework (brain, perception, action), exploring applications (single-agent, multi-agent, human-agent cooperation), and discussing agent societies, open problems, and risks.",
+    "method_or_framework": "General Framework and Categorization. The authors present a general framework for LLM-based agents comprising three main components: brain, perception, and action. They categorize applications into single-agent, multi-agent, and human-agent cooperation scenarios, and explore agent societies.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLM-based agents"
+      ],
+      "tasks_or_contexts": [
+        "Single-agent scenarios (Task-oriented, Innovation-oriented, Lifecycle-oriented)",
+        "Multi-agent scenarios (Cooperative interaction, Adversarial interaction)",
+        "Human-agent cooperation (Instructor-Executor, Equal Partnership)",
+        "Agent society simulation (Text-based, Virtual Sandbox, Physical environments)"
+      ],
+      "datasets": [
+        "Not explicitly detailed in the text provided."
+      ],
+      "baselines": [
+        "Not explicitly detailed as baselines in the survey text."
+      ],
+      "metrics": [
+        "Sociability (Language communication proficiency, Cooperation and negotiation, Role-playing capability)",
+        "Values (Honesty, Harmlessness, Fairness)",
+        "Adversarial Robustness"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LLMs are regarded as potential sparks for AGI and suitable foundations for building general AI agents.",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "A general framework for LLM-based agents is proposed, comprising brain, perception, and action.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "Evaluation of sociability includes language communication proficiency, cooperation and negotiation abilities, and role-playing capability.",
+        "support_type": "author_claim",
+        "page": 43
+      },
+      {
+        "finding": "LLMs are susceptible to adversarial attacks, which can lead to erroneous answers or destructive actions.",
+        "support_type": "reported_result",
+        "page": 44
+      },
+      {
+        "finding": "Potential risks include misuse (manipulating public opinion, cybersecurity threats), unemployment, and threats to human well-being.",
+        "support_type": "author_claim",
+        "page": 45
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "Previous studies have focused on enhancing specific capabilities or performance on particular tasks, overlooking the development of inherent general abilities like knowledge memorization, long-term planning, and efficient interaction.",
+      "The question of how LLMs can efficiently plan and utilize action abilities remains unresolved.",
+      "Ensuring agents are harmless and adhere to ethical guidelines is paramount."
+    ],
+    "validity_risks": [
+      "Adversarial robustness: LLMs are susceptible to adversarial attacks (dataset poisoning, backdoor attacks, prompt-specific attacks).",
+      "Misuse: Agents can be exploited for malicious purposes.",
+      "Unemployment: Agents may replace human jobs.",
+      "Threat to human well-being: Humans may struggle to control advanced agents."
+    ],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "2309.07864",
+    "title": "The Rise and Potential of Large Language Model Based Agents: A Survey",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P7",
+    "study_or_article_type": "Survey",
+    "research_objective": "To provide a comprehensive review of Retrieval-Augmented Generation (RAG) paradigms, covering the progression from Naive RAG to Advanced and Modular RAG, and to introduce up-to-date evaluation frameworks and benchmarks.",
+    "method_or_framework": "A survey reviewing the tripartite foundation of RAG frameworks: Retrieval, Generation, and Augmentation. It categorizes RAG into three stages: Naive RAG, Advanced RAG, and Modular RAG.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Various RAG systems and components (e.g., embedding models like AngIE, Voyage, BGE; reranking models like Cohere, bge-raranker-large; LLMs like GPT)",
+        "Embedding models evaluated on MTEB leaderboard (8 tasks, 58 datasets) and C-MTEB (6 tasks, 35 datasets)"
+      ],
+      "tasks_or_contexts": [
+        "Question Answering (QA) including single-hop/multi-hop, multiple-choice, domain-specific, and long-form scenarios",
+        "Information Extraction (IE), dialogue generation, code search"
+      ],
+      "datasets": [
+        "MTEB leaderboard datasets (58 datasets)",
+        "C-MTEB datasets (35 datasets)",
+        "Various downstream tasks summarized in Table II (26 tasks, nearly 50 datasets)"
+      ],
+      "baselines": [
+        "Native LLMs (without RAG)",
+        "Different RAG paradigms (Naive, Advanced, Modular)"
+      ],
+      "metrics": [
+        "EM (Exact Match) and F1 scores for QA",
+        "MRR (Mean Reciprocal Rank) for retrieval",
+        "Rouge scores for generation",
+        "Embedding model performance metrics on MTEB/C-MTEB"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "RAG effectively reduces hallucination and enhances accuracy for knowledge-intensive tasks by incorporating external knowledge.",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "Naive RAG faces challenges in retrieval precision/recall, generation hallucination, and augmentation disjointedness.",
+        "support_type": "author_claim",
+        "page": 3
+      },
+      {
+        "finding": "Advanced RAG and Modular RAG offer greater flexibility through pre-retrieval optimization (e.g., query rewriting, HyDE, Step-back Prompting) and post-retrieval processes (e.g., reranking, context compression).",
+        "support_type": "author_claim",
+        "page": 4
+      },
+      {
+        "finding": "Embedding models are task-specific; no single model fits all use cases, though multi-task instruct tuning improves generalization.",
+        "support_type": "author_claim",
+        "page": 4
+      },
+      {
+        "finding": "Context selection/compression is crucial to avoid the 'Lost in the middle' problem and reduce noise from excessive retrieved documents.",
+        "support_type": "author_claim",
+        "page": 10
+      },
+      {
+        "finding": "Iterative, Recursive, and Adaptive retrieval processes can enhance robustness by offering additional contextual references.",
+        "support_type": "author_claim",
+        "page": 11
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "RAG development faces challenges in retrieval precision/recall, generation hallucination, and augmentation disjointedness.",
+      "No one-size-fits-all embedding model exists.",
+      "Excessive context can introduce noise and cause the 'Lost in the middle' problem."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "2312.10997",
+    "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P8",
+    "study_or_article_type": "Benchmark",
+    "research_objective": "To address three pivotal questions regarding tool-augmented LLMs: (1) How effective are current LLMs in utilizing tools? (2) How can we enhance LLMs' ability to utilize tools? (3) What obstacles need to be overcome to leverage tools?",
+    "method_or_framework": "API-Bank is a comprehensive benchmark consisting of 73 real-world APIs and 314 tool-use dialogues. It defines three levels of API usage abilities: Call, Retrieval+Call, and Plan+Retrieve+Call. It also introduces a Multi-agent method for automated data generation.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "Alpaca-7B",
+        "ChatGLM-6B",
+        "GPT-3 Davinci",
+        "GPT-3.5-turbo",
+        "GPT-4",
+        "Lynx (fine-tuned Alpaca-7B)"
+      ],
+      "tasks_or_contexts": [
+        "Tool-augmented LLM evaluation",
+        "API calling, retrieval, and planning"
+      ],
+      "datasets": [
+        "API-Bank Evaluation Set (314 dialogues, 753 API calls)",
+        "API-Bank Training Set (1,888 dialogues, 4,149 API calls, 2,138 APIs, 1,000 domains)",
+        "ToolAlpaca dataset (10,366 training samples)"
+      ],
+      "baselines": [
+        "Alpaca-7B, ChatGLM-6B, GPT-3 Davinci, GPT-3.5-turbo, GPT-4"
+      ],
+      "metrics": [
+        "Correctness (Accuracy) for API calls",
+        "Rouge-L score for response quality",
+        "Error type distribution (No API Call, API Hallucination, Invalid Input Parameters, etc.)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "Even smaller models (Alpaca-7B, ChatGLM-6B) possess some API call accuracy (~20%), but proficiency in API retrieval and planning is negligible.",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "GPT-3 Davinci exhibits almost no capability in API usage, indicating API usage might not be an inherent feature of LLMs.",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "GPT-3.5 exhibits improved tool utilization compared to GPT-3, while GPT-4 excels in planning.",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "Lynx (fine-tuned on API-Bank) surpasses Alpaca-7B by more than 26 points in API Call correctness and approaches GPT-3.5's effectiveness.",
+        "support_type": "reported_result",
+        "page": 2
+      },
+      {
+        "finding": "The primary error for Alpaca is 'No API Call' (36.77%), while GPT-4's primary error is 'Failed API Retrieval' (67.86%).",
+        "support_type": "reported_result",
+        "page": 8
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "API-Bank focuses solely on English.",
+      "Only fine-tuned Lynx-7B was explored; larger-scale models were not tested.",
+      "Evaluation set is manually constructed, making it more realistic but potentially less diverse than LLM-generated benchmarks."
+    ],
+    "validity_risks": [],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4389518608",
+    "title": "API-Bank: A Comprehensive Benchmark for Tool-Augmented LLMs",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P9",
+    "study_or_article_type": "Survey",
+    "research_objective": "To provide a comprehensive overview of the emerging field of LLM agent evaluation, introducing a two-dimensional taxonomy (Evaluation Objectives and Evaluation Process) and highlighting enterprise-specific challenges.",
+    "method_or_framework": "Taxonomy-based survey organizing existing work along (1) evaluation objectives (what to evaluate) and (2) evaluation process (how to evaluate).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLM-based agents"
+      ],
+      "tasks_or_contexts": [
+        "Agent Behavior (task completion, output quality)",
+        "Agent Capabilities (tool use, planning, memory, multi-agent collaboration)",
+        "Reliability (consistency, robustness)",
+        "Safety and Alignment (fairness, compliance)",
+        "Enterprise environments (role-based access, long-horizon interactions)"
+      ],
+      "datasets": [
+        "AAAR-1.0",
+        "ScienceAgentBench",
+        "TaskBench",
+        "FlowBench",
+        "ToolBench",
+        "API-Bank",
+        "AssistantBench",
+        "AppWorld",
+        "WebArena",
+        "AgentHarm",
+        "AgentDojo",
+        "BFCL",
+        "HAL"
+      ],
+      "baselines": [
+        "Not applicable (Survey)"
+      ],
+      "metrics": [
+        "Success Rate (SR), F1-score, Pass@k, Progress Rate, Execution Accuracy",
+        "Coherence, User Satisfaction, Usability, Likability",
+        "Latency (TTFT, End-to-End Request Latency), Token Usage, Cost",
+        "Invocation Accuracy, Tool Selection Accuracy, Retrieval Accuracy (MRR, NDCG), Parameter name F1 score",
+        "Reasoning Quality, Accuracy, Fine-Grained Progress Rate, Self Consistency, Plan Quality",
+        "Factual Accuracy Recall, Consistency Scores",
+        "Information Sharing Effectiveness, Adaptive Role Switching",
+        "Consistency pass^k",
+        "Accuracy, Task Success Rate Under Perturbation",
+        "Coverage, Violation Rate, Transparency, Ethics, Morality",
+        "Adversarial Robustness, Prompt Injection Resistance, Harmfulness, Bias Detection"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "Evaluating LLM agents is more complex than evaluating LLMs due to the need to assess behavior, capabilities, reliability, and safety in dynamic environments.",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "A two-dimensional taxonomy is proposed: Evaluation Objectives (Agent Behavior, Capabilities, Reliability, Safety) and Evaluation Process (Interaction Mode, Data, Metrics, Tooling).",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "Tool use evaluation involves answering whether to invoke a tool, selecting the correct tool, and identifying correct parameters. Metrics include Invocation Accuracy, Tool Selection Accuracy, Retrieval Accuracy (MRR, NDCG), and Parameter name F1 score.",
+        "support_type": "author_claim",
+        "page": 4
+      },
+      {
+        "finding": "Robustness evaluation involves stress-testing with perturbed inputs (paraphrased instructions, irrelevant context, linguistic variations) and measuring performance degradation.",
+        "support_type": "author_claim",
+        "page": 5
+      },
+      {
+        "finding": "Reliability assessment is nontrivial due to inherent stochasticity; measuring consistency requires executing the same task multiple times (e.g., pass^k metric).",
+        "support_type": "author_claim",
+        "page": 8
+      },
+      {
+        "finding": "Enterprise-specific challenges include role-based access control, reliability guarantees, dynamic and long-horizon interactions, and compliance requirements.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "Evaluation methods include code-based methods (deterministic, objective) and LLM-as-a-Judge approaches (handling subjective responses).",
+        "support_type": "author_claim",
+        "page": 7
+      }
+    ],
+    "efficiency_or_resource_evidence": [
+      {
+        "evidence": "Cost is estimated based on the number of input and output tokens, correlating with usage-based pricing.",
+        "page": 3
+      },
+      {
+        "evidence": "Running multiple trials per input for consistency evaluation introduces significant computational overhead.",
+        "page": 8
+      }
+    ],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Current benchmarks often focus on short episodes or single interactions, lacking the ability to capture phenomena such as performance drift or cumulative effects over time.",
+      "Standard, short-term evaluations cannot fully address the complexity of real-world enterprise agents operating continuously over extended periods.",
+      "Code-based methods are typically inflexible and struggle with evaluating open-ended or qualitative responses.",
+      "LLM-as-a-Judge introduces complexity due to the need for multiple AI agents interacting depending on their roles."
+    ],
+    "validity_risks": [
+      "Hallucinated parameter values in tool calls may be missed by AST-based evaluations.",
+      "LLM-as-a-Judge evaluations can be subjective and complex to implement correctly.",
+      "Enterprise-specific challenges like role-based access are often overlooked in current research."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "2507.21504",
+    "title": "Evaluation and Benchmarking of LLM Agents: A Survey",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P10",
+    "study_or_article_type": "Survey",
+    "research_objective": "To systematically investigate and comprehensively review tool-learning agents, covering definitions, architectures, retrieval methods, planning strategies, and benchmarks.",
+    "method_or_framework": "Review of tool-learning agents, categorized by tool retrieval (training-based vs. non-training-based) and planning methods (internal vs. external).",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLM-based agents for tool learning"
+      ],
+      "tasks_or_contexts": [
+        "Tool Invocation (whether to use a tool)",
+        "Tool Retrieval (finding appropriate tools)",
+        "Tool Usage (how to utilize tools)",
+        "Multi-step reasoning and planning",
+        "Multi-modal tool interaction"
+      ],
+      "datasets": [
+        "Not explicitly listed as a primary dataset, but references various benchmarks like Gorilla, ToolBench, API-Bank."
+      ],
+      "baselines": [
+        "Not applicable (Survey)"
+      ],
+      "metrics": [
+        "Not explicitly detailed in the provided text, but mentions evaluation dimensions and assessment."
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "Tool learning tasks are defined by the 'Three Ws': Whether (invocation), Which (retrieval), and How (usage).",
+        "support_type": "author_claim",
+        "page": 3
+      },
+      {
+        "finding": "Tool retrieval is categorized into training-based and non-training-based methods.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "Tool planning methods are organized based on whether they rely on the model's inherent reasoning capabilities or utilize external reasoning tools (symbolic planners like PDDL).",
+        "support_type": "author_claim",
+        "page": 4
+      },
+      {
+        "finding": "Multi-modal tools are discussed to address ambiguity in understanding user intentions and to handle visual or audio-grounded instructions.",
+        "support_type": "author_claim",
+        "page": 5
+      },
+      {
+        "finding": "Applications include data science (databases, finance), software engineering (code generation, error analysis), and robotics (simulation-based and real-time control).",
+        "support_type": "author_claim",
+        "page": 6
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": null,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "Text-based tool learning cannot clearly understand user intentions, limiting the ability to address multimodal problems.",
+      "The lack of tool planning, such as selecting tools for sub-tasks and ordering tools, makes it difficult to invoke tools effectively in multitasking scenarios.",
+      "Most toolsets provide methods to verify parameter accuracy and return statuses, but tool documentation can become outdated."
+    ],
+    "validity_risks": [
+      "Ambiguity in understanding user intentions due to text-based perception.",
+      "Tool documentation may become outdated as invocation methods and data sources change."
+    ],
+    "evidence_strength": "high",
+    "uncertainties": [],
+    "paper_id": "W4411700982",
+    "title": "LLM-Based Agents for Tool Learning: A Survey",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P11",
+    "study_or_article_type": "Survey",
+    "research_objective": "Review the landscape of utilizing Large Language Models (LLMs) in agent-based modeling and simulation, analyzing challenges in environment perception, human alignment, action generation, and evaluation.",
+    "method_or_framework": "Systematic analysis of agent capabilities (autonomy, social ability, reactivity, proactiveness) and categorization of works into cyber, physical, social, and hybrid domains.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLM-empowered agents"
+      ],
+      "tasks_or_contexts": [
+        "Agent-based modeling and simulation",
+        "Social network dynamics",
+        "Cooperative task solving",
+        "Economic system simulation",
+        "Information propagation"
+      ],
+      "datasets": [
+        "Representative papers listed in Table 1 (e.g., SimReddit, COLA, MAD, MetaGPT)",
+        "GitHub repository: https://github.com/tsinghua-fib-lab/LLM-Agent-Based-Modeling-and-Simulation"
+      ],
+      "baselines": [
+        "Predefined rules and symbolic equations (e.g., cellular automata, social force model)"
+      ],
+      "metrics": [
+        "SOTA performance on stance detection tasks (reported for COLA)",
+        "Performance comparison in cooperative tasks (reported for various frameworks)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "LLM agents can serve as a new paradigm for simulation with human-level intelligence, capable of autonomous action, adaptive planning, and interaction.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "LLM agents can exhibit human-like social phenomena such as conformity and the Wisdom of Crowds effect.",
+        "support_type": "reported_result",
+        "page": 11
+      },
+      {
+        "finding": "LLM agents can replicate social network formation dynamics influenced by triadic closure and homophily.",
+        "support_type": "reported_result",
+        "page": 13
+      },
+      {
+        "finding": "LLM agents can achieve SOTA performance on specific tasks like stance detection (COLA).",
+        "support_type": "reported_result",
+        "page": 13
+      },
+      {
+        "finding": "LLM agents can simulate complex behaviors in software development (ChatDev) and economic systems.",
+        "support_type": "reported_result",
+        "page": 12
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": true,
+      "data_available": true,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "adequate"
+    },
+    "limitations": [
+      "No survey systematically summarizes relevant works, discusses unresolved issues, and provides research directions (as of the paper's publication).",
+      "Agents cannot make perfectly rational choices due to limitations of knowledge and computational capacity (Simon, 1997)."
+    ],
+    "validity_risks": [
+      "Simulation fidelity depends on the quality of the LLM and the agent design.",
+      "Potential for hallucinations or incorrect reasoning in complex simulations."
+    ],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "W4402901320",
+    "title": "Large language models empowered agent-based modeling and simulation: a survey and perspectives",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  },
+  {
+    "citation_id": "P12",
+    "study_or_article_type": "Commentary/Opinion",
+    "research_objective": "Advocate for the development of 'Artificial Intelligence Structured Clinical Examinations' (AI-SCE) to evaluate LLM agents in clinical settings, moving beyond standardized benchmarks.",
+    "method_or_framework": "Proposes a framework for high-fidelity simulation of clinical settings (patient-physician interactions, hospital processes) using agent-based modeling (ABM), drawing parallels to autonomous vehicle testing.",
+    "evaluation_scope": {
+      "models_or_population": [
+        "LLM agents in clinical settings"
+      ],
+      "tasks_or_contexts": [
+        "Clinical decision support",
+        "Patient-physician interactions",
+        "Hospital workflows"
+      ],
+      "datasets": [
+        "Real-world electronic health records (e.g., MIMIC-IV, UCSF Information Commons)",
+        "Clinical trial data"
+      ],
+      "baselines": [
+        "Standardized clinical NLP benchmarks (e.g., MedQA, MedNLI)",
+        "Objective Structured Clinical Examination (OSCE) standards"
+      ],
+      "metrics": [
+        "Impact on clinical workflows",
+        "Interaction success rates",
+        "Diagnostic accuracy (referenced for AMIE and GPT-4)"
+      ]
+    },
+    "main_findings": [
+      {
+        "finding": "Current benchmarks (MedQA, MedNLI) are insufficient for capturing the full range of capabilities demonstrated by clinical LLM agents.",
+        "support_type": "author_claim",
+        "page": 2
+      },
+      {
+        "finding": "LLM agents can be modeled in high-fidelity simulations of clinical settings to assess their impact on clinical workflows.",
+        "support_type": "author_claim",
+        "page": 1
+      },
+      {
+        "finding": "Agent-based modeling can be used to evaluate how an LLM agent interacts with users, employs tools, and identifies points of failure.",
+        "support_type": "author_claim",
+        "page": 2
+      }
+    ],
+    "efficiency_or_resource_evidence": [],
+    "reproducibility": {
+      "code_available": null,
+      "data_available": true,
+      "variance_or_significance": null,
+      "ablation_or_sensitivity": null,
+      "implementation_detail": "partial"
+    },
+    "limitations": [
+      "Requires robust clinical guidelines to define success in interactions.",
+      "Requires high-quality, de-identified data for realistic simulations."
+    ],
+    "validity_risks": [
+      "Data privacy concerns when using real-world EHRs.",
+      "Potential for bias in simulated patient behaviors if derived from limited datasets."
+    ],
+    "evidence_strength": "moderate",
+    "uncertainties": [],
+    "paper_id": "W4393867901",
+    "title": "Evaluating large language models as agents in the clinic",
+    "evidence_basis": "full_text",
+    "review_status": "ai_draft_requires_human"
+  }
+]

@@ -1,0 +1,918 @@
+{
+  "selection_rationale": "筛选出的 30 篇文献覆盖了 PEFT 的所有关键维度：1) 奠基方法（Prefix-Tuning, Delta Tuning）；2) 结构改动（Adapter, LoRA 变体, Prompt Tuning 变体）；3) 任务适用性（多任务, 长文本, 联邦学习, 蛋白质模型）；4) 性能证据（大规模实证, 理论分析）；5) 训练与推理成本（量化, 剪枝, 内存优化）；6) 复现性（评价与批评）。文献年份跨度从 2021 到 2025，确保了技术谱系的时效性和完整性。",
+  "anticipated_gaps": [
+    "针对特定垂直领域（如医疗、法律）的 PEFT 效率与性能深度分析。",
+    "PEFT 在多模态大模型中的结构改动与推理成本权衡的系统性研究。",
+    "PEFT 方法在不同硬件平台（如移动端、边缘设备）上的部署成本与复现性对比研究。"
+  ],
+  "ranked": [
+    {
+      "paper_id": "W4322766882",
+      "arxiv_id": "",
+      "openalex_id": "W4322766882",
+      "doi": "https://doi.org/10.1038/s42256-023-00626-4",
+      "pdf_url": "https://www.nature.com/articles/s42256-023-00626-4.pdf",
+      "title": "Parameter-efficient fine-tuning of large-scale pre-trained language models",
+      "authors": "Ning Ding, Yujia Qin, Guang Yang, Fuchao Wei, Zonghan Yang, Yusheng Su, Shengding Hu, Yulin Chen, Chi-Min Chan, Weize Chen, Jing Yi, Weilin Zhao, Xiaozhi Wang, Zhiyuan Liu, Hai-Tao Zheng, Jianfei Chen, Yang Liu, Jie Tang, Juanzi Li, Maosong Sun",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1038/s42256-023-00626-4",
+      "screening": {
+        "paper_id": "W4322766882",
+        "decision": "include",
+        "reason": "Delta Tuning (2023) 提供了 PEFT 的统一分类框架，涵盖 Adapter、Prefix Tuning、LoRA 等方法，并进行了大规模实证研究，是理解技术谱系分类和性能证据的关键文献。",
+        "coverage_role": "分类框架与性能证据",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4221145545",
+      "arxiv_id": "",
+      "openalex_id": "W4221145545",
+      "doi": "https://doi.org/10.21203/rs.3.rs-1553541/v1",
+      "pdf_url": "https://www.researchsquare.com/article/rs-1553541/latest.pdf",
+      "title": "Delta Tuning: A Comprehensive Study of Parameter Efficient Methods for Pre-trained Language Models",
+      "authors": "Ning Ding, Yujia Qin, Guang Yang, Fuchao Wei, Zonghan Yang, Yusheng Su, Shengding Hu, Yulin Chen, Chi-Min Chan, Weize Chen, Jing Yi, Weilin Zhao, Xiaozhi Wang, Zhiyuan Liu, Hai-Tao Zheng, Jianfei Chen, Yang Liu, Jie Tang, Juanzi Li, Maosong Sun",
+      "publication_year": 2022,
+      "source_url": "https://doi.org/10.21203/rs.3.rs-1553541/v1",
+      "screening": {
+        "paper_id": "W4221145545",
+        "decision": "include",
+        "reason": "Delta Tuning (2022) 是同一团队对 PEFT 的早期系统性综述，提供了更早期的分类视角和理论分析，补充了技术演进的纵向视角。",
+        "coverage_role": "分类框架与理论分析",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "W4389524317",
+      "arxiv_id": "",
+      "openalex_id": "W4389524317",
+      "doi": "https://doi.org/10.18653/v1/2023.emnlp-main.319",
+      "pdf_url": "https://aclanthology.org/2023.emnlp-main.319.pdf",
+      "title": "LLM-Adapters: An Adapter Family for Parameter-Efficient Fine-Tuning of Large Language Models",
+      "authors": "Zhiqiang Hu, Lei Wang, Yihuai Lan, Wanyu Xu, Ee‐Peng Lim, Lidong Bing, Xing Xu, Soujanya Poria, Roy Lee",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.319",
+      "screening": {
+        "paper_id": "W4389524317",
+        "decision": "include",
+        "reason": "LLM-Adapters (2023) 专注于 Adapter-based PEFT，详细分析了 Adapter 类型、放置位置和超参数对性能的影响，是结构改动（Adapter）子主题的重要证据。",
+        "coverage_role": "结构改动与性能证据",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "2303.16199",
+      "arxiv_id": "2303.16199",
+      "openalex_id": "W4361229539",
+      "doi": "https://doi.org/10.48550/arxiv.2303.16199",
+      "pdf_url": "https://arxiv.org/pdf/2303.16199",
+      "title": "LLaMA-Adapter: Efficient Fine-tuning of Language Models with Zero-init Attention",
+      "authors": "Renrui Zhang, Jiaming Han, Liu, Chris, Peng Gao, Aojun Zhou, Xiangfei Hu, Shilin Yan, Pan Lu, Hongsheng Li, Yu Qiao",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2303.16199",
+      "screening": {
+        "paper_id": "2303.16199",
+        "decision": "include",
+        "reason": "LLaMA-Adapter (2023) 引入了 Zero-init Attention 机制，是 Adapter-based PEFT 的代表性改进方法，展示了在极少量参数下的性能。",
+        "coverage_role": "结构改动与性能证据",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "2305.14314",
+      "arxiv_id": "2305.14314",
+      "openalex_id": "W4378509449",
+      "doi": "https://doi.org/10.48550/arxiv.2305.14314",
+      "pdf_url": "https://arxiv.org/pdf/2305.14314",
+      "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+      "authors": "Tim Dettmers, Artidoro Pagnoni, Ari Holtzman, Luke Zettlemoyer",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2305.14314",
+      "screening": {
+        "paper_id": "2305.14314",
+        "decision": "include",
+        "reason": "QLoRA (2023) 专注于训练与推理成本（内存优化），通过 4-bit 量化结合 LoRA 实现了在单卡上微调 65B 模型，是效率研究的重要证据。",
+        "coverage_role": "训练与推理成本",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2303.15647",
+      "arxiv_id": "2303.15647",
+      "openalex_id": "W4361230739",
+      "doi": "https://doi.org/10.48550/arxiv.2303.15647",
+      "pdf_url": "https://arxiv.org/pdf/2303.15647",
+      "title": "Scaling Down to Scale Up: A Guide to Parameter-Efficient Fine-Tuning",
+      "authors": "Vladislav Lialin, Vijeta Deshpande, Yao, Xiaowei, Rumshisky, Anna",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2303.15647",
+      "screening": {
+        "paper_id": "2303.15647",
+        "decision": "include",
+        "reason": "Scaling Down to Scale Up (2023) 是一篇系统性的 PEFT 方法综述，涵盖了 50+ 篇论文，提供了广泛的方法比较和效率分析，有助于构建技术谱系。",
+        "coverage_role": "分类框架与效率研究",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2312.12148",
+      "arxiv_id": "2312.12148",
+      "openalex_id": "W4390047809",
+      "doi": "https://doi.org/10.48550/arxiv.2312.12148",
+      "pdf_url": "https://arxiv.org/pdf/2312.12148",
+      "title": "Parameter-Efficient Fine-Tuning Methods for Pretrained Language Models: A Critical Review and Assessment",
+      "authors": "Lingling Xu, Haoran Xie, S. Joe Qin, Xiaohui Tao, Fu Lee Wang",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2312.12148",
+      "screening": {
+        "paper_id": "2312.12148",
+        "decision": "include",
+        "reason": "PEFT Methods: A Critical Review (2023) 提供了对 PEFT 方法的批判性评估，讨论了复现性问题和实际应用中的挑战，符合 scoping 模式的要求。",
+        "coverage_role": "评价与复现性",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "2403.14608",
+      "arxiv_id": "2403.14608",
+      "openalex_id": "W4393138529",
+      "doi": "https://doi.org/10.48550/arxiv.2403.14608",
+      "pdf_url": "https://arxiv.org/pdf/2403.14608",
+      "title": "Parameter-Efficient Fine-Tuning for Large Models: A Comprehensive Survey",
+      "authors": "Zeyu Han, Chao Gao, Jinyang Liu, Jeff, Zhang",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2403.14608",
+      "screening": {
+        "paper_id": "2403.14608",
+        "decision": "include",
+        "reason": "Parameter-Efficient Fine-Tuning for Large Models: A Comprehensive Survey (2024) 是最新的 PEFT 综述，涵盖了算法和系统实现成本，提供了全面的技术谱系概览。",
+        "coverage_role": "分类框架与系统成本",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2306.07967",
+      "arxiv_id": "2306.07967",
+      "openalex_id": "W4380715573",
+      "doi": "https://doi.org/10.48550/arxiv.2306.07967",
+      "pdf_url": "https://arxiv.org/pdf/2306.07967",
+      "title": "One-for-All: Generalized LoRA for Parameter-Efficient Fine-tuning",
+      "authors": "Arnav Chavan, Zhuang Liu, Deepak Gupta, Eric P. Xing, Zhiqiang Shen",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2306.07967",
+      "screening": {
+        "paper_id": "2306.07967",
+        "decision": "include",
+        "reason": "One-for-All: Generalized LoRA (2023) 提出了 GLoRA，通过结构化搜索和激活优化改进了 LoRA，是 LoRA 变体的重要代表。",
+        "coverage_role": "结构改动与性能证据",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "W4385572883",
+      "arxiv_id": "",
+      "openalex_id": "W4385572883",
+      "doi": "https://doi.org/10.18653/v1/2022.emnlp-main.388",
+      "pdf_url": "https://aclanthology.org/2022.emnlp-main.388.pdf",
+      "title": "AdaMix: Mixture-of-Adaptations for Parameter-efficient Model Tuning",
+      "authors": "Yaqing Wang, Sahaj Agarwal, Subhabrata Mukherjee, Xiaodong Liu, Jing Gao, Ahmed Hassan Awadallah, Jianfeng Gao",
+      "publication_year": 2022,
+      "source_url": "https://doi.org/10.18653/v1/2022.emnlp-main.388",
+      "screening": {
+        "paper_id": "W4385572883",
+        "decision": "include",
+        "reason": "AdaMix (2022) 提出了基于混合适配器的多任务 PEFT 方法，涉及结构改动（Mixture-of-Adaptations）和任务适用性。",
+        "coverage_role": "结构改动与任务适用性",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4385572063",
+      "arxiv_id": "",
+      "openalex_id": "W4385572063",
+      "doi": "https://doi.org/10.18653/v1/2023.findings-acl.632",
+      "pdf_url": "https://aclanthology.org/2023.findings-acl.632.pdf",
+      "title": "FedPETuning: When Federated Learning Meets the Parameter-Efficient Tuning Methods of Pre-trained Language Models",
+      "authors": "Zhuo Zhang, Yuanhang Yang, Yong Dai, Qifan Wang, Yue Yu, Lizhen Qu, Zenglin Xu",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.findings-acl.632",
+      "screening": {
+        "paper_id": "W4385572063",
+        "decision": "include",
+        "reason": "FedPETuning (2023) 研究了 PEFT 在联邦学习中的应用，涉及隐私保护下的训练成本和通信开销，是特定应用场景下的效率研究。",
+        "coverage_role": "训练与推理成本与复现性",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4404782226",
+      "arxiv_id": "",
+      "openalex_id": "W4404782226",
+      "doi": "https://doi.org/10.18653/v1/2024.emnlp-main.717",
+      "pdf_url": "https://aclanthology.org/2024.emnlp-main.717.pdf",
+      "title": "Heterogeneous LoRA for Federated Fine-tuning of On-Device Foundation Models",
+      "authors": "Yae Jee Cho, Luyang Liu, Zheng Xu, Aldi Fahrezi, Gauri Joshi",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.18653/v1/2024.emnlp-main.717",
+      "screening": {
+        "paper_id": "W4404782226",
+        "decision": "include",
+        "reason": "Heterogeneous LoRA (2024) 针对边缘设备异构性优化了 LoRA，涉及训练效率和部署成本，是效率研究的重要补充。",
+        "coverage_role": "训练与推理成本",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "2309.12307",
+      "arxiv_id": "2309.12307",
+      "openalex_id": "W4386978016",
+      "doi": "https://doi.org/10.48550/arxiv.2309.12307",
+      "pdf_url": "https://arxiv.org/pdf/2309.12307",
+      "title": "LongLoRA: Efficient Fine-tuning of Long-Context Large Language Models",
+      "authors": "Yukang Chen, Shengju Qian, Haotian Tang, Xin Lai, Zhijian Liu, Song Han, Jiaya Jia",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2309.12307",
+      "screening": {
+        "paper_id": "2309.12307",
+        "decision": "include",
+        "reason": "LongLoRA (2023) 通过稀疏注意力机制扩展了长上下文，涉及结构改动（Attention 机制）和训练效率，是任务适用性（长文本）的重要证据。",
+        "coverage_role": "结构改动与任务适用性",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "W4386566659",
+      "arxiv_id": "",
+      "openalex_id": "W4386566659",
+      "doi": "https://doi.org/10.18653/v1/2023.eacl-main.239",
+      "pdf_url": "https://aclanthology.org/2023.eacl-main.239.pdf",
+      "title": "DyLoRA: Parameter-Efficient Tuning of Pre-trained Models using Dynamic Search-Free Low-Rank Adaptation",
+      "authors": "Mojtaba Valipour, Mehdi Rezagholizadeh, Ivan Kobyzev, Ali Ghodsi",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.eacl-main.239",
+      "screening": {
+        "paper_id": "W4386566659",
+        "decision": "include",
+        "reason": "DyLoRA (2023) 提出了动态秩搜索的 LoRA 变体，解决了固定秩的问题，涉及结构改动（动态调整）和训练效率。",
+        "coverage_role": "结构改动与效率研究",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4402670757",
+      "arxiv_id": "",
+      "openalex_id": "W4402670757",
+      "doi": "https://doi.org/10.18653/v1/2024.findings-acl.178",
+      "pdf_url": "https://aclanthology.org/2024.findings-acl.178.pdf",
+      "title": "LoRAPrune: Structured Pruning Meets Low-Rank Parameter-Efficient Fine-Tuning",
+      "authors": "Mingyang Zhang, H. S. Chen, Chunhua Shen, Zhen Yang, Linlin Ou, Xinyi Yu, Bohan Zhuang",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.18653/v1/2024.findings-acl.178",
+      "screening": {
+        "paper_id": "W4402670757",
+        "decision": "include",
+        "reason": "LoRAPrune (2024) 结合了结构化剪枝与 LoRA，涉及结构改动（剪枝）和推理成本优化，是效率研究的重要证据。",
+        "coverage_role": "结构改动与推理成本",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "2402.09353",
+      "arxiv_id": "2402.09353",
+      "openalex_id": "W4391871574",
+      "doi": "https://doi.org/10.48550/arxiv.2402.09353",
+      "pdf_url": "https://arxiv.org/pdf/2402.09353",
+      "title": "DoRA: Weight-Decomposed Low-Rank Adaptation",
+      "authors": "Shih-Yang Liu, Chien-Yi Wang, Hongxu Yin, Pavlo Molchanov, Yu-Chiang Frank Wang, Kwang‐Ting Cheng, Min-Hung Chen",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2402.09353",
+      "screening": {
+        "paper_id": "2402.09353",
+        "decision": "include",
+        "reason": "DoRA (2024) 提出了权重分解的低秩适应方法，改进了 LoRA 的学习能力和稳定性，是 LoRA 变体的重要代表。",
+        "coverage_role": "结构改动与性能证据",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "2407.11046",
+      "arxiv_id": "2407.11046",
+      "openalex_id": "W4403753254",
+      "doi": "https://doi.org/10.1007/s11704-024-40663-9",
+      "pdf_url": "https://arxiv.org/pdf/2407.11046",
+      "title": "A survey on LoRA of large language models",
+      "authors": "Yuren Mao, Yuhang Ge, Yijiang Fan, Wenyi Xu, Yu Mi, Zhonghao Hu, Yunjun Gao",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2407.11046",
+      "screening": {
+        "paper_id": "2407.11046",
+        "decision": "include",
+        "reason": "A survey on LoRA of large language models (2024) 专门针对 LoRA 进行了全面综述，涵盖了性能改进、跨任务泛化、效率提升和隐私保护，是 LoRA 谱系的核心文献。",
+        "coverage_role": "分类框架与性能证据",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "2309.14717",
+      "arxiv_id": "2309.14717",
+      "openalex_id": "W4387156572",
+      "doi": "https://doi.org/10.48550/arxiv.2309.14717",
+      "pdf_url": "https://arxiv.org/pdf/2309.14717",
+      "title": "QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models",
+      "authors": "Yuhui Xu, Lingxi Xie, Xiaotao Gu, Xin Chen, Heng Chang, Hengheng Zhang, Chen, Zhengsu, Xiaopeng Zhang, Qi Tian",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2309.14717",
+      "screening": {
+        "paper_id": "2309.14717",
+        "decision": "include",
+        "reason": "QA-LoRA (2023) 提出了量化感知的低秩适应，结合了量化（效率）和 LoRA（结构），是效率研究的重要证据。",
+        "coverage_role": "训练与推理成本",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4389524340",
+      "arxiv_id": "",
+      "openalex_id": "W4389524340",
+      "doi": "https://doi.org/10.18653/v1/2023.emnlp-main.252",
+      "pdf_url": "https://aclanthology.org/2023.emnlp-main.252.pdf",
+      "title": "Sparse Low-rank Adaptation of Pre-trained Language Models",
+      "authors": "Ning Ding, Xingtai Lv, Qiaosen Wang, Yulin Chen, Bowen Zhou, Zhiyuan Liu, Maosong Sun",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.252",
+      "screening": {
+        "paper_id": "W4389524340",
+        "decision": "include",
+        "reason": "Sparse Low-rank Adaptation (SoRA) (2023) 提出了稀疏低秩适应，通过门控机制动态调整秩，涉及结构改动和训练效率。",
+        "coverage_role": "结构改动与效率研究",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4382202657",
+      "arxiv_id": "",
+      "openalex_id": "W4382202657",
+      "doi": "https://doi.org/10.1609/aaai.v37i11.26505",
+      "pdf_url": "https://ojs.aaai.org/index.php/AAAI/article/download/26505/26277",
+      "title": "On the Effectiveness of Parameter-Efficient Fine-Tuning",
+      "authors": "Zihao Fu, Haoran Yang, Anthony Man–Cho So, Wai Lam, Lidong Bing, Nigel Collier",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1609/aaai.v37i11.26505",
+      "screening": {
+        "paper_id": "W4382202657",
+        "decision": "include",
+        "reason": "On the Effectiveness of Parameter-Efficient Fine-Tuning (2023) 从理论角度分析了 PEFT 的有效性、稳定性和参数选择，提供了理论支撑。",
+        "coverage_role": "评价与理论分析",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4401042811",
+      "arxiv_id": "",
+      "openalex_id": "W4401042811",
+      "doi": "https://doi.org/10.18653/v1/2024.naacl-long.35",
+      "pdf_url": "https://aclanthology.org/2024.naacl-long.35.pdf",
+      "title": "ALoRA: Allocating Low-Rank Adaptation for Fine-tuning Large Language Models",
+      "authors": "Zhaojia Liu, Jiawen Lyn, Wei Zhu, Xing Tian",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.18653/v1/2024.naacl-long.35",
+      "screening": {
+        "paper_id": "W4401042811",
+        "decision": "include",
+        "reason": "ALoRA (2024) 提出了分配式低秩适应，根据任务需求分配不同秩，涉及结构改动和任务适用性。",
+        "coverage_role": "结构改动与任务适用性",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "2402.12354",
+      "arxiv_id": "2402.12354",
+      "openalex_id": "W4391988255",
+      "doi": "https://doi.org/10.48550/arxiv.2402.12354",
+      "pdf_url": "https://arxiv.org/pdf/2402.12354",
+      "title": "LoRA+: Efficient Low Rank Adaptation of Large Models",
+      "authors": "Soufiane Hayou, N. C. Ghosh, Bin Yu",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2402.12354",
+      "screening": {
+        "paper_id": "2402.12354",
+        "decision": "include",
+        "reason": "LoRA+ (2024) 通过调整 LoRA 矩阵的学习率改进了性能和训练速度，是 LoRA 变体的重要代表。",
+        "coverage_role": "结构改动与性能证据",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "2308.03303",
+      "arxiv_id": "2308.03303",
+      "openalex_id": "W4385681736",
+      "doi": "https://doi.org/10.48550/arxiv.2308.03303",
+      "pdf_url": "https://arxiv.org/pdf/2308.03303",
+      "title": "LoRA-FA: Efficient and Effective Low Rank Representation Fine-tuning",
+      "authors": "Longteng Zhang, Lin Zhang, Shaohuai Shi, Xiaowen Chu, Bo Li",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2308.03303",
+      "screening": {
+        "paper_id": "2308.03303",
+        "decision": "include",
+        "reason": "LoRA-FA (2023) 通过冻结 LoRA 的一个矩阵并修正梯度，提高了效率和性能，是 LoRA 变体的重要代表。",
+        "coverage_role": "结构改动与效率研究",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W3174770825",
+      "arxiv_id": "",
+      "openalex_id": "W3174770825",
+      "doi": "https://doi.org/10.18653/v1/2021.acl-long.353",
+      "pdf_url": "https://aclanthology.org/2021.acl-long.353.pdf",
+      "title": "Prefix-Tuning: Optimizing Continuous Prompts for Generation",
+      "authors": "Xiang Lisa Li, Percy Liang",
+      "publication_year": 2021,
+      "source_url": "https://doi.org/10.18653/v1/2021.acl-long.353",
+      "screening": {
+        "paper_id": "W3174770825",
+        "decision": "include",
+        "reason": "Prefix-Tuning (2021) 是 Prefix-based PEFT 的奠基性工作，定义了连续提示优化的范式，是技术谱系的基础。",
+        "coverage_role": "分类框架与奠基方法",
+        "confidence": 0.95
+      }
+    },
+    {
+      "paper_id": "W4385573776",
+      "arxiv_id": "",
+      "openalex_id": "W4385573776",
+      "doi": "https://doi.org/10.18653/v1/2022.emnlp-main.446",
+      "pdf_url": "https://aclanthology.org/2022.emnlp-main.446.pdf",
+      "title": "ATTEMPT: Parameter-Efficient Multi-task Tuning via Attentional Mixtures of Soft Prompts",
+      "authors": "Akari Asai, Mohammadreza Salehi, Matthew E. Peters, Hannaneh Hajishirzi",
+      "publication_year": 2022,
+      "source_url": "https://doi.org/10.18653/v1/2022.emnlp-main.446",
+      "screening": {
+        "paper_id": "W4385573776",
+        "decision": "include",
+        "reason": "ATTEMPT (2022) 提出了基于注意力混合的软提示多任务调优方法，涉及结构改动（Attention Mixture）和任务适用性。",
+        "coverage_role": "结构改动与任务适用性",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4385570529",
+      "arxiv_id": "",
+      "openalex_id": "W4385570529",
+      "doi": "https://doi.org/10.18653/v1/2023.findings-acl.421",
+      "pdf_url": "https://aclanthology.org/2023.findings-acl.421.pdf",
+      "title": "Residual Prompt Tuning: improving prompt tuning with residual reparameterization",
+      "authors": "Anastasia Razdaibiedina, Yuning Mao, Madian Khabsa, Mike Lewis, Rui Hou, Jimmy Ba, Amjad Almahairi",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.findings-acl.421",
+      "screening": {
+        "paper_id": "W4385570529",
+        "decision": "include",
+        "reason": "Residual Prompt Tuning (2023) 通过残差重参数化改进了提示调优的性能和稳定性，是 Prompt Tuning 变体的重要代表。",
+        "coverage_role": "结构改动与性能证据",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "W4385573610",
+      "arxiv_id": "",
+      "openalex_id": "W4385573610",
+      "doi": "https://doi.org/10.18653/v1/2022.emnlp-main.168",
+      "pdf_url": "https://aclanthology.org/2022.emnlp-main.168.pdf",
+      "title": "Revisiting Parameter-Efficient Tuning: Are We Really There Yet?",
+      "authors": "Guanzheng Chen, Fangyu Liu, Zaiqiao Meng, Shangsong Liang",
+      "publication_year": 2022,
+      "source_url": "https://doi.org/10.18653/v1/2022.emnlp-main.168",
+      "screening": {
+        "paper_id": "W4385573610",
+        "decision": "include",
+        "reason": "Revisiting Parameter-Efficient Tuning (2022) 对 PETuning 方法进行了重新评估，指出了评估协议中的问题，涉及复现性和评价。",
+        "coverage_role": "评价与复现性",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "2303.02861",
+      "arxiv_id": "2303.02861",
+      "openalex_id": "W4323568442",
+      "doi": "https://doi.org/10.48550/arxiv.2303.02861",
+      "pdf_url": "https://arxiv.org/pdf/2303.02861",
+      "title": "Multitask Prompt Tuning Enables Parameter-Efficient Transfer Learning",
+      "authors": "Zhen Wang, Rameswar Panda, Leonid Karlinsky, Rogério Feris, Huan Sun, Yoon Kim",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2303.02861",
+      "screening": {
+        "paper_id": "2303.02861",
+        "decision": "include",
+        "reason": "Multitask Prompt Tuning (2023) 提出了多任务提示调优方法，涉及任务适用性和知识迁移，是 Prompt Tuning 变体的重要代表。",
+        "coverage_role": "任务适用性",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "2205.14865",
+      "arxiv_id": "2205.14865",
+      "openalex_id": "W4281987380",
+      "doi": "https://doi.org/10.48550/arxiv.2205.14865",
+      "pdf_url": "https://arxiv.org/pdf/2205.14865",
+      "title": "Prompt-aligned Gradient for Prompt Tuning",
+      "authors": "Beier Zhu, Yulei Niu, Yucheng Han, Yue Wu, Hanwang Zhang",
+      "publication_year": 2022,
+      "source_url": "https://arxiv.org/abs/2205.14865",
+      "screening": {
+        "paper_id": "2205.14865",
+        "decision": "include",
+        "reason": "Prompt-aligned Gradient (2022) 提出了提示对齐梯度方法，解决了提示调优中的遗忘问题，是 Prompt Tuning 变体的重要代表。",
+        "coverage_role": "结构改动与性能证据",
+        "confidence": 0.85
+      }
+    },
+    {
+      "paper_id": "2304.15010",
+      "arxiv_id": "2304.15010",
+      "openalex_id": "W4367628410",
+      "doi": "https://doi.org/10.48550/arxiv.2304.15010",
+      "pdf_url": "https://arxiv.org/pdf/2304.15010",
+      "title": "LLaMA-Adapter V2: Parameter-Efficient Visual Instruction Model",
+      "authors": "Peng Gao, Jiaming Han, Renrui Zhang, Ziyi Lin, Shijie Geng, Aojun Zhou, Wei Zhang, Pan Lu, Conghui He, Xiangyu Yue, Hongsheng Li, Yu Qiao",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2304.15010",
+      "screening": {
+        "paper_id": "2304.15010",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2307.06435",
+      "arxiv_id": "2307.06435",
+      "openalex_id": "W4384389802",
+      "doi": "https://doi.org/10.48550/arxiv.2307.06435",
+      "pdf_url": "https://arxiv.org/pdf/2307.06435",
+      "title": "A Comprehensive Overview of Large Language Models",
+      "authors": "Humza Naveed, Asad Ullah Khan, Shi Qiu, Muhammad Saqib, Saeed Anwar, Muhammad Usman, Akhtar, Naveed, Nick Barnes, Ajmal Mian",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2307.06435",
+      "screening": {
+        "paper_id": "2307.06435",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W3206816211",
+      "arxiv_id": "",
+      "openalex_id": "W3206816211",
+      "doi": "https://doi.org/10.18653/v1/2022.acl-long.433",
+      "pdf_url": "https://aclanthology.org/2022.acl-long.433.pdf",
+      "title": "UniPELT: A Unified Framework for Parameter-Efficient Language Model Tuning",
+      "authors": "Yuning Mao, Lambert Mathias, Rui Hou, Amjad Almahairi, Hao Ma, Jiawei Han, Scott Yih, Madian Khabsa",
+      "publication_year": 2022,
+      "source_url": "https://doi.org/10.18653/v1/2022.acl-long.433",
+      "screening": {
+        "paper_id": "W3206816211",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2402.06196",
+      "arxiv_id": "2402.06196",
+      "openalex_id": "W4391766565",
+      "doi": "https://doi.org/10.48550/arxiv.2402.06196",
+      "pdf_url": "https://arxiv.org/pdf/2402.06196",
+      "title": "Large Language Models: A Survey",
+      "authors": "Shervin Minaee, Tomas Mikolov, Nikzad, Narjes, Meysam Chenaghlu, Richard Socher, Xavier Amatriain, Jianfeng Gao",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2402.06196",
+      "screening": {
+        "paper_id": "2402.06196",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2308.10792",
+      "arxiv_id": "2308.10792",
+      "openalex_id": "W4386081793",
+      "doi": "https://doi.org/10.48550/arxiv.2308.10792",
+      "pdf_url": "https://arxiv.org/pdf/2308.10792",
+      "title": "Instruction Tuning for Large Language Models: A Survey",
+      "authors": "Shengyu Zhang, Linfeng Dong, Xiaoya Li, Sen Zhang, Xiaofei Sun, Shuhe Wang, Jiwei Li, Runyi Hu, Tianwei Zhang, Fei Wu, Guoyin Wang",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2308.10792",
+      "screening": {
+        "paper_id": "2308.10792",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W3205717164",
+      "arxiv_id": "",
+      "openalex_id": "W3205717164",
+      "doi": "https://doi.org/10.18653/v1/2022.acl-long.346",
+      "pdf_url": "https://aclanthology.org/2022.acl-long.346.pdf",
+      "title": "SPoT: Better Frozen Model Adaptation through Soft Prompt Transfer",
+      "authors": "Tu Vu, Brian Lester, Noah Constant, Rami Al‐Rfou, Daniel Cer",
+      "publication_year": 2022,
+      "source_url": "https://doi.org/10.18653/v1/2022.acl-long.346",
+      "screening": {
+        "paper_id": "W3205717164",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4401021891",
+      "arxiv_id": "",
+      "openalex_id": "W4401021891",
+      "doi": "https://doi.org/10.1101/gr.279132.124",
+      "pdf_url": "https://genome.cshlp.org/content/early/2024/07/25/gr.279132.124.full.pdf",
+      "title": "Parameter-efficient fine-tuning on large protein language models improves signal peptide prediction",
+      "authors": "Shuai Zeng, Duolin Wang, Lei Jiang, Dong Xu",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1101/gr.279132.124",
+      "screening": {
+        "paper_id": "W4401021891",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4402667093",
+      "arxiv_id": "",
+      "openalex_id": "W4402667093",
+      "doi": "https://doi.org/10.18653/v1/2024.acl-demos.38",
+      "pdf_url": "https://aclanthology.org/2024.acl-demos.38.pdf",
+      "title": "LlamaFactory: Unified Efficient Fine-Tuning of 100+ Language Models",
+      "authors": "Yaowei Zheng, Richong Zhang, Junhao Zhang, YeYanhan YeYanhan, Zheyan Luo",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.18653/v1/2024.acl-demos.38",
+      "screening": {
+        "paper_id": "W4402667093",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4392193048",
+      "arxiv_id": "",
+      "openalex_id": "W4392193048",
+      "doi": "https://doi.org/10.1038/s41591-024-02855-5",
+      "pdf_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11479659/pdf/nihms-2023710.pdf",
+      "title": "Adapted large language models can outperform medical experts in clinical text summarization",
+      "authors": "Dave Van Veen, Cara Van Uden, Louis Blankemeier, Jean-Benoit Delbrouck, Asad Aali, Christian Bluethgen, Anuj Pareek, Malgorzata Polacin, Eduardo Pontes Reis, Anna Seehofnerová, Nidhi Rohatgi, Poonam Hosamani, William Collins, Neera Ahuja, Curtis P. Langlotz, Jason Hom, Sergios Gatidis, John M. Pauly, Akshay Chaudhari",
+      "publication_year": 2024,
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/11479659",
+      "screening": {
+        "paper_id": "W4392193048",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4393147284",
+      "arxiv_id": "",
+      "openalex_id": "W4393147284",
+      "doi": "https://doi.org/10.1609/aaai.v38i12.29237",
+      "pdf_url": "https://ojs.aaai.org/index.php/AAAI/article/download/29237/30335",
+      "title": "OWQ: Outlier-Aware Weight Quantization for Efficient Fine-Tuning and Inference of Large Language Models",
+      "authors": "Changhun Lee, Jungyu Jin, Taesu Kim, Hyungjun Kim, Eunhyeok Park",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1609/aaai.v38i12.29237",
+      "screening": {
+        "paper_id": "W4393147284",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4404869895",
+      "arxiv_id": "",
+      "openalex_id": "W4404869895",
+      "doi": "https://doi.org/10.1016/j.mcpdig.2024.11.005",
+      "pdf_url": "https://www.mcpdigitalhealth.org/article/S2949-7612(24)00114-7/pdf",
+      "title": "Fine-Tuning Large Language Models for Specialized Use Cases",
+      "authors": "DM Anisuzzaman, Jeffrey G. Malins, Paul A. Friedman, Zachi I. Attia",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1016/j.mcpdig.2024.11.005",
+      "screening": {
+        "paper_id": "W4404869895",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2310.08659",
+      "arxiv_id": "2310.08659",
+      "openalex_id": "W4387686975",
+      "doi": "https://doi.org/10.48550/arxiv.2310.08659",
+      "pdf_url": "https://arxiv.org/pdf/2310.08659",
+      "title": "LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models",
+      "authors": "Yixiao Li, Yifan Yu, Liang Chen, Pengcheng He, Nikos Karampatziakis, Weizhu Chen, Tuo Zhao",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2310.08659",
+      "screening": {
+        "paper_id": "2310.08659",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4399849668",
+      "arxiv_id": "",
+      "openalex_id": "W4399849668",
+      "doi": "https://doi.org/10.1073/pnas.2405840121",
+      "pdf_url": "https://www.pnas.org/doi/pdf/10.1073/pnas.2405840121",
+      "title": "Democratizing protein language models with parameter-efficient fine-tuning",
+      "authors": "Samuel Sledzieski, Meghana Kshirsagar, Minkyung Baek, Rahul Dodhia, Juan Lavista Ferres, Bonnie Berger",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1073/pnas.2405840121",
+      "screening": {
+        "paper_id": "W4399849668",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2303.18223",
+      "arxiv_id": "2303.18223",
+      "openalex_id": "W4362515116",
+      "doi": "https://doi.org/10.1007/s11704-026-60308-3",
+      "pdf_url": "https://arxiv.org/pdf/2303.18223",
+      "title": "A Survey of Large Language Models",
+      "authors": "Wayne Xin Zhao, Kun Zhou, Junyi Li, Tianyi Tang, Zican Dong, Yupeng Hou, Beichen Zhang, Yingqian Min, Junjie Zhang, Peiyu Liu, Xiaolei Wang, Yifan Du, Yushuo Chen, Yushuo Chen, Zhipeng Chen, Jinhao Jiang, Ruiyang Ren, Yifan Li, Xinyu Tang, Peiyu Liu, Yiwen Hu, Jian‐Yun Nie, Ji-Rong Wen",
+      "publication_year": 2026,
+      "source_url": "https://arxiv.org/abs/2303.18223",
+      "screening": {
+        "paper_id": "2303.18223",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4404210426",
+      "arxiv_id": "",
+      "openalex_id": "W4404210426",
+      "doi": "https://doi.org/10.1038/s41598-024-79110-x",
+      "pdf_url": "https://www.nature.com/articles/s41598-024-79110-x.pdf",
+      "title": "A fine-tuning enhanced RAG system with quantized influence measure as AI judge",
+      "authors": "Keshav Rangan, Yiqiao Yin",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1038/s41598-024-79110-x",
+      "screening": {
+        "paper_id": "W4404210426",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2305.03726",
+      "arxiv_id": "2305.03726",
+      "openalex_id": "W4375869762",
+      "doi": "https://doi.org/10.48550/arxiv.2305.03726",
+      "pdf_url": "https://arxiv.org/pdf/2305.03726",
+      "title": "Otter: A Multi-Modal Model with In-Context Instruction Tuning",
+      "authors": "Bo Li, Yuanhan Zhang, Liangyu Chen, Jinghao Wang, Pu, Fanyi, Cahyono, Joshua Adrian, Yang, Jingkang, Liu, Ziwei",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2305.03726",
+      "screening": {
+        "paper_id": "2305.03726",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4409098775",
+      "arxiv_id": "",
+      "openalex_id": "W4409098775",
+      "doi": "https://doi.org/10.3390/bdcc9040087",
+      "pdf_url": "https://www.mdpi.com/2504-2289/9/4/87/pdf?version=1743564064",
+      "title": "LLM Fine-Tuning: Concepts, Opportunities, and Challenges",
+      "authors": "Xiao-Kun Wu, Min Chen, Wanyi Li, Rui Wang, Lingbin Lu, Jia Liu, Kai Hwang, Yixue Hao, Yanru Pan, Qingguo Meng, Kaibin Huang, Long Hu, Mohsen Guizani, Naipeng Chao, Giancarlo Fortino, Fei Lin, Yonglin Tian, Dusit Niyato, Fei-Yue Wang",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.3390/bdcc9040087",
+      "screening": {
+        "paper_id": "W4409098775",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4393148183",
+      "arxiv_id": "",
+      "openalex_id": "W4393148183",
+      "doi": "https://doi.org/10.1609/aaai.v38i6.28345",
+      "pdf_url": "https://ojs.aaai.org/index.php/AAAI/article/download/28345/28677",
+      "title": "LION: Implicit Vision Prompt Tuning",
+      "authors": "Haixin Wang, Jianlong Chang, Yihang Zhai, Xiao Luo, Jinan Sun, Zhouchen Lin, Qi Tian",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1609/aaai.v38i6.28345",
+      "screening": {
+        "paper_id": "W4393148183",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    }
+  ],
+  "retrieval_attempts": [
+    {
+      "paper_id": "W4322766882",
+      "success": true,
+      "citation_id": "P1"
+    },
+    {
+      "paper_id": "W4221145545",
+      "success": true,
+      "citation_id": "P2"
+    },
+    {
+      "paper_id": "W4389524317",
+      "success": true,
+      "citation_id": "P3"
+    },
+    {
+      "paper_id": "2303.16199",
+      "success": true,
+      "citation_id": "P4"
+    },
+    {
+      "paper_id": "2305.14314",
+      "success": true,
+      "citation_id": "P5"
+    },
+    {
+      "paper_id": "2303.15647",
+      "success": true,
+      "citation_id": "P6"
+    },
+    {
+      "paper_id": "2312.12148",
+      "success": true,
+      "citation_id": "P7"
+    },
+    {
+      "paper_id": "2403.14608",
+      "success": true,
+      "citation_id": "P8"
+    },
+    {
+      "paper_id": "2306.07967",
+      "success": true,
+      "citation_id": "P9"
+    },
+    {
+      "paper_id": "W4385572883",
+      "success": true,
+      "citation_id": "P10"
+    },
+    {
+      "paper_id": "W4385572063",
+      "success": true,
+      "citation_id": "P11"
+    },
+    {
+      "paper_id": "W4404782226",
+      "success": true,
+      "citation_id": "P12"
+    }
+  ]
+}

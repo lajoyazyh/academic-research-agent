@@ -1,0 +1,59 @@
+{
+  "gate_version": 2,
+  "overall_status": "needs_revision",
+  "allowed_output_label": "technical_evidence_review_draft",
+  "systematic_review_claim_allowed": false,
+  "dimensions": {
+    "methodology_completeness": {
+      "status": "blocked",
+      "issues": [
+        "历史检索执行时间、字段范围和过滤器未保存",
+        "缺少当前政策要求的独立AI盲审和人工裁决",
+        "35条旧版排除属于定额选样，不是逐条纳排标准判断"
+      ]
+    },
+    "evidence_fit": {
+      "status": "passed",
+      "issues": [],
+      "checks": "二级综述只用于背景与分类；性能、成本和实践建议均绑定一级证据。"
+    },
+    "quantitative_context": {
+      "status": "needs_revision",
+      "issues": [
+        "P2的8.6%尚未绑定唯一数据集、模型和基线实验行",
+        "P7的47.4%尚未确认相对/绝对变化及逐任务基线"
+      ]
+    },
+    "internal_consistency": {
+      "status": "passed",
+      "issues": [],
+      "checks": "P8局部执行时间与跨研究统一端到端成本缺口已明确区分。"
+    },
+    "citation_authenticity": {
+      "status": "passed",
+      "issues": [],
+      "checks": "所有P编号均对应12条归档纳入来源，未新增虚构文献。"
+    },
+    "claim_strength": {
+      "status": "passed",
+      "issues": [],
+      "checks": "部署建议均改为条件性低至中等确定性表述；未将自适应RAG自动称为Agent。"
+    },
+    "artifact_completeness": {
+      "status": "passed",
+      "issues": [],
+      "checks": "包含3张表、概念图、检索附录、筛选账本、证据卡、Claim Ledger与门禁报告。"
+    },
+    "reference_hygiene": {
+      "status": "passed",
+      "issues": [],
+      "checks": "参考文献从归档作者、标题、年份和标识符确定性生成并去除明显重复作者项。"
+    }
+  },
+  "blocking_actions": [
+    "重新执行并记录检索字段、过滤器、时间、游标与重试",
+    "对52条候选重新进行逐标准标题摘要筛选和全文筛选",
+    "完成单人研究者＋独立AI盲审及分歧裁决",
+    "回查P2和P7的完整定量实验行"
+  ]
+}

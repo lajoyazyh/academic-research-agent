@@ -1,0 +1,338 @@
+[
+  {
+    "synthesis_group_id": "group_8a5d8e9db40d67a5fdd5",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "label": "unclassified",
+    "paper_ids": [
+      "2506.09542",
+      "2510.22344"
+    ],
+    "primary_paper_ids": [],
+    "secondary_paper_ids": [
+      "2506.09542",
+      "2510.22344"
+    ],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "SEA identifies confirmed facts and informational gaps"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "corpus-based RAG methods"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T14:43:13.140672+00:00"
+  },
+  {
+    "synthesis_group_id": "group_1e4abf8303713369e83b",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "label": "retrieval-augmented generation (rag)",
+    "paper_ids": [
+      "2409.15515",
+      "2607.01852"
+    ],
+    "primary_paper_ids": [
+      "2409.15515",
+      "2607.01852"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "conversational QA"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T14:43:13.140694+00:00"
+  },
+  {
+    "synthesis_group_id": "group_3a83664cad96c3543305",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "label": "open-rag framework",
+    "paper_ids": [
+      "2410.01782"
+    ],
+    "primary_paper_ids": [
+      "2410.01782"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "hybrid adaptive retrieval method"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "knowledge-intensive tasks"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T14:43:13.140702+00:00"
+  },
+  {
+    "synthesis_group_id": "group_ec60d5eac80b797791b5",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "label": "corrective retrieval augmented generation (crag)",
+    "paper_ids": [
+      "2401.15884"
+    ],
+    "primary_paper_ids": [
+      "2401.15884"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "confidence degree based on retrieval evaluator"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T14:43:13.140708+00:00"
+  },
+  {
+    "synthesis_group_id": "group_22e4831a34b1cdf1968d",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "label": "{'name': 'crag-mow', 'type': 'mixture-of-workflows', 'components': ['agentic_workflows', 'self-corrective_retrieval_augmented_generation', 'orchestration_agent'",
+    "paper_ids": [
+      "2502.19629"
+    ],
+    "primary_paper_ids": [
+      "2502.19629"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "orchestration_agent synthesizes final response from multiple workflows"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "materials_discovery",
+      "chemical_search",
+      "multi_modal_nmr_retrieval"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T14:43:13.140716+00:00"
+  },
+  {
+    "synthesis_group_id": "group_b05831148b6491d5b4d3",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "label": "security test automation framework (staf)",
+    "paper_ids": [
+      "2509.20190"
+    ],
+    "primary_paper_ids": [
+      "2509.20190"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "automotive security testing"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T14:43:13.140722+00:00"
+  },
+  {
+    "synthesis_group_id": "group_5cae8cdcdf84a0c4a6f6",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "label": "auto-rag: autonomous retrieval-augmented generation for large language models",
+    "paper_ids": [
+      "2411.19443"
+    ],
+    "primary_paper_ids": [
+      "2411.19443"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "complex multi-hop questions"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T14:43:13.140728+00:00"
+  },
+  {
+    "synthesis_group_id": "group_e4aac57ef264367458ca",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "label": "retrieval-augmented generation (rag) with self-docs",
+    "paper_ids": [
+      "2410.13192"
+    ],
+    "primary_paper_ids": [
+      "2410.13192"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T14:43:13.140733+00:00"
+  },
+  {
+    "synthesis_group_id": "group_93f4208a20c4e695b836",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "label": "membership inference attack (interrogation attack)",
+    "paper_ids": [
+      "2502.00306"
+    ],
+    "primary_paper_ids": [
+      "2502.00306"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "documents must contain information that the base LLM is unaware of or not very good at"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T14:43:13.140738+00:00"
+  },
+  {
+    "synthesis_group_id": "group_9b373df8fdee7020ae9c",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "label": "['metacognitive retrieval-augmented generation (metarag)', 'rerankers (point-wise, list-wise)']",
+    "paper_ids": [
+      "2604.19899"
+    ],
+    "primary_paper_ids": [
+      "2604.19899"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "similarity score falls below a predefined threshold"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "multi-hop question answering",
+      "complex tasks requiring reasoning steps"
+    ],
+    "engineering_costs": [
+      "detailed cost analysis (Table 6) including requests, tokens, latency, and USD"
+    ],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T14:43:13.140744+00:00"
+  },
+  {
+    "synthesis_group_id": "group_50a979da369e3005f6a8",
+    "protocol_id": "protocol_4f0e3924f9e2",
+    "inclusion_snapshot_id": "inclusion_f5874d8674c7",
+    "label": "context awareness gate (cag) architecture",
+    "paper_ids": [
+      "2411.16133"
+    ],
+    "primary_paper_ids": [
+      "2411.16133"
+    ],
+    "secondary_paper_ids": [],
+    "comparability": "narrative_only",
+    "synthesis_method": "SWiM_or_thematic",
+    "meta_analysis_allowed": false,
+    "agreements": [],
+    "conflicts": [],
+    "possible_explanations": [],
+    "why_it_works": [
+      "determine whether context retrieval is necessary or if the LLM can answer the query based on its internal knowledge"
+    ],
+    "failure_conditions": [],
+    "applicable_tasks_or_conditions": [
+      "open-domain and closed-domain question answering tasks"
+    ],
+    "engineering_costs": [],
+    "evidence_gaps": [],
+    "applicability_boundaries": [],
+    "certainty": "not_assessed",
+    "created_at": "2026-07-31T14:43:13.140750+00:00"
+  }
+]

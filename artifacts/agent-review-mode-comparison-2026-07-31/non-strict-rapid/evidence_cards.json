@@ -1,0 +1,1832 @@
+[
+  {
+    "extraction_id": "extract_9115708fe269",
+    "paper_id": "2512.10787",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "narrative_survey",
+    "evidence_level": "secondary",
+    "population_or_dataset": null,
+    "intervention_or_method": null,
+    "comparator_or_baseline": null,
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "SEAL-RAG improves answer correctness by +3 to +13 pp and evidence precision by +12 to +18 pp over Self-RAG on HotpotQA (k = 3).",
+        "support_type": "reported_result",
+        "location": {
+          "page": 1,
+          "section": "Abstract"
+        }
+      },
+      {
+        "statement": "SEAL-RAG outperforms Adaptive-k by +8.0 pp in accuracy and maintains 96% evidence precision on 2WikiMultiHopQA (k = 5), compared to 22% for CRAG.",
+        "support_type": "reported_result",
+        "location": {
+          "page": 1,
+          "section": "Abstract"
+        }
+      },
+      {
+        "statement": "SEAL-RAG maintains 89–96% Precision compared to 34% for Basic RAG and 26% for CRAG.",
+        "support_type": "reported_result",
+        "location": {
+          "page": 2,
+          "section": "Abstract"
+        }
+      },
+      {
+        "statement": "SEAL-RAG significantly outperforms both variants in Accuracy and Precision (p < 0.001) against Adaptive-k on 2Wiki-MultiHopQA (k = 5).",
+        "support_type": "reported_result",
+        "location": {
+          "page": 12,
+          "section": "Table 7"
+        }
+      },
+      {
+        "statement": "SEAL-RAG significantly outperforms both variants in Accuracy and Precision (p < 0.001) against Adaptive-k on 2Wiki-MultiHopQA (k = 5).",
+        "support_type": "reported_result",
+        "location": {
+          "page": 12,
+          "section": "Table 7"
+        }
+      },
+      {
+        "statement": "SEAL-RAG significantly outperforms both variants in Accuracy and Precision (p < 0.001) against Adaptive-k on 2Wiki-MultiHopQA (k = 5).",
+        "support_type": "reported_result",
+        "location": {
+          "page": 12,
+          "section": "Table 7"
+        }
+      },
+      {
+        "statement": "SEAL-RAG significantly outperforms both variants in Accuracy and Precision (p < 0.001) against Adaptive-k on 2Wiki-MultiHopQA (k = 5).",
+        "support_type": "reported_result",
+        "location": {
+          "page": 12,
+          "section": "Table 7"
+        }
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "SEAL-RAG improves answer correctness by +3 to +13 pp and evidence precision by +12 to +18 pp over Self-RAG on HotpotQA (k = 3).",
+        "dataset_or_task": "HotpotQA",
+        "base_model": "Self-RAG",
+        "metric": "Answer Correctness, Evidence Precision",
+        "method_value": "+3 to +13 pp, +12 to +18 pp",
+        "effect_type": "absolute",
+        "statistical_significance": "p < 0.001",
+        "evidence_location": {
+          "page": 1,
+          "section": "Abstract"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "SEAL-RAG outperforms Adaptive-k by +8.0 pp in accuracy and maintains 96% evidence precision on 2WikiMultiHopQA (k = 5), compared to 22% for CRAG.",
+        "dataset_or_task": "2WikiMultiHopQA",
+        "base_model": "Adaptive-k",
+        "metric": "Accuracy, Evidence Precision",
+        "method_value": "+8.0 pp, 96%",
+        "effect_type": "absolute",
+        "statistical_significance": "p < 0.001",
+        "evidence_location": {
+          "page": 1,
+          "section": "Abstract"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "SEAL-RAG maintains 89–96% Precision compared to 34% for Basic RAG and 26% for CRAG.",
+        "dataset_or_task": null,
+        "base_model": "Basic RAG, CRAG",
+        "metric": "Precision",
+        "method_value": "89–96%, 34%, 26%",
+        "effect_type": "absolute",
+        "statistical_significance": null,
+        "evidence_location": {
+          "page": 2,
+          "section": "Abstract"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "SEAL-RAG significantly outperforms both variants in Accuracy and Precision (p < 0.001) against Adaptive-k on 2Wiki-MultiHopQA (k = 5).",
+        "dataset_or_task": "2Wiki-MultiHopQA",
+        "base_model": "Adaptive-k",
+        "metric": "Accuracy, Precision",
+        "method_value": "Significantly higher",
+        "effect_type": "absolute",
+        "statistical_significance": "p < 0.001",
+        "evidence_location": {
+          "page": 12,
+          "section": "Table 7"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "SEAL-RAG significantly outperforms both variants in Accuracy and Precision (p < 0.001) against Adaptive-k on 2Wiki-MultiHopQA (k = 5).",
+        "dataset_or_task": "2Wiki-MultiHopQA",
+        "base_model": "Adaptive-k",
+        "metric": "Accuracy, Precision",
+        "method_value": "Significantly higher",
+        "effect_type": "absolute",
+        "statistical_significance": "p < 0.001",
+        "evidence_location": {
+          "page": 12,
+          "section": "Table 7"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "SEAL-RAG significantly outperforms both variants in Accuracy and Precision (p < 0.001) against Adaptive-k on 2Wiki-MultiHopQA (k = 5).",
+        "dataset_or_task": "2Wiki-MultiHopQA",
+        "base_model": "Adaptive-k",
+        "metric": "Accuracy, Precision",
+        "method_value": "Significantly higher",
+        "effect_type": "absolute",
+        "statistical_significance": "p < 0.001",
+        "evidence_location": {
+          "page": 12,
+          "section": "Table 7"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "SEAL-RAG significantly outperforms both variants in Accuracy and Precision (p < 0.001) against Adaptive-k on 2Wiki-MultiHopQA (k = 5).",
+        "dataset_or_task": "2Wiki-MultiHopQA",
+        "base_model": "Adaptive-k",
+        "metric": "Accuracy, Precision",
+        "method_value": "Significantly higher",
+        "effect_type": "absolute",
+        "statistical_significance": "p < 0.001",
+        "evidence_location": {
+          "page": 12,
+          "section": "Table 7"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "user query",
+        "initial retrieval (fixed top-k)",
+        "candidate passages"
+      ],
+      "internal_state": [
+        "entity ledger",
+        "gap specification",
+        "micro-queries",
+        "entity-first ranking"
+      ],
+      "decision_rule": "Replace-Not-Expand Mechanics via Entity-Centric Utility",
+      "thresholds": [],
+      "trigger_granularity": "on-the-fly",
+      "actions": [
+        "Search → Extract → Assess → Loop",
+        "entity-first extraction",
+        "targeted micro-queries",
+        "entity-first ranking",
+        "evicting low-utility passages"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "fixed retrieval depth k",
+        "strict latency and token budgets"
+      ],
+      "method_family": "Retrieval-Augmented Generation",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "page": 1,
+        "section": "Abstract"
+      },
+      {
+        "page": 2,
+        "section": "Abstract"
+      },
+      {
+        "page": 12,
+        "section": "Table 7"
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.132341+00:00",
+    "updated_at": "2026-07-31T15:18:17.132361+00:00"
+  },
+  {
+    "extraction_id": "extract_183dc339346e",
+    "paper_id": "2512.07015",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "benchmark",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "FVA-RAG",
+    "comparator_or_baseline": [
+      "Self-RAG",
+      "CRAG"
+    ],
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "FVA-RAG achieves 79.80% and 80.05% accuracy on two frozen corpora, outperforming Self-RAG and CRAG.",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "FVA-RAG achieves 79.80% and 80.05% accuracy on two frozen corpora, outperforming Self-RAG and CRAG.",
+        "dataset_or_task": "TruthfulQA-Generation",
+        "base_model": "gpt-4o",
+        "retriever": "BAAI/bge-m3",
+        "corpus_size": null,
+        "baseline": [
+          "Self-RAG",
+          "CRAG"
+        ],
+        "metric": "Accuracy",
+        "baseline_value": [
+          "71.11%",
+          "71.36%"
+        ],
+        "method_value": [
+          "79.80%",
+          "80.05%"
+        ],
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 5,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "user query",
+        "premise-aligned context set",
+        "adversarial kill queries",
+        "anti-context set"
+      ],
+      "internal_state": null,
+      "decision_rule": "Contradiction scoring function",
+      "thresholds": [
+        0.5
+      ],
+      "trigger_granularity": null,
+      "actions": [
+        "falsification",
+        "revised answer generation"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "falsification-first architecture",
+        "counter-evidence retrieval"
+      ],
+      "method_family": "RAG",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": null,
+        "page": 1,
+        "excerpt": "FVA-RAG (Falsification-Verified Adversarial RAG), a pipeline that actively searches for counter-evidence and uses a verifier to decide when a draft answer should be overturned."
+      },
+      {
+        "section": null,
+        "page": 2,
+        "excerpt": "Our contributions are: 1. Method: We introduce FVA-RAG, a falsification-first architecture that treats the initial response as a draft hypothesis and explicitly retrieves counter-evidence."
+      },
+      {
+        "section": null,
+        "page": 3,
+        "excerpt": "3.3 Phase 3: Verification and Evidence-Grounded Revision The Adjudicator evaluates whether the anti-context contradicts the draft using a contradiction scoring function:"
+      },
+      {
+        "section": null,
+        "page": 4,
+        "excerpt": "3.4 Compared Methods and Controlled Baselines To isolate the impact of the architectural changes..."
+      },
+      {
+        "section": null,
+        "page": 5,
+        "excerpt": "FVA-RAG achieves 79.80% and 80.05% accuracy on two frozen corpora, outperforming Self-RAG and CRAG."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.151035+00:00",
+    "updated_at": "2026-07-31T15:18:17.151044+00:00"
+  },
+  {
+    "extraction_id": "extract_0b1173cf5f37",
+    "paper_id": "2506.09542",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "narrative_survey",
+    "evidence_level": "secondary",
+    "population_or_dataset": null,
+    "intervention_or_method": null,
+    "comparator_or_baseline": null,
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge.",
+        "support_type": "author_claim",
+        "location": null
+      },
+      {
+        "statement": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%).",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%).",
+        "dataset_or_task": "QA benchmarks",
+        "base_model": "vanilla RAG",
+        "retriever": "KG-Infused RAG",
+        "corpus_size": null,
+        "baseline": "vanilla RAG",
+        "metric": "performance",
+        "baseline_value": null,
+        "method_value": "3.9% to 17.8% improvement",
+        "effect_value": "3.9% to 17.8%",
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 1,
+          "section": "ABSTRACT",
+          "table": null
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "external knowledge"
+      ],
+      "internal_state": "pre-existing large-scale KGs, spreading activation",
+      "decision_rule": null,
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [
+        "retrieve relevant structured knowledge",
+        "expand queries",
+        "integrate with corpus passages",
+        "generate answers"
+      ],
+      "fusion_strategy": "KG facts and corpus passages",
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "corpus-based RAG methods"
+      ],
+      "method_family": "Retrieval-Augmented Generation (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "KG-Infused RAG improves factual accuracy by grounding responses in external knowledge."
+      },
+      {
+        "section": "ABSTRACT",
+        "page": 1,
+        "excerpt": "Experiments on five QA benchmarks show that KG-Infused RAG consistently outperforms vanilla RAG (by 3.9% to 17.8%)."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.169358+00:00",
+    "updated_at": "2026-07-31T15:18:17.169365+00:00"
+  },
+  {
+    "extraction_id": "extract_8f1ca17d448d",
+    "paper_id": "2409.15515",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Retrieval-Augmented Generation (RAG)",
+    "comparator_or_baseline": null,
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses.",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "improvements of ∼13% measured by human annotation",
+        "dataset_or_task": null,
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": null,
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": "∼13%",
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 1,
+          "section": "Abstract",
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "base_model",
+            "baseline",
+            "metric"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "conversational context"
+      ],
+      "internal_state": null,
+      "decision_rule": null,
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [
+        "retrieve",
+        "rewrite",
+        "judge relevance"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "conversational QA"
+      ],
+      "method_family": "Retrieval-Augmented Generation (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "SELF-multi-RAG demonstrates improved capabilities over single-turn variants with respect to retrieving relevant passages (by using summarized conversational context) and assessing the quality of generated responses."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.188271+00:00",
+    "updated_at": "2026-07-31T15:18:17.188281+00:00"
+  },
+  {
+    "extraction_id": "extract_0715963dc771",
+    "paper_id": "2410.01782",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "OPEN-RAG framework",
+    "comparator_or_baseline": "state-of-the-art LLMs and RAG models such as ChatGPT, Self-RAG, and Command R+",
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "OPEN-RAG outperforms state-of-the-art LLMs and RAG models in various knowledge-intensive tasks.",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%.",
+        "dataset_or_task": "HotpotQA",
+        "base_model": "Alpaca13B",
+        "metric": "EM",
+        "method_value": 63.3,
+        "base_value": 0.7,
+        "effect_type": "absolute",
+        "evidence_location": {
+          "page": 7,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA.",
+        "dataset_or_task": null,
+        "base_model": null,
+        "metric": null,
+        "method_value": null,
+        "base_value": null,
+        "effect_type": "relative",
+        "evidence_location": {
+          "page": 7,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "base_model",
+            "baseline",
+            "metric",
+            "numeric_value"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "arbitrary dense LLM"
+      ],
+      "internal_state": "sparse mixture of experts (MoE) model",
+      "decision_rule": "hybrid adaptive retrieval method",
+      "thresholds": [
+        "confidence score"
+      ],
+      "trigger_granularity": "dynamic",
+      "actions": [
+        "retrieval/no_retrieval",
+        "answer generation"
+      ],
+      "fusion_strategy": "latent learning, selecting relevant experts, integrating external knowledge",
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "knowledge-intensive tasks"
+      ],
+      "method_family": "Retrieval-Augmented Reasoning (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": null,
+        "page": 1,
+        "excerpt": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source Large Language Models"
+      },
+      {
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves a significant EM score of 63.3% in HotpotQA, surpassing Alpaca13B’s 0.7%."
+      },
+      {
+        "section": null,
+        "page": 7,
+        "excerpt": "OPEN-RAG achieves the top performance among non-proprietary LM-based models across all tasks, with the exception of TriviaQA and PubQA."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.209259+00:00",
+    "updated_at": "2026-07-31T15:18:17.209266+00:00"
+  },
+  {
+    "extraction_id": "extract_d90c3452f463",
+    "paper_id": "2602.07086",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Retrieval-Augmented Generation (RAG)",
+    "comparator_or_baseline": "standard RAG, Self-RAG, CoRAG",
+    "sample_size": null,
+    "outcomes_and_metrics": [
+      {
+        "statement": "Exact Match Accuracy",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "Component Match Accuracy",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "Execution Accuracy",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "Endpoint Retrieval Accuracy",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "Classification Accuracy",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "main_results": [
+      {
+        "statement": "RAG is essential: Without retrieval, exact match accuracy is 0% across all tasks, whereas retrieval yields substantial gains in execution accuracy (up to 79.30%) and component match accuracy (up to 78.86%).",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "CoRAG proves most robust in hybrid documentation settings, achieving statistically significant improvements in the combined task (10.29% exact match vs. 7.45% for standard RAG), driven primarily by superior SQL generation performance (15.32% vs. 11.56%).",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "Exact match accuracy ranges from 14.45% (standard RAG) to 15.61% (Self-RAG and CoRAG), with execution accuracy near 72–73%.",
+        "dataset_or_task": "SQL query generation",
+        "base_model": "standard RAG, Self-RAG, CoRAG",
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": "Exact Match Accuracy",
+        "baseline_value": null,
+        "method_value": {
+          "standard RAG": 14.45,
+          "Self-RAG": 15.61,
+          "CoRAG": 15.61
+        },
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 5,
+          "section": null,
+          "table": "Table 2"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "CoRAG maintains 15.32% exact match accuracy (-1.86% relative), demonstrating robustness under heterogeneous documentation.",
+        "dataset_or_task": "SQL query generation",
+        "base_model": "CoRAG",
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": "Exact Match Accuracy",
+        "baseline_value": null,
+        "method_value": 15.32,
+        "effect_value": -1.86,
+        "effect_type": "relative",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 5,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "OpenAI’s text-embedding-3-small model",
+        "ChromaDB",
+        "GPT-5"
+      ],
+      "internal_state": null,
+      "decision_rule": null,
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [],
+      "method_family": "Retrieval-Augmented Generation",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "This paper presents a comprehensive evaluation of three retrieval-augmented generation (RAG) variants [Lewis et al., 2021]—standard RAG, Self- RAG [Asai et al., 2024], and CoRAG [Wang et al., 2025]—across SQL query generation, REST API call generation, and a combined task requiring dynamic task classification."
+      },
+      {
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "This paper makes the following contributions: Comprehensive Evaluation: We present the first systematic comparison of RAG variants (standard RAG, Self-RAG, CoRAG) across SQL query generation, REST API call generation, and a combined task requiring dynamic classification, evaluated under database-only, API-only, and hybrid documentation contexts (18 experimental configurations)."
+      },
+      {
+        "section": "Experimental Design",
+        "page": 3,
+        "excerpt": "We evaluated three RAG variants (standard RAG, Self-RAG, CoRAG) plus a no-RAG baseline across three task settings: (1) SQL query generation, (2) REST API call generation, and (3) a combined task where the system must first classify whether the user’s natural language request requires data retrieval (SQL) or data modification (API), then generate the appropriate code accordingly."
+      },
+      {
+        "section": "Evaluation Metrics",
+        "page": 3,
+        "excerpt": "Following established practices in text-to-SQL [Yu et al., 2018; Pourreza and Rafiei, 2023] and API evaluation [Kim et al., 2024; Basu et al., 2025], we reported five metrics: Exact Match Accuracy, Component Match Accuracy, Execution Accuracy, Endpoint Retrieval Accuracy (API only), Classification Accuracy (combined task only)."
+      },
+      {
+        "section": "Results",
+        "page": 5,
+        "excerpt": "With database-only documentation, all RAG variants achieve comparable performance: Exact match accuracy ranges from 14.45% (standard RAG) to 15.61% (Self-RAG and CoRAG), with execution accuracy near 72–73%."
+      },
+      {
+        "section": "Discussion",
+        "page": 6,
+        "excerpt": "Our comparative evaluation reveals that retrieval policy choice significantly impacts robustness when documentation becomes heterogeneous."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": "SAP Transactional Banking documentation",
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.231435+00:00",
+    "updated_at": "2026-07-31T15:18:17.231444+00:00"
+  },
+  {
+    "extraction_id": "extract_16ff45acf50c",
+    "paper_id": "2603.16169",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Corrective Retrieval Augmented Generation (CRAG)",
+    "comparator_or_baseline": "Vanilla RAG",
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "Our open-source CRAG reproduction achieves 54.4% on PopQA, closely matching the original system’s 54.9%, and 85.2% versus 84.8% for vanilla RAG on ARC-Challenge.",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "Our open-source CRAG reproduction achieves 54.4% on PopQA, closely matching the original system’s 54.9%, and 85.2% versus 84.8% for vanilla RAG on ARC-Challenge.",
+        "dataset_or_task": "PopQA, ARC-Challenge",
+        "base_model": "CRAG",
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": "Vanilla RAG",
+        "metric": "Accuracy (%)",
+        "baseline_value": "84.8%",
+        "method_value": "85.2%",
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": null,
+          "section": null,
+          "table": null
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "question",
+        "corpus"
+      ],
+      "internal_state": null,
+      "decision_rule": "Scores above upper threshold τ + for Correct, below lower threshold τ − for Incorrect, between τ − and τ + for Ambiguous",
+      "thresholds": [
+        "τ +",
+        "τ −"
+      ],
+      "trigger_granularity": null,
+      "actions": [
+        "Correct",
+        "Incorrect",
+        "Ambiguous"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [],
+      "method_family": "Retrieval-Augmented Generation (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": null,
+        "page": null,
+        "excerpt": "Our open-source CRAG reproduction achieves 54.4% on PopQA, closely matching the original system’s 54.9%, and 85.2% versus 84.8% for vanilla RAG on ARC-Challenge."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.250657+00:00",
+    "updated_at": "2026-07-31T15:18:17.250666+00:00"
+  },
+  {
+    "extraction_id": "extract_fa088d7e6c17",
+    "paper_id": "2401.15884",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Corrective Retrieval Augmented Generation (CRAG)",
+    "comparator_or_baseline": "standard RAG, Self-RAG",
+    "sample_size": null,
+    "outcomes_and_metrics": [
+      {
+        "statement": "CRAG improves the performance of RAG and Self-RAG",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "CRAG demonstrates great generalizability across various generation tasks",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "CRAG exhibits greater flexibility in replacing the underlying LLM generator",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "main_results": [
+      {
+        "statement": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge",
+        "support_type": "reported_result",
+        "location": null
+      },
+      {
+        "statement": "Self-CRAG outperformed Self-RAG by margins of 20.0% accuracy on PopQA, 36.9% FactScore on Biography, and 4.0% accuracy on Arc-Challenge",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "CRAG improved accuracy by 7.0% on PopQA, 14.9% on Biography, 36.6% on PubHealth, and 15.4% on Arc-Challenge",
+        "dataset_or_task": [
+          "PopQA",
+          "Biography",
+          "PubHealth",
+          "Arc-Challenge"
+        ],
+        "base_model": "Self-RAG-LLaMA2-7b, LLaMA2-7B, LLaMA2-hf-7b",
+        "metric": "accuracy",
+        "effect_value": "7.0%, 14.9%, 36.6%, 15.4%",
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": "NVIDIA A800 80GB GPU",
+        "evidence_location": {
+          "page": 8,
+          "section": "Appendix B.3",
+          "table": "Table 1"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "Self-CRAG improved accuracy by 20.0% on PopQA, 36.9% on Biography, and 4.0% on Arc-Challenge",
+        "dataset_or_task": [
+          "PopQA",
+          "Biography",
+          "Arc-Challenge"
+        ],
+        "base_model": "SelfRAG-LLaMA2-7b, LLaMA2-hf-7b",
+        "metric": "accuracy",
+        "effect_value": "20.0%, 36.9%, 4.0%",
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": "NVIDIA A800 80GB GPU",
+        "evidence_location": {
+          "page": 8,
+          "section": "Appendix B.3",
+          "table": "Table 1"
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "retrieval evaluator",
+        "large-scale web searches",
+        "decompose-then-recompose algorithm"
+      ],
+      "internal_state": null,
+      "decision_rule": "confidence degree based on retrieval evaluator",
+      "thresholds": [
+        "Correct",
+        "Incorrect",
+        "Ambiguous"
+      ],
+      "trigger_granularity": null,
+      "actions": [
+        "Correct",
+        "Incorrect",
+        "Ambiguous"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": null,
+      "applicability_conditions": null,
+      "method_family": "Retrieval Augmented Generation (RAG)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "To this end, we propose the Corrective Retrieval Augmented Generation (CRAG) to improve the robustness of generation."
+      },
+      {
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "However, most conventional RAG approaches indiscriminately incorporate the retrieved documents, regardless of whether these documents are relevant or not."
+      },
+      {
+        "section": "Appendix B.3",
+        "page": 8,
+        "excerpt": "CRAG outperformed RAG by margins of 7.0% accuracy on PopQA, 14.9% FactScore on Biography, 36.6% accuracy on PubHealth, and 15.4% accuracy on Arc-Challenge"
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.274881+00:00",
+    "updated_at": "2026-07-31T15:18:17.274891+00:00"
+  },
+  {
+    "extraction_id": "extract_940f634f0fb4",
+    "paper_id": "2412.15235",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Ontology-Grounded Retrieval-Augmented Generation (OG-RAG)",
+    "comparator_or_baseline": "Existing retrieval-augmented models (e.g., RAG), Fine-tuning",
+    "sample_size": null,
+    "outcomes_and_metrics": [
+      {
+        "statement": "OG-RAG increases the recall of accurate facts by 55% and improves response correctness by 40% across four different LLMs."
+      },
+      {
+        "statement": "OG-RAG enables 30% faster attribution of responses to context and boosts fact-based reasoning accuracy."
+      },
+      {
+        "statement": "OG-RAG significantly reduced the time required by 28.8% and increased the human-attributed support by 29.6% on average."
+      },
+      {
+        "statement": "OG-RAG is more effective at supporting deductive reasoning from a fixed set of facts."
+      }
+    ],
+    "main_results": [
+      {
+        "statement": "OG-RAG outperforms the baselines in almost all cases, boosting the recall of correct claims by 55% and recall of correct entities by 110%."
+      },
+      {
+        "statement": "OG-RAG significantly reduces the time required for fact verification and increases the human-attributed support for context fact attribution."
+      },
+      {
+        "statement": "OG-RAG provides a more robust context for deducing new facts than alternative retrieval methods."
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "OG-RAG increases the recall of accurate facts by 55% and improves response correctness by 40% across four different LLMs.",
+        "dataset_or_task": null,
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": "Recall of accurate facts, Response correctness",
+        "baseline_value": null,
+        "method_value": "55%, 40%",
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 1,
+          "section": "Abstract",
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "base_model",
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "OG-RAG enables 30% faster attribution of responses to context and boosts fact-based reasoning accuracy.",
+        "dataset_or_task": null,
+        "base_model": null,
+        "retriever": null,
+        "corpus_size": null,
+        "baseline": null,
+        "metric": "Response attribution time, Fact-based reasoning accuracy",
+        "baseline_value": null,
+        "method_value": "30% faster",
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 11,
+          "section": "Table 4",
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "dataset_or_task",
+            "base_model",
+            "baseline"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "Domain-specific ontologies",
+        "Domain documents"
+      ],
+      "internal_state": "Hypergraph representation of domain documents",
+      "decision_rule": "Optimization algorithm to retrieve minimal set of hyperedges",
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [
+        "Construct precise, conceptually grounded context for LLM"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "Domains where fact-based reasoning is essential"
+      ],
+      "method_family": "Retrieval-Augmented Generation",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "This paper presents OG-RAG, an Ontology-Grounded Retrieval Augmented Generation method designed to enhance LLM-generated responses by anchoring retrieval processes in domain-specific ontologies."
+      },
+      {
+        "section": "Table 4",
+        "page": 11,
+        "excerpt": "OG-RAG significantly reduced the time required by 28.8% and increased the human-attributed support by 29.6% on average."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.297389+00:00",
+    "updated_at": "2026-07-31T15:18:17.297401+00:00"
+  },
+  {
+    "extraction_id": "extract_c00bcec5ac5a",
+    "paper_id": "2502.01113",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": null,
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": null,
+    "intervention_or_method": "Graph Foundation Model for Retrieval Augmented Generation (GFM-RAG)",
+    "comparator_or_baseline": "conventional RAGs, GraphRAG, HippoRAG, BM25, Contriever, GTR, ColBERTv2, RAPTOR, Proposition, Adaptive-RAG, FLARE, IRCoT",
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "GFM-RAG achieves state-of-the-art performance while maintaining efficiency and alignment with neural scaling laws.",
+        "support_type": "reported_result",
+        "location": null
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "GFM-RAG achieves impressive performance and generalizability on large-scale datasets with over 14M triples and 700k documents.",
+        "dataset_or_task": "large-scale datasets",
+        "base_model": "GFM with 8M parameters",
+        "retriever": "GFM Retriever",
+        "corpus_size": "over 14M triples and 700k documents",
+        "baseline": null,
+        "metric": null,
+        "baseline_value": null,
+        "method_value": null,
+        "effect_value": null,
+        "effect_type": "unclear",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 1,
+          "section": "Abstract",
+          "table": null
+        },
+        "context_validation": {
+          "complete": false,
+          "missing_fields": [
+            "baseline",
+            "metric",
+            "numeric_value"
+          ],
+          "eligible_for_summary": false,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "knowledge graphs",
+        "documents"
+      ],
+      "internal_state": "graph structure, graph neural network",
+      "decision_rule": null,
+      "thresholds": [],
+      "trigger_granularity": null,
+      "actions": [
+        "reasoning over graph structure",
+        "capture complex query-knowledge relationships"
+      ],
+      "fusion_strategy": null,
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "unseen datasets for retrieval without any domain-specific fine-tuning"
+      ],
+      "method_family": "Graph Foundation Model (GFM)",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": null,
+    "limitations": [],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "GFM-RAG is powered by an innovative graph neural network that reasons over graph structure to capture complex query-knowledge relationships."
+      },
+      {
+        "section": "Methods",
+        "page": 2,
+        "excerpt": "GFM-RAG is powered by an innovative graph neural network that reasons over graph structure to capture complex query-knowledge relationships."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.317182+00:00",
+    "updated_at": "2026-07-31T15:18:17.317192+00:00"
+  },
+  {
+    "extraction_id": "extract_758eff92fd36",
+    "paper_id": "2412.05838",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": "primary_study",
+    "study_or_article_type": "framework",
+    "evidence_level": "primary",
+    "population_or_dataset": "diverse data sources including relational databases, document stores, and graph databases",
+    "intervention_or_method": "Multi-Agent RAG system with specialized agents (relational, graph, document, text) and centralized query execution",
+    "comparator_or_baseline": "Traditional single-agent RAG systems",
+    "sample_size": null,
+    "outcomes_and_metrics": [],
+    "main_results": [
+      {
+        "statement": "enhances query efficiency, reduces token overhead, and improves response accuracy",
+        "support_type": "author_claim",
+        "location": "Page 1, Page 2, Page 9"
+      },
+      {
+        "statement": "ensures that each agent focuses on its specialized task",
+        "support_type": "author_claim",
+        "location": "Page 1"
+      }
+    ],
+    "quantitative_results": [],
+    "technical_mechanism": {
+      "inputs": [
+        "User query Q",
+        "Database schema"
+      ],
+      "internal_state": null,
+      "decision_rule": "identify_data_source(Q)",
+      "thresholds": [],
+      "trigger_granularity": "User query",
+      "actions": [
+        "generate_query",
+        "execute_query",
+        "generate_answer"
+      ],
+      "fusion_strategy": "Centralized query execution environment combining outputs from different agents",
+      "failure_propagation": [
+        "No suitable agent found for query generation"
+      ],
+      "applicability_conditions": [
+        "diverse data sources",
+        "relational databases",
+        "document stores",
+        "graph databases"
+      ],
+      "method_family": "Multi-Agent RAG",
+      "agentic_criteria_met": true
+    },
+    "uncertainty": null,
+    "limitations": [
+      "inefficiencies when dealing with diverse data sources",
+      "potential inaccuracies in query handling",
+      "inefficiencies in token usage and increased processing latency in traditional systems"
+    ],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "This distributed approach enhances query efficiency, reduces token overhead, and improves response accuracy..."
+      },
+      {
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "Traditional RAG systems typically employ single-agent architectures... leading to inefficiencies in token usage, increased processing latency, and potential inaccuracies in query handling."
+      },
+      {
+        "section": "Proposed System Overview",
+        "page": 9,
+        "excerpt": "The proposed system decentralizes task management by introducing specialized agents... These specialized agents collaborate within a centralized query execution environment..."
+      },
+      {
+        "section": "Algorithm 4 Multi-Agent RAG System",
+        "page": 14,
+        "excerpt": "Input: User query Q... DataSourceType ← identify_data_source(Q)... if Agent is available then... else return No suitable agent found for query generation."
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": null,
+      "split_and_leakage_risk": null,
+      "baseline_fairness": null,
+      "variance_or_significance": null,
+      "ablation_reported": null,
+      "code_data_environment": null,
+      "external_validity": null,
+      "compute_cost": null
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.337065+00:00",
+    "updated_at": "2026-07-31T15:18:17.337073+00:00"
+  },
+  {
+    "extraction_id": "extract_cbf145a2755d",
+    "paper_id": "2604.19899",
+    "protocol_id": "protocol_ac2d017c4feb",
+    "protocol_version": 1,
+    "study_design": "reproducibility_study",
+    "study_or_article_type": "primary_study",
+    "evidence_level": "primary",
+    "population_or_dataset": [
+      "HotpotQA",
+      "2WikiMultiHopQA"
+    ],
+    "intervention_or_method": [
+      "Metacognitive Retrieval-Augmented Generation (MetaRAG)",
+      "Rerankers (Point-Wise, List-Wise)"
+    ],
+    "comparator_or_baseline": [
+      "Standard RAG",
+      "SIM-RAG",
+      "Reflexion",
+      "FLARE",
+      "IRCoT",
+      "Self-Ask",
+      "ReAct",
+      "Chain of Thought",
+      "Standard Prompting"
+    ],
+    "sample_size": 500,
+    "outcomes_and_metrics": [
+      "Exact Match (EM)",
+      "F1 Score",
+      "Precision",
+      "Recall",
+      "Cost (USD)",
+      "Latency (s)",
+      "Tokens per request",
+      "Requests per question"
+    ],
+    "main_results": [
+      {
+        "statement": "MetaRAG consistently outperforms all baseline methods across HotpotQA and 2WikiMultiHopQA.",
+        "support_type": "author_claim",
+        "location": "Page 5"
+      },
+      {
+        "statement": "MetaRAG gains substantially from reranking, reducing noise and mitigating document reordering effects.",
+        "support_type": "author_claim",
+        "location": "Page 2"
+      },
+      {
+        "statement": "MetaRAG is more robust than SIM-RAG when extended with additional retrieval features.",
+        "support_type": "author_claim",
+        "location": "Page 2"
+      }
+    ],
+    "quantitative_results": [
+      {
+        "statement": "HotpotQA: MetaRAG Original EM 37.8 vs Reproduced EM 34.2.",
+        "dataset_or_task": "HotpotQA",
+        "base_model": "GPT-3.5",
+        "retriever": "MetaRAG",
+        "corpus_size": null,
+        "baseline": "Standard RAG",
+        "metric": "EM",
+        "baseline_value": null,
+        "method_value": "34.2",
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 6,
+          "section": "Table 1",
+          "table": "Table 1"
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "2WikiMultiHopQA: MetaRAG Original EM 42.8 vs Reproduced EM 33.4.",
+        "dataset_or_task": "2WikiMultiHopQA",
+        "base_model": "GPT-3.5",
+        "retriever": "MetaRAG",
+        "corpus_size": null,
+        "baseline": "Standard RAG",
+        "metric": "EM",
+        "baseline_value": null,
+        "method_value": "33.4",
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 6,
+          "section": "Table 1",
+          "table": "Table 1"
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "Threshold 0.4: EM 33.4, F1 38.9 on 2WikiMultiHopQA.",
+        "dataset_or_task": "2WikiMultiHopQA",
+        "base_model": "GPT-3.5",
+        "retriever": "MetaRAG",
+        "corpus_size": null,
+        "baseline": "Threshold 0.4",
+        "metric": "EM, F1",
+        "baseline_value": null,
+        "method_value": "33.4, 38.9",
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 7,
+          "section": "Table 3",
+          "table": "Table 3"
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      },
+      {
+        "statement": "GPT-3.5: RAG Cost $1.3 vs MetaRAG Cost $37.66.",
+        "dataset_or_task": "HotpotQA",
+        "base_model": "GPT-3.5",
+        "retriever": "MetaRAG",
+        "corpus_size": null,
+        "baseline": "Standard RAG",
+        "metric": "Cost (USD)",
+        "baseline_value": "1.3",
+        "method_value": "37.66",
+        "effect_value": null,
+        "effect_type": "absolute",
+        "aggregation": null,
+        "statistical_significance": null,
+        "hardware": null,
+        "evidence_location": {
+          "page": 9,
+          "section": "Table 6",
+          "table": "Table 6"
+        },
+        "context_validation": {
+          "complete": true,
+          "missing_fields": [],
+          "eligible_for_summary": true,
+          "eligible_for_cross_study_comparison": false
+        }
+      }
+    ],
+    "technical_mechanism": {
+      "inputs": [
+        "question q",
+        "retrieved passages Dq",
+        "reference answer y' (expert QA model)"
+      ],
+      "internal_state": "similarity score between y and y'",
+      "decision_rule": "similarity score falls below a predefined threshold",
+      "thresholds": [
+        0.4,
+        0.3,
+        0.2,
+        0.1
+      ],
+      "trigger_granularity": "per question",
+      "actions": [
+        "produce candidate answer y",
+        "refine reasoning",
+        "reformulate new question for additional retrieval",
+        "accept answer directly"
+      ],
+      "fusion_strategy": "integrated by CS Reasoner Module",
+      "failure_propagation": [],
+      "applicability_conditions": [
+        "multi-hop question answering",
+        "complex tasks requiring reasoning steps"
+      ],
+      "method_family": "Metacognitive RAG",
+      "agentic_criteria_met": false
+    },
+    "uncertainty": [
+      "closed-source LLM updates",
+      "missing implementation details",
+      "unreleased prompts"
+    ],
+    "limitations": [
+      "closed-source LLM updates",
+      "missing implementation details",
+      "unreleased prompts",
+      "sample selection differences (subset not shared)",
+      "index construction differences (ElasticSearch vs Pyserini)",
+      "reranker usage not mentioned/discussed in original paper"
+    ],
+    "funding_and_conflicts": null,
+    "evidence_locations": [
+      {
+        "section": "Abstract",
+        "page": 1,
+        "excerpt": "reproduce MetaRAG... extend it... rerankers... compare with SIM-RAG"
+      },
+      {
+        "section": "Introduction",
+        "page": 2,
+        "excerpt": "compare MetaRAG with SIM-RAG... evaluate Point-Wise and ListWise rerankers"
+      },
+      {
+        "section": "Methodology",
+        "page": 3,
+        "excerpt": "Monitoring... similarity score... predefined threshold... Evaluation"
+      },
+      {
+        "section": "Experimental Setup",
+        "page": 5,
+        "excerpt": "GPT-3.5-turbo-16k... SIM-RAG-Llama3-2B18"
+      },
+      {
+        "section": "Results",
+        "page": 6,
+        "excerpt": "Table 1: Original vs Reproduced results"
+      },
+      {
+        "section": "Results",
+        "page": 7,
+        "excerpt": "Table 3: Sensitivity to confidence threshold"
+      },
+      {
+        "section": "Results",
+        "page": 8,
+        "excerpt": "Table 5: Reranking results"
+      },
+      {
+        "section": "Discussion",
+        "page": 9,
+        "excerpt": "Table 6: Computational cost... limitations"
+      }
+    ],
+    "computer_ai": {
+      "dataset_provenance": "development split of HotpotQA and 2WikiMultiHopQA",
+      "split_and_leakage_risk": "randomly sample 500 QA pairs from respective development sets",
+      "baseline_fairness": "follow experimental protocol described in original paper, minor adaptations",
+      "variance_or_significance": "statistically significant difference (p < 0.05) reported",
+      "ablation_reported": "evaluating the effect of Point-Wise and ListWise rerankers",
+      "code_data_environment": "release code, Pyserini (Lucene-based), ElasticSearch (alternative)",
+      "external_validity": "multi-hop QA tasks (HotpotQA, 2WikiMultiHopQA)",
+      "compute_cost": "detailed cost analysis (Table 6) including requests, tokens, latency, and USD"
+    },
+    "evidence_basis": "full_text",
+    "confidence": 0.0,
+    "review_status": "ai_draft",
+    "schema_version": 2,
+    "created_at": "2026-07-31T15:18:17.356083+00:00",
+    "updated_at": "2026-07-31T15:18:17.356092+00:00"
+  }
+]

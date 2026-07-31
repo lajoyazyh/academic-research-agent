@@ -25,7 +25,7 @@ def test_paper_status_update_is_persisted_and_validated(tmp_path):
         manager.update_paper_status(session_id, "missing", "accepted")
 
 
-def test_agent_screened_paper_is_registered_as_accepted(tmp_path, monkeypatch):
+def test_agent_screened_paper_is_registered_as_candidate(tmp_path, monkeypatch):
     manager = SessionManager(str(tmp_path))
     session = manager.create_session("")
     session_id = session["session_id"]
@@ -43,7 +43,9 @@ def test_agent_screened_paper_is_registered_as_accepted(tmp_path, monkeypatch):
     assert "论文新增成功" in result
     assert tool.get_registered_count() == 1
     assert len(papers) == 1
-    assert papers[0]["status"] == "accepted"
+    assert papers[0]["status"] == "pending"
+    assert papers[0]["screening_stage"] == "title_abstract"
+    assert papers[0]["screening_decision"] == "include"
 
 
 def test_cross_provider_duplicate_does_not_create_second_paper(tmp_path, monkeypatch):
@@ -99,6 +101,15 @@ def test_write_phase_uses_only_explicitly_accepted_papers(tmp_path, monkeypatch)
     monkeypatch.setattr(agent_routes, "session_mgr", manager)
     monkeypatch.setattr(agent_routes, "ensure_provider_available", lambda _provider: {})
     monkeypatch.setattr("main.run_write_from_notes", fake_writer)
+    from backend.scientific_review import ScientificReviewService, deterministic_evidence_seed
+    scientific = ScientificReviewService(manager)
+    scientific.confirm_protocol(session_id)
+    scientific.confirm_inclusion_snapshot(session_id, ["included"])
+    scientific.save_extraction(
+        session_id,
+        "included",
+        deterministic_evidence_seed(manager.get_papers(session_id)[0]),
+    )
 
     agent_routes.run_write_phase(
         session_id,

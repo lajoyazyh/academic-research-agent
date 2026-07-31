@@ -1,0 +1,1023 @@
+{
+  "selection_rationale": "The selected papers cover the core dimensions of the research question: (1) Foundational and advanced RAG architectures (Iter-RetGen, DRAGIN, In-Context RALM); (2) Evaluation frameworks and benchmarks (RGB, MIRAGE, OmniEval); (3) Reliability and factuality (CRAG, Trust-RAG, Legal RAG evaluation); (4) Efficiency and cost (RAG vs Long-Context, SELF-ROUTE); (5) Training and coupling strategies (R2AG, Self-Reasoning, Domain-specific fine-tuning). The selection prioritizes technical evidence and empirical studies over purely application-focused papers, ensuring a robust coverage of the technical landscape.",
+  "anticipated_gaps": [
+    "Few papers explicitly focus on the 'training' of the retriever itself (e.g., end-to-end retriever training) in the provided list, though R2AG touches on it.",
+    "Limited explicit discussion on 'computational cost' beyond the RAG vs Long-Context comparison.",
+    "Few papers address the 'evidence boundaries' specifically in the context of 'hallucination' vs 'truth' in a unified theoretical framework, though CRAG and Trust-RAG survey touch on it."
+  ],
+  "ranked": [
+    {
+      "paper_id": "2312.10997",
+      "arxiv_id": "2312.10997",
+      "openalex_id": "W4389984066",
+      "doi": "https://doi.org/10.48550/arxiv.2312.10997",
+      "pdf_url": "https://arxiv.org/pdf/2312.10997",
+      "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+      "authors": "Yunfan Gao, Yun Xiong, Xinyu Gao, Kangxiang Jia, Jinliu Pan, Yuxi Bi, Yi Dai, Jiawei Sun, Wang, Meng, Wang, Haofen",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2312.10997",
+      "screening": {
+        "paper_id": "2312.10997",
+        "decision": "include",
+        "reason": "Foundational survey covering RAG paradigms (Naive, Advanced, Modular), tripartite foundation (retrieval, generation, augmentation), and evaluation frameworks. Essential for establishing the taxonomy of technical routes.",
+        "coverage_role": "Taxonomy & Framework",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "W4389520468",
+      "arxiv_id": "",
+      "openalex_id": "W4389520468",
+      "doi": "https://doi.org/10.18653/v1/2023.findings-emnlp.620",
+      "pdf_url": "https://aclanthology.org/2023.findings-emnlp.620.pdf",
+      "title": "Enhancing Retrieval-Augmented Large Language Models with Iterative Retrieval-Generation Synergy",
+      "authors": "Zhihong Shao, Yeyun Gong, Yelong Shen, Minlie Huang, Nan Duan, Weizhu Chen",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.findings-emnlp.620",
+      "screening": {
+        "paper_id": "W4389520468",
+        "decision": "include",
+        "reason": "Presents Iter-RetGen, a specific technical route for iterative retrieval-generation synergy, addressing the 'coupling' aspect of the research question with empirical evidence on multi-hop QA and reasoning.",
+        "coverage_role": "Retriever-Generator Coupling",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "W4402671152",
+      "arxiv_id": "",
+      "openalex_id": "W4402671152",
+      "doi": "https://doi.org/10.18653/v1/2024.acl-long.702",
+      "pdf_url": "https://aclanthology.org/2024.acl-long.702.pdf",
+      "title": "DRAGIN: Dynamic Retrieval Augmented Generation based on the Real-time Information Needs of Large Language Models",
+      "authors": "Weihang Su, Yichen Tang, Qingyao Ai, Zhijing Wu, Yiqun Liu",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.18653/v1/2024.acl-long.702",
+      "screening": {
+        "paper_id": "W4402671152",
+        "decision": "include",
+        "reason": "Introduces DRAGIN, a dynamic RAG framework that decides when and what to retrieve based on LLM information needs. Directly addresses the 'training/decision mechanism' and 'coupling' aspects.",
+        "coverage_role": "Coupling & Decision Mechanism",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "W4388778348",
+      "arxiv_id": "",
+      "openalex_id": "W4388778348",
+      "doi": "https://doi.org/10.1162/tacl_a_00605",
+      "pdf_url": "https://direct.mit.edu/tacl/article-pdf/doi/10.1162/tacl_a_00605/2178834/tacl_a_00605.pdf",
+      "title": "In-Context Retrieval-Augmented Language Models",
+      "authors": "Ori Ram, Yoav Levine, Itay Dalmedigos, Dor Muhlgay, Amnon Shashua, Kevin Leyton‐Brown, Yoav Shoham",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1162/tacl_a_00605",
+      "screening": {
+        "paper_id": "W4388778348",
+        "decision": "include",
+        "reason": "Presents In-Context RALM, a method that leaves the LM architecture unchanged and uses in-context learning for retrieval augmentation. Provides evidence on the effectiveness of simple prompting strategies vs. architectural changes.",
+        "coverage_role": "Training & Architecture",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "2309.01431",
+      "arxiv_id": "2309.01431",
+      "openalex_id": "W4386556635",
+      "doi": "https://doi.org/10.48550/arxiv.2309.01431",
+      "pdf_url": "https://arxiv.org/pdf/2309.01431",
+      "title": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+      "authors": "Jiawei Chen, Hongyu Lin, Xianpei Han, Le Sun",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2309.01431",
+      "screening": {
+        "paper_id": "2309.01431",
+        "decision": "include",
+        "reason": "Establishes RGB benchmark to evaluate fundamental RAG abilities (noise robustness, negative rejection, information integration, counterfactual robustness). Critical for the 'evaluation framework' and 'reliability' sub-themes.",
+        "coverage_role": "Evaluation Framework",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "W4402670290",
+      "arxiv_id": "",
+      "openalex_id": "W4402670290",
+      "doi": "https://doi.org/10.18653/v1/2024.findings-acl.372",
+      "pdf_url": "https://aclanthology.org/2024.findings-acl.372.pdf",
+      "title": "Benchmarking Retrieval-Augmented Generation for Medicine",
+      "authors": "Guangzhi Xiong, Qiao Jin, Zhiyong Lu, Aidong Zhang",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.18653/v1/2024.findings-acl.372",
+      "screening": {
+        "paper_id": "W4402670290",
+        "decision": "include",
+        "reason": "Proposes MIRAGE benchmark for medical RAG, evaluating over 1.8 trillion tokens across 41 combinations of corpora, retrievers, and LLMs. Provides evidence on the scaling properties and optimal settings for RAG.",
+        "coverage_role": "Evaluation & Optimization",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "2404.10981",
+      "arxiv_id": "2404.10981",
+      "openalex_id": "W4394947112",
+      "doi": "https://doi.org/10.1145/3805774",
+      "pdf_url": "https://arxiv.org/pdf/2404.10981",
+      "title": "A Survey on Retrieval-Augmented Text Generation for Large Language Models",
+      "authors": "Yizheng Huang, Jimmy Xiangji Huang",
+      "publication_year": 2026,
+      "source_url": "https://arxiv.org/abs/2404.10981",
+      "screening": {
+        "paper_id": "2404.10981",
+        "decision": "include",
+        "reason": "A survey organizing RAG into pre-retrieval, retrieval, post-retrieval, and generation categories. Offers a structured perspective on the mechanics and progression of RAG techniques.",
+        "coverage_role": "Taxonomy & Mechanics",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "W4404783798",
+      "arxiv_id": "",
+      "openalex_id": "W4404783798",
+      "doi": "https://doi.org/10.18653/v1/2024.emnlp-main.62",
+      "pdf_url": "https://aclanthology.org/2024.emnlp-main.62.pdf",
+      "title": "RULE: Reliable Multimodal RAG for Factuality in Medical Vision Language Models",
+      "authors": "Peng Xia, Kangyu Zhu, Haoran Li, Hongtu Zhu, Yun Li, Gang Li, Linjun Zhang, Huaxiu Yao",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.18653/v1/2024.emnlp-main.62",
+      "screening": {
+        "paper_id": "W4404783798",
+        "decision": "include",
+        "reason": "Conducts a comprehensive study comparing RAG with Long-Context LLMs, proposing SELF-ROUTE to balance performance and cost. Directly addresses the 'computational cost' and 'efficiency' aspects.",
+        "coverage_role": "Efficiency & Cost",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "2401.15884",
+      "arxiv_id": "2401.15884",
+      "openalex_id": "W4391418506",
+      "doi": "https://doi.org/10.48550/arxiv.2401.15884",
+      "pdf_url": "https://arxiv.org/pdf/2401.15884",
+      "title": "Corrective Retrieval Augmented Generation",
+      "authors": "Shi-Qi Yan, Jia-Chen Gu, Yun Zhu, Zhen-Hua Ling",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2401.15884",
+      "screening": {
+        "paper_id": "2401.15884",
+        "decision": "include",
+        "reason": "Proposes Corrective RAG (CRAG) to improve robustness by evaluating retrieved documents and performing web searches. Addresses the 'reliability' and 'factuality' challenges in RAG.",
+        "coverage_role": "Reliability & Robustness",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "W4409348640",
+      "arxiv_id": "",
+      "openalex_id": "W4409348640",
+      "doi": "https://doi.org/10.3390/app15084234",
+      "pdf_url": "https://www.mdpi.com/2076-3417/15/8/4234/pdf?version=1744376329",
+      "title": "Retrieval-Augmented Generation (RAG) Chatbots for Education: A Survey of Applications",
+      "authors": "Jakub Swacha, Michał Gracel",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.3390/app15084234",
+      "screening": {
+        "paper_id": "W4409348640",
+        "decision": "include",
+        "reason": "A survey on RAG chatbots in education, analyzing 47 papers regarding their character, target, and evaluation. Provides a broad view of application scenarios and evaluation methods.",
+        "coverage_role": "Application & Evaluation",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "W4409716856",
+      "arxiv_id": "",
+      "openalex_id": "W4409716856",
+      "doi": "https://doi.org/10.1111/jels.12413",
+      "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/jels.12413",
+      "title": "Hallucination‐Free? Assessing the Reliability of Leading <scp>AI</scp> Legal Research Tools",
+      "authors": "Varun Magesh, Faiz Surani, Matthew Dahl, Mirac Suzgun, Christopher D. Manning, Daniel E. Ho",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.1111/jels.12413",
+      "screening": {
+        "paper_id": "W4409716856",
+        "decision": "include",
+        "reason": "Empirically evaluates legal RAG tools (LexisNexis, Westlaw), finding hallucination rates between 17-33%. Provides critical evidence on the limitations and reliability of RAG in high-stakes domains.",
+        "coverage_role": "Reliability & Limitations",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "2403.10446",
+      "arxiv_id": "2403.10446",
+      "openalex_id": "W4392933327",
+      "doi": "https://doi.org/10.48550/arxiv.2403.10446",
+      "pdf_url": "https://arxiv.org/pdf/2403.10446",
+      "title": "Enhancing LLM Factual Accuracy with RAG to Counter Hallucinations: A Case Study on Domain-Specific Queries in Private Knowledge-Bases",
+      "authors": "Jiarui Li, Ye Yuan, Zehua Zhang",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2403.10446",
+      "screening": {
+        "paper_id": "2403.10446",
+        "decision": "include",
+        "reason": "Case study on using RAG to counter hallucinations in domain-specific queries. Demonstrates the effectiveness of RAG in improving factual accuracy compared to fine-tuning alone.",
+        "coverage_role": "Reliability & Factuality",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "W4409362682",
+      "arxiv_id": "",
+      "openalex_id": "W4409362682",
+      "doi": "https://doi.org/10.1609/aaai.v39i24.34743",
+      "pdf_url": "https://ojs.aaai.org/index.php/AAAI/article/download/34743/36898",
+      "title": "Improving Retrieval Augmented Language Model with Self-Reasoning",
+      "authors": "Yuan Xia, Jingbo Zhou, Zhenhui Shi, Jun Chen, Haifeng Huang",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.1609/aaai.v39i24.34743",
+      "screening": {
+        "paper_id": "W4409362682",
+        "decision": "include",
+        "reason": "Proposes a self-reasoning framework for RALM to improve reliability and traceability. Addresses the 'reliability' and 'traceability' aspects of the research question.",
+        "coverage_role": "Reliability & Traceability",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "W4408046520",
+      "arxiv_id": "",
+      "openalex_id": "W4408046520",
+      "doi": "https://doi.org/10.2196/66098",
+      "pdf_url": "https://www.jmir.org/2025/1/e66098/PDF",
+      "title": "Use of Retrieval-Augmented Large Language Model for COVID-19 Fact-Checking: Development and Usability Study",
+      "authors": "Hai Li, Jingyi Huang, Mengmeng Ji, Yuyi Yang, Ruopeng An",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.2196/66098",
+      "screening": {
+        "paper_id": "W4408046520",
+        "decision": "include",
+        "reason": "Develops RAG-enhanced models for COVID-19 fact-checking, comparing Naive RAG, LOTR-RAG, CRAG, and SRAG. Provides empirical evidence on reducing hallucinations in fact-checking tasks.",
+        "coverage_role": "Reliability & Factuality",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "2402.19473",
+      "arxiv_id": "2402.19473",
+      "openalex_id": "W4393299232",
+      "doi": "https://doi.org/10.48550/arxiv.2402.19473",
+      "pdf_url": "https://arxiv.org/pdf/2402.19473",
+      "title": "Retrieval-Augmented Generation for AI-Generated Content: A Survey",
+      "authors": "Penghao Zhao, Hailin Zhang, Qinhan Yu, Zhengren Wang, Yunteng Geng, Fangcheng Fu, L. Yang, Wentao Zhang, Jiang, Jie, Cui, Bin",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2402.19473",
+      "screening": {
+        "paper_id": "2402.19473",
+        "decision": "include",
+        "reason": "Survey on RAG for AI-Generated Content, classifying RAG foundations and summarizing enhancements. Covers the 'training' and 'augmentation' aspects in the context of AIGC.",
+        "coverage_role": "Taxonomy & Enhancements",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "W4409177398",
+      "arxiv_id": "",
+      "openalex_id": "W4409177398",
+      "doi": "https://doi.org/10.1007/s10791-025-09505-5",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s10791-025-09505-5.pdf",
+      "title": "Enhancing Health Information Retrieval with RAG by prioritizing topical relevance and factual accuracy",
+      "authors": "Rishabh Upadhyay, Marco Viviani",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.1007/s10791-025-09505-5",
+      "screening": {
+        "paper_id": "W4409177398",
+        "decision": "include",
+        "reason": "Proposes a RAG-driven solution for Health Information Retrieval prioritizing topical relevance and factual accuracy. Addresses the 'reliability' and 'evaluation' in the medical domain.",
+        "coverage_role": "Reliability & Evaluation",
+        "confidence": 0.9
+      }
+    },
+    {
+      "paper_id": "W4409282347",
+      "arxiv_id": "",
+      "openalex_id": "W4409282347",
+      "doi": "https://doi.org/10.1145/3676536.3676730",
+      "pdf_url": "https://dl.acm.org/doi/pdf/10.1145/3676536.3676730",
+      "title": "Customized Retrieval Augmented Generation and Benchmarking for EDA Tool Documentation QA",
+      "authors": "Yuan Pu, Zhuolun He, Tairu Qiu, Haoyuan Wu, Bei Yu",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1145/3676536.3676730",
+      "screening": {
+        "paper_id": "W4409282347",
+        "decision": "include",
+        "reason": "Proposes a customized RAG framework for EDA tool documentation QA, including contrastive learning and domain-specific fine-tuning. Addresses the 'training' and 'domain adaptation' aspects.",
+        "coverage_role": "Training & Domain Adaptation",
+        "confidence": 1.0
+      }
+    },
+    {
+      "paper_id": "W4393147129",
+      "arxiv_id": "",
+      "openalex_id": "W4393147129",
+      "doi": "https://doi.org/10.1609/aaai.v38i16.29728",
+      "pdf_url": "https://ojs.aaai.org/index.php/AAAI/article/download/29728/31250",
+      "title": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+      "authors": "Jiawei Chen, Hongyu Lin, Xianpei Han, Le Sun",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1609/aaai.v38i16.29728",
+      "screening": {
+        "paper_id": "W4393147129",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4392597393",
+      "arxiv_id": "",
+      "openalex_id": "W4392597393",
+      "doi": "https://doi.org/10.3390/medicina60030445",
+      "pdf_url": "https://www.mdpi.com/1648-9144/60/3/445/pdf?version=1709877206",
+      "title": "Integrating Retrieval-Augmented Generation with Large Language Models in Nephrology: Advancing Practical Applications",
+      "authors": "Jing Miao, Charat Thongprayoon, Supawadee Suppadungsuk, Oscar A. Garcia Valencia, Wisit Cheungpasitporn",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.3390/medicina60030445",
+      "screening": {
+        "paper_id": "W4392597393",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4395050972",
+      "arxiv_id": "",
+      "openalex_id": "W4395050972",
+      "doi": "https://doi.org/10.1038/s41746-024-01091-y",
+      "pdf_url": "https://www.nature.com/articles/s41746-024-01091-y.pdf",
+      "title": "Optimization of hepatological clinical guidelines interpretation by large language models: a retrieval augmented generation-based framework",
+      "authors": "Simone Kresevic, Mauro Giuffrè, Miloš Ajčević, Agostino Accardo, Lory Saveria Crocè, Dennis Shung",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1038/s41746-024-01091-y",
+      "screening": {
+        "paper_id": "W4395050972",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4392544551",
+      "arxiv_id": "",
+      "openalex_id": "W4392544551",
+      "doi": "https://doi.org/10.1097/hep.0000000000000834",
+      "pdf_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11706764/pdf/nihms-2045726.pdf",
+      "title": "Development of a liver disease–specific large language model chat interface using retrieval-augmented generation",
+      "authors": "Jin Ge, Steve Sun, Joseph F. Owens, Victor Galvez, Oksana Gologorskaya, Jennifer C. Lai, Mark J. Pletcher, Ki Lai",
+      "publication_year": 2024,
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/11706764",
+      "screening": {
+        "paper_id": "W4392544551",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4409157497",
+      "arxiv_id": "",
+      "openalex_id": "W4409157497",
+      "doi": "https://doi.org/10.1038/s41746-025-01519-z",
+      "pdf_url": "https://www.nature.com/articles/s41746-025-01519-z.pdf",
+      "title": "Retrieval augmented generation for 10 large language models and its generalizability in assessing medical fitness",
+      "authors": "Yu He Ke, Liyuan Jin, Kabilan Elangovan, Hairil Rizal Abdullah, Nan Liu, Alex Tiong Heng Sia, Chai Rick Soh, Joshua Yi Min Tung, Jasmine Chiat Ling Ong, Chang‐Fu Kuo, Shaochun Wu, Vesela Kovacheva, Daniel Shu Wei Ting",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.1038/s41746-025-01519-z",
+      "screening": {
+        "paper_id": "W4409157497",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4406421570",
+      "arxiv_id": "",
+      "openalex_id": "W4406421570",
+      "doi": "https://doi.org/10.1093/jamia/ocaf008",
+      "pdf_url": "https://academic.oup.com/jamia/advance-article-pdf/doi/10.1093/jamia/ocaf008/61442713/ocaf008.pdf",
+      "title": "Improving large language model applications in biomedicine with retrieval-augmented generation: a systematic review, meta-analysis, and clinical development guidelines",
+      "authors": "Siru Liu, Allison B. McCoy, Adam Wright",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.1093/jamia/ocaf008",
+      "screening": {
+        "paper_id": "W4406421570",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4384071683",
+      "arxiv_id": "",
+      "openalex_id": "W4384071683",
+      "doi": "https://doi.org/10.1038/s41586-023-06291-2",
+      "pdf_url": "https://www.nature.com/articles/s41586-023-06291-2.pdf",
+      "title": "Large language models encode clinical knowledge",
+      "authors": "Karan Singhal, Shekoofeh Azizi, Tao Tu, S. Sara Mahdavi, Jason Lee, Hyung Won Chung, Nathan Scales, Ajay Kumar Tanwani, Heather Cole-Lewis, Stephen Pfohl, Perry W. Payne, Martin Seneviratne, Paul Gamble, Christopher Kelly, Abubakr Babiker, Nathanael Schärli, Aakanksha Chowdhery, P. Mansfield, Dina Demner‐Fushman, Blaise Agüera y Arcas, Dale R. Webster, Greg S. Corrado, Yossi Matias, Katherine Chou, Juraj Gottweis, Nenad Tomašev, Yun Liu, Alvin Rajkomar, Joëlle Barral, Christopher Semturs, Alan Karthikesalingam, Vivek Natarajan",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1038/s41586-023-06291-2",
+      "screening": {
+        "paper_id": "W4384071683",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4391221150",
+      "arxiv_id": "",
+      "openalex_id": "W4391221150",
+      "doi": "https://doi.org/10.1056/aioa2300068",
+      "pdf_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10857783/pdf/nihms-1962112.pdf",
+      "title": "Almanac — Retrieval-Augmented Language Models for Clinical Medicine",
+      "authors": "Cyril Zakka, Rohan Shad, Akash Chaurasia, Alex R. Dalal, Jennifer L. Kim, Michael Moor, Robyn Fong, C. Phillips, Kevin Alexander, Euan A. Ashley, Jack Boyd, Kathleen Boyd, Karen G. Hirsch, Curt Langlotz, Rita Lee, Joanna Melia, Joanna Nelson, Karim Sallam, Stacey Tullis, Melissa A. Vogelsong, John P. Cunningham, William Hiesinger",
+      "publication_year": 2024,
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/10857783",
+      "screening": {
+        "paper_id": "W4391221150",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4389519118",
+      "arxiv_id": "",
+      "openalex_id": "W4389519118",
+      "doi": "https://doi.org/10.18653/v1/2023.emnlp-main.495",
+      "pdf_url": "https://aclanthology.org/2023.emnlp-main.495.pdf",
+      "title": "Active Retrieval Augmented Generation",
+      "authors": "Zhengbao Jiang, Frank F. Xu, Luyu Gao, Zhiqing Sun, Qian Liu, Jane Dwivedi-Yu, Yiming Yang, Jamie Callan, Graham Neubig",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.18653/v1/2023.emnlp-main.495",
+      "screening": {
+        "paper_id": "W4389519118",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4400955423",
+      "arxiv_id": "",
+      "openalex_id": "W4400955423",
+      "doi": "https://doi.org/10.2196/58041",
+      "pdf_url": "https://s3.ca-central-1.amazonaws.com/assets.jmir.org/assets/preprints/preprint-58041-accepted.pdf",
+      "title": "Enhancement of the Performance of Large Language Models in Diabetes Education through Retrieval-Augmented Generation: Comparative Study",
+      "authors": "Dingqiao Wang, J. K. Liang, Jinguo Ye, Jingni Li, J Li, Qikai Zhang, Qiuling Hu, Caineng Pan, Dongliang Wang, Z Y Liu, Wen Shi, Danli Shi, Fei Li, Bo Qu, Yingfeng Zheng",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.2196/58041",
+      "screening": {
+        "paper_id": "W4400955423",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2303.18223",
+      "arxiv_id": "2303.18223",
+      "openalex_id": "W4362515116",
+      "doi": "https://doi.org/10.1007/s11704-026-60308-3",
+      "pdf_url": "https://arxiv.org/pdf/2303.18223",
+      "title": "A Survey of Large Language Models",
+      "authors": "Wayne Xin Zhao, Kun Zhou, Junyi Li, Tianyi Tang, Zican Dong, Yupeng Hou, Beichen Zhang, Yingqian Min, Junjie Zhang, Peiyu Liu, Xiaolei Wang, Yifan Du, Yushuo Chen, Yushuo Chen, Zhipeng Chen, Jinhao Jiang, Ruiyang Ren, Yifan Li, Xinyu Tang, Peiyu Liu, Yiwen Hu, Jian‐Yun Nie, Ji-Rong Wen",
+      "publication_year": 2026,
+      "source_url": "https://arxiv.org/abs/2303.18223",
+      "screening": {
+        "paper_id": "2303.18223",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4405538634",
+      "arxiv_id": "",
+      "openalex_id": "W4405538634",
+      "doi": "https://doi.org/10.1038/s41746-024-01391-3",
+      "pdf_url": "https://www.nature.com/articles/s41746-024-01391-3.pdf",
+      "title": "SurgeryLLM: a retrieval-augmented generation large language model framework for surgical decision support and workflow enhancement",
+      "authors": "Chin Siang Ong, Nicholas T. Obey, Yanan Zheng, Arman Cohan, Eric B. Schneider",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1038/s41746-024-01391-3",
+      "screening": {
+        "paper_id": "W4405538634",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4388594005",
+      "arxiv_id": "",
+      "openalex_id": "W4388594005",
+      "doi": "https://doi.org/10.1101/2023.11.10.23298364",
+      "pdf_url": "https://www.medrxiv.org/content/medrxiv/early/2023/11/11/2023.11.10.23298364.full.pdf",
+      "title": "Development of a Liver Disease-Specific Large Language Model Chat Interface using Retrieval Augmented Generation",
+      "authors": "Jin Ge, Steve Sun, Joseph F. Owens, Victor Galvez, Oksana Gologorskaya, Jennifer C. Lai, Mark J. Pletcher, Ki Lai",
+      "publication_year": 2023,
+      "source_url": "https://doi.org/10.1101/2023.11.10.23298364",
+      "screening": {
+        "paper_id": "W4388594005",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4401815218",
+      "arxiv_id": "",
+      "openalex_id": "W4401815218",
+      "doi": "https://doi.org/10.1038/s42256-024-00881-z",
+      "pdf_url": "https://curis.ku.dk/ws/files/414306255/Factuality_challenges.pdf",
+      "title": "Factuality challenges in the era of large language models and opportunities for fact-checking",
+      "authors": "Isabelle Augenstein, Timothy Baldwin, Meeyoung Cha, Tanmoy Chakraborty, Giovanni Luca Ciampaglia, David Corney, Renée DiResta, Emilio Ferrara, Scott A. Hale, Alon Halevy, Eduard Hovy, Heng Ji, Filippo Menczer, Rubén Míguez, Preslav Nakov, Dietram A. Scheufele, Shivam Sharma, Giovanni Zagni",
+      "publication_year": 2024,
+      "source_url": "https://researchprofiles.ku.dk/da/publications/09e1c6db-4b66-4913-a22b-e913b1dc2f58",
+      "screening": {
+        "paper_id": "W4401815218",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4399305008",
+      "arxiv_id": "",
+      "openalex_id": "W4399305008",
+      "doi": "https://doi.org/10.1093/bioinformatics/btae353",
+      "pdf_url": "https://academic.oup.com/bioinformatics/advance-article-pdf/doi/10.1093/bioinformatics/btae353/58064527/btae353.pdf",
+      "title": "KRAGEN: a knowledge graph-enhanced RAG framework for biomedical problem solving using large language models",
+      "authors": "Nicholas Matsumoto, Jay Moran, Hyun‐Jun Choi, Miguel Hernandez, Mythreye Venkatesan, Paul P. Wang, Jason H. Moore",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1093/bioinformatics/btae353",
+      "screening": {
+        "paper_id": "W4399305008",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4414128336",
+      "arxiv_id": "",
+      "openalex_id": "W4414128336",
+      "doi": "https://doi.org/10.3390/ai6090226",
+      "pdf_url": "https://www.mdpi.com/2673-2688/6/9/226/pdf?version=1757581602",
+      "title": "Retrieval-Augmented Generation (RAG) in Healthcare: A Comprehensive Review",
+      "authors": "Fnu Neha, Deepshikha Bhati, Deepak Kumar Shukla",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.3390/ai6090226",
+      "screening": {
+        "paper_id": "W4414128336",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4402371950",
+      "arxiv_id": "",
+      "openalex_id": "W4402371950",
+      "doi": "https://doi.org/10.3390/bdcc8090115",
+      "pdf_url": "https://www.mdpi.com/2504-2289/8/9/115/pdf",
+      "title": "QA-RAG: Exploring LLM Reliance on External Knowledge",
+      "authors": "Aigerim Mansurova, Aiganym Mansurova, Aiganym Mansurova, Aiganym Mansurova, Aliya Nugumanova",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.3390/bdcc8090115",
+      "screening": {
+        "paper_id": "W4402371950",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4404021177",
+      "arxiv_id": "",
+      "openalex_id": "W4404021177",
+      "doi": "https://doi.org/10.1007/s44163-024-00175-8",
+      "pdf_url": "https://link.springer.com/content/pdf/10.1007/s44163-024-00175-8.pdf",
+      "title": "A survey on augmenting knowledge graphs (KGs) with large language models (LLMs): models, evaluation metrics, benchmarks, and challenges",
+      "authors": "Nourhan Ibrahim, Samar AboulEla, Ahmed Ibrahim, Rasha Kashef",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.1007/s44163-024-00175-8",
+      "screening": {
+        "paper_id": "W4404021177",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2310.07521",
+      "arxiv_id": "2310.07521",
+      "openalex_id": "W4387596421",
+      "doi": "https://doi.org/10.48550/arxiv.2310.07521",
+      "pdf_url": "https://arxiv.org/pdf/2310.07521",
+      "title": "Survey on Factuality in Large Language Models: Knowledge, Retrieval and Domain-Specificity",
+      "authors": "Cunxiang Wang, Xiaoze Liu, Yuanhao Yue, Xiangru Tang, Tianhang Zhang, Jiayang, Cheng, Yunzhi Yao, Wen‐Yang Gao, Xuming Hu, Zehan Qi, Yidong Wang, Linyi Yang, Jindong Wang, Xing Xie, Zheng Zhang, Yue Zhang",
+      "publication_year": 2023,
+      "source_url": "https://arxiv.org/abs/2310.07521",
+      "screening": {
+        "paper_id": "2310.07521",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2507.21504",
+      "arxiv_id": "2507.21504",
+      "openalex_id": "W4412877164",
+      "doi": "https://doi.org/10.1145/3711896.3736570",
+      "pdf_url": "https://arxiv.org/pdf/2507.21504",
+      "title": "Evaluation and Benchmarking of LLM Agents: A Survey",
+      "authors": "Mahmoud Mohammadi, Yipeng Li, Jane C. Lo, Wendy Yip",
+      "publication_year": 2025,
+      "source_url": "https://arxiv.org/abs/2507.21504",
+      "screening": {
+        "paper_id": "2507.21504",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2401.08406",
+      "arxiv_id": "2401.08406",
+      "openalex_id": "W4390963073",
+      "doi": "https://doi.org/10.48550/arxiv.2401.08406",
+      "pdf_url": "https://arxiv.org/pdf/2401.08406",
+      "title": "RAG vs Fine-tuning: Pipelines, Tradeoffs, and a Case Study on Agriculture",
+      "authors": "Angels de Luis Balaguer, Vinamra Benara, Renato L. F. Cunha, Roberto de Moura Estevão Filho, Todd Hendry, Daniel M. Holstein, Jennifer Marsman, Nick Mecklenburg, Sara Malvar, Leonardo O. Nunes, Rafael Padilha, Morris Sharp, Bruno Silva, Swati Sharma, Vijay Aski, Ranveer Chandra",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2401.08406",
+      "screening": {
+        "paper_id": "2401.08406",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4408167800",
+      "arxiv_id": "",
+      "openalex_id": "W4408167800",
+      "doi": "https://doi.org/10.3390/s25061666",
+      "pdf_url": "https://www.mdpi.com/1424-8220/25/6/1666/pdf?version=1741366243",
+      "title": "Generative AI and LLMs for Critical Infrastructure Protection: Evaluation Benchmarks, Agentic AI, Challenges, and Opportunities",
+      "authors": "Yagmur Yigit, Mohamed Amine Ferrag, Mohamed Chahine Ghanem, Iqbal H. Sarker, Λέανδρος Μαγλαράς, Christos Chrysoulas, Naghmeh Moradpoor, Norbert Tihanyi, Helge Janicke",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.3390/s25061666",
+      "screening": {
+        "paper_id": "W4408167800",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4416037024",
+      "arxiv_id": "",
+      "openalex_id": "W4416037024",
+      "doi": "https://doi.org/10.18653/v1/2025.emnlp-main.292",
+      "pdf_url": "https://aclanthology.org/2025.emnlp-main.292.pdf",
+      "title": "OmniEval: An Omnidirectional and Automatic RAG Evaluation Benchmark in Financial Domain",
+      "authors": "Shuting Wang, Jiejun Tan, Zhicheng Dou, Ji-Rong Wen",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.18653/v1/2025.emnlp-main.292",
+      "screening": {
+        "paper_id": "W4416037024",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "1709.10010",
+      "arxiv_id": "1709.10010",
+      "openalex_id": "W2757803490",
+      "doi": "https://doi.org/10.1088/1361-648x/aa8f79",
+      "pdf_url": "https://arxiv.org/pdf/1709.10010",
+      "title": "Advanced capabilities for materials modelling with Q <scp>uantum</scp> ESPRESSO",
+      "authors": "P Giannozzi, O Andreussi, T Brumme, O Bunau, M Buongiorno Nardelli, M Calandra, R Car, C Cavazzoni, D Ceresoli, M Cococcioni, N Colonna, I Carnimeo, A Dal Corso, S de Gironcoli, P Delugas, R A DiStasio, A Ferretti, A Floris, G Fratesi, G Fugallo, R Gebauer, U Gerstmann, F Giustino, T Gorni, J Jia, M Kawamura, H-Y Ko, A Kokalj, E Küçükbenli, M Lazzeri, M Marsili, N Marzari, F Mauri, N L Nguyen, H-V Nguyen, A Otero-de-la-Roza, L Paulatto, S Poncé, D Rocca, R Sabatini, B Santra, M Schlipf, A P Seitsonen, A Smogunov, I Timrov, T Thonhauser, P Umari, N Vast, X Wu, S Baroni",
+      "publication_year": 2017,
+      "source_url": "https://arxiv.org/abs/1709.10010",
+      "screening": {
+        "paper_id": "1709.10010",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4412889887",
+      "arxiv_id": "",
+      "openalex_id": "W4412889887",
+      "doi": "https://doi.org/10.18653/v1/2025.acl-long.1317",
+      "pdf_url": "https://aclanthology.org/2025.acl-long.1317.pdf",
+      "title": "Knowledge Graph Retrieval-Augmented Generation for LLM-based Recommendation",
+      "authors": "Shijie Wang, Wenqi Fan, Yue Feng, Lin Shanru, Xinyu Ma, Shuaiqiang Wang, Dawei Yin",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.18653/v1/2025.acl-long.1317",
+      "screening": {
+        "paper_id": "W4412889887",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4404783788",
+      "arxiv_id": "",
+      "openalex_id": "W4404783788",
+      "doi": "https://doi.org/10.18653/v1/2024.emnlp-industry.66",
+      "pdf_url": "https://aclanthology.org/2024.emnlp-industry.66.pdf",
+      "title": "Retrieval Augmented Generation or Long-Context LLMs? A Comprehensive Study and Hybrid Approach",
+      "authors": "Zhuowan Li, Cheng Li, Mingyang Zhang, Qiaozhu Mei, Michael Bendersky",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.18653/v1/2024.emnlp-industry.66",
+      "screening": {
+        "paper_id": "W4404783788",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4412887933",
+      "arxiv_id": "",
+      "openalex_id": "W4412887933",
+      "doi": "https://doi.org/10.18653/v1/2025.findings-acl.861",
+      "pdf_url": "https://aclanthology.org/2025.findings-acl.861.pdf",
+      "title": "Ask in Any Modality: A Comprehensive Survey on Multimodal Retrieval-Augmented Generation",
+      "authors": "Mohammad Mahdi Abootorabi, Amirhosein Zobeiri, Mahdi Dehghani, Mohammadali Mohammadkhani, Bardia Mohammadi, Omid Ghahroodi, Mahdieh Soleymani Baghshah, Ehsaneddin Asgari",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.18653/v1/2025.findings-acl.861",
+      "screening": {
+        "paper_id": "W4412887933",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4411120331",
+      "arxiv_id": "",
+      "openalex_id": "W4411120331",
+      "doi": "https://doi.org/10.18653/v1/2025.naacl-long.635",
+      "pdf_url": "https://aclanthology.org/2025.naacl-long.635.pdf",
+      "title": "Rationale-Guided Retrieval Augmented Generation for Medical Question Answering",
+      "authors": "Jiwoong Sohn, Yein Park, Chanwoong Yoon, Sihyeon Park, Hyeon Seok Hwang, Mujeen Sung, Hyunjae Kim, Jaewoo Kang",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.18653/v1/2025.naacl-long.635",
+      "screening": {
+        "paper_id": "W4411120331",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2407.13193",
+      "arxiv_id": "2407.13193",
+      "openalex_id": "W4402854593",
+      "doi": "https://doi.org/10.1007/s10462-026-11605-7",
+      "pdf_url": "https://arxiv.org/pdf/2407.13193",
+      "title": "Retrieval-augmented generation for natural language processing: a survey",
+      "authors": "Shangyu Wu, Ying Xiong, Yufei Cui, Haolun Wu, Can Chen, Ye Yuan, Lianming Huang, Xue Liu, Tei‐Wei Kuo, Nan Guan, Chun Jason Xue",
+      "publication_year": 2026,
+      "source_url": "https://arxiv.org/abs/2407.13193",
+      "screening": {
+        "paper_id": "2407.13193",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4404792869",
+      "arxiv_id": "",
+      "openalex_id": "W4404792869",
+      "doi": "https://doi.org/10.18653/v1/2024.findings-emnlp.678",
+      "pdf_url": "https://aclanthology.org/2024.findings-emnlp.678.pdf",
+      "title": "R2AG: Incorporating Retrieval Information into Retrieval Augmented Generation",
+      "authors": "Fuda Ye, Shuangyin Li, Yongqi Zhang, Lei Chen",
+      "publication_year": 2024,
+      "source_url": "https://doi.org/10.18653/v1/2024.findings-emnlp.678",
+      "screening": {
+        "paper_id": "W4404792869",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4410600121",
+      "arxiv_id": "",
+      "openalex_id": "W4410600121",
+      "doi": "https://doi.org/10.3390/electronics14112102",
+      "pdf_url": "https://www.mdpi.com/2079-9292/14/11/2102/pdf?version=1747904257",
+      "title": "Document GraphRAG: Knowledge Graph Enhanced Retrieval Augmented Generation for Document Question Answering Within the Manufacturing Domain",
+      "authors": "Simon Knollmeyer, Oğuz Caymazer, Daniel Großmann",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.3390/electronics14112102",
+      "screening": {
+        "paper_id": "W4410600121",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4413114507",
+      "arxiv_id": "",
+      "openalex_id": "W4413114507",
+      "doi": "https://doi.org/10.20944/preprints202508.1022.v1",
+      "pdf_url": "https://www.preprints.org/frontend/manuscript/7cf07745f0b81c1891d1ede5913ec32e/download_pub",
+      "title": "Retrieval-Augmented Generation (RAG) in Healthcare: A Comprehensive Review",
+      "authors": "Fnu Neha, Deepshikha Bhati, Deepak Kumar Shukla",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.20944/preprints202508.1022.v1",
+      "screening": {
+        "paper_id": "W4413114507",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "2409.10102",
+      "arxiv_id": "2409.10102",
+      "openalex_id": "W4403702563",
+      "doi": "https://doi.org/10.48550/arxiv.2409.10102",
+      "pdf_url": "https://arxiv.org/pdf/2409.10102",
+      "title": "Trustworthiness in Retrieval-Augmented Generation Systems: A Survey",
+      "authors": "Yujia Zhou, Zhang, Wenbo, Shao, Jingying, Yan Liu, Xiaoxi Li, Jin, Jiajie, Hongjin Qian, Zheng Liu, Li, Chaozhuo, Zhang, Jason Chen, Zhicheng Dou, Philip S. Yu, Mao, Jiaxin",
+      "publication_year": 2024,
+      "source_url": "https://arxiv.org/abs/2409.10102",
+      "screening": {
+        "paper_id": "2409.10102",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4412888476",
+      "arxiv_id": "",
+      "openalex_id": "W4412888476",
+      "doi": "https://doi.org/10.18653/v1/2025.findings-acl.422",
+      "pdf_url": "https://aclanthology.org/2025.findings-acl.422.pdf",
+      "title": "Document Segmentation Matters for Retrieval-Augmented Generation",
+      "authors": "Zhitong Wang, Cheng Gao, Chaojun Xiao, Yufei Huang, Shuzheng Si, Kangyang Luo, Yuzhuo Bai, Wenhao Li, Tangjian Duan, Chuancheng Lv, Guoshan Lu, Gang Chen, Fanchao Qi, Maosong Sun",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.18653/v1/2025.findings-acl.422",
+      "screening": {
+        "paper_id": "W4412888476",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    },
+    {
+      "paper_id": "W4416035209",
+      "arxiv_id": "",
+      "openalex_id": "W4416035209",
+      "doi": "https://doi.org/10.18653/v1/2025.emnlp-main.1738",
+      "pdf_url": "https://aclanthology.org/2025.emnlp-main.1738.pdf",
+      "title": "Retrieval-Augmented Generation with Estimation of Source Reliability",
+      "authors": "Jeongyeon Hwang, Junyoung Park, Hyejin Park, Dong‐Woo Kim, Sangdon Park, Jungseul Ok",
+      "publication_year": 2025,
+      "source_url": "https://doi.org/10.18653/v1/2025.emnlp-main.1738",
+      "screening": {
+        "paper_id": "W4416035209",
+        "decision": "reserve",
+        "reason": "Deterministic reserve after model ranking.",
+        "coverage_role": "reserve",
+        "confidence": 0.3
+      }
+    }
+  ],
+  "retrieval_attempts": [
+    {
+      "paper_id": "2312.10997",
+      "success": true,
+      "citation_id": "P1"
+    },
+    {
+      "paper_id": "W4389520468",
+      "success": true,
+      "citation_id": "P2"
+    },
+    {
+      "paper_id": "W4402671152",
+      "success": true,
+      "citation_id": "P3"
+    },
+    {
+      "paper_id": "W4388778348",
+      "success": false,
+      "message": "❌ 下载失败：HTTP 403。该论文可能没有开放 PDF，或下载链接/arXiv ID 有误。"
+    },
+    {
+      "paper_id": "2309.01431",
+      "success": true,
+      "citation_id": "P4"
+    },
+    {
+      "paper_id": "W4402670290",
+      "success": true,
+      "citation_id": "P5"
+    },
+    {
+      "paper_id": "2404.10981",
+      "success": true,
+      "citation_id": "P6"
+    },
+    {
+      "paper_id": "W4404783798",
+      "success": true,
+      "citation_id": "P7"
+    },
+    {
+      "paper_id": "2401.15884",
+      "success": true,
+      "citation_id": "P8"
+    },
+    {
+      "paper_id": "W4409348640",
+      "success": false,
+      "message": "❌ 下载失败：HTTP 403。该论文可能没有开放 PDF，或下载链接/arXiv ID 有误。"
+    },
+    {
+      "paper_id": "W4409716856",
+      "success": false,
+      "message": "❌ 下载失败：HTTP 403。该论文可能没有开放 PDF，或下载链接/arXiv ID 有误。"
+    },
+    {
+      "paper_id": "2403.10446",
+      "success": true,
+      "citation_id": "P9"
+    },
+    {
+      "paper_id": "W4409362682",
+      "success": true,
+      "citation_id": "P10"
+    },
+    {
+      "paper_id": "W4408046520",
+      "success": true,
+      "citation_id": "P11"
+    },
+    {
+      "paper_id": "2402.19473",
+      "success": true,
+      "citation_id": "P12"
+    }
+  ]
+}
